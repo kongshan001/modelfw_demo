@@ -63,7 +63,12 @@ python3 -m pytest test_cmodel.py -v
 
 ```
 modelfw_demo/
-├── cmodel.py        # 框架 + 内置 demo
-├── test_cmodel.py   # 17 个回归用例,覆盖全部 8 条决策
+├── cmodel.py        # 框架(纯 Python)+ 内置 demo
+├── cmodel_fast.py   # C++ 平替入口(配 cpp/cmodel_pybind.cpp), import 即换
+├── test_cmodel.py   # 17 用例 × {py, cpp} = 34,证明平替
+├── benchmark.py     # 纯 Python 基准
+├── compare.py       # 三实现对比(Python / cmodel_fast / C++ 原生)
+├── BENCHMARK.md     # 性能对比 + 平替说明
+├── cpp/             # C++: CModel<T> 原生 + pybind11 模块(cmake 构建)
 └── README.md        # 本文档
 ```

@@ -68,6 +68,20 @@ W1(纯写入)native ~25×,W2(带回调)掉到 ~10×。回调派发无论 Python/
 
 换层真正值得的前提:能把**一批操作打包成一次 C++ 调用**(批量跨界),或把回调逻辑整体下沉到 C++。逐次跨界的小操作,FFI 会吞掉全部收益。
 
+## 平替(drop-in):cmodel_fast.CModel
+
+`cmodel_fast.CModel` 是纯 Python `cmodel.CModel` 的**完整平替**——C++ 核心(`cmodelpb`)+ 极薄 Python 壳(只为复刻 `__init_subclass__` 声明快照)。用户改一行 import 即换:
+
+```python
+# 原: from cmodel import CModel
+from cmodel_fast import CModel        # 其余代码不动
+```
+
+**API 与行为逐条一致**(含未声明字段警告、覆盖警告、按字段防环、`ClearModifyCB` 四向、`NotifyChange`、回调异常带堆栈日志)。由同一套 17 个回归用例对两实现各跑一遍证明:**34 passed**(见 `test_cmodel.py`)。
+
+**性能**:作为 Python drop-in,与上表 pybind11 列同档(**1.0–1.3×**,薄壳近乎零开销;瓶颈仍是 per-op FFI)。同一份 C++ 核心若从 C++ 侧调用则是 9–25×。所以这个平替的价值是 **API 一致性 / 可替换性**(以及:若 app 主体用 C++ 驱动该 model,可拿满速度),而非 Python 侧提速。
+
+
 ## 复现
 
 ```bash

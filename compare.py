@@ -17,9 +17,7 @@ import sys
 import timeit
 
 from cmodel import CModel
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "cpp", "build"))
-import cmodelpb  # noqa: E402
+from cmodel_fast import CModel as CFastCModel
 
 K = 10
 N_W1 = 1_000_000
@@ -36,7 +34,18 @@ GEN = {
 }
 
 
-class BenchModel(CModel):
+class PyBench(CModel):
+    def __init__(self):
+        super().__init__()
+        self.f_int = 0
+        self.f_str = ""
+        self.f_tuple = ()
+        self.f_list = []
+        self.f_dict = {}
+        self.f_set = set()
+
+
+class CppBench(CFastCModel):
     def __init__(self):
         super().__init__()
         self.f_int = 0
@@ -88,15 +97,15 @@ def main():
     native = run_native()
     print(f"[{platform.python_version()} | {platform.processor() or platform.machine()}]  "
           f"W1: N={N_W1:,} (0 cb)  W2: N={N_W2:,} (K={K} cb)  repeat={REPEAT} (min, gc off)\n")
-    print(f"{'field':<9} {'WL':<3} {'Python':>10} {'pybind11':>16} {'C++native':>16}")
-    print("-" * 58)
+    print(f"{'field':<9} {'WL':<3} {'Python':>10} {'cmodel_fast':>17} {'C++native':>16}")
+    print("-" * 60)
     for field in GEN:
         for wl, n, cb in (("W1", N_W1, False), ("W2", N_W2, True)):
-            py = bench(lambda: BenchModel(), field, n, cb)
-            pb = bench(lambda: cmodelpb.CModel(), field, n, cb)
+            py = bench(lambda: PyBench(), field, n, cb)
+            cf = bench(lambda: CppBench(), field, n, cb)
             nat = native.get((field, wl), float("nan"))
             print(f"{field:<9} {wl:<3} {fmt(py):>10} "
-                  f"{fmt(pb):>9} ({pb/py:>4.1f}×) {fmt(nat):>9} ({nat/py:>4.1f}×)")
+                  f"{fmt(cf):>10} ({cf/py:>4.1f}×) {fmt(nat):>9} ({nat/py:>4.1f}×)")
     print()
     gc.enable()
 
