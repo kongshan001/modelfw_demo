@@ -96,8 +96,8 @@ class CModel {
         firing_.erase(field);
     }
 
-public:
-    void setattr(const std::string& name, py::object value) {
+    // 单次写入的核心逻辑(setattr 与 set_many 共用)。
+    void set_impl(const std::string& name, py::object value) {
         if (name == "_declared") {                    // 拦截: 填 C++ declared_ 集
             declared_.clear();
             for (py::handle h : value) declared_.insert(h.cast<std::string>());
@@ -121,6 +121,19 @@ public:
             if (ch) it->second = value;
         }
         if (ch) fire(name);
+    }
+
+public:
+    void setattr(const std::string& name, py::object value) {
+        set_impl(name, std::move(value));
+    }
+
+    // 批量写入: N 次写入只 1 次 Python->C++ 跨界(循环在 C++ 内)。
+    // 无回调(W1)时几乎贴近 native; 有 Python 回调(W2)时回调跨界仍在, 收益受限。
+    void set_many(const std::string& field, py::list values) {
+        for (py::handle h : values) {
+            set_impl(field, py::reinterpret_borrow<py::object>(h));
+        }
     }
 
     py::object getattr(const std::string& name) {
@@ -180,5 +193,6 @@ PYBIND11_MODULE(cmodelpb, m) {
         .def("ClearModifyCB", &CModel::ClearModifyCB,
              py::arg("tag") = py::none(), py::arg("field") = py::none())
         .def("NotifyChange", &CModel::NotifyChange)
+        .def("set_many", &CModel::set_many)
         .def("_field_names", &CModel::_field_names);
 }

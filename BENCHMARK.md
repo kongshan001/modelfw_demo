@@ -82,11 +82,61 @@ from cmodel_fast import CModel        # 其余代码不动
 **性能**:作为 Python drop-in,与上表 pybind11 列同档(**1.0–1.3×**,薄壳近乎零开销;瓶颈仍是 per-op FFI)。同一份 C++ 核心若从 C++ 侧调用则是 9–25×。所以这个平替的价值是 **API 一致性 / 可替换性**(以及:若 app 主体用 C++ 驱动该 model,可拿满速度),而非 Python 侧提速。
 
 
+## 经验参考:per-op FFI 与批量跨界
+
+> 本性能对比沉淀下来的核心经验, 供以后评估"Python 调 C++"类方案参考。
+
+### 什么是 per-op FFI
+
+- **FFI**(Foreign Function Interface)= Python 与 C++ 之间的调用桥(本项目用 pybind11)。
+- **per-op FFI** = "每一次操作都要过一次这座桥、交一次过路费"。过路费是固定的(调用帧、类型转换、GIL、引用计数), 与这步活儿大小无关, 通常几百 ns。
+
+### CModel 里一次写入发生几次跨界
+
+`m.f_int = v`(m 是 C++ 实现)的旅程:
+- ① Python → C++: 执行 `__setattr__`(每写 1 次)。
+- ② 若有 K 个 Python 回调: 每个 fire 都 C++ → Python(K 次)。
+
+所以:
+- W1(0 回调): **每写 1 次跨界**。
+- W2(K=10 回调): **每写 11 次跨界**(1 setattr + 10 回调)。
+
+### 数字拆解(为什么 pybind11 只有 ~1.2×)
+
+| | 单次写入纯模型开销 | 其中 C++ 真正干活 | 即 per-op FFI 过路费 |
+|---|---|---|---|
+| C 层(pybind11) | ~527 ns | ~25 ns | ~500 ns |
+
+C++ 25ns 能干完的活, 过桥费 500ns 把它淹了 → 比纯 Python(~619ns)只省 ~92ns ≈ **1.2×**。
+
+### 解法:批量跨界(`set_many`)
+
+把 N 次写入打包成 1 次 C++ 调用, N 次过路费压成 1 次:
+
+| 负载 | per-op(pybind11) | batch(`set_many`) | 说明 |
+|---|---|---|---|
+| W1(0 回调) | 1.1× | **2.4×** | setattr 跨界从 N 次压成 1 次, 收益翻倍 |
+| W2(K=10 回调) | 1.2× | **1.5–1.6×** | setattr 跨界省了, 但回调跨界(N×K)仍在, 收益受限 |
+
+### 两个天花板(batch 也没能突破的)
+
+1. **回调跨界**: batch 只压了 setattr 的跨界; 回调是 Python 函数, 每次 fire 仍要 C++→Python。W2 因此卡在 ~1.5×。要再突破, 回调本身也得下沉到 C++。
+2. **Python 对象本身**: 即便 batch, 值仍是 Python 对象, C++ 侧遍历 list、对 `py::object` 做 `==`/`is`、引用计数都要回 Python。所以 batch W1(2.4×)远低于纯 native(25×)——纯 native 用 C++ 值类型, 全程不碰 Python 对象。
+
+### 一句话经验
+
+> 评估"Python 调 C++"提速时, 先问:**跨界频率有多高?**
+> - 细粒度、逐次跨界(per-op)→ FFI 过路费主导, 提速被压在 ~1×–2×。
+> - 能批量跨界(batch)→ 把 N 次费压成 1 次, 提速上一个台阶, 但仍受限于"值/回调是否也在 C++ 侧"。
+> - 全 C++ 且值/回调都在 C++ → 才能拿到 native 级(本项目 9–25×)提速。
+
+**迁移启发**:pybind11 加速适合"粗粒度、单次调用做大量 C++ 内部工作"的场景; 对 CModel 这种"每个属性变更都要立刻通知"的细粒度响应式模型, 真正的提速要么批量、要么整体下沉 C++。
+
 ## 复现
 
 ```bash
 python3 benchmark.py                 # phase 1: 纯 Python 基准
 cd cpp && cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
 ./cpp/build/bench_native             # phase 2a: C++ 原生上限
-python3 compare.py                   # phase 3: 三实现对比(会自动调用上面的二进制)
+python3 compare.py                   # 四列对比: Python / cpp(per-op) / cpp(batch,set_many) / native
 ```
