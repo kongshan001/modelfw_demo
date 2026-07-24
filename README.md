@@ -87,8 +87,9 @@ modelfw_demo/
 ├── cmodel.py        # 框架(纯 Python)+ 内置 demo
 ├── cmodel_fast.py   # C++ 平替入口(配 cpp/cmodel_pybind.cpp), import 即换
 ├── test_cmodel.py   # 17 用例 × {py, cpp} = 34,证明平替
-├── benchmark.py     # 纯 Python 基准
-├── compare.py       # 三实现对比(Python / cmodel_fast / C++ 原生)
+├── benchmark.py     # 纯 Python 基准(py vs cpp 同 harness)
+├── compare.py       # 四列对比: py / cpp-op / cpp-batch / cpp-batch+txn / native
+├── demo_batch.py    # 端到端 demo: 批量导入 + 批末统一刷新(set_many + transaction)
 ├── BENCHMARK.md     # 性能对比 + 平替说明
 ├── cpp/             # C++: CModel<T> 原生 + pybind11 模块(cmake 构建)
 └── README.md        # 本文档
