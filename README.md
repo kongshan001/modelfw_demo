@@ -19,6 +19,27 @@ oModel.SetModifyCB(oTag, "sName", on_name)   # 注册回调:(分组tag, 字段�
 oModel.sName = "test"                        # 赋值即触发 on_name(oModel)
 ```
 
+## 无感切换到 C++ 实现
+
+`cmodel.CModel` 这个名字**默认自动指向 C++ 实现**(`cmodel_fast` / `cmodelpb`),用户原有代码 `from cmodel import CModel` **一行都不用改**就用上 C++。C++ 后端没构建时**静默回退**纯 Python。
+
+```python
+import cmodel
+print(cmodel._BACKEND)   # "cpp"(用了 C++)或 "py"(回退纯 Python)
+```
+
+控制开关(环境变量 `CMODEL_IMPL`):
+
+| 取值 | 行为 |
+|---|---|
+| `auto`(默认) | 有 C++ 用 C++,否则回退纯 Python |
+| `cpp` | 强制 C++;后端缺失则报错(提示去构建 `cpp/`) |
+| `py` | 强制纯 Python |
+
+- 纯 Python 版本始终可显式取用:`from cmodel import PyCModel`。
+- 两种实现 API/行为完全一致(同一套 17 用例 ×2 = 34 测试证明,见 `test_cmodel.py`)。
+- 性能:作为 Python drop-in 约 **1.2×**;批量 `set_many` 约 **2.4×**(无回调);纯原生 C++ 9–25×。详见 `BENCHMARK.md`。
+
 ## 设计决策
 
 框架的每一处行为都来自以下 8 条决策,改动前请先对照这张表。

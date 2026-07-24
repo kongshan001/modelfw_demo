@@ -16,7 +16,7 @@ import subprocess
 import sys
 import timeit
 
-from cmodel import CModel
+from cmodel import PyCModel          # 显式纯 Python(不受无感自动替换影响)
 from cmodel_fast import CModel as CFastCModel
 
 K = 10
@@ -34,7 +34,7 @@ GEN = {
 }
 
 
-class PyBench(CModel):
+class PyBench(PyCModel):
     def __init__(self):
         super().__init__()
         self.f_int = 0

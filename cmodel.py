@@ -169,6 +169,35 @@ class CModel:
 
 
 # ---------------------------------------------------------------------- #
+#  无感后端选择: CModel 这个名字优先指向 C++ 实现(cmodel_fast / cmodelpb)。
+#  - 用户原有 `from cmodel import CModel` 无需改动, 自动用上 C++。
+#  - C++ 后端不可用时(未构建 cpp/)静默回退到上面的纯 Python 实现。
+#  - 纯 Python 版本始终可用 cmodel.PyCModel 显式取用。
+#  - CMODEL_IMPL 环境变量: auto(默认,有 C++ 用 C++)/ cpp(强制,缺失则报错)/ py(强制纯 Python)。
+# ---------------------------------------------------------------------- #
+PyCModel = CModel  # 纯 Python 版本别名(在可能被替换前先固定下来)
+
+import os as _os
+_IMPL = _os.environ.get("CMODEL_IMPL", "auto").lower()
+_BACKEND = "py"
+if _IMPL == "py":
+    pass  # 保持纯 Python
+elif _IMPL in ("auto", "cpp"):
+    try:
+        from cmodel_fast import CModel as _CModelCpp
+        CModel = _CModelCpp  # 无感替换为 C++ 实现
+        _BACKEND = "cpp"
+    except Exception:
+        if _IMPL == "cpp":
+            raise RuntimeError(
+                "CMODEL_IMPL=cpp 但 C++ 后端不可用, 请先构建: cd cpp && cmake -S . -B build && cmake --build build"
+            )
+        # auto: 静默回退纯 Python
+else:
+    raise ValueError(f"CMODEL_IMPL 需为 auto/cpp/py, 实际 {_IMPL!r}")
+
+
+# ---------------------------------------------------------------------- #
 #  自测 demo:覆盖全部 8 条决策的行为
 # ---------------------------------------------------------------------- #
 if __name__ == "__main__":

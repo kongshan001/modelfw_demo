@@ -11,9 +11,9 @@ import pytest
 
 @pytest.fixture(params=["py", "cpp"])
 def ModelCls(request):
-    """参数化模型基类: py=纯 Python cmodel.CModel, cpp=C++ 平替 cmodel_fast.CModel。"""
+    """参数化模型基类: py=纯 Python cmodel.PyCModel, cpp=C++ 平替 cmodel_fast.CModel。"""
     if request.param == "py":
-        from cmodel import CModel as Base
+        from cmodel import PyCModel as Base      # 显式纯 Python, 不受无感替换影响
     else:
         from cmodel_fast import CModel as Base
 

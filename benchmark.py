@@ -16,7 +16,7 @@ import gc
 import platform
 import timeit
 
-from cmodel import CModel as PyCModel
+from cmodel import PyCModel          # 显式纯 Python(不受无感自动替换影响)
 from cmodel_fast import CModel as CppCModel
 
 K = 10
