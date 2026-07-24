@@ -16,6 +16,24 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "cpp
 import cmodelpb as _cmodelpb  # noqa: E402
 
 
+class _Transaction:
+    """transaction 上下文: 期内写入只更新值不 fire, 退出时每字段 fire 一次。"""
+
+    def __init__(self, model):
+        self._m = model
+
+    def __enter__(self):
+        self._m.begin_defer()
+        return self._m
+
+    def __exit__(self, exc_type, exc, tb):
+        if exc_type is None:
+            self._m.commit_defer()      # 正常退出: 批末每脏字段 fire 一次
+        else:
+            self._m.rollback_defer()    # 异常: 丢弃脏字段, 不 fire
+        return False
+
+
 class CModel(_cmodelpb.CModel):
     """与 cmodel.CModel 同 API 的 C++ 实现平替。必须子类化, 字段在 __init__ 声明。"""
 
@@ -29,3 +47,7 @@ class CModel(_cmodelpb.CModel):
             self._declared = frozenset(self._field_names())
 
         cls.__init__ = _wrapped_init
+
+    def transaction(self):
+        """返回 transaction 上下文管理器: 期内写合并, 批末每字段 fire 一次。"""
+        return _Transaction(self)

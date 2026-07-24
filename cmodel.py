@@ -18,6 +18,7 @@
 
 import logging
 import warnings
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,8 @@ class CModel:
         # `_` 开头一律视为内部状态:__setattr__ 直接落盘,不触发回调、不做声明校验。
         self._callbacks = {}   # {字段名: {tag: 回调}}
         self._firing = set()   # 当前正在 fire 的字段集合(按字段防环)
+        self._deferring = False   # transaction 期内: 只记脏字段, 不 fire
+        self._dirty = []          # 期内变更过的字段(有序去重)
 
     # ------------------------------------------------------------------ #
     #  属性写入核心
@@ -92,7 +95,11 @@ class CModel:
 
         object.__setattr__(self, name, value)   # 先存值,保证回调里读到的是新值
         if changed:
-            self._fire(name)
+            if self._deferring:                 # transaction 期内: 记脏, 暂不 fire
+                if name not in self._dirty:
+                    self._dirty.append(name)
+            else:
+                self._fire(name)
 
     def _fire(self, name):
         """触发某字段的全部回调;带「按字段粒度」的防环保护。"""
@@ -166,6 +173,33 @@ class CModel:
         不经过 ``__setattr__``,框架默认看不见,改完调用本方法通知一次。
         """
         self._fire(field)
+
+    # ---- transaction: 批量写入, 批末每字段只 fire 一次(合并回调通知) ----
+    def begin_defer(self):
+        self._deferring = True
+
+    def commit_defer(self):
+        self._deferring = False
+        for f in self._dirty:          # 每脏字段只 fire 一次
+            self._fire(f)
+        self._dirty.clear()
+
+    def rollback_defer(self):
+        self._deferring = False
+        self._dirty.clear()            # 异常回滚: 丢弃脏字段, 不 fire
+
+    @contextmanager
+    def transaction(self):
+        """transaction 上下文: 期内写入只更新值不 fire, 正常退出时每字段 fire 一次;
+        抛异常则回滚(不 fire)。"""
+        self.begin_defer()
+        try:
+            yield self
+        except Exception:
+            self.rollback_defer()
+            raise
+        else:
+            self.commit_defer()
 
 
 # ---------------------------------------------------------------------- #

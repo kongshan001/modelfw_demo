@@ -88,6 +88,22 @@ def bench_batch(factory, field, n, with_cb):
     return n / t
 
 
+def bench_batch_txn(factory, field, n, with_cb):
+    """返回 raw writes/sec。set_many 包在 transaction 里: 批末每字段只 fire 一次。"""
+    m = factory()
+    setattr(m, field, GEN[field](-1))
+    if with_cb:
+        for k in range(K):
+            m.SetModifyCB(f"cb{k}", field, lambda mdl: None)
+    values = [GEN[field](i) for i in range(n)]
+    g = {"values": values, "m": m, "field": field}
+    stmt = "with m.transaction():\n    m.set_many(field, values)"
+    timeit.timeit(stmt, number=1, globals=g)          # warmup
+    t = min(timeit.repeat(stmt, number=1, globals=g, repeat=REPEAT))
+    del values, m
+    return n / t
+
+
 def run_native():
     """跑 cpp/build/bench_native, 解析 'field WL writes/sec ns/op' 行。"""
     exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cpp", "build", "bench_native")
@@ -113,17 +129,19 @@ def main():
     native = run_native()
     print(f"[{platform.python_version()} | {platform.processor() or platform.machine()}]  "
           f"W1: N={N_W1:,} (0 cb)  W2: N={N_W2:,} (K={K} cb)  repeat={REPEAT} (min, gc off)\n")
-    print(f"{'field':<9} {'WL':<3} {'Python':>9} {'cpp(op)':>15} {'cpp(batch)':>17} {'C++native':>15}")
-    print("-" * 72)
+    print(f"{'field':<9} {'WL':<3} {'Python':>8} {'cpp(op)':>13} {'cpp(batch)':>13} "
+          f"{'cpp(batch+txn)':>16} {'C++native':>12}")
+    print("-" * 82)
     for field in GEN:
         for wl, n, cb in (("W1", N_W1, False), ("W2", N_W2, True)):
             py = bench(lambda: PyBench(), field, n, cb)
             cop = bench(lambda: CppBench(), field, n, cb)
             cbat = bench_batch(lambda: CppBench(), field, n, cb)
+            ctxn = bench_batch_txn(lambda: CppBench(), field, n, cb)
             nat = native.get((field, wl), float("nan"))
-            print(f"{field:<9} {wl:<3} {fmt(py):>9} "
-                  f"{fmt(cop):>8} ({cop/py:>4.1f}×) {fmt(cbat):>9} ({cbat/py:>4.1f}×) "
-                  f"{fmt(nat):>8} ({nat/py:>4.1f}×)")
+            print(f"{field:<9} {wl:<3} {fmt(py):>8} "
+                  f"{fmt(cop):>6}({cop/py:>3.1f}×) {fmt(cbat):>6}({cbat/py:>3.1f}×) "
+                  f"{fmt(ctxn):>9}({ctxn/py:>3.1f}×) {fmt(nat):>6}({nat/py:>3.1f}×)")
     print()
     gc.enable()
 

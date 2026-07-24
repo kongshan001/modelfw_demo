@@ -216,6 +216,32 @@ def test_clearmodifycb_variants(ModelCls):
 
 
 # ---------------------------------------------------------------------- #
+#  transaction: 批量写入, 批末每字段只 fire 一次
+# ---------------------------------------------------------------------- #
+def test_transaction_coalesces_to_one_fire_per_field(ModelCls):
+    m = ModelCls()
+    calls = []
+    m.SetModifyCB("t", "sName", lambda mm: calls.append(mm.sName))
+    with m.transaction():
+        m.sName = "a"
+        m.sName = "b"
+        m.sName = "c"                            # 同字段多次, 批末只 fire 1 次(用终值)
+    assert calls == ["c"]
+
+
+def test_transaction_rollback_on_exception(ModelCls):
+    m = ModelCls()
+    calls = []
+    m.SetModifyCB("t", "sName", lambda mm: calls.append(mm.sName))
+    with pytest.raises(ValueError):
+        with m.transaction():
+            m.sName = "x"
+            raise ValueError("boom")
+    assert calls == []                           # 异常回滚, 不 fire
+    assert m.sName == "x"                        # 值已更新, 只是没通知
+
+
+# ---------------------------------------------------------------------- #
 #  契约:_ 属性不触发/不警告;_declared 快照;构造期不警告
 # ---------------------------------------------------------------------- #
 def test_internal_underscore_attr_does_not_fire_or_warn(ModelCls, recwarn):

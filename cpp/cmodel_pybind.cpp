@@ -12,6 +12,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,6 +28,8 @@ class CModel {
     std::unordered_set<std::string> firing_;
     std::unordered_set<std::string> declared_;
     bool declared_set_ = false;
+    bool deferring_ = false;                  // transaction 期内: 只记脏字段, 不 fire
+    std::vector<std::string> dirty_;          // 期内变更过的字段(有序去重)
 
     static void warn(const std::string& msg) {
         py::module_::import("warnings").attr("warn")(msg, py::arg("stacklevel") = 2);
@@ -120,7 +123,14 @@ class CModel {
             ch = changed(it->second, value);
             if (ch) it->second = value;
         }
-        if (ch) fire(name);
+        if (ch) {
+            if (deferring_) {                         // transaction 期内: 记脏, 暂不 fire
+                if (std::find(dirty_.begin(), dirty_.end(), name) == dirty_.end())
+                    dirty_.push_back(name);
+            } else {
+                fire(name);
+            }
+        }
     }
 
 public:
@@ -176,6 +186,18 @@ public:
 
     void NotifyChange(const std::string& field) { fire(field); }
 
+    // transaction: 期内写入只更新值+记脏字段, 不立即 fire; commit 时每字段 fire 一次。
+    void begin_defer() { deferring_ = true; }
+    void commit_defer() {
+        deferring_ = false;
+        for (auto& f : dirty_) fire(f);               // 每脏字段只 fire 一次
+        dirty_.clear();
+    }
+    void rollback_defer() {                           // 异常回滚: 丢弃脏字段, 不 fire
+        deferring_ = false;
+        dirty_.clear();
+    }
+
     py::list _field_names() {
         py::list l;
         for (const auto& kv : fields_)
@@ -193,6 +215,9 @@ PYBIND11_MODULE(cmodelpb, m) {
         .def("ClearModifyCB", &CModel::ClearModifyCB,
              py::arg("tag") = py::none(), py::arg("field") = py::none())
         .def("NotifyChange", &CModel::NotifyChange)
+        .def("begin_defer", &CModel::begin_defer)
+        .def("commit_defer", &CModel::commit_defer)
+        .def("rollback_defer", &CModel::rollback_defer)
         .def("set_many", &CModel::set_many)
         .def("_field_names", &CModel::_field_names);
 }

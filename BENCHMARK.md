@@ -109,28 +109,46 @@ from cmodel_fast import CModel        # 其余代码不动
 
 C++ 25ns 能干完的活, 过桥费 500ns 把它淹了 → 比纯 Python(~619ns)只省 ~92ns ≈ **1.2×**。
 
-### 解法:批量跨界(`set_many`)
+### 解法一:批量跨界(`set_many`)
 
-把 N 次写入打包成 1 次 C++ 调用, N 次过路费压成 1 次:
+把 N 次写入打包成 1 次 C++ 调用, N 次 setattr 过路费压成 1 次:
 
 | 负载 | per-op(pybind11) | batch(`set_many`) | 说明 |
 |---|---|---|---|
 | W1(0 回调) | 1.1× | **2.4×** | setattr 跨界从 N 次压成 1 次, 收益翻倍 |
 | W2(K=10 回调) | 1.2× | **1.5–1.6×** | setattr 跨界省了, 但回调跨界(N×K)仍在, 收益受限 |
 
-### 两个天花板(batch 也没能突破的)
+### 解法二:回调合并(`transaction`)—— 回调是 Python 时的关键一击
 
-1. **回调跨界**: batch 只压了 setattr 的跨界; 回调是 Python 函数, 每次 fire 仍要 C++→Python。W2 因此卡在 ~1.5×。要再突破, 回调本身也得下沉到 C++。
-2. **Python 对象本身**: 即便 batch, 值仍是 Python 对象, C++ 侧遍历 list、对 `py::object` 做 `==`/`is`、引用计数都要回 Python。所以 batch W1(2.4×)远低于纯 native(25×)——纯 native 用 C++ 值类型, 全程不碰 Python 对象。
+回调是 Python 函数时, 每次 fire 必跨界、无法消除; **唯一能做的是少 fire**。`transaction` 上下文期内写入只更新值、记脏字段不 fire, 批末**每字段只 fire 一次**:
+
+```python
+with oModel.transaction():
+    oModel.sName = "a"; oModel.sName = "b"; ...   # 同字段写 N 次
+# 退出时 sName 的回调只 fire 1 次(用终值), 而非 N 次
+```
+
+| 负载 | per-op | batch | **batch + `transaction`** | C++native |
+|---|---|---|---|---|
+| W1(0 回调) | 1.1× | 2.4× | 2.4×(无回调, 合并是空操作) | 14–26× |
+| W2(K=10 回调) | 1.2× | 1.5–1.6× | **6–8×**(回调 fire 从 N×K 压到 K) | 9–10× |
+
+**W2 从 1.6× 一举到 6–8×, 直逼 native** —— 因为 transaction 把"回调跨界"这个天花板打破了。语义代价:通知从"立即"变"批末"(中间值不单独通知), 故为 **opt-in**;异常时自动回滚(不 fire)。适合"只关心终态"的场景(UI 刷新、批量导入等)。
+
+### 剩下的天花板(batch+txn 也未能完全突破的)
+
+1. **Python 对象本身**: 即便 batch+txn, 值仍是 Python 对象, C++ 侧遍历 list、对 `py::object` 做 `==`/`is`、引用计数都要回 Python。所以 batch+txn W2(6–8×)仍低于 native(9–10×)。要再逼近, 需 `set_many` 接原生类型值(如 `set_many_int` 一次性转 `std::vector<long>`, 全程不碰 py::object)。
+2. **per-op 立即通知**: 若必须"每次变更立即通知"(不能用 transaction), 则 per-op FFI 是物理上限, ~1.2× 无法突破——只能改批量或合并访问模式。
 
 ### 一句话经验
 
-> 评估"Python 调 C++"提速时, 先问:**跨界频率有多高?**
-> - 细粒度、逐次跨界(per-op)→ FFI 过路费主导, 提速被压在 ~1×–2×。
-> - 能批量跨界(batch)→ 把 N 次费压成 1 次, 提速上一个台阶, 但仍受限于"值/回调是否也在 C++ 侧"。
+> 评估"Python 调 C++"提速时, 先问:**跨界频率有多高? 能不能少跨界 / 少 fire?**
+> - 细粒度、逐次跨界(per-op)→ FFI 过路费主导, 提速被压在 ~1×–2×(物理上限, 无法 micro 突破)。
+> - 批量跨界(`set_many`)→ N 次 setattr 费压成 1 次, 无回调场景 2.4×。
+> - 回调是 Python 时, 用 `transaction` 合并 fire(每字段批末只 fire 1 次)→ 回调密集场景 6–8×, 直逼 native。
 > - 全 C++ 且值/回调都在 C++ → 才能拿到 native 级(本项目 9–25×)提速。
 
-**迁移启发**:pybind11 加速适合"粗粒度、单次调用做大量 C++ 内部工作"的场景; 对 CModel 这种"每个属性变更都要立刻通知"的细粒度响应式模型, 真正的提速要么批量、要么整体下沉 C++。
+**迁移启发**:pybind11 加速适合"粗粒度、单次调用做大量 C++ 内部工作"的场景; 对 CModel 这种细粒度响应式模型, 提速三阶梯:**① 无感 per-op(~1.2×, 兜底)** → **② 批量 `set_many`(2.4×, 无回调)** → **③ `transaction` 合并回调(6–8×, 回调密集)**。三者叠加(batch + transaction)是"全 Python 编码 + Python 回调"前提下的最优解, 再往上才需要原生类型值 / 回调下沉 C++。
 
 ## 复现
 
