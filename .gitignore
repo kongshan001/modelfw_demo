@@ -2,3 +2,4 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 cpp/build/
+bench_dll_split/build/

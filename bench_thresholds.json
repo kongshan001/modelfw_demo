@@ -1,0 +1,42 @@
+{
+  "_note": "同机同轮比值(6 字段取中位数), 基线口径 = raw writes/sec(n/t_full)。依据 BENCHMARK.md: per_op/native 对照 26-41 行, batch/txn 对照 116-134 行(概括值, 本机实测后微调)。门禁双断言: ①每规则 median ≥ 阈值; ②每规则 任一有效 cell(单字段比值) ≥ 0.5×该规则阈值(挡'中位数聚合掩盖单 cell 回退'; 常量在 compare.py CELL_GUARD)。",
+  "per_op":     { "W1": 0.9, "W2": 0.9 },
+  "batch":      { "W1": 1.5, "W2": 1.0 },
+  "batch_txn":  { "W1": 1.5, "W2": 3.0 },
+  "native":     { "W1": 8.0, "W2": 5.0 },
+  "floors": {
+    "_note": "每 cell 地板(起步值, 主会话复核) = 该 cell 历史样本中位数 × 0.85; cell = (列, 字段, WL) 的比值 col/py。历史样本: ①BENCHMARK.md 26-41 行(per_op/native 全字段, 2026-08) ②bench_results/latest.json(e6034ad 快照, batch/batch_txn 仅此一个样本 → 地板≈该样本×0.85)。已知 latest.json 有 7/48 cell margin<0(cpp_per_op W2 f_int/f_str、cpp_per_op W1 f_dict、native f_list W1/W2、native f_tuple W1/W2)——即已较历史中位数回退>15%, 靠 margin 字段显性暴露, 不参与断言。",
+    "cpp_per_op": {
+      "f_int":   { "W1": 1.063, "W2": 0.831 },
+      "f_str":   { "W1": 1.065, "W2": 0.857 },
+      "f_tuple": { "W1": 1.119, "W2": 1.089 },
+      "f_list":  { "W1": 1.032, "W2": 1.078 },
+      "f_dict":  { "W1": 0.838, "W2": 1.071 },
+      "f_set":   { "W1": 0.934, "W2": 1.038 }
+    },
+    "cpp_batch": {
+      "f_int":   { "W1": 2.026, "W2": 1.32 },
+      "f_str":   { "W1": 2.051, "W2": 0.863 },
+      "f_tuple": { "W1": 2.009, "W2": 1.377 },
+      "f_list":  { "W1": 2.18,  "W2": 1.359 },
+      "f_dict":  { "W1": 1.163, "W2": 1.359 },
+      "f_set":   { "W1": 2.088, "W2": 1.295 }
+    },
+    "cpp_batch_txn": {
+      "f_int":   { "W1": 2.266, "W2": 6.052 },
+      "f_str":   { "W1": 2.178, "W2": 3.534 },
+      "f_tuple": { "W1": 2.218, "W2": 3.079 },
+      "f_list":  { "W1": 2.255, "W2": 6.604 },
+      "f_dict":  { "W1": 1.21,  "W2": 7.046 },
+      "f_set":   { "W1": 1.79,  "W2": 5.209 }
+    },
+    "native": {
+      "f_int":   { "W1": 21.483, "W2": 8.653 },
+      "f_str":   { "W1": 16.043, "W2": 8.387 },
+      "f_tuple": { "W1": 16.451, "W2": 6.575 },
+      "f_list":  { "W1": 11.486, "W2": 6.158 },
+      "f_dict":  { "W1": 12.063, "W2": 10.519 },
+      "f_set":   { "W1": 11.967, "W2": 7.516 }
+    }
+  }
+}
