@@ -162,6 +162,77 @@ def test_loop_protection_breaks_cycle(ModelCls):
 
 
 # ---------------------------------------------------------------------- #
+#  决策 2 续:回调期内修改注册表(防回归)
+#
+#  修复前 CModel 3/3 SIGSEGV: C++ fire() 直接以引用迭代回调表
+#  (cpp/cmodel_pybind.cpp CbList& vec = it->second), 回调内 SetModifyCB /
+#  ClearModifyCB 改动注册表 → vector 迭代器失效 → 段错误(3/3 复现)。
+#  修复后先做本地快照拷贝, 语义与 Python 版 _fire 的 list(field_cbs.items())
+#  一致: 本轮派发不受影响, 增删注册项从下一轮起生效。
+# ---------------------------------------------------------------------- #
+def test_callback_registers_new_tag_same_field_within_fire(ModelCls):
+    """(a) 回调内对同字段 SetModifyCB 新 tag —— 新回调本轮不派发, 下轮生效。
+    修复前 CModel 3/3 SIGSEGV: 回调期 vector 插入(重分配)使迭代器失效。"""
+    m = ModelCls()
+    calls = []
+    done = []
+    m.SetModifyCB("first", "sName", lambda mm: calls.append("first"))
+
+    def cb_reg(mm):
+        calls.append("reg")
+        if not done:                               # 只注册一次, 避免覆盖警告噪音
+            done.append(1)
+            m.SetModifyCB("second", "sName", lambda mm: calls.append("second"))
+
+    m.SetModifyCB("reg", "sName", cb_reg)
+
+    m.sName = "x"
+    assert calls == ["first", "reg"]               # 快照: 本轮不派发新注册的 second
+    m.sName = "y"
+    assert calls == ["first", "reg", "first", "reg", "second"]   # 下轮两个都在
+
+
+def test_callback_clears_tag_within_fire(ModelCls):
+    """(b) 回调内 ClearModifyCB(tag=...) —— 当场注销自身, 本轮后续 tag 仍派发。
+    修复前 CModel 3/3 SIGSEGV: 迭代中 erase 当前元素 → 迭代器失效。"""
+    m = ModelCls()
+    calls = []
+
+    def cb_a(mm):
+        calls.append("A")
+        m.ClearModifyCB(tag="tA")                  # 删除正在派发本回调的注册项
+
+    m.SetModifyCB("tA", "sName", cb_a)
+    m.SetModifyCB("tB", "sName", lambda mm: calls.append("B"))
+
+    m.sName = "x"
+    assert calls == ["A", "B"]                     # 快照: tB 本轮仍派发(与 Python 一致)
+    m.sName = "y"
+    assert calls == ["A", "B", "B"]                # tA 已注销, 只剩 tB
+
+
+def test_callback_clears_all_within_fire(ModelCls):
+    """(c) 回调内 ClearModifyCB() 无参清空 —— 本轮快照内剩余回调仍派发, 之后再不触发。
+    修复前 CModel 3/3 SIGSEGV: cbs_.clear() 析构正在被迭代的 vector → 悬垂迭代。"""
+    m = ModelCls()
+    calls = []
+
+    def cb_clear(mm):
+        calls.append("clear")
+        m.ClearModifyCB()                          # 全清注册表
+
+    m.SetModifyCB("t1", "sName", cb_clear)
+    m.SetModifyCB("t2", "sName", lambda mm: calls.append("t2"))
+    m.SetModifyCB("t3", "nAge", lambda mm: calls.append("t3"))
+
+    m.sName = "x"
+    assert calls == ["clear", "t2"]                # 快照: 本轮 t2 仍派发
+    m.sName = "y"
+    m.nAge = 1
+    assert calls == ["clear", "t2"]                # 清空后不再有任何回调
+
+
+# ---------------------------------------------------------------------- #
 #  决策 8:回调异常吞掉 + 带堆栈日志
 # ---------------------------------------------------------------------- #
 def test_callback_exception_swallowed_and_logged(ModelCls, caplog):
@@ -262,3 +333,33 @@ def test_construction_does_not_warn_on_declared_fields(ModelCls, recwarn):
     ModelCls()                                   # 构造期赋值已声明字段 -> 无未声明警告
     msgs = [str(w.message) for w in recwarn.list]
     assert not any("not declared" in x for x in msgs)
+
+
+# ---------------------------------------------------------------------- #
+#  set_many(仅 C++ 实现提供): 参数 py::list → py::sequence,
+#  兼容 list / tuple / numpy 一维数组(每元素经序列协议取值)
+# ---------------------------------------------------------------------- #
+def test_set_many_accepts_list_and_tuple(ModelCls):
+    m = ModelCls()
+    if not hasattr(m, "set_many"):
+        pytest.skip("纯 Python 实现无 set_many(批量写入是 C++ 热路径专属)")
+    fired = []
+    m.SetModifyCB("t", "nAge", lambda mm: fired.append(mm.nAge))
+    m.set_many("nAge", [1, 2, 3])                # list(原有)
+    assert fired == [1, 2, 3]
+    fired.clear()
+    m.set_many("nAge", (4, 5))                   # tuple(py::sequence 兼容)
+    assert fired == [4, 5]
+    assert m.nAge == 5
+
+
+def test_set_many_accepts_numpy_1d(ModelCls):
+    np = pytest.importorskip("numpy")
+    m = ModelCls()
+    if not hasattr(m, "set_many"):
+        pytest.skip("纯 Python 实现无 set_many(批量写入是 C++ 热路径专属)")
+    fired = []
+    m.SetModifyCB("t", "nAge", lambda mm: fired.append(int(mm.nAge)))
+    m.set_many("nAge", np.array([6, 7, 8]))      # numpy 一维数组(py::sequence 兼容)
+    assert fired == [6, 7, 8]
+    assert int(m.nAge) == 8

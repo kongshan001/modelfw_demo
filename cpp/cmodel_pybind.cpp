@@ -87,8 +87,12 @@ class CModel {
         }
         firing_.insert(field);
         py::object self = py::cast(this);             // 回调签名 cb(oModel)
-        CbList& vec = it->second;
-        for (auto& kv : vec) {
+        // 本地快照拷贝(vector 复制, py::object 拷贝自动 incref), 语义对齐
+        // Python cmodel.py _fire 的 list(field_cbs.items()): 回调期内增删注册表
+        // (SetModifyCB / ClearModifyCB)不影响本轮派发。修复前直接引用迭代
+        // it->second, 回调内改注册表 → 迭代器失效 SIGSEGV(3/3 复现)。
+        CbList snapshot = it->second;
+        for (auto& kv : snapshot) {
             try {
                 kv.second(self);
             } catch (py::error_already_set& e) {      // 吞掉 + 带堆栈日志
@@ -140,9 +144,12 @@ public:
 
     // 批量写入: N 次写入只 1 次 Python->C++ 跨界(循环在 C++ 内)。
     // 无回调(W1)时几乎贴近 native; 有 Python 回调(W2)时回调跨界仍在, 收益受限。
-    void set_many(const std::string& field, py::list values) {
-        for (py::handle h : values) {
-            set_impl(field, py::reinterpret_borrow<py::object>(h));
+    // 参数 py::list → py::sequence: 兼容 list/tuple/numpy 等任意序列。
+    // 内部取值随之改为持有每元素(py::sequence 迭代走 PySequence_GetItem,
+    // 元素可能是 numpy 标量这类容器不持有的临时对象, 不能 borrow)。
+    void set_many(const std::string& field, py::sequence values) {
+        for (py::object item : values) {
+            set_impl(field, std::move(item));
         }
     }
 
