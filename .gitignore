@@ -3,3 +3,5 @@ __pycache__/
 .pytest_cache/
 cpp/build/
 bench_dll_split/build/
+.playwright-mcp/
+org-agent-flow.png
