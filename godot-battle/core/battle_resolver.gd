@@ -241,41 +241,81 @@ func _decide_ai(actor: BattleUnitState) -> BattleIntent:
 		return BattleIntent.make(actor.id, BattleTypes.IntentKind.DEFEND)
 	var profile := actor.data.ai_profile
 	if profile == &"brute":
-		if not actor.has_status(&"war_cry") and actor.mp >= 15:
-			return _skill_intent(actor, &"war_cry", [actor.id])
-		if targets.size() >= 2 and actor.mp >= 20 and rng.chance(0.6):
-			return _skill_intent(actor, &"ground_split", [_pick_ai_target(targets).id])
+		var war_cry := _owned_skill(actor, &"war_cry")
+		if not actor.has_status(&"war_cry") and _can_cast(actor, war_cry):
+			return _skill_intent(actor, war_cry.id, [actor.id])
+		var ground_split := _owned_skill(actor, &"ground_split")
+		if targets.size() >= 2 and _can_cast(actor, ground_split) and rng.chance(0.6):
+			return _skill_intent(actor, ground_split.id, [_pick_ai_target(targets).id])
 		return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
 	if profile == &"fox":
 		var priority := _priority_allies(targets)
 		var seal_target := _first_unsealed(priority)
-		if seal_target != null and actor.mp >= 25 and rng.chance(0.7):
-			return _skill_intent(actor, &"charm_seal", [seal_target.id])
-		if actor.mp >= 20:
-			return _skill_intent(actor, &"fox_fire", [_pick_ai_target(targets).id])
+		var charm_seal := _owned_skill(actor, &"charm_seal")
+		if seal_target != null and _can_cast(actor, charm_seal) and rng.chance(0.7):
+			return _skill_intent(actor, charm_seal.id, [seal_target.id])
+		var fox_fire := _owned_skill(actor, &"fox_fire")
+		if _can_cast(actor, fox_fire):
+			return _skill_intent(actor, fox_fire.id, [_pick_ai_target(targets).id])
 		return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
-	if profile == &"poison_melee" and actor.mp >= 0 and rng.chance(0.6):
-		return _skill_intent(actor, &"poison_strike", [_pick_ai_target(targets).id])
-	if not actor.data.skills.is_empty() and actor.mp >= 0 and rng.chance(0.6):
-		var first_skill := StringName(actor.data.skills[0])
-		var skill := content.get_skill(first_skill)
-		if skill != null and actor.mp >= skill.mp_cost:
-			var target_id := actor.id if skill.target_type == SkillData.TargetType.SELF else _pick_ai_target(targets).id
-			return _skill_intent(actor, first_skill, [target_id])
+	if profile == &"poison_melee":
+		var poison_strike := _owned_skill(actor, &"poison_strike")
+		if _can_cast(actor, poison_strike) and rng.chance(0.6):
+			return _skill_intent(actor, poison_strike.id, [_pick_ai_target(targets).id])
+		return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
+	var skill := _first_castable_skill(actor)
+	if skill != null and rng.chance(0.6):
+		var target_id := actor.id if skill.target_type == SkillData.TargetType.SELF else _pick_ai_target(targets).id
+		return _skill_intent(actor, skill.id, [target_id])
 	return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
+
+func _owned_skill(actor: BattleUnitState, skill_id: StringName) -> SkillData:
+	if not actor.data.skills.has(skill_id):
+		return null
+	return content.get_skill(skill_id)
+
+func _can_cast(actor: BattleUnitState, skill: SkillData) -> bool:
+	return skill != null and actor.mp >= skill.mp_cost
+
+func _first_castable_skill(actor: BattleUnitState) -> SkillData:
+	for skill_id in actor.data.skills:
+		var skill := content.get_skill(skill_id)
+		if _can_cast(actor, skill):
+			return skill
+	return null
 
 func _skill_intent(actor: BattleUnitState, skill_id: StringName, target_ids: Array) -> BattleIntent:
 	return BattleIntent.make(actor.id, BattleTypes.IntentKind.SKILL, target_ids, skill_id)
 
 func _priority_allies(candidates: Array[BattleUnitState]) -> Array[BattleUnitState]:
+	var healer: BattleUnitState = null
+	var mage: BattleUnitState = null
+	for candidate in candidates:
+		if healer == null and _is_healer(candidate):
+			healer = candidate
+		elif mage == null and _is_mage(candidate):
+			mage = candidate
 	var priority: Array[BattleUnitState] = []
-	for wanted in [&"hero_healer", &"hero_mage"]:
-		for candidate in candidates:
-			if candidate.id == wanted:
-				priority.append(candidate)
+	if healer != null:
+		priority.append(healer)
+	if mage != null:
+		priority.append(mage)
 	if priority.is_empty():
 		priority.append(_lowest_hp(candidates))
 	return priority
+
+func _is_healer(unit: BattleUnitState) -> bool:
+	for skill_id in unit.data.skills:
+		var skill := content.get_skill(skill_id)
+		if skill == null:
+			continue
+		for effect in skill.effects:
+			if effect.kind == BattleEffect.Kind.HEAL:
+				return true
+	return false
+
+func _is_mage(unit: BattleUnitState) -> bool:
+	return unit.data.magic > unit.data.atk and not _is_healer(unit)
 
 func _first_unsealed(candidates: Array[BattleUnitState]) -> BattleUnitState:
 	for candidate in candidates:
