@@ -24,9 +24,9 @@ PASS test_content.gd (26 assertions)
 PASS test_flee_ai.gd (43 assertions)
 PASS test_fuzz.gd (634 assertions)
 PASS test_golden.gd (5 assertions)
-REPLAY_SAVED: /Users/ks_128/Library/Application Support/Godot/app_userdata/山海试炼/test_replay.json
-REPLAY_SAVED: /Users/ks_128/Library/Application Support/Godot/app_userdata/山海试炼/test_replay_partial.json
-REPLAY_SAVED: /Users/ks_128/Library/Application Support/Godot/app_userdata/山海试炼/test_replay_debug.json
+REPLAY_SAVED: .../test_replay.json
+REPLAY_SAVED: .../test_replay_partial.json
+REPLAY_SAVED: .../test_replay_debug.json
 PASS test_replay.gd (15 assertions)
 PASS test_rng.gd (22 assertions)
 PASS test_serialization.gd (7 assertions)

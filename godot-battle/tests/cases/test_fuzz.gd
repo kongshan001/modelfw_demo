@@ -44,8 +44,9 @@ func run(t: TestContext) -> void:
 		var engine := BattleEngine.new(encounter, content, 5000 + battle_index, false)
 		var choice_rng := RandomNumberGenerator.new()
 		choice_rng.seed = 9000 + battle_index
+		var max_rounds: int = engine.state.max_rounds
 		var rounds := 0
-		while not engine.is_over() and rounds < 35:
+		while not engine.is_over() and rounds < max_rounds + 5:
 			rounds += 1
 			var intents := _random_intents(engine, choice_rng, content)
 			engine.resolve_round(intents)
@@ -53,4 +54,4 @@ func run(t: TestContext) -> void:
 			t.ok(issues.is_empty(), "fuzz #%d round %d: %s" % [battle_index, rounds, str(issues)])
 			if not issues.is_empty():
 				break
-		t.ok(engine.is_over(), "fuzz #%d 在 30 回合内结束" % battle_index)
+		t.ok(engine.is_over(), "fuzz #%d 在 %d 回合内结束" % [battle_index, max_rounds])

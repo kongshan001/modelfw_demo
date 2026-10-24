@@ -12,8 +12,8 @@
 - 随机源：`BattleRng` 包装 `RandomNumberGenerator`，构造时注入固定种子；同一种子下每回合的速度骰、伤害浮动、暴击、AI 选择与状态命中按同一顺序取数。
 - 顺序：速度 = 基础速度 × [0.95, 1.05]，同速按单位 ID 字典序；Dictionary 输出前排序（`JSON.stringify(..., sort_keys=true)`）。
 - 跨 JSON 往返：Godot 解析后数字全为 float，`BattleDigest.canonical_json` 将整值 float 归一化为 int，保证事件比对与摘要稳定。
-- 记录：引擎版本、内容 hash、种子；跨版本/内容变更会告警或 `--strict-content` 失败。内容 hash 由排序后的 `.tres` 路径与全文计算，任何数值改动都会改变 hash。
-- 注意：Godot 版本升级可能改变 RNG 实现，回放前先确认引擎版本一致（当前为 4.6.stable.official.89cea1439）。
+- 记录：引擎版本、内容 hash、种子。内容 hash 由排序后的 `.tres` 路径与全文计算，任何数值改动都会改变 hash；内容变更在 `--strict-content` 下会直接失败。引擎版本仅作为元数据记录，`BattleReplay.verify` 不比对它；行为变化由摘要链与事件重放的分歧暴露。
+- 注意：Godot 版本升级可能改变 RNG 实现；回放前建议人工确认引擎版本一致（当前为 4.6.stable.official.89cea1439），这不是自动门禁。
 
 ## 3. 录像格式
 
@@ -28,14 +28,14 @@
 ## 4. 黄金回放与 fuzz
 
 - 生成：`godot --headless --path godot-battle -s tools/make_golden.gd`，三套固定策略/种子（attack/aoe/control，1001–1003），每局最多 12 回合。三份回放均为未分胜负的过程回放（`outcome=0`），用于锁定“意图 → 事件链”；文件生成后须提交。AOE/控制两局在 MP 耗尽后会触发 `intent_rejected` 并回退防御，同时锁定该路径的确定性。
-- 校验：`test_golden.gd` 用 `BattleReplay.verify(..., true)` 严格校验内容 hash、摘要链、逐事件重放与结果；`tools/replay.gd --file ... --strict-content` 可单独复现，输出 `REPLAY_OK`。
+- 校验：`test_golden.gd` 用 `BattleReplay.verify(..., true)` 严格校验内容 hash、摘要链、逐事件重放与结果；`godot --headless --path godot-battle -s tools/replay.gd -- --file <path> [--strict-content]` 可单独复现（`<path>` 相对工程目录，如 `tests/golden/golden_attack.json`），输出 `REPLAY_OK`。
 - fuzz：50 局固定种子，`choice_rng` 与战斗 RNG 分离，玩家侧随机选择攻击/防御/技能/道具，每回合后检查 `BattleInvariants`；30 回合上限保证终止，634 个断言，单跑约 1.4s。
 - 重新生成黄金文件时 `created_at` 会变化，文件字节不稳定；确定性以 `digests[]` 与事件流为准，不要用原始文件 diff 判断。
 
 ## 5. 工作流
 
 1. 失败测试 → 2. 最小实现 → 3. headless 全绿 → 4. 提交。
-2. 出现异常：dump 录像 → `tools/replay.gd --verify` 复现 → 看第一个分歧事件 → 修复 → 重放摘要一致 → 转正 golden。
+2. 出现异常：dump 录像 → `godot --headless --path godot-battle -s tools/replay.gd -- --file <path> [--strict-content]` 复现 → 看第一个分歧事件 → 修复 → 重放摘要一致 → 转正 golden。
 3. 每个里程碑更新本文件与 `PROGRESS.md`。
 
 ## 6. 坑
