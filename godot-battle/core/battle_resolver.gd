@@ -83,6 +83,22 @@ func _is_valid_intent(actor: BattleUnitState, intent: BattleIntent) -> bool:
 				return false
 			var attack_target := state.get_unit(intent.target_ids[0])
 			return attack_target != null and attack_target.is_alive() and attack_target.side != actor.side
+		BattleTypes.IntentKind.SKILL:
+			var skill := content.get_skill(intent.skill_id)
+			if skill == null or not actor.data.skills.has(skill.id):
+				return false
+			if actor.mp < skill.mp_cost:
+				return false
+			if skill.target_type == SkillData.TargetType.SELF:
+				return true
+			if intent.target_ids.size() != 1:
+				return false
+			var skill_target := state.get_unit(intent.target_ids[0])
+			if skill_target == null or not skill_target.is_alive():
+				return false
+			if skill.target_type == SkillData.TargetType.SINGLE_ALLY or skill.target_type == SkillData.TargetType.ALL_ALLIES:
+				return skill_target.side == actor.side
+			return skill_target.side != actor.side
 		BattleTypes.IntentKind.DEFEND:
 			return true
 		_:
@@ -114,6 +130,8 @@ func _execute_intent(intent: BattleIntent) -> void:
 	match intent.kind:
 		BattleTypes.IntentKind.ATTACK:
 			_execute_attack(actor, intent)
+		BattleTypes.IntentKind.SKILL:
+			_execute_skill(actor, intent)
 		BattleTypes.IntentKind.DEFEND:
 			_execute_defend(actor)
 		_:
@@ -221,3 +239,104 @@ func _finish_round() -> void:
 func _emit(event_type: StringName, source_id: StringName, target_ids: Array, data: Dictionary = {}) -> void:
 	_seq += 1
 	events.append(BattleEvent.make(_seq, state.round, event_type, source_id, target_ids, data))
+
+func _execute_skill(actor: BattleUnitState, intent: BattleIntent) -> void:
+	var skill := content.get_skill(intent.skill_id)
+	if skill == null or actor.mp < skill.mp_cost:
+		_emit(&"intent_rejected", actor.id, [], {"reason": "mp"})
+		_execute_defend(actor)
+		return
+	var targets := _resolve_targets(actor, intent, skill)
+	if targets.is_empty():
+		_emit(&"action_skipped", actor.id, [], {"reason": "no_target"})
+		return
+	var target_ids: Array[StringName] = []
+	for target in targets:
+		target_ids.append(target.id)
+	_emit(&"action_start", actor.id, target_ids, {"kind": "skill", "skill_id": String(skill.id)})
+	if skill.mp_cost > 0:
+		var mp_before := actor.mp
+		actor.mp = maxi(0, actor.mp - skill.mp_cost)
+		_emit(&"mp_change", actor.id, [actor.id], {
+			"amount": mp_before - actor.mp,
+			"mp_before": mp_before,
+			"mp_after": actor.mp,
+			"reason": "skill",
+			"skill_id": String(skill.id),
+		})
+	for effect in skill.effects:
+		for target in targets:
+			_apply_effect(actor, target, effect, skill.id)
+
+func _resolve_targets(actor: BattleUnitState, intent: BattleIntent, skill: SkillData) -> Array[BattleUnitState]:
+	var result: Array[BattleUnitState] = []
+	if skill.target_type == SkillData.TargetType.SELF:
+		result.append(actor)
+		return result
+	var candidates: Array[BattleUnitState]
+	if skill.target_type == SkillData.TargetType.SINGLE_ENEMY or skill.target_type == SkillData.TargetType.ALL_ENEMIES:
+		candidates = state.living_enemies_of(actor)
+	else:
+		candidates = state.living_allies_of(actor)
+	if candidates.is_empty():
+		return result
+	var primary: BattleUnitState = null
+	if not intent.target_ids.is_empty():
+		var candidate := state.get_unit(intent.target_ids[0])
+		if candidate != null and candidate.is_alive() and candidates.has(candidate):
+			primary = candidate
+	if primary == null:
+		primary = _lowest_hp(candidates)
+	if skill.target_type == SkillData.TargetType.SINGLE_ENEMY or skill.target_type == SkillData.TargetType.SINGLE_ALLY:
+		result.append(primary)
+		return result
+	return _nearest_targets(primary, candidates, skill.max_targets)
+
+func _lowest_hp(candidates: Array[BattleUnitState]) -> BattleUnitState:
+	var sorted := candidates.duplicate()
+	sorted.sort_custom(func(a, b):
+		var pa := float(a.hp) / float(a.data.max_hp)
+		var pb := float(b.hp) / float(b.data.max_hp)
+		if is_equal_approx(pa, pb):
+			return String(a.id) < String(b.id)
+		return pa < pb)
+	return sorted[0]
+
+func _nearest_targets(primary: BattleUnitState, candidates: Array[BattleUnitState], max_targets: int) -> Array[BattleUnitState]:
+	var sorted := candidates.duplicate()
+	sorted.sort_custom(func(a, b):
+		var da := absi(a.slot - primary.slot)
+		var db := absi(b.slot - primary.slot)
+		if da == db:
+			return String(a.id) < String(b.id)
+		return da < db)
+	var result: Array[BattleUnitState] = []
+	for index in mini(max_targets, sorted.size()):
+		result.append(sorted[index])
+	return result
+
+func _apply_effect(source: BattleUnitState, target: BattleUnitState, effect: BattleEffect, source_type: StringName) -> void:
+	match effect.kind:
+		BattleEffect.Kind.DAMAGE:
+			if not target.is_alive():
+				return
+			var damage := _compute_damage(source, target, effect.damage_type, effect.power)
+			_apply_damage(source.id, target, int(damage["amount"]), bool(damage["crit"]), source_type)
+		BattleEffect.Kind.HEAL:
+			if not target.is_alive():
+				return
+			_apply_heal(source, target, effect)
+
+func _apply_heal(source: BattleUnitState, target: BattleUnitState, effect: BattleEffect) -> void:
+	var amount := 0
+	if effect.flat_amount > 0:
+		amount = effect.flat_amount
+	else:
+		amount = roundi(source.magic_value() * effect.power * rng.randf_range(0.95, 1.05))
+	var hp_before := target.hp
+	target.hp = mini(target.data.max_hp, target.hp + amount)
+	_emit(&"heal", source.id, [target.id], {
+		"amount": target.hp - hp_before,
+		"hp_before": hp_before,
+		"hp_after": target.hp,
+	})
