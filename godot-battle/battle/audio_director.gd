@@ -6,9 +6,6 @@ extends Node
 
 const MIX_RATE := 22050
 const POOL_SIZE := 8
-const SFX_NAMES: Array[StringName] = [
-	&"hit", &"slash", &"cast", &"heal", &"status", &"death", &"victory", &"defeat", &"click",
-]
 
 var _streams: Dictionary = {}
 var _players: Array[AudioStreamPlayer] = []

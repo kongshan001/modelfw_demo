@@ -23,7 +23,7 @@ func start(p_seed: int = 20261024) -> void:
 	_script_state = encounter.script_data
 	if _script_state != null:
 		_script_state.reset()
-	director.setup(content, _script_state)
+	director.setup(content, _script_state, encounter, skip_story)
 	engine = BattleEngine.new(encounter, content, seed_value)
 	_result_shown = false
 	sequencer.ctx = context

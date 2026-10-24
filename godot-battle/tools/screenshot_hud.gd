@@ -19,11 +19,10 @@ func _initialize() -> void:
 	await process_frame
 	var hud: BattleHUD = scene.get_node("UILayer/BattleHUD")
 	var session: BattleSession = scene.get_node("BattleSession")
-	var phase_started := hud.is_collecting()
-	session.command_phase_started.connect(func() -> void: phase_started = true)
 
 	await create_timer(WARMUP).timeout
-	if not await _wait_until(func() -> bool: return phase_started and hud.is_collecting(), 6.0):
+	# 轮询 HUD 的持久状态；command_phase_started 可能早于信号连接发出。
+	if not await _wait_until(func() -> bool: return hud.is_collecting(), 6.0):
 		printerr("SCREENSHOT_HUD_FAIL: command phase did not start")
 		quit(1)
 		return

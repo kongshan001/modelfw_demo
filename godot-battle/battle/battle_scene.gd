@@ -1,6 +1,7 @@
 extends Node2D
 
-# 工具（冒烟/截图）在 add_child 前设为 true，即可跳过手动指令阶段 / 开场剧情。
+# 工具（冒烟/截图）在 add_child 前设为 true，即可跳过手动指令阶段 / 全部剧情
+# （开场对白、首杀对白、结局对白）。
 var start_auto_mode := false
 var skip_story := false
 
@@ -65,6 +66,7 @@ func _ready() -> void:
 
 	var dialogue := DialogueBox.new()
 	dialogue.name = "DialogueBox"
+	dialogue.active_changed.connect(hud.set_story_active)
 	ui_layer.add_child(dialogue)
 	ctx.dialogue = dialogue
 

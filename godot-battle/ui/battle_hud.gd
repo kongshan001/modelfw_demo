@@ -92,6 +92,11 @@ func refresh_all(_state: BattleState) -> void:
 	if _collecting and _ally_index < _allies.size():
 		_refresh_ally_info(_allies[_ally_index])
 
+func set_story_active(active: bool) -> void:
+	# 对白期间隐藏左下日志，避免透过电影黑边产生重影；播放控件保持可用。
+	if _log != null:
+		_log.visible = not active
+
 func collect_intents(p_engine: BattleEngine, p_content: ContentDB) -> Array[BattleIntent]:
 	last_intents = []
 	_intents = []

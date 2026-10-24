@@ -8,6 +8,8 @@ const TYPE_CPS := 30.0
 const BAR_TOP_HEIGHT := 72.0
 const BAR_BOTTOM_HEIGHT := 210.0
 
+signal active_changed(active: bool)
+
 var auto_advance_seconds := 1.25
 var clock_scale := 1.0
 
@@ -25,7 +27,9 @@ var _fade_tween: Tween
 
 func _init() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	# 全屏覆盖层不吞输入，播放控件的倍速/跳过按钮在对白期间仍可点击；
+	# 仅对白面板本身接收点击推进。
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	_build()
 
@@ -47,7 +51,7 @@ func _build() -> void:
 	add_child(_bar_bottom)
 
 	_panel = PanelContainer.new()
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_panel.anchor_left = 0.5
 	_panel.anchor_right = 0.5
 	_panel.anchor_top = 1.0
@@ -68,13 +72,16 @@ func _build() -> void:
 	style.shadow_color = Color(0, 0, 0, 0.55)
 	style.shadow_size = 10
 	_panel.add_theme_stylebox_override("panel", style)
+	_panel.gui_input.connect(_on_panel_gui_input)
 	add_child(_panel)
 
 	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 4)
 	_panel.add_child(box)
 
 	_label = Label.new()
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.add_theme_font_override("font", FontUtil.cjk_font())
 	_label.add_theme_font_size_override("font_size", 34)
 	_label.add_theme_color_override("font_color", Color(0.97, 0.95, 0.91))
@@ -87,6 +94,7 @@ func _build() -> void:
 	box.add_child(_label)
 
 	_hint = Label.new()
+	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint.text = "点击 / 空格 继续"
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_hint.add_theme_font_override("font", FontUtil.cjk_font())
@@ -103,6 +111,7 @@ func play_lines(lines: Array) -> void:
 	visible = true
 	_advance_requested = false
 	_skip_typing = false
+	active_changed.emit(true)
 	_fade_in()
 	for line in lines:
 		if not _busy:
@@ -128,6 +137,7 @@ func advance() -> void:
 		_advance_requested = true
 
 func hide_now() -> void:
+	var was_busy := _busy
 	_busy = false
 	_typing = false
 	_skip_typing = false
@@ -137,6 +147,8 @@ func hide_now() -> void:
 		_label.text = ""
 		_label.visible_characters = 0
 	visible = false
+	if was_busy:
+		active_changed.emit(false)
 
 # ---------------------------------------------------------------- 内部
 
@@ -178,12 +190,12 @@ func _fade_in() -> void:
 	_fade_tween.parallel().tween_property(_bar_bottom, "modulate:a", 1.0, 0.18)
 	_fade_tween.parallel().tween_property(_panel, "modulate:a", 1.0, 0.18)
 
-func _gui_input(event: InputEvent) -> void:
+func _on_panel_gui_input(event: InputEvent) -> void:
 	if not _busy:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		advance()
-		accept_event()
+		_panel.accept_event()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _busy:
