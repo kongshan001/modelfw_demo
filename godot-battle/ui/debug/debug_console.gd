@@ -143,6 +143,9 @@ func _apply_op(op: Dictionary) -> String:
 	var engine := _engine()
 	if engine == null:
 		return "没有活动战斗"
+	var sequencer := _sequencer()
+	if sequencer != null and sequencer.is_playing():
+		return "演出播放中，暂不可修改战斗状态；请等待指令阶段或先执行 skip"
 	var unit_id := StringName(op.get("unit_id", ""))
 	if engine.state.get_unit(unit_id) == null:
 		return "未知单位：" + String(unit_id)

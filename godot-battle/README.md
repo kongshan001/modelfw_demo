@@ -51,7 +51,7 @@ godot --headless --path godot-battle --editor --quit
 | `F7` | 播放一个命令（未开单步时会自动开启）；回放模式同样可用。 |
 | `ESC` | 控制台打开时先关控制台；回放模式下退出回放。 |
 
-指令阶段每名存活我方有 25 秒倒计时，超时会自动为剩余我方选择默认意图。逃跑是独立的全队按钮，选择逃跑会丢弃已下达的指令。
+指令阶段共用一条 25 秒倒计时（从阶段开始计时，不是每名角色各自计时）；超时会自动为尚未下达指令的我方选择默认意图，已下达的指令保留。逃跑是独立的全队按钮，选择逃跑会丢弃已下达的指令。
 
 ## 测试与验收命令
 
@@ -61,17 +61,17 @@ godot --headless --path godot-battle --editor --quit
 # 1. 核心门禁：自动导入 + 全量单元/集成/黄金/fuzz 测试
 bash godot-battle/tools/run_tests.sh; echo "exit=$?"
 
-# 2. 表现层自动战斗冒烟（headless）
-godot --headless --path godot-battle -s tools/smoke_presentation.gd; echo "exit=$?"
+# 2. 表现层自动战斗冒烟（headless；门禁同时校验引擎/脚本错误）
+bash godot-battle/tools/smoke_gate.sh smoke_presentation.gd --headless; echo "exit=$?"
 
 # 3. HUD 真实鼠标输入，完整 3v4 战斗到结算面板（需要窗口）
-godot --path godot-battle --resolution 1920x1080 -s tools/smoke_hud_input.gd; echo "exit=$?"
+bash godot-battle/tools/smoke_gate.sh smoke_hud_input.gd --resolution 1920x1080; echo "exit=$?"
 
 # 4. 对白与胜利面板剧情探针（headless）
-godot --headless --path godot-battle -s tools/probe_story.gd; echo "exit=$?"
+bash godot-battle/tools/smoke_gate.sh probe_story.gd --headless; echo "exit=$?"
 
 # 5. 调试工具冒烟：dump/verify/篡改快照/回放模式（headless）
-godot --headless --path godot-battle -s tools/smoke_debug.gd; echo "exit=$?"
+bash godot-battle/tools/smoke_gate.sh smoke_debug.gd --headless; echo "exit=$?"
 
 # 6. 黄金回放 CLI 严格校验
 godot --headless --path godot-battle -s tools/replay.gd -- --file tests/golden/golden_attack.json --strict-content; echo "exit=$?"
@@ -83,6 +83,15 @@ godot --path godot-battle --resolution 1920x1080 -s tools/screenshot_story.gd; e
 godot --path godot-battle --resolution 1920x1080 -s tools/screenshot_debug.gd; echo "exit=$?"
 ```
 
+聚焦调试单个探针时，可绕过门禁直接运行（不会因 `ERROR:` 行失败）：
+
+```bash
+godot --headless --path godot-battle -s tools/smoke_presentation.gd
+godot --path godot-battle --resolution 1920x1080 -s tools/smoke_hud_input.gd
+godot --headless --path godot-battle -s tools/probe_story.gd
+godot --headless --path godot-battle -s tools/smoke_debug.gd
+```
+
 预期关键输出：
 
 - `RESULT: 792 assertions, 0 failures`
@@ -90,6 +99,7 @@ godot --path godot-battle --resolution 1920x1080 -s tools/screenshot_debug.gd; e
 - `HUD_INPUT_OK`
 - `STORY_PROBE_OK`
 - `DEBUG_SMOKE_OK`
+- 四个烟测/探针各输出一行 `SMOKE_OK <script>` 且 `exit=0`
 - `REPLAY_OK`
 - 四个截图工具 exit 0，输出 `SCREENSHOT: <绝对路径>`。
 
@@ -146,7 +156,7 @@ godot-battle/
 ## 已知限制
 
 1. **手动验收待用户签字**：自动探针已覆盖完整输入链路，但“真人从打开游戏到打完一局并检查对白/倍速/跳过/F1/F3/F6/F7”的清单尚未由用户亲自执行；见 `docs/PROGRESS.md` 末尾。
-2. **退出期引擎告警**：部分 headless/强制退出工具会打印 `ObjectDB instances leaked at exit` 和 `resources still in use at exit`；退出码为 0，无 `SCRIPT ERROR`，不影响门禁，但不是“完全干净退出”。这是既有已知现象。
+2. **退出期引擎告警**：部分 headless/强制退出工具会打印 `ObjectDB instances leaked at exit` 和 `resources still in use at exit`；退出码为 0，无 `SCRIPT ERROR`，不影响门禁，但不是“完全干净退出”。这是既有已知现象。`tools/smoke_gate.sh` 只豁免这条退出期 `ERROR: N resources still in use at exit` 诊断，其他 `ERROR:`（含 `push_error`）仍按失败处理。
 3. **音频**：当前遭遇战没有配置 BGM（`bgm_path` 为空），只有程序化短音效；没有全局静音开关。
 4. **AI 美术未接入**：程序化 Q 版细节密度低于成品立绘；后续按 `assets/art/README.md` 接入 AI 图并复核脚底对齐/信息条遮挡即可回退。
 5. **窗口与截图分辨率**：本机窗口受显示器限制可能只有 1440×762 或 1354×762；截图工具使用 1920×1080 的 `SubViewport` 保证输出规格。HUD 输入冒烟按 1920×1080 逻辑坐标进行真实点击映射。

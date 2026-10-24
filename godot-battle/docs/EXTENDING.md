@@ -221,6 +221,8 @@ bash godot-battle/tools/run_tests.sh; echo "exit=$?"
 - `assets/` 美术、脚本和 `.md` 文档不会改变内容 hash；
 - 当前黄金记录的内容 hash 为 `sha256:4381648d...ef25975`（完整值见 `docs/DEBUGGING.md`）。
 
+> 注意：内容 hash 只覆盖 `.tres` 中实际序列化的字段。取自脚本默认值的字段（例如 `ItemData.max_uses = 3`、`EncounterData.max_rounds = 30`）如果没有在 `.tres` 里显式写出，修改脚本默认值不会改变内容 hash，但行为可能变化，严格黄金校验也不会因此提示。修改这类默认值后，必须重建内容/黄金，或在变更说明中记录并重新验证黄金；需要让 hash 覆盖该字段时，在对应 `.tres` 中显式序列化它。
+
 ### 黄金回放
 
 内容变化后重建：
