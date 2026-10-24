@@ -30,10 +30,25 @@ func resolve_round(player_intents: Array[BattleIntent]) -> Array[BattleEvent]:
 	_check_end()
 	if state.is_over():
 		return events
-	var intents := _validate_player_intents(player_intents)
+	var flee_requested := _has_flee_intent(player_intents)
+	var intents := _validate_player_intents(player_intents, flee_requested)
 	for enemy in state.living(BattleTypes.Side.ENEMY):
 		intents[enemy.id] = _decide_ai(enemy)
-	var actions := _collect_actions(intents)
+	var actions: Array[BattleIntent] = []
+	if flee_requested:
+		var chance := compute_flee_chance()
+		_emit(&"flee_attempt", &"party", [], {"chance": chance})
+		if rng.chance(chance):
+			state.outcome = BattleTypes.Outcome.ESCAPED
+			_emit(&"flee_result", &"party", [], {"success": true})
+			_emit(&"battle_end", &"", [], {"outcome": state.outcome})
+			return events
+		_emit(&"flee_result", &"party", [], {"success": false})
+		for enemy in state.living(BattleTypes.Side.ENEMY):
+			if intents.has(enemy.id):
+				actions.append(intents[enemy.id])
+	else:
+		actions = _collect_actions(intents)
 	actions.sort_custom(_compare_actions)
 	for intent in actions:
 		if state.is_over():
@@ -63,7 +78,7 @@ func _ordered_living() -> Array[BattleUnitState]:
 		return sa > sb)
 	return living
 
-func _validate_player_intents(player_intents: Array[BattleIntent]) -> Dictionary:
+func _validate_player_intents(player_intents: Array[BattleIntent], flee_requested: bool) -> Dictionary:
 	var result := {}
 	for intent in player_intents:
 		var actor := state.get_unit(intent.actor_id)
@@ -74,10 +89,11 @@ func _validate_player_intents(player_intents: Array[BattleIntent]) -> Dictionary
 		else:
 			_emit(&"intent_rejected", actor.id, intent.target_ids, {"reason": "invalid"})
 			result[actor.id] = BattleIntent.make(actor.id, BattleTypes.IntentKind.DEFEND)
-	for ally in state.living(BattleTypes.Side.ALLY):
-		if not result.has(ally.id):
-			_emit(&"intent_rejected", ally.id, [], {"reason": "missing"})
-			result[ally.id] = BattleIntent.make(ally.id, BattleTypes.IntentKind.DEFEND)
+	if not flee_requested:
+		for ally in state.living(BattleTypes.Side.ALLY):
+			if not result.has(ally.id):
+				_emit(&"intent_rejected", ally.id, [], {"reason": "missing"})
+				result[ally.id] = BattleIntent.make(ally.id, BattleTypes.IntentKind.DEFEND)
 	return result
 
 func _is_valid_intent(actor: BattleUnitState, intent: BattleIntent) -> bool:
@@ -223,8 +239,49 @@ func _decide_ai(actor: BattleUnitState) -> BattleIntent:
 	var targets := state.living_enemies_of(actor)
 	if targets.is_empty():
 		return BattleIntent.make(actor.id, BattleTypes.IntentKind.DEFEND)
-	var target := _pick_ai_target(targets)
-	return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [target.id])
+	var profile := actor.data.ai_profile
+	if profile == &"brute":
+		if not actor.has_status(&"war_cry") and actor.mp >= 15:
+			return _skill_intent(actor, &"war_cry", [actor.id])
+		if targets.size() >= 2 and actor.mp >= 20 and rng.chance(0.6):
+			return _skill_intent(actor, &"ground_split", [_pick_ai_target(targets).id])
+		return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
+	if profile == &"fox":
+		var priority := _priority_allies(targets)
+		var seal_target := _first_unsealed(priority)
+		if seal_target != null and actor.mp >= 25 and rng.chance(0.7):
+			return _skill_intent(actor, &"charm_seal", [seal_target.id])
+		if actor.mp >= 20:
+			return _skill_intent(actor, &"fox_fire", [_pick_ai_target(targets).id])
+		return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
+	if profile == &"poison_melee" and actor.mp >= 0 and rng.chance(0.6):
+		return _skill_intent(actor, &"poison_strike", [_pick_ai_target(targets).id])
+	if not actor.data.skills.is_empty() and actor.mp >= 0 and rng.chance(0.6):
+		var first_skill := StringName(actor.data.skills[0])
+		var skill := content.get_skill(first_skill)
+		if skill != null and actor.mp >= skill.mp_cost:
+			var target_id := actor.id if skill.target_type == SkillData.TargetType.SELF else _pick_ai_target(targets).id
+			return _skill_intent(actor, first_skill, [target_id])
+	return BattleIntent.make(actor.id, BattleTypes.IntentKind.ATTACK, [_pick_ai_target(targets).id])
+
+func _skill_intent(actor: BattleUnitState, skill_id: StringName, target_ids: Array) -> BattleIntent:
+	return BattleIntent.make(actor.id, BattleTypes.IntentKind.SKILL, target_ids, skill_id)
+
+func _priority_allies(candidates: Array[BattleUnitState]) -> Array[BattleUnitState]:
+	var priority: Array[BattleUnitState] = []
+	for wanted in [&"hero_healer", &"hero_mage"]:
+		for candidate in candidates:
+			if candidate.id == wanted:
+				priority.append(candidate)
+	if priority.is_empty():
+		priority.append(_lowest_hp(candidates))
+	return priority
+
+func _first_unsealed(candidates: Array[BattleUnitState]) -> BattleUnitState:
+	for candidate in candidates:
+		if not candidate.has_status(&"sealed"):
+			return candidate
+	return null
 
 func _pick_ai_target(candidates: Array[BattleUnitState]) -> BattleUnitState:
 	if candidates.size() == 1:
@@ -453,6 +510,25 @@ func _restore_mp(source: BattleUnitState, target: BattleUnitState, effect: Battl
 		"mp_after": target.mp,
 		"reason": "item",
 	})
+
+func _has_flee_intent(player_intents: Array[BattleIntent]) -> bool:
+	for intent in player_intents:
+		if intent.kind == BattleTypes.IntentKind.FLEE:
+			return true
+	return false
+
+func compute_flee_chance() -> float:
+	var ally_average := _average_speed(state.living(BattleTypes.Side.ALLY))
+	var enemy_average := _average_speed(state.living(BattleTypes.Side.ENEMY))
+	return clampf(0.5 + (ally_average - enemy_average) / 10.0 * 0.08, 0.5, 0.9)
+
+func _average_speed(units: Array[BattleUnitState]) -> float:
+	if units.is_empty():
+		return 0.0
+	var total := 0.0
+	for unit in units:
+		total += float(_speed_rolls.get(unit.id, unit.data.speed))
+	return total / float(units.size())
 
 func _execute_item(actor: BattleUnitState, intent: BattleIntent) -> void:
 	var item := content.get_item(intent.item_id)
