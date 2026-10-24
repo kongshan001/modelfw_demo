@@ -31,6 +31,7 @@ var _target_item: StringName = &""
 var _timeout_rng := RandomNumberGenerator.new()
 var _built := false
 
+signal phase_submitted(intents: Array)
 signal _intent_ready(intent: BattleIntent)
 
 var _hud_theme: Theme
@@ -50,6 +51,7 @@ var _chip_active: StyleBoxFlat
 var _log: BattleLog
 var _speed_button: Button
 var _skip_button: Button
+var _flee_button: Button
 var _selector := TargetSelector.new()
 
 func setup(p_ctx: BattleContext) -> void:
@@ -63,6 +65,9 @@ func setup(p_ctx: BattleContext) -> void:
 	_build_theme()
 	_build_ui()
 	_selector.target_chosen.connect(_on_target_chosen)
+	if context.sequencer != null and not context.sequencer.idle.is_connected(_on_sequencer_idle):
+		context.sequencer.idle.connect(_on_sequencer_idle)
+	_refresh_speed_label()
 	set_process(true)
 	log_system("战斗开始，等待指令…", MUTED)
 
@@ -77,6 +82,8 @@ func get_time_left() -> float:
 func set_command_visible(value: bool) -> void:
 	if _command_panel != null:
 		_command_panel.visible = value
+	if _flee_button != null:
+		_flee_button.visible = value
 	if not value:
 		_exit_target_mode()
 		_mode = MenuMode.IDLE
@@ -100,6 +107,8 @@ func collect_intents(p_engine: BattleEngine, p_content: ContentDB) -> Array[Batt
 	_time_left = command_time
 	_update_countdown()
 	_command_panel.visible = true
+	_flee_button.visible = true
+	_reset_order_bar()
 
 	while _ally_index < _allies.size():
 		var ally := _allies[_ally_index]
@@ -126,7 +135,9 @@ func collect_intents(p_engine: BattleEngine, p_content: ContentDB) -> Array[Batt
 	_exit_target_mode()
 	_mode = MenuMode.IDLE
 	_command_panel.visible = false
+	_flee_button.visible = false
 	last_intents = _intents.duplicate()
+	phase_submitted.emit(last_intents)
 	return _intents
 
 # 供工具/截图脚本以程序化方式完成指令；与按钮走同一条路径。
@@ -195,6 +206,15 @@ func toggle_speed() -> void:
 		return
 	var speed := 1.0 if context.sequencer.playback_speed >= 1.5 else 2.0
 	context.sequencer.playback_speed = speed
+	_refresh_speed_label()
+
+func _on_sequencer_idle() -> void:
+	_refresh_speed_label()
+
+func _refresh_speed_label() -> void:
+	if _speed_button == null or context == null or context.sequencer == null:
+		return
+	var speed := context.sequencer.playback_speed
 	_speed_button.text = "倍速 %dx" % int(speed)
 
 # ---------------------------------------------------------------- 事件 → 日志 / 顺序条
@@ -215,6 +235,15 @@ func highlight_actor(unit_id: StringName) -> void:
 		if chip == null or not is_instance_valid(chip):
 			continue
 		chip.add_theme_stylebox_override("panel", _chip_active if key == unit_id else _chip_normal)
+
+func _reset_order_bar() -> void:
+	if _order_title != null:
+		_order_title.text = "下一回合 · 出手顺序待定"
+	for key in _order_chips:
+		var chip: PanelContainer = _order_chips[key]
+		if chip == null or not is_instance_valid(chip):
+			continue
+		chip.add_theme_stylebox_override("panel", _chip_normal)
 
 func log_event(event: BattleEvent) -> void:
 	if _log == null or event == null:
@@ -249,7 +278,11 @@ func log_event(event: BattleEvent) -> void:
 		&"heal":
 			_log.append_line(prefix + "[color=#6fe39a]%s 恢复 %d 点生命[/color]" % [targets, int(event.data.get("amount", 0))])
 		&"status_apply", &"status_refresh", &"status_expire", &"status_resist":
-			var status_name := _status_name(StringName(event.data.get("status_id", "")))
+			var status_id := StringName(event.data.get("status_id", ""))
+			# 防御动作已由 action_start(kind=defend) 记录，跳过随后的状态行，避免三连重复。
+			if status_id == &"defending" and (event.type == &"status_apply" or event.type == &"status_refresh"):
+				return
+			var status_name := _status_name(status_id)
 			match event.type:
 				&"status_apply":
 					_log.append_line(prefix + "[color=#c78dff]%s 陷入 [b]%s[/b][/color]" % [targets, status_name])
@@ -262,7 +295,8 @@ func log_event(event: BattleEvent) -> void:
 		&"death":
 			_log.append_line(prefix + "[color=#ff6b5e]%s 倒下了[/color]" % targets)
 		&"defend":
-			_log.append_line(prefix + "[color=#9ad0ff]%s 摆出防御姿态[/color]" % actor)
+			# 与 action_start(kind=defend) 重复，不单独记录。
+			pass
 		&"item_used":
 			var item_name := _item_name(StringName(event.data.get("item_id", "")))
 			_log.append_line(prefix + "[color=#8fe3b0]%s 对 %s 使用了 %s（剩余 %d）[/color]" % [actor, targets, item_name, int(event.data.get("remaining", 0))])
@@ -330,6 +364,7 @@ func _submit(intent: BattleIntent) -> void:
 	_intent_ready.emit(intent)
 
 func _process(delta: float) -> void:
+	_refresh_control_states()
 	if not _collecting or _timed_out:
 		return
 	_time_left = maxf(0.0, _time_left - delta)
@@ -433,12 +468,18 @@ func _on_speed_pressed() -> void:
 	toggle_speed()
 
 func _on_skip_pressed() -> void:
-	if context == null or context.sequencer == null:
+	if context == null or context.sequencer == null or not context.sequencer.is_playing():
 		return
 	log_system("跳过本回合", MUTED)
 	await context.sequencer.skip_all()
 	if context.session != null and context.session.engine != null:
 		context.apply_snapshot(context.session.engine.state)
+
+func _refresh_control_states() -> void:
+	if _skip_button != null:
+		_skip_button.disabled = _collecting or context == null or context.sequencer == null or not context.sequencer.is_playing()
+	if _flee_button != null:
+		_flee_button.disabled = not _input_active() or _mode != MenuMode.ROOT
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _collecting or not _input_active():
@@ -529,6 +570,7 @@ func _build_ui() -> void:
 	_build_order_panel()
 	_build_playback_panel()
 	_build_command_panel()
+	_build_flee_button()
 	_build_log_panel()
 
 func _build_order_panel() -> void:
@@ -650,10 +692,22 @@ func _build_command_panel() -> void:
 	_body.add_theme_constant_override("separation", 8)
 	box.add_child(_body)
 
+func _build_flee_button() -> void:
+	# 规格 6.4：逃跑是独立的整队按钮，不放在指令面板内。
+	_flee_button = _new_button("逃跑", true)
+	_flee_button.name = "PartyFleeButton"
+	_flee_button.position = Vector2(1368, 552)
+	_flee_button.custom_minimum_size = Vector2(180, 46)
+	_flee_button.size = Vector2(180, 46)
+	_flee_button.tooltip_text = "全队逃跑（丢弃已下指令）"
+	_flee_button.visible = false
+	_flee_button.pressed.connect(_on_flee_pressed)
+	add_child(_flee_button)
+
 func _build_log_panel() -> void:
 	_log = BattleLog.new()
 	_log.name = "BattleLog"
-	_log.position = Vector2(20, 786)
+	_log.position = Vector2(20, 820)
 	_log.add_theme_stylebox_override("panel", _make_panel_style())
 	add_child(_log)
 
@@ -722,18 +776,10 @@ func _show_root(ally: BattleUnitState) -> void:
 	defend.pressed.connect(select_defend)
 	grid.add_child(defend)
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	_body.add_child(row)
-
-	var flee := _new_button("逃跑", true)
-	flee.pressed.connect(_on_flee_pressed)
-	row.add_child(flee)
-
 	_back_button = _new_button("返回")
 	_back_button.disabled = _ally_index <= 0
 	_back_button.pressed.connect(go_back)
-	row.add_child(_back_button)
+	_body.add_child(_back_button)
 
 func _show_skills(ally: BattleUnitState) -> void:
 	if not _input_active() or ally == null:

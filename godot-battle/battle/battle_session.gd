@@ -35,7 +35,7 @@ func start(p_seed: int = 20261024) -> void:
 
 func _build_units() -> void:
 	var enemy_positions := [Vector2(330, 700), Vector2(500, 740), Vector2(670, 780), Vector2(840, 820)]
-	var ally_positions := [Vector2(1500, 790), Vector2(1330, 760), Vector2(1160, 730)]
+	var ally_positions := [Vector2(1280, 760), Vector2(1110, 730), Vector2(940, 700)]
 	for index in engine.state.units.size():
 		var unit := engine.state.units[index]
 		var view := UnitView.new()

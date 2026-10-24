@@ -18,7 +18,6 @@ func _initialize() -> void:
 	await process_frame
 	var hud: BattleHUD = scene.get_node("UILayer/BattleHUD")
 	var session: BattleSession = scene.get_node("BattleSession")
-	var sequencer: BattleSequencer = scene.get_node("BattleSequencer")
 
 	await create_timer(WARMUP).timeout
 	if not await _wait_until(func() -> bool: return hud.is_collecting(), 6.0):
@@ -46,7 +45,7 @@ func _initialize() -> void:
 		printerr("SCREENSHOT_HUD_FAIL: first command phase did not finish")
 		quit(1)
 		return
-	sequencer.playback_speed = 2.0
+	hud.toggle_speed()
 
 	if not await _wait_until(func() -> bool: return hud.is_collecting(), 30.0):
 		printerr("SCREENSHOT_HUD_FAIL: second command phase did not start")

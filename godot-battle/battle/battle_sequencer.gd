@@ -74,6 +74,9 @@ func _restore_views() -> void:
 func is_skipping() -> bool:
 	return _skip
 
+func is_playing() -> bool:
+	return _playing
+
 func set_step_mode(enabled: bool) -> void:
 	_step_mode = enabled
 

@@ -6,7 +6,7 @@ extends PanelContainer
 var _label: RichTextLabel
 
 func _init() -> void:
-	custom_minimum_size = Vector2(560, 270)
+	custom_minimum_size = Vector2(600, 220)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 0)
 	add_child(box)
@@ -17,7 +17,7 @@ func _init() -> void:
 	_label.scroll_active = false
 	_label.selection_enabled = false
 	_label.fit_content = false
-	_label.custom_minimum_size = Vector2(0, 236)
+	_label.custom_minimum_size = Vector2(0, 186)
 	_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_label.add_theme_font_override("normal_font", FontUtil.cjk_font())
 	_label.add_theme_font_override("bold_font", FontUtil.cjk_font())

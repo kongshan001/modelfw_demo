@@ -53,10 +53,19 @@ func _initialize() -> void:
 		return
 
 	await _skip_playback(sequencer)
+	if not await _wait_until(func() -> bool: return hud._speed_button.text == "倍速 1x", 3.0):
+		_fail("speed label did not resync after skip: %s" % hud._speed_button.text)
+		return
 
 	# ---- 第二回合：倒计时超时自动普攻 ----
 	if not await _wait_until(func() -> bool: return hud.is_collecting(), 10.0):
 		_fail("phase 2 did not start")
+		return
+	if hud._order_title.text != "下一回合 · 出手顺序待定":
+		_fail("order bar was not reset at command start: %s" % hud._order_title.text)
+		return
+	if not hud._skip_button.disabled:
+		_fail("skip button must be disabled during command phase")
 		return
 	hud._time_left = 0.05
 	if not await _wait_until(func() -> bool: return not hud.is_collecting(), 3.0):
