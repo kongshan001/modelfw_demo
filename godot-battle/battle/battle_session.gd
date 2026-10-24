@@ -137,7 +137,8 @@ func _show_replay_label() -> void:
 	_replay_label = panel
 
 func _build_units() -> void:
-	var enemy_positions := [Vector2(180, 700), Vector2(350, 740), Vector2(500, 780), Vector2(700, 820)]
+	# 妖将右移 40px，与妖兵乙的毒矛头拉开；左拳同时收进自身命中区。
+	var enemy_positions := [Vector2(180, 700), Vector2(350, 740), Vector2(540, 780), Vector2(700, 820)]
 	# 剑客贴指令面板左侧（命中区右缘 1355，面板 1368，留 13px）；
 	# 法师/医师向左展开，避免法球与右尾落入相邻命中区。
 	var ally_positions := [Vector2(1290, 760), Vector2(1120, 730), Vector2(940, 700)]

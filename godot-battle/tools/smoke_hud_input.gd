@@ -297,9 +297,9 @@ func _check_layout() -> void:
 	print("HUD_INPUT: 7 unit hit rects non-overlapping and clear of HUD panels/info bands")
 
 func _check_appendage_points(views: Array) -> bool:
-	# 附属件探针：法球 / 双尾尖 / 斧头必须落在自身命中区内，且不落入任何邻居命中区。
-	# 仅做矩形探针会漏掉“命中区有缝但装饰件越界”的情况。
-	for required in [&"hero_mage", &"boss_fox", &"boss_brute"]:
+	# 附属件探针：法球 / 双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头必须落在自身命中区内，
+	# 且不落入任何邻居命中区。仅做矩形探针会漏掉“命中区有缝但装饰件越界”的情况。
+	for required in [&"hero_mage", &"boss_fox", &"boss_brute", &"mob_b"]:
 		var required_view := _view_of(required)
 		if required_view == null or required_view.appendage_points().is_empty():
 			_fail("missing appendage points for %s" % required)
@@ -308,8 +308,9 @@ func _check_appendage_points(views: Array) -> bool:
 	for value in views:
 		var view: UnitView = value
 		var owner_rect := view.hit_rect()
+		var scale_value := view.visual_scale()
 		for local in view.appendage_points():
-			var world := view.to_global(local)
+			var world := view.to_global(local * scale_value)
 			if not owner_rect.has_point(world):
 				_fail("appendage point %s of %s is outside its own hit rect %s (world %s)" % [str(local), view.unit_id, str(owner_rect), str(world)])
 				return false

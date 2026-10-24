@@ -16,6 +16,9 @@ const NAME_Y := -360.0
 const STATUS_Y := -384.0
 const CLICK_SIZE := Vector2(130, 320)
 const CLICK_CENTER := Vector2(0, -170)
+# 妖兵乙的毒矛头在局部 +111，命中区向右加宽以覆盖该附属件（左缘仍为 -65）。
+const MOB_B_CLICK_SIZE := Vector2(173, 320)
+const MOB_B_CLICK_CENTER := Vector2(21.5, -170)
 const BUBBLE_GAP := 26.0
 
 const OUTLINE := Color(0.105, 0.072, 0.125, 0.96)
@@ -46,6 +49,8 @@ var _status_row: HBoxContainer
 var _selection: Polygon2D
 var _target_arrow: Polygon2D
 var _click_area: Area2D
+var _click_shape: CollisionShape2D
+var _click_rect: RectangleShape2D
 var _idle_tween: Tween
 var _body_color := Color(0.35, 0.6, 1.0)
 var _visual_rng := RandomNumberGenerator.new()
@@ -72,6 +77,7 @@ func setup(unit: BattleUnitState, home: Vector2, ally: bool) -> void:
 	if _info_root != null:
 		_info_root.position = Vector2(0, _info_offset_y)
 	_name_label.text = unit.data.display_name
+	_apply_click_bounds()
 	_apply_visual_override()
 	_apply_shadow_scale()
 	queue_redraw()
@@ -253,8 +259,9 @@ func _draw_swordsman() -> void:
 	# 长剑
 	_line(Vector2(38, -102), Vector2(52, -122), Color(0.34, 0.21, 0.14), 8.0)
 	_line(Vector2(39, -118), Vector2(64, -109), GOLD_DARK, 5.0)
-	_poly(PackedVector2Array([Vector2(47, -121), Vector2(59, -126), Vector2(116, -300)]), Color(0.83, 0.89, 0.97), 3.0)
-	draw_line(Vector2(53, -129), Vector2(108, -292), Color(1, 1, 1, 0.9), 2.2, true)
+	# 剑尖略收（116→104），避免剑刃探入右上角「逃跑」按钮。
+	_poly(PackedVector2Array([Vector2(47, -121), Vector2(59, -126), Vector2(104, -300)]), Color(0.83, 0.89, 0.97), 3.0)
+	draw_line(Vector2(53, -129), Vector2(96, -292), Color(1, 1, 1, 0.9), 2.2, true)
 	_circle(Vector2(36, -100), 5.0, GOLD, 2.0)
 	draw_line(Vector2(45, -116), Vector2(54, -148), Color(0.82, 0.24, 0.28), 4.0, true)
 	_circle(Vector2(55, -152), 4.0, Color(0.82, 0.24, 0.28), 2.0)
@@ -543,11 +550,11 @@ func _draw_brute() -> void:
 	# 腰带
 	_poly(PackedVector2Array([Vector2(-62, -96), Vector2(62, -96), Vector2(58, -70), Vector2(-58, -70)]), Color(0.24, 0.15, 0.11), 3.0)
 	_poly(PackedVector2Array([Vector2(-10, -92), Vector2(10, -92), Vector2(8, -76), Vector2(-8, -76)]), Color(0.87, 0.82, 0.7), 2.0)
-	# 左臂（前伸拳头）
-	_capsule(Vector2(-66, -168), Vector2(-96, -128), 26, skin)
-	_capsule(Vector2(-96, -128), Vector2(-88, -94), 22, skin)
-	_circle(Vector2(-86, -82), 19, skin, 4.0)
-	draw_line(Vector2(-98, -84), Vector2(-74, -84), skin_dark, 2.5, true)
+	# 左臂（握拳贴腰，拳心收在自身命中区内）
+	_capsule(Vector2(-66, -168), Vector2(-90, -132), 26, skin)
+	_capsule(Vector2(-90, -132), Vector2(-68, -100), 22, skin)
+	_circle(Vector2(-56, -82), 19, skin, 4.0)
+	draw_line(Vector2(-68, -84), Vector2(-44, -84), skin_dark, 2.5, true)
 	# 右臂（握斧，收拢在自身命中区内）
 	_capsule(Vector2(66, -170), Vector2(86, -136), 26, skin)
 	_capsule(Vector2(86, -136), Vector2(60, -108), 22, skin)
@@ -873,23 +880,41 @@ func _bar_frame(pos: Vector2) -> void:
 func _build_click_area() -> void:
 	_click_area = Area2D.new()
 	_click_area.input_pickable = true
-	var collision := CollisionShape2D.new()
-	var shape := RectangleShape2D.new()
-	shape.size = CLICK_SIZE
-	collision.shape = shape
-	collision.position = CLICK_CENTER
-	_click_area.add_child(collision)
+	_click_shape = CollisionShape2D.new()
+	_click_rect = RectangleShape2D.new()
+	_click_shape.shape = _click_rect
+	_click_area.add_child(_click_shape)
 	add_child(_click_area)
 	_click_area.input_event.connect(_on_input_event)
+	_apply_click_bounds()
+
+func _click_size_for(id: String) -> Vector2:
+	return MOB_B_CLICK_SIZE if id == "mob_b" else CLICK_SIZE
+
+func _click_center_for(id: String) -> Vector2:
+	return MOB_B_CLICK_CENTER if id == "mob_b" else CLICK_CENTER
+
+func _apply_click_bounds() -> void:
+	if _click_rect == null:
+		return
+	var id := String(unit_id)
+	_click_rect.size = _click_size_for(id)
+	_click_shape.position = _click_center_for(id)
 
 func hit_rect() -> Rect2:
 	# 世界坐标下的点击矩形（用于工具校验间距 / 与 HUD 面板的边界）。
-	return Rect2(global_position + CLICK_CENTER - CLICK_SIZE * 0.5, CLICK_SIZE)
+	var id := String(unit_id)
+	var size := _click_size_for(id)
+	return Rect2(global_position + _click_center_for(id) - size * 0.5, size)
+
+func visual_scale() -> float:
+	# 程序化绘制的整体缩放（_draw 内 draw_set_transform 使用），供附属件探针换算。
+	return _art_scale
 
 func appendage_points() -> Array[Vector2]:
-	# 关键附属件的局部坐标点（绘制坐标系），供输入探针校验：
-	# 必须落在自身 hit_rect() 内，且不落入任何相邻单位命中区。
-	# 仅法师法球 / 狐妖双尾尖 / 妖将斧头有附属件需要校验。
+	# 关键附属件的局部坐标点（绘制坐标系，未乘 visual_scale()），供输入探针校验：
+	# 探针按 visual_scale() 缩放后，必须落在自身 hit_rect() 内，且不落入相邻单位命中区。
+	# 法师法球 / 狐妖双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头。
 	var points: Array[Vector2] = []
 	match String(unit_id):
 		"hero_mage":
@@ -898,7 +923,10 @@ func appendage_points() -> Array[Vector2]:
 			points.append(Vector2(-58, -162))
 			points.append(Vector2(58, -150))
 		"boss_brute":
-			points.append(Vector2(54, -244) * _art_scale)
+			points.append(Vector2(-56, -82))
+			points.append(Vector2(54, -244))
+		"mob_b":
+			points.append(Vector2(111, -292))
 	return points
 
 func info_rect() -> Rect2:
