@@ -20,12 +20,21 @@ func _initialize() -> void:
 			total_failures += 1
 			continue
 		var test_case: Object = script.new()
+		if test_case == null:
+			printerr("FAIL %s: cannot instantiate" % file_name)
+			total_failures += 1
+			continue
 		if not test_case.has_method("run"):
 			printerr("FAIL %s: missing run(t)" % file_name)
 			total_failures += 1
 			continue
+		var callable := Callable(test_case, "run")
+		if callable.get_argument_count() != 1:
+			printerr("FAIL %s: run(t) must take exactly 1 argument" % file_name)
+			total_failures += 1
+			continue
 		var ctx := TestContext.new()
-		Callable(test_case, "run").call(ctx)
+		callable.call(ctx)
 		total_assertions += ctx.assertions
 		total_failures += ctx.failures.size()
 		if ctx.assertions == 0:

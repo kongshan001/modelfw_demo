@@ -23,14 +23,18 @@ run_with_timeout() {
 	fi
 }
 
-run_with_timeout godot --headless --path . -s tests/run_tests.gd 2>&1 | tee "$tmp"
+run_with_timeout godot --headless --path . --quit-after 600 -s tests/run_tests.gd 2>&1 | tee "$tmp"
 status="${PIPESTATUS[0]}"
 
+if [ "$status" -eq 124 ] || [ "$status" -eq 142 ]; then
+	echo "TEST_HARNESS_FAIL: test run timed out" >&2
+	exit 1
+fi
 if grep -qE 'SCRIPT ERROR|Parse Error|ERROR:|TEST_HARNESS_FAIL' "$tmp"; then
 	echo "TEST_HARNESS_FAIL: engine/script errors detected" >&2
 	exit 1
 fi
-if ! grep -qE '^RESULT: [0-9]+ assertions, 0 failures$' "$tmp"; then
+if ! grep -qE '^RESULT: [1-9][0-9]* assertions, 0 failures$' "$tmp"; then
 	echo "TEST_HARNESS_FAIL: missing clean RESULT line" >&2
 	exit 1
 fi
