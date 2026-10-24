@@ -7,6 +7,10 @@ extends RefCounted
 #
 # 支持 res:// 与 user:// 路径。res:// 下的图片需先经过 Godot 导入；
 # 若资源未导入但文件存在，则用 Image.load_from_file 直接加载。
+#
+# 角色立绘的 scale 是相对原始像素的倍率，不是目标高度。接入未来 AI 图片时
+# 先按目标高度（推荐 300px）换算：scale = 300 / 图片像素高度，再用 offset
+# 校正脚底对齐；否则大图会压住头顶信息条。
 
 const CATALOG_PATH := "res://assets/visuals/visual_catalog.json"
 

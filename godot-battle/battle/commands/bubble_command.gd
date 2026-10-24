@@ -16,8 +16,7 @@ func play(ctx: BattleContext) -> void:
 	var view: UnitView = ctx.unit_view(source_id)
 	if view == null:
 		return
-	var anchor := view.get_global_transform_with_canvas().origin + Vector2(0, -300)
-	ctx.bubble.show_text(text, anchor)
+	ctx.bubble.show_text(text, view.bubble_anchor())
 	await ctx.wait(0.08)
 
 func skip(ctx: BattleContext) -> void:

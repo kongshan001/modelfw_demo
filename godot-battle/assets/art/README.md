@@ -15,9 +15,10 @@ Seedream / 方舟生图在本机被 403 / SSO 阻断（详见 `CREDITS.md`），
 
 ```
 assets/
+  CREDITS.md           # 指针 → art/CREDITS.md（规范文档实际位置）
   art/
     README.md          # 本文件
-    CREDITS.md         # 版权与来源说明
+    CREDITS.md         # 版权与来源说明（canonical）
   visuals/
     visual_catalog.json
     units/             # （可选）放置角色立绘 PNG/WebP
@@ -28,10 +29,12 @@ assets/
 
 ## 接入角色立绘
 
-1. 把透明背景 PNG（推荐高度 220–300px，脚底贴图片底边）放到
-   `assets/visuals/units/`，文件名建议与单位 id 一致，例如
-   `hero_swordsman.png`。
-2. 编辑 `assets/visuals/visual_catalog.json`：
+1. 把透明背景 PNG（脚底贴图片底边）放到 `assets/visuals/units/`，
+   文件名建议与单位 id 一致，例如 `hero_swordsman.png`。
+2. 以 **目标高度 300px** 为基准换算缩放：`scale = 300 / 图片像素高度`
+   （例如 1024px 高的原图填 `scale: 0.293`）。小妖等矮单位可在目标高度
+   基础上再乘 0.8–0.9，确保信息条贴近头顶且不压住角色。
+3. 编辑 `assets/visuals/visual_catalog.json`：
 
 ```json
 "units": {
@@ -44,7 +47,8 @@ assets/
 ```
 
 - `sprite`：`res://` 或 `user://` 路径；为空则使用程序化角色。
-- `scale`：整体缩放；默认 1.0。
+- `scale`：整体缩放；默认 1.0。未来 AI 图片必须按目标高度（推荐 300px）
+  换算，而不是直接沿用 1.0。
 - `offset`：以“脚底为原点”的像素偏移，向上为负 y。
 
 UnitView 会把图片底边对齐到角色脚底（`y = 0`），血条 / 名字 / 状态 / 点击区域
@@ -65,7 +69,8 @@ UnitView 会把图片底边对齐到角色脚底（`y = 0`），血条 / 名字 
 }
 ```
 
-背景图会铺在程序化背景之前并替换它；暗角仍会保留以维持统一的画面边缘。
+背景图会铺在程序化天空/竹林/地面之前并替换它们；光柱、地面光斑、地面薄雾、
+暗角、GPU 雾带与飘叶层仍会叠加在背景图之上，保持战场氛围统一。
 路径为空或加载失败时继续使用程序化竹林。
 
 ## 接入状态 / 指令图标
@@ -89,4 +94,5 @@ UnitView 会把图片底边对齐到角色脚底（`y = 0`），血条 / 名字 
   godot-battle --editor --quit`）；未导入的 res:// 图片会尝试用
   `Image.load_from_file` 直接加载，但正式发布请走导入管线。
 - 新增美术文件不会改变 `res://data/**` 的内容哈希，因此不会影响黄金回放与核心门禁。
-- 请只接入自有或明确授权（如 CC0）的素材，并同步更新 `CREDITS.md`。
+- 请只接入自有或明确授权（如 CC0）的素材，并同步更新 `CREDITS.md`
+  （canonical 路径：`assets/art/CREDITS.md`）。

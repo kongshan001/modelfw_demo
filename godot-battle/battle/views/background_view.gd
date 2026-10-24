@@ -3,7 +3,8 @@ extends Node2D
 
 # 原创程序化竹林黎明：天空暖光 → 远山 → 竹林中景 → 地面 → 前景草石，
 # 叠加雾带、光柱、飘叶与暗角。所有元素由 draw_* 原语绘制，不依赖外部素材。
-# 若 visual_catalog.json 提供了背景图，则整层替换为 Sprite2D（暗角保留）。
+# 若 visual_catalog.json 提供了背景图，则天空/竹林/地面替换为 Sprite2D，
+# 但光柱、地面光斑、地面薄雾、暗角与雾/叶层仍叠加在贴图之上。
 # headless 下跳过 GPU 粒子，静态绘制仍可安全执行。
 
 const W := 1920.0
@@ -46,15 +47,19 @@ func _apply_override() -> void:
 # ---------------------------------------------------------------- 绘制总览
 
 func _draw() -> void:
-	if _override_sprite == null:
+	var procedural := _override_sprite == null
+	if procedural:
 		_draw_sky()
 		_draw_mountains()
 		_draw_horizon_mist()
 		_draw_canopies()
 		_draw_bamboo()
 		_draw_ground()
-		_draw_light_shafts()
-		_draw_ground_mist()
+	# 光柱 / 地面光斑 / 地面薄雾属于氛围叠加层，替换背景贴图后仍要绘制。
+	_draw_ground_light()
+	_draw_light_shafts()
+	_draw_ground_mist()
+	if procedural:
 		_draw_foreground()
 	_draw_vignette()
 
@@ -198,9 +203,6 @@ func _draw_ground() -> void:
 		var t := float(i) / float(strips - 1)
 		var color := top.lerp(bottom, t)
 		draw_rect(Rect2(0, HORIZON + (H - HORIZON) * t, W, (H - HORIZON) / float(strips) + 2.0), color, true)
-	# 晨光下的中央场地
-	_ellipse(Vector2(960, 866), 800, 214, Color(0.9, 0.76, 0.48, 0.09))
-	_ellipse(Vector2(960, 872), 590, 150, Color(0.98, 0.84, 0.58, 0.06))
 	# 地平线暖边
 	draw_rect(Rect2(0, HORIZON - 3, W, 5), Color(1.0, 0.9, 0.7, 0.2), true)
 	draw_rect(Rect2(0, HORIZON + 2, W, 5), Color(0.16, 0.22, 0.15, 0.25), true)
@@ -228,7 +230,11 @@ func _draw_ground() -> void:
 		for blade in 3:
 			var offset := float(blade - 1) * 5.0
 			draw_line(Vector2(x + offset, base), Vector2(x + offset + rng.randf_range(-3.0, 3.0), base - rng.randf_range(8.0, 20.0)), Color(0.15, 0.26, 0.17, 0.5), 1.5, true)
-	# 阳光落在地面的暖斑
+
+func _draw_ground_light() -> void:
+	# 晨光下的中央场地 + 阳光暖斑；独立于程序化地面，背景贴图覆盖时仍保留。
+	_ellipse(Vector2(960, 866), 800, 214, Color(0.9, 0.76, 0.48, 0.09))
+	_ellipse(Vector2(960, 872), 590, 150, Color(0.98, 0.84, 0.58, 0.06))
 	_ellipse(Vector2(1380, 806), 420, 120, Color(1.0, 0.9, 0.62, 0.045))
 	_ellipse(Vector2(520, 846), 360, 104, Color(1.0, 0.9, 0.62, 0.035))
 

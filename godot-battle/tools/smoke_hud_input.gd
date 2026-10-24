@@ -3,6 +3,8 @@ extends SceneTree
 # 输入级 HUD 冒烟：真实鼠标点击「攻击」按钮，再点击敌方 UnitView 选择目标，
 # 从首个指令阶段一路打到战斗结束，最后校验真实结算面板出现。
 # 同时保留 7 个单位点击扫描与首阶段 3 条攻击意图断言；战斗速度通过真实点击 2x 按钮设置。
+# 额外探针：点击矩形互不重叠 / 不被 HUD 面板覆盖；狐狸、医师、剑客的
+# 左缘/右缘/身体边界在敌方与我方两种目标模式下都能正确命中。
 # 需要窗口（物理拾取走真实视口输入）：
 #   godot --path godot-battle --resolution 1920x1080 -s tools/smoke_hud_input.gd
 
@@ -23,6 +25,7 @@ var _finished := false
 var _outcome := BattleTypes.Outcome.NONE
 var _rounds_played := 0
 var _deadline_msec := 0
+var _probe_hits: Dictionary = {}
 
 func _initialize() -> void:
 	_deadline_msec = Time.get_ticks_msec() + int(BATTLE_TIMEOUT * 1000.0)
@@ -35,6 +38,8 @@ func _initialize() -> void:
 	_hud = _scene.get_node("UILayer/BattleHUD")
 	_session = _scene.get_node("BattleSession")
 	_sequencer = _scene.get_node("BattleSequencer")
+	for value in _session.context.unit_views.values():
+		(value as UnitView).clicked.connect(_on_probe_unit_clicked)
 	_session.auto_mode = false
 	_hud.phase_submitted.connect(_on_phase_submitted)
 	_session.command_phase_started.connect(_on_command_phase_started)
@@ -49,6 +54,8 @@ func _initialize() -> void:
 		return
 	await _check_layout()
 	await _sweep_unit_clicks()
+	if not await _probe_boundary_clicks():
+		return
 	if not await _click_speed_button():
 		_fail("2x speed button click did not set playback speed (speed=%s)" % str(_sequencer.playback_speed))
 		return
@@ -245,12 +252,38 @@ func _check_layout() -> void:
 			blockers.append(panel)
 	for value in views:
 		var view: UnitView = value
+		var hit := view.hit_rect()
+		var info := view.info_rect()
 		var point := _to_screen(view.global_position + Vector2(0, -140))
 		for panel in blockers:
-			if panel.get_global_rect().has_point(point):
+			var panel_rect := panel.get_global_rect()
+			if panel_rect.has_point(point):
 				_fail("unit %s click point %s blocked by %s" % [view.unit_id, str(point), panel.name])
 				return
-	print("HUD_INPUT: 7 unit click points clear of HUD panels")
+			if panel_rect.intersects(hit):
+				_fail("unit %s hit rect %s overlaps %s %s" % [view.unit_id, str(hit), panel.name, str(panel_rect)])
+				return
+			if panel_rect.intersects(info):
+				_fail("unit %s info rect %s overlaps %s %s" % [view.unit_id, str(info), panel.name, str(panel_rect)])
+				return
+	for i in views.size():
+		for j in range(i + 1, views.size()):
+			var a: UnitView = views[i]
+			var b: UnitView = views[j]
+			if a.hit_rect().intersects(b.hit_rect()):
+				_fail("living unit hit rects overlap: %s %s vs %s %s" % [a.unit_id, str(a.hit_rect()), b.unit_id, str(b.hit_rect())])
+				return
+	var swordsman: UnitView = _view_of(&"hero_swordsman")
+	var healer: UnitView = _view_of(&"hero_healer")
+	var command_panel := _hud.get_node_or_null("CommandPanel") as Control
+	if swordsman != null and healer != null and command_panel != null and command_panel.visible:
+		var swordsman_gap := command_panel.get_global_rect().position.x - swordsman.hit_rect().end.x
+		var healer_gap := command_panel.get_global_rect().position.x - healer.hit_rect().end.x
+		if swordsman_gap < 8.0 or healer_gap < 8.0:
+			_fail("unit hit rect too close to CommandPanel: swordsman=%.1fpx healer=%.1fpx" % [swordsman_gap, healer_gap])
+			return
+		print("HUD_INPUT: swordsman/command-panel gap=%.1fpx healer/command-panel gap=%.1fpx" % [swordsman_gap, healer_gap])
+	print("HUD_INPUT: 7 unit hit rects non-overlapping and clear of HUD panels/info bands")
 
 func _sweep_unit_clicks() -> void:
 	var hits := {}
@@ -269,6 +302,155 @@ func _sweep_unit_clicks() -> void:
 			_fail("unit %s did not receive a real mouse click" % view.unit_id)
 			return
 	print("HUD_INPUT: all 7 units received real mouse clicks")
+
+# ---------------------------------------------------------------- 边界点击探针
+
+func _on_probe_unit_clicked(view: UnitView) -> void:
+	_probe_hits[view.unit_id] = true
+
+func _view_of(unit_id: StringName) -> UnitView:
+	return _session.context.unit_view(unit_id)
+
+func _boundary_offset(edge: String) -> Vector2:
+	match edge:
+		"left":
+			return Vector2(-63, -170)
+		"right":
+			return Vector2(63, -170)
+		_:
+			return Vector2(0, -170)
+
+func _probe_boundary_clicks() -> bool:
+	var fox := _view_of(&"boss_fox")
+	var healer := _view_of(&"hero_healer")
+	var swordsman := _view_of(&"hero_swordsman")
+	if fox == null or healer == null or swordsman == null:
+		_fail("missing unit view for boundary probe")
+		return false
+
+	# 敌方目标模式（攻击）：狐狸左缘 / 右缘 / 身体都应只命中狐狸。
+	for edge in ["left", "right", "body"]:
+		if not await _open_root_button("攻击"):
+			return false
+		if _hud._mode != BattleHUD.MenuMode.TARGET:
+			_fail("attack click did not enter enemy target mode (mode=%d)" % _hud._mode)
+			return false
+		if not await _click_and_check_hit(fox, _boundary_offset(edge), "fox-%s/enemy-target" % edge):
+			return false
+		if not await _submit_and_back():
+			return false
+	# 剑客右缘（指令面板方向）在敌方目标模式下不可选，点击不得提交。
+	if not await _open_root_button("攻击"):
+		return false
+	if not await _click_and_check_hit(swordsman, _boundary_offset("right"), "swordsman-right/enemy-target"):
+		return false
+	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
+		_fail("swordsman click submitted while targeting enemies (mode=%d)" % _hud._mode)
+		return false
+	_hud.go_back()
+	await process_frame
+	# 医师身体在敌方目标模式下同样不可选。
+	if not await _open_root_button("攻击"):
+		return false
+	if not await _click_and_check_hit(healer, _boundary_offset("body"), "healer-body/enemy-target"):
+		return false
+	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
+		_fail("healer click submitted while targeting enemies (mode=%d)" % _hud._mode)
+		return false
+	_hud.go_back()
+	await process_frame
+
+	# 我方目标模式（道具）：医师左缘 / 右缘 / 身体都应只命中医师。
+	for edge in ["left", "right", "body"]:
+		if not await _open_ally_target_mode():
+			return false
+		if not await _click_and_check_hit(healer, _boundary_offset(edge), "healer-%s/ally-target" % edge):
+			return false
+		if not await _submit_and_back():
+			return false
+	# 剑客右缘在我方目标模式下可选中，且不被指令面板遮挡。
+	if not await _open_ally_target_mode():
+		return false
+	if not await _click_and_check_hit(swordsman, _boundary_offset("right"), "swordsman-right/ally-target"):
+		return false
+	if not await _submit_and_back():
+		return false
+	# 狐狸在我方目标模式下不可选。
+	if not await _open_ally_target_mode():
+		return false
+	if not await _click_and_check_hit(fox, _boundary_offset("body"), "fox-body/ally-target"):
+		return false
+	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
+		_fail("fox click submitted while targeting allies (mode=%d)" % _hud._mode)
+		return false
+	_hud.go_back()
+	await process_frame
+	print("HUD_INPUT: boundary clicks (fox/healer/swordsman) pass in enemy+ally target modes")
+	return true
+
+func _open_root_button(text: String) -> bool:
+	var button := _find_button(text)
+	if button == null:
+		_fail("button %s not found (mode=%d)" % [text, _hud._mode])
+		return false
+	_click_at(button.get_global_rect().get_center())
+	await process_frame
+	return true
+
+func _open_ally_target_mode() -> bool:
+	if not await _open_root_button("道具"):
+		return false
+	if _hud._mode != BattleHUD.MenuMode.ITEMS:
+		_fail("item click did not enter items menu (mode=%d)" % _hud._mode)
+		return false
+	var item := _find_button_prefix("金疮药")
+	if item == null:
+		_fail("potion button not found in item menu")
+		return false
+	_click_at(item.get_global_rect().get_center())
+	await process_frame
+	if _hud._mode != BattleHUD.MenuMode.TARGET:
+		_fail("item click did not enter ally target mode (mode=%d)" % _hud._mode)
+		return false
+	return true
+
+func _click_and_check_hit(view: UnitView, offset: Vector2, label: String) -> bool:
+	_probe_hits.clear()
+	await _click_view_offset(view, offset)
+	if _probe_hits.size() != 1 or not _probe_hits.has(view.unit_id):
+		_fail("%s: expected only %s, got %s" % [label, view.unit_id, str(_probe_hits.keys())])
+		return false
+	return true
+
+func _click_view_offset(view: UnitView, offset: Vector2) -> void:
+	_click_at(_to_screen(view.global_position + offset))
+	await physics_frame
+	await process_frame
+
+func _submit_and_back() -> bool:
+	var root_ready := func() -> bool: return _hud._mode == BattleHUD.MenuMode.ROOT and _hud._awaiting_intent
+	if not await _wait_until(root_ready, 3.0):
+		_fail("target selection did not submit (mode=%d awaiting=%s)" % [_hud._mode, str(_hud._awaiting_intent)])
+		return false
+	if _hud._ally_index <= 0:
+		_fail("expected ally index to advance before go_back (index=%d)" % _hud._ally_index)
+		return false
+	_hud.go_back()
+	await process_frame
+	if _hud._mode != BattleHUD.MenuMode.ROOT or not _hud._awaiting_intent:
+		_fail("go_back did not restore root menu (mode=%d)" % _hud._mode)
+		return false
+	return true
+
+func _find_button_prefix(prefix: String) -> Button:
+	var stack: Array[Node] = [_hud]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Button and node.is_visible_in_tree() and not node.disabled and String(node.text).begins_with(prefix):
+			return node
+		for child in node.get_children():
+			stack.append(child)
+	return null
 
 func _to_screen(world_point: Vector2) -> Vector2:
 	return root.get_canvas_transform() * world_point

@@ -1,4 +1,7 @@
-# Credits / 素材来源
+# Credits / 素材来源（canonical）
+
+> 本文件是素材来源登记的规范路径。规格/计划里写的 `assets/CREDITS.md`
+> 是指向本文件的兼容入口。
 
 - 本目录及 `godot-battle` 当前版本的所有可视内容均为**原创程序化绘制**：
   由项目内的 GDScript（`battle/views/unit_view.gd`、
@@ -20,7 +23,9 @@
 
 因此没有生成任何 AI 位图，视觉升级完全采用程序化方案。后续如需接入
 AI 美术，请先修复生成通道，再把生成的 PNG 按 `assets/art/README.md`
-放入 `assets/visuals/` 并更新 `visual_catalog.json`。
+放入 `assets/visuals/` 并更新 `visual_catalog.json`。AI 图片不要直接沿用
+`scale: 1.0`：先按目标高度（推荐 300px）换算
+`scale = 300 / 图片像素高度`，再按 `offset` 对齐脚底。
 
 解锁路径（供后续参考）：
 

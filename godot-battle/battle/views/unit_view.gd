@@ -14,6 +14,9 @@ const HP_Y := -332.0
 const MP_Y := -321.0
 const NAME_Y := -360.0
 const STATUS_Y := -384.0
+const CLICK_SIZE := Vector2(130, 320)
+const CLICK_CENTER := Vector2(0, -170)
+const BUBBLE_GAP := 26.0
 
 const OUTLINE := Color(0.105, 0.072, 0.125, 0.96)
 const SKIN := Color(1.0, 0.84, 0.71)
@@ -32,6 +35,7 @@ var is_ally := false
 
 var _sprite: Sprite2D
 var _shadow: Polygon2D
+var _info_root: Node2D
 var _name_label: Label
 var _hp_bg: ColorRect
 var _hp_trail: ColorRect
@@ -47,6 +51,7 @@ var _body_color := Color(0.35, 0.6, 1.0)
 var _visual_rng := RandomNumberGenerator.new()
 var _art_scale := 1.0
 var _has_texture := false
+var _info_offset_y := 0.0
 
 func _ready() -> void:
 	_build_placeholder()
@@ -63,6 +68,9 @@ func setup(unit: BattleUnitState, home: Vector2, ally: bool) -> void:
 	_visual_rng.seed = hash(String(unit_id)) + 17
 	_body_color = Color(0.32, 0.62, 1.0) if ally else Color(0.95, 0.36, 0.3)
 	_art_scale = _art_scale_for(String(unit_id))
+	_info_offset_y = _info_offset_for(String(unit_id))
+	if _info_root != null:
+		_info_root.position = Vector2(0, _info_offset_y)
 	_name_label.text = unit.data.display_name
 	_apply_visual_override()
 	_apply_shadow_scale()
@@ -96,6 +104,14 @@ func _art_scale_for(id: String) -> float:
 			return 1.0
 		_:
 			return 1.0
+
+func _info_offset_for(id: String) -> float:
+	# 小妖实际身高约 200px，信息条贴近头顶；其他单位保持原有悬空高度。
+	match id:
+		"mob_a", "mob_b":
+			return 76.0
+		_:
+			return 0.0
 
 func _apply_shadow_scale() -> void:
 	if _shadow == null:
@@ -578,9 +594,10 @@ func _draw_fox() -> void:
 	var cream := Color(1.0, 0.9, 0.88)
 	var hair := Color(0.78, 0.4, 0.56)
 	var hair_hi := Color(0.95, 0.62, 0.72)
-	# 双尾（身后）：一尾向上卷起，一尾绕向侧上方，避免对称成“手臂”
+	# 双尾（身后）：一尾向上卷起，一尾绕向侧上方，避免对称成“手臂”。
+	# 右尾收在局部 x≈160 内，与右侧我方单位保持空隙。
 	_fluffy_tail(Vector2(-18, -84), Vector2(-104, -104), Vector2(-160, -190), Vector2(-120, -246), 23.0, 7.0, plum, cream)
-	_fluffy_tail(Vector2(20, -86), Vector2(100, -42), Vector2(186, -124), Vector2(168, -208), 22.0, 7.0, Color(0.58, 0.26, 0.56), Color(1.0, 0.82, 0.9))
+	_fluffy_tail(Vector2(20, -86), Vector2(96, -44), Vector2(158, -122), Vector2(148, -204), 21.0, 6.0, Color(0.58, 0.26, 0.56), Color(1.0, 0.82, 0.9))
 	# 后发
 	_circle(Vector2(0, -212), 54, hair, 4.0)
 	_poly(PackedVector2Array([Vector2(-48, -232), Vector2(-62, -170), Vector2(-72, -92), Vector2(-48, -74), Vector2(-32, -156), Vector2(-26, -204)]), hair)
@@ -737,29 +754,52 @@ func _rim_arc(center: Vector2, radius: float, start_deg: float, end_deg: float) 
 	draw_polyline(points, Color(1.0, 0.87, 0.62, 0.34), 3.2, true)
 
 func _fluffy_tail(start: Vector2, c1: Vector2, c2: Vector2, end: Vector2, r_start: float, r_end: float, color: Color, tip: Color) -> void:
-	var centers: Array[Vector2] = []
-	var radii: Array[float] = []
-	var bumps: Array[Vector2] = []
-	var bump_radii: Array[float] = []
-	for i in 9:
-		var t := float(i) / 8.0
-		centers.append(_cubic(start, c1, c2, end, t))
-		radii.append(lerpf(r_start, r_end, t) * (1.0 + 0.16 * sin(t * PI)))
-	for i in 9:
-		var prev := centers[maxi(i - 1, 0)]
-		var next := centers[mini(i + 1, 8)]
-		var dir := (next - prev).normalized()
-		var perp := Vector2(-dir.y, dir.x)
-		var side := 1.0 if i % 2 == 0 else -1.0
-		bumps.append(centers[i] + perp * side * radii[i] * 0.55)
-		bump_radii.append(radii[i] * 0.36)
-	for i in 9:
-		draw_circle(centers[i], radii[i] + 3.5, OUTLINE)
-		draw_circle(bumps[i], bump_radii[i] + 3.5, OUTLINE)
-	for i in 9:
-		var fill := tip if i >= 8 else color
-		draw_circle(centers[i], radii[i], fill)
-		draw_circle(bumps[i], bump_radii[i], fill)
+	# 单一锥形带：宽度沿曲线单调收窄，尾尖用同带宽的浅色段叠染。
+	# 相比一串圆形堆叠，不会出现“珠子链”式轮廓。
+	var samples := 26
+	var left: Array[Vector2] = []
+	var right: Array[Vector2] = []
+	for i in samples + 1:
+		var t := float(i) / float(samples)
+		var center := _cubic(start, c1, c2, end, t)
+		var ahead := _cubic(start, c1, c2, end, minf(t + 0.02, 1.0))
+		var behind := _cubic(start, c1, c2, end, maxf(t - 0.02, 0.0))
+		var tangent := (ahead - behind).normalized()
+		var perp := Vector2(-tangent.y, tangent.x)
+		var radius := lerpf(r_start, r_end, t) * (1.0 + 0.1 * sin(t * PI))
+		left.append(center + perp * radius)
+		right.append(center - perp * radius)
+	var outline := PackedVector2Array()
+	for point in left:
+		outline.append(point)
+	for i in range(right.size() - 1, -1, -1):
+		outline.append(right[i])
+	outline.append(left[0])
+	draw_polyline(outline, OUTLINE, 7.0, true)
+	draw_colored_polygon(outline, color)
+	draw_circle(start, r_start + 3.5, OUTLINE)
+	draw_circle(start, r_start, color)
+
+	var tip_points := PackedVector2Array()
+	var tip_left: Array[Vector2] = []
+	var tip_right: Array[Vector2] = []
+	for i in samples + 1:
+		var t := lerpf(0.78, 1.0, float(i) / float(samples))
+		var center := _cubic(start, c1, c2, end, t)
+		var ahead := _cubic(start, c1, c2, end, minf(t + 0.02, 1.0))
+		var behind := _cubic(start, c1, c2, end, maxf(t - 0.02, 0.0))
+		var tangent := (ahead - behind).normalized()
+		var perp := Vector2(-tangent.y, tangent.x)
+		var radius := lerpf(r_start, r_end, t) * (1.0 + 0.1 * sin(t * PI))
+		tip_left.append(center + perp * radius)
+		tip_right.append(center - perp * radius)
+	for point in tip_left:
+		tip_points.append(point)
+	for i in range(tip_right.size() - 1, -1, -1):
+		tip_points.append(tip_right[i])
+	draw_colored_polygon(tip_points, tip)
+	draw_circle(end, r_end + 3.5, OUTLINE)
+	draw_circle(end, r_end, tip)
 
 func _cubic(a: Vector2, b: Vector2, c: Vector2, d: Vector2, t: float) -> Vector2:
 	var u := 1.0 - t
@@ -769,6 +809,10 @@ func _plum_dark() -> Color:
 	return Color(0.32, 0.12, 0.36)
 
 func _build_bars() -> void:
+	_info_root = Node2D.new()
+	_info_root.name = "Info"
+	add_child(_info_root)
+
 	_name_label = Label.new()
 	_name_label.position = Vector2(-100, NAME_Y)
 	_name_label.size = Vector2(200, 24)
@@ -781,7 +825,7 @@ func _build_bars() -> void:
 	_name_label.add_theme_constant_override("outline_size", 4)
 	_name_label.add_theme_constant_override("shadow_offset_x", 1)
 	_name_label.add_theme_constant_override("shadow_offset_y", 2)
-	add_child(_name_label)
+	_info_root.add_child(_name_label)
 
 	_bar_frame(Vector2(-BAR_WIDTH / 2 - 1, HP_Y - 1))
 	_hp_bg = _bar(Color(0.06, 0.05, 0.08, 0.92), Vector2(-BAR_WIDTH / 2, HP_Y))
@@ -796,7 +840,7 @@ func _build_bars() -> void:
 	_status_row.size = Vector2(BAR_WIDTH, 20)
 	_status_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_status_row.add_theme_constant_override("separation", 4)
-	add_child(_status_row)
+	_info_root.add_child(_status_row)
 
 	_selection = Polygon2D.new()
 	_selection.polygon = _ellipse_points(58, 16)
@@ -809,14 +853,14 @@ func _build_bars() -> void:
 	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -432), Vector2(14, -432), Vector2(0, -408)])
 	_target_arrow.color = Color(1.0, 0.85, 0.15)
 	_target_arrow.visible = false
-	add_child(_target_arrow)
+	_info_root.add_child(_target_arrow)
 
 func _bar(color: Color, pos: Vector2) -> ColorRect:
 	var rect := ColorRect.new()
 	rect.color = color
 	rect.position = pos
 	rect.size = Vector2(BAR_WIDTH, BAR_HEIGHT)
-	add_child(rect)
+	_info_root.add_child(rect)
 	return rect
 
 func _bar_frame(pos: Vector2) -> void:
@@ -824,19 +868,31 @@ func _bar_frame(pos: Vector2) -> void:
 	frame.color = Color(0.05, 0.04, 0.07, 0.9)
 	frame.position = pos
 	frame.size = Vector2(BAR_WIDTH + 2, BAR_HEIGHT + 2)
-	add_child(frame)
+	_info_root.add_child(frame)
 
 func _build_click_area() -> void:
 	_click_area = Area2D.new()
 	_click_area.input_pickable = true
 	var collision := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
-	shape.size = Vector2(160, 400)
+	shape.size = CLICK_SIZE
 	collision.shape = shape
-	collision.position = Vector2(0, -190)
+	collision.position = CLICK_CENTER
 	_click_area.add_child(collision)
 	add_child(_click_area)
 	_click_area.input_event.connect(_on_input_event)
+
+func hit_rect() -> Rect2:
+	# 世界坐标下的点击矩形（用于工具校验间距 / 与 HUD 面板的边界）。
+	return Rect2(global_position + CLICK_CENTER - CLICK_SIZE * 0.5, CLICK_SIZE)
+
+func info_rect() -> Rect2:
+	# 名字 / 血蓝条 / 状态徽章组成的悬浮信息带。
+	return Rect2(global_position + Vector2(-100.0, STATUS_Y + _info_offset_y), Vector2(200.0, 60.0))
+
+func bubble_anchor() -> Vector2:
+	# 喊招气泡尾巴落在状态行上方，避免盖住名字与状态徽章。
+	return get_global_transform_with_canvas().origin + Vector2(0, STATUS_Y + _info_offset_y - BUBBLE_GAP)
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:

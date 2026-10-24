@@ -1,5 +1,5 @@
 {
-  "_comment": "Optional art drop-in catalog. Leave every path empty to use the original procedural art. See assets/art/README.md for the schema.",
+  "_comment": "Optional art drop-in catalog. Leave every path empty to use the original procedural art. For AI sprites, scale = target height (recommended 300px) / image pixel height. See assets/art/README.md for the schema.",
   "units": {
     "hero_swordsman": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
     "hero_mage": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
