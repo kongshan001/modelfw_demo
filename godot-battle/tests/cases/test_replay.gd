@@ -1,0 +1,84 @@
+extends RefCounted
+
+func _lowest_ally(allies: Array[BattleUnitState]) -> BattleUnitState:
+	var sorted := allies.duplicate()
+	sorted.sort_custom(func(a, b):
+		var pa := float(a.hp) / float(a.data.max_hp)
+		var pb := float(b.hp) / float(b.data.max_hp)
+		if is_equal_approx(pa, pb):
+			return String(a.id) < String(b.id)
+		return pa < pb)
+	return sorted[0]
+
+func _policy(engine: BattleEngine) -> Array[BattleIntent]:
+	var intents: Array[BattleIntent] = []
+	var allies := engine.state.living(BattleTypes.Side.ALLY)
+	var enemies := engine.state.living(BattleTypes.Side.ENEMY)
+	if enemies.is_empty():
+		return intents
+	for ally in allies:
+		if ally.id == &"hero_healer":
+			var target := _lowest_ally(allies)
+			intents.append(BattleIntent.make(ally.id, BattleTypes.IntentKind.SKILL, [target.id], &"heal_single"))
+		elif ally.id == &"hero_mage":
+			intents.append(BattleIntent.make(ally.id, BattleTypes.IntentKind.SKILL, [enemies[0].id], &"fire_spell"))
+		else:
+			intents.append(BattleIntent.make(ally.id, BattleTypes.IntentKind.ATTACK, [enemies[0].id]))
+	return intents
+
+func _run(engine: BattleEngine, max_rounds: int) -> Array[Dictionary]:
+	var all_events: Array[Dictionary] = []
+	for i in max_rounds:
+		if engine.is_over():
+			break
+		for event in engine.resolve_round(_policy(engine)):
+			all_events.append(event.to_dict())
+	return all_events
+
+func run(t: TestContext) -> void:
+	var content := ContentDB.load_all()
+	var encounter := content.get_encounter(&"enc_bamboo_01")
+
+	var engine := BattleEngine.new(encounter, content, 777)
+	_run(engine, 12)
+	var path := engine.dump_replay("user://test_replay.json")
+	t.ok(not path.is_empty(), "录像写入成功")
+	t.ok(FileAccess.file_exists(path), "录像文件存在")
+
+	var replay := BattleReplay.load_file(path)
+	t.ok(not replay.is_empty(), "录像可加载")
+	var verification := BattleReplay.verify(replay, content, true)
+	t.ok(bool(verification["ok"]), "录像校验通过: " + str(verification["errors"]))
+	var replay_snapshots: Array = replay.get("snapshots", [])
+	var replay_events: Array = replay.get("events", [])
+	t.ok(replay_snapshots.size() >= 1, "包含状态快照")
+	t.ok(replay_events.size() > 0, "包含事件流")
+
+	var engine_a := BattleEngine.new(encounter, content, 888, false)
+	var engine_b := BattleEngine.new(encounter, content, 888, false)
+	var events_a := _run(engine_a, 12)
+	var events_b := _run(engine_b, 12)
+	t.eq(JSON.stringify(events_b, "", true), JSON.stringify(events_a, "", true), "同种子同指令事件流一致")
+	t.eq(engine_b.state.outcome, engine_a.state.outcome, "同种子结果一致")
+
+	var tampered := replay.duplicate(true)
+	for event in tampered["events"]:
+		if event["type"] == "damage":
+			event["data"]["amount"] = int(event["data"]["amount"]) + 1
+			break
+	var tampered_result := BattleReplay.verify(tampered, content, true)
+	t.ok(not bool(tampered_result["ok"]), "篡改后的录像校验失败")
+
+	var debug_engine := BattleEngine.new(encounter, content, 999)
+	debug_engine.apply_debug_op({"op": "kill", "unit_id": "mob_a"})
+	debug_engine.resolve_round(_policy(debug_engine))
+	var debug_path := debug_engine.dump_replay("user://test_replay_debug.json")
+	var debug_replay := BattleReplay.load_file(debug_path)
+	var debug_result := BattleReplay.verify(debug_replay, content, true)
+	t.ok(bool(debug_result["ok"]), "调试操作可随录像重放: " + str(debug_result["errors"]))
+
+	var broken_state := BattleState.new()
+	var broken_unit := BattleUnitState.new(content.get_unit(&"hero_swordsman"), BattleTypes.Side.ALLY, 0)
+	broken_unit.hp = -1
+	broken_state.units.append(broken_unit)
+	t.ok(BattleInvariants.check(broken_state).size() > 0, "不变量能发现非法 HP")
