@@ -229,14 +229,17 @@ func cast_pose() -> void:
 	await tween.finished
 
 func hurt() -> void:
-	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color(3.0, 3.0, 3.0), 0.04)
-	tween.tween_property(self, "modulate", Color.WHITE, 0.12)
+	stop_animations()
 	var base := position
 	var knock := base + Vector2(14.0 if is_ally else -14.0, 0)
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", Color(3.0, 3.0, 3.0), 0.04)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.08)
 	tween.parallel().tween_property(self, "position", knock, 0.08)
-	tween.parallel().tween_property(self, "position", base, 0.12)
+	tween.tween_property(self, "position", base, 0.12)
 	await tween.finished
+	if unit_state == null or unit_state.is_alive():
+		_start_idle()
 
 func die() -> void:
 	stop_animations()

@@ -21,7 +21,17 @@ func play(ctx: BattleContext) -> void:
 				var target_view: UnitView = ctx.unit_view(event.target_ids[0])
 				if target_view != null:
 					await target_view.die()
-		&"status_apply", &"status_refresh", &"status_expire", &"mp_change", &"item_used", &"defend", &"flee_attempt", &"flee_result", &"action_skipped":
+		&"status_apply", &"status_refresh", &"status_expire":
+			var status_view := _affected_view(ctx)
+			if status_view != null and status_view.unit_state != null:
+				status_view.set_statuses(status_view.unit_state.statuses)
+			await ctx.wait(0.08)
+		&"mp_change":
+			var mp_view := _affected_view(ctx)
+			if mp_view != null:
+				mp_view.set_mp(int(event.data.get("mp_after", 0)), true)
+			await ctx.wait(0.08)
+		&"item_used", &"defend", &"flee_attempt", &"flee_result", &"action_skipped":
 			var source_view: UnitView = ctx.unit_view(event.source_id)
 			if source_view != null and source_view.unit_state != null:
 				source_view.set_statuses(source_view.unit_state.statuses)
@@ -58,13 +68,18 @@ func _play_damage(ctx: BattleContext) -> void:
 		return
 	target.set_hp(int(event.data.get("hp_after", target.unit_state.hp)), true)
 	await target.hurt()
-	ctx.camera.shake(5.0, 0.12)
-	if String(event.data.get("source_type", "")) == "status_tick":
+	if event.type == &"status_tick":
 		ctx.camera.shake(2.0, 0.08)
+	else:
+		ctx.camera.shake(5.0, 0.12)
 	await ctx.wait(0.08)
 	var source: UnitView = ctx.unit_view(event.source_id)
-	if source != null and String(event.data.get("kind", "")) != "skill":
+	if source != null and source != target and String(event.data.get("source_type", "")) != "skill":
 		source.reset_pose()
+
+func _affected_view(ctx: BattleContext) -> UnitView:
+	var unit_id: StringName = event.target_ids[0] if not event.target_ids.is_empty() else event.source_id
+	return ctx.unit_view(unit_id)
 
 func _play_heal(ctx: BattleContext) -> void:
 	var target: UnitView = ctx.unit_view(event.target_ids[0]) if not event.target_ids.is_empty() else null

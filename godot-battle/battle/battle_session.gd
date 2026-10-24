@@ -12,12 +12,14 @@ var sequencer: BattleSequencer
 var auto_mode := false
 var seed_value := 20261024
 var _script_state: EncounterScript
+var _result_shown := false
 
 func start(p_seed: int = 20261024) -> void:
 	seed_value = p_seed
 	content = ContentDB.load_all()
 	encounter = content.get_encounter(&"enc_bamboo_01")
 	engine = BattleEngine.new(encounter, content, seed_value)
+	_result_shown = false
 	_script_state = encounter.script_data
 	if _script_state != null:
 		_script_state.reset()
@@ -56,8 +58,8 @@ func _run_battle() -> void:
 		for command in director.build(events):
 			sequencer.enqueue(command)
 		await sequencer.play_all()
-		if context.hud != null:
-			context.hud.refresh_all(engine.state)
+		context.apply_snapshot(engine.state)
+	show_result(engine.state.outcome)
 	battle_finished.emit(engine.state.outcome)
 
 func auto_play() -> void:
@@ -87,6 +89,9 @@ func _lowest_ally(allies: Array[BattleUnitState]) -> BattleUnitState:
 
 
 func show_result(outcome: int) -> void:
+	if _result_shown:
+		return
+	_result_shown = true
 	var label := Label.new()
 	label.text = "胜利！" if outcome == BattleTypes.Outcome.VICTORY else ("逃跑成功" if outcome == BattleTypes.Outcome.ESCAPED else "战败…")
 	label.add_theme_font_override("font", FontUtil.cjk_font())

@@ -12,4 +12,6 @@ func _initialize() -> void:
 		var path := "user://screenshots/task1_%d.png" % index
 		image.save_png(path)
 		print("SCREENSHOT: " + ProjectSettings.globalize_path(path))
+	scene.queue_free()
+	await process_frame
 	quit(0)
