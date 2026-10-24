@@ -2327,7 +2327,9 @@ git commit -m "feat(battle): 状态、道具、封印与防御结算"
 
 **Interfaces:**
 - Consumes: Task 6 的 Resolver
-- Produces: `compute_flee_chance()`、`_resolve_flee()`、扩展后的 `_decide_ai()`
+- Produces: `compute_flee_chance()`、扩展后的 `_decide_ai()`（逃跑结算内联在 `resolve_round`）
+
+> **实现修正（review）**：AI 的 MP 门槛与技能可用性必须从 `ContentDB` / `UnitData.skills` 读取，不硬编码 15/20/25；fox 的治疗/法师优先级由技能与属性推导，不硬编码角色 ID；技能 ID 作为 AI profile 定义可以保留。测试必须覆盖 charm 目标、ground_split、poison_strike、逃跑失败时敌人行动、精确逃跑概率。
 
 - [ ] **Step 1: 写失败测试**
 
