@@ -819,9 +819,11 @@ var statuses: Dictionary = {}
 var items: Dictionary = {}
 var encounters: Dictionary = {}
 var _hash_cache: String = ""
+var base_dir: String = "res://data"
 
 static func load_all(base_dir: String = "res://data") -> ContentDB:
 	var db := ContentDB.new()
+	db.base_dir = base_dir
 	db._load_dir(base_dir + "/units", db.units)
 	db._load_dir(base_dir + "/skills", db.skills)
 	db._load_dir(base_dir + "/statuses", db.statuses)
@@ -842,6 +844,8 @@ func _load_dir(dir_path: String, target: Dictionary) -> void:
 			push_error("Cannot load content: " + dir_path + "/" + file_name)
 			continue
 		target[resource.get("id")] = resource
+	for sub_dir in dir.get_directories():
+		_load_dir(dir_path + "/" + sub_dir, target)
 
 func get_unit(id: StringName) -> UnitData:
 	return units.get(id)
@@ -857,7 +861,7 @@ func get_encounter(id: StringName) -> EncounterData:
 func content_hash() -> String:
 	if not _hash_cache.is_empty():
 		return _hash_cache
-	var files := _collect_tres("res://data")
+	var files := _collect_tres(base_dir)
 	files.sort()
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
@@ -894,32 +898,42 @@ func _initialize() -> void:
 
 	var statuses := _build_statuses()
 	for status in statuses.values():
-		_save(status, "res://data/statuses/%s.tres" % String(status.id))
+		if _save(status, "res://data/statuses/%s.tres" % String(status.id)) != OK:
+			quit(1)
+			return
 
-	var skills := _build_skills(statuses)
+	var skills := _build_skills()
 	for skill in skills.values():
-		_save(skill, "res://data/skills/%s.tres" % String(skill.id))
+		if _save(skill, "res://data/skills/%s.tres" % String(skill.id)) != OK:
+			quit(1)
+			return
 
 	var items := _build_items()
 	for item in items.values():
-		_save(item, "res://data/items/%s.tres" % String(item.id))
+		if _save(item, "res://data/items/%s.tres" % String(item.id)) != OK:
+			quit(1)
+			return
 
 	var units := _build_units()
 	for unit in units.values():
-		_save(unit, "res://data/units/%s.tres" % String(unit.id))
+		if _save(unit, "res://data/units/%s.tres" % String(unit.id)) != OK:
+			quit(1)
+			return
 
 	var encounter := _build_encounter()
-	_save(encounter, "res://data/encounters/enc_bamboo_01.tres")
+	if _save(encounter, "res://data/encounters/enc_bamboo_01.tres") != OK:
+		quit(1)
+		return
 
 	print("CONTENT_BUILT units=%d skills=%d statuses=%d items=%d" % [units.size(), skills.size(), statuses.size(), items.size()])
 	quit(0)
 
-func _save(resource: Resource, path: String) -> void:
+func _save(resource: Resource, path: String) -> Error:
 	resource.resource_path = path
 	var error := ResourceSaver.save(resource, path)
 	if error != OK:
 		printerr("SAVE FAILED %s error=%d" % [path, error])
-		quit(1)
+	return error
 
 func _unit(id: String, name: String, hp: int, mp: int, atk: int, defense: int, magic: int, resistance: int, speed: int, crit: float, skills: Array, ai_profile: String) -> UnitData:
 	var unit := UnitData.new()
@@ -1003,7 +1017,7 @@ func _build_statuses() -> Dictionary:
 
 	return result
 
-func _build_skills(statuses: Dictionary) -> Dictionary:
+func _build_skills() -> Dictionary:
 	var result := {}
 
 	result[&"sweep"] = _skill("sweep", "横扫千军", 30, SkillData.TargetType.ALL_ENEMIES, 3,
