@@ -13,18 +13,65 @@ var sequencer: BattleSequencer
 var auto_mode := false
 var skip_story := false
 var seed_value := 20261024
+var replay_mode := false
+var replay_path := ""
+var replay_data: Dictionary = {}
 var _script_state: EncounterScript
 var _result_shown := false
+var _replay_label: Control
 
 func start(p_seed: int = 20261024) -> void:
-	seed_value = p_seed
 	content = ContentDB.load_all()
+	var pending := _consume_pending_replay()
+	if not pending.is_empty():
+		if _setup_replay(pending):
+			await _run_replay()
+			return
+		push_error("REPLAY_FAIL: cannot load replay " + pending)
+	replay_mode = false
 	encounter = content.get_encounter(&"enc_bamboo_01")
+	_prepare(p_seed, true)
+	if auto_mode:
+		auto_play()
+	else:
+		await _run_battle()
+
+func _consume_pending_replay() -> String:
+	if not OS.is_debug_build():
+		return ""
+	var debug := get_node_or_null("/root/BattleDebug")
+	if debug == null or not debug.has_method("consume_pending_replay"):
+		return ""
+	return String(debug.consume_pending_replay())
+
+func _setup_replay(pending: String) -> bool:
+	var loaded := BattleReplay.load_file(pending)
+	var meta: Variant = loaded.get("meta", {})
+	var replay_encounter: EncounterData = null
+	if meta is Dictionary:
+		replay_encounter = content.get_encounter(StringName(meta.get("battle_id", "")))
+	if loaded.is_empty() or replay_encounter == null:
+		return false
+	replay_mode = true
+	replay_path = pending
+	replay_data = loaded
+	encounter = replay_encounter
+	skip_story = true
+	_prepare(int(meta.get("seed", 0)), false)
+	if context.hud != null:
+		context.hud.visible = false
+		if context.hud.has_method("set_command_visible"):
+			context.hud.set_command_visible(false)
+	_show_replay_label()
+	return true
+
+func _prepare(p_seed: int, record: bool) -> void:
+	seed_value = p_seed
 	_script_state = encounter.script_data
 	if _script_state != null:
 		_script_state.reset()
 	director.setup(content, _script_state, encounter, skip_story)
-	engine = BattleEngine.new(encounter, content, seed_value)
+	engine = BattleEngine.new(encounter, content, seed_value, record)
 	_result_shown = false
 	sequencer.ctx = context
 	context.session = self
@@ -32,10 +79,62 @@ func start(p_seed: int = 20261024) -> void:
 	if context.audio != null:
 		context.audio.play_bgm(encounter.bgm_path)
 	_build_units()
-	if auto_mode:
-		auto_play()
-	else:
-		await _run_battle()
+	_register_debug()
+
+func _register_debug() -> void:
+	var debug := get_node_or_null("/root/BattleDebug")
+	if debug != null and debug.has_method("register_session"):
+		debug.register_session(self)
+
+func _run_replay() -> void:
+	var rounds: Array = replay_data.get("rounds", []).duplicate()
+	rounds.sort_custom(func(a, b): return int(a.get("round", 0)) < int(b.get("round", 0)))
+	for entry in rounds:
+		if engine.is_over():
+			break
+		for op in entry.get("debug_ops", []):
+			engine.apply_debug_op(op)
+		if entry.has("resolved") and not bool(entry["resolved"]):
+			continue
+		var intents: Array[BattleIntent] = []
+		for intent_dict in entry.get("intents", []):
+			intents.append(BattleIntent.from_dict(intent_dict))
+		var events := engine.resolve_round(intents)
+		for command in director.build(events):
+			sequencer.enqueue(command)
+		await sequencer.play_all()
+		context.apply_snapshot(engine.state)
+	print("REPLAY_OK %s rounds=%d outcome=%d" % [replay_path, engine.state.round, engine.state.outcome])
+	show_result(engine.state.outcome)
+	battle_finished.emit(engine.state.outcome)
+
+func _show_replay_label() -> void:
+	if context == null or context.ui_layer == null:
+		return
+	var panel := PanelContainer.new()
+	panel.name = "ReplayLabel"
+	panel.position = Vector2(1416, 18)
+	panel.custom_minimum_size = Vector2(470, 0)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.02, 0.035, 0.06, 0.86)
+	style.border_color = Color(0.9, 0.68, 0.3, 0.9)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.text = "回放模式 · F1 控制台 · F6/F7 单步 · ESC 退出"
+	label.add_theme_font_override("font", FontUtil.cjk_font())
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(0.98, 0.88, 0.6))
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	panel.add_child(label)
+	context.ui_layer.add_child(panel)
+	_replay_label = panel
 
 func _build_units() -> void:
 	var enemy_positions := [Vector2(330, 700), Vector2(500, 740), Vector2(670, 780), Vector2(840, 820)]
@@ -108,6 +207,8 @@ func show_result(outcome: int) -> void:
 	if _result_shown:
 		return
 	_result_shown = true
+	if _replay_label != null and is_instance_valid(_replay_label):
+		_replay_label.visible = false
 	if context == null:
 		return
 	if context.dialogue != null:

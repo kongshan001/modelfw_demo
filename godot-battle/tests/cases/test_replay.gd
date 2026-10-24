@@ -76,11 +76,40 @@ func run(t: TestContext) -> void:
 	t.ok(not bool(intent_result["ok"]), "篡改意图后的录像校验失败")
 	t.eq(String(intent_result["first_divergence"].get("reason", "")), "event_mismatch", "指令篡改通过摘要链后被事件比对发现")
 
+	var snapshot_tampered := replay.duplicate(true)
+	var snapshots: Array = snapshot_tampered["snapshots"]
+	t.ok(snapshots.size() >= 2, "录像包含多轮快照")
+	var tamper_index := 1 if snapshots.size() > 1 else 0
+	var tamper_unit: Dictionary = snapshots[tamper_index]["units"][0]
+	tamper_unit["hp"] = int(tamper_unit["hp"]) + 1
+	var snapshot_result := BattleReplay.verify(snapshot_tampered, content, true)
+	t.ok(not bool(snapshot_result["ok"]), "篡改快照后的录像校验失败")
+	t.eq(String(snapshot_result["first_divergence"].get("reason", "")), "snapshot_mismatch", "快照篡改被定位为 snapshot_mismatch")
+	t.ok(" ".join(snapshot_result["errors"]).contains("snapshot"), "错误信息指出快照分歧: " + str(snapshot_result["errors"]))
+
+	var item_tampered := replay.duplicate(true)
+	for snapshot in item_tampered["snapshots"]:
+		var items: Dictionary = snapshot.get("item_uses", {})
+		if not items.is_empty():
+			items["potion_hp"] = int(items["potion_hp"]) + 1
+			break
+	var item_result := BattleReplay.verify(item_tampered, content, true)
+	t.ok(not bool(item_result["ok"]), "篡改道具次数后的录像校验失败")
+	t.eq(String(item_result["first_divergence"].get("reason", "")), "snapshot_mismatch", "道具次数篡改被定位为 snapshot_mismatch")
+
 	var partial_engine := BattleEngine.new(encounter, content, 555)
 	partial_engine.apply_debug_op({"op": "kill", "unit_id": "mob_a"})
 	var partial_path := partial_engine.dump_replay("user://test_replay_partial.json")
-	var partial_result := BattleReplay.verify(BattleReplay.load_file(partial_path), content, true)
+	var partial_replay := BattleReplay.load_file(partial_path)
+	var partial_result := BattleReplay.verify(partial_replay, content, true)
 	t.ok(bool(partial_result["ok"]), "未解算回合不会产生假分歧: " + str(partial_result["errors"]))
+	# 未解析轮次的快照不参与比对：即使篡改也不应影响校验。
+	for snapshot in partial_replay["snapshots"]:
+		if int(snapshot["round"]) == 1 and not snapshot["units"].is_empty():
+			snapshot["units"][0]["hp"] = 1
+			break
+	var partial_tampered := BattleReplay.verify(partial_replay, content, true)
+	t.ok(bool(partial_tampered["ok"]), "未解析轮次不比较快照: " + str(partial_tampered["errors"]))
 
 	var debug_engine := BattleEngine.new(encounter, content, 999)
 	debug_engine.apply_debug_op({"op": "kill", "unit_id": "mob_a"})

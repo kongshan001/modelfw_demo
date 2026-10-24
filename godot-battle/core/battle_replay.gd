@@ -56,6 +56,13 @@ static func verify(replay: Dictionary, content: ContentDB, strict_content: bool 
 			recorded_by_round[event_round] = []
 		recorded_by_round[event_round].append(event_dict)
 
+	var snapshots_by_round := {}
+	var recorded_snapshots: Variant = replay.get("snapshots", [])
+	if recorded_snapshots is Array:
+		for snapshot in recorded_snapshots:
+			if snapshot is Dictionary and snapshot.has("round"):
+				snapshots_by_round[int(snapshot["round"])] = snapshot
+
 	var rounds: Array = replay["rounds"].duplicate()
 	rounds.sort_custom(func(a, b): return int(a["round"]) < int(b["round"]))
 	var first_divergence := {}
@@ -65,6 +72,12 @@ static func verify(replay: Dictionary, content: ContentDB, strict_content: bool 
 			engine.apply_debug_op(op)
 		if entry.has("resolved") and not bool(entry["resolved"]):
 			continue
+		# Snapshots are recorded at the start of each resolved round, after that
+		# round's debug ops. Compare them before replaying the round.
+		if snapshots_by_round.has(entry_round):
+			first_divergence = _compare_snapshot(engine.state, snapshots_by_round[entry_round])
+			if not first_divergence.is_empty():
+				break
 		var intents: Array[BattleIntent] = []
 		for intent_dict in entry.get("intents", []):
 			intents.append(BattleIntent.from_dict(intent_dict))
@@ -74,7 +87,13 @@ static func verify(replay: Dictionary, content: ContentDB, strict_content: bool 
 		if not first_divergence.is_empty():
 			break
 	if not first_divergence.is_empty():
-		errors.append("event divergence: " + String(first_divergence.get("reason", "unknown")))
+		if String(first_divergence.get("reason", "")) == "snapshot_mismatch":
+			errors.append("snapshot divergence at round %d: %s" % [
+				int(first_divergence.get("round", 0)),
+				String(first_divergence.get("field", "state")),
+			])
+		else:
+			errors.append("event divergence: " + String(first_divergence.get("reason", "unknown")))
 	else:
 		var result: Dictionary = replay["result"]
 		if int(result.get("outcome", BattleTypes.Outcome.NONE)) != engine.state.outcome:
@@ -109,6 +128,83 @@ static func _compare_events(produced: Array[BattleEvent], expected: Array) -> Di
 	if produced.size() != expected.size():
 		return {"reason": "event_count", "expected": expected.size(), "produced": produced.size()}
 	return {}
+
+static func _compare_snapshot(state: BattleState, recorded: Dictionary) -> Dictionary:
+	var round_number := int(recorded.get("round", state.round + 1))
+	var recorded_units: Variant = recorded.get("units", [])
+	if not (recorded_units is Array):
+		return _snapshot_divergence(round_number, "", "units", recorded_units, "array")
+
+	var produced_by_id := {}
+	for unit in state.units:
+		produced_by_id[String(unit.id)] = _unit_snapshot(unit)
+	var expected_by_id := {}
+	for expected in recorded_units:
+		if expected is Dictionary:
+			expected_by_id[String(expected.get("id", ""))] = expected
+	if expected_by_id.size() != produced_by_id.size():
+		return _snapshot_divergence(round_number, "", "unit_set", expected_by_id.keys(), produced_by_id.keys())
+
+	for unit_id in expected_by_id:
+		if not produced_by_id.has(unit_id):
+			return _snapshot_divergence(round_number, unit_id, "unit_presence", true, false)
+		var expected: Dictionary = expected_by_id[unit_id]
+		var produced: Dictionary = produced_by_id[unit_id]
+		for field in ["hp", "mp"]:
+			if int(expected.get(field, 0)) != int(produced[field]):
+				return _snapshot_divergence(round_number, unit_id, field, expected.get(field), produced[field])
+		if bool(expected.get("alive", false)) != bool(produced["alive"]):
+			return _snapshot_divergence(round_number, unit_id, "alive", expected.get("alive"), produced["alive"])
+		var expected_statuses := BattleDigest.canonical_json(_normalized_statuses(expected.get("statuses", [])))
+		var produced_statuses := BattleDigest.canonical_json(_normalized_statuses(produced["statuses"]))
+		if expected_statuses != produced_statuses:
+			return _snapshot_divergence(round_number, unit_id, "statuses", expected_statuses, produced_statuses)
+
+	var produced_items := {}
+	for item_id in state.item_uses:
+		produced_items[String(item_id)] = int(state.item_uses[item_id])
+	var recorded_items: Variant = recorded.get("item_uses", {})
+	if not (recorded_items is Dictionary):
+		return _snapshot_divergence(round_number, "", "item_uses", recorded_items, produced_items)
+	var expected_items := {}
+	for item_id in recorded_items:
+		expected_items[String(item_id)] = int(recorded_items[item_id])
+	if BattleDigest.canonical_json(expected_items) != BattleDigest.canonical_json(produced_items):
+		return _snapshot_divergence(round_number, "", "item_uses", expected_items, produced_items)
+	return {}
+
+static func _unit_snapshot(unit: BattleUnitState) -> Dictionary:
+	var status_list: Array = []
+	for status in unit.statuses:
+		status_list.append({"id": String(status.data.id), "remaining": status.remaining})
+	return {
+		"hp": unit.hp,
+		"mp": unit.mp,
+		"alive": unit.is_alive(),
+		"statuses": status_list,
+	}
+
+static func _normalized_statuses(source: Variant) -> Array:
+	var statuses: Array = []
+	if source is Array:
+		for status in source:
+			if status is Dictionary:
+				statuses.append({
+					"id": String(status.get("id", "")),
+					"remaining": int(status.get("remaining", 0)),
+				})
+	statuses.sort_custom(func(a, b): return String(a["id"]) < String(b["id"]))
+	return statuses
+
+static func _snapshot_divergence(round_number: int, unit_id: String, field: String, expected: Variant, produced: Variant) -> Dictionary:
+	return {
+		"reason": "snapshot_mismatch",
+		"round": round_number,
+		"unit_id": unit_id,
+		"field": field,
+		"expected": expected,
+		"produced": produced,
+	}
 
 static func _verify_digest_chain(replay: Dictionary) -> Array[String]:
 	var errors: Array[String] = []

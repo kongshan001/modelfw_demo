@@ -5,6 +5,8 @@ signal idle
 
 var ctx: BattleContext
 var playback_speed := 1.0
+# 调试浮层用：当前正在播放的命令（含 event 的命令可用于显示事件 seq/type）。
+var current_command: BattleCommand = null
 var _queue: Array[BattleCommand] = []
 var _playing := false
 var _skip := false
@@ -36,6 +38,7 @@ func play_all() -> void:
 		if generation != _generation:
 			break
 		var cmd: BattleCommand = _queue.pop_front()
+		current_command = cmd
 		if _skip:
 			cmd.skip(ctx)
 			continue
@@ -84,6 +87,12 @@ func is_playing() -> bool:
 
 func set_step_mode(enabled: bool) -> void:
 	_step_mode = enabled
+
+func is_step_mode() -> bool:
+	return _step_mode
+
+func queue_size() -> int:
+	return _queue.size()
 
 func request_step() -> void:
 	_step_requested = true
