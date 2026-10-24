@@ -94,7 +94,11 @@ godot-battle/
 extends RefCounted
 
 func run(t: TestContext) -> void:
-    t.ok(true, "test runner works")
+    var probe := TestContext.new()
+    probe.ok(false, "intentional failure")
+    probe.eq(1, 2, "intentional mismatch")
+    t.eq(probe.assertions, 2, "TestContext counts assertions")
+    t.eq(probe.failures.size(), 2, "TestContext records failures")
 ```
 
 - [ ] **Step 2: 运行，确认失败**
@@ -225,8 +229,8 @@ godot --headless --path godot-battle -s tests/run_tests.gd
 Expected:
 
 ```text
-PASS test_smoke.gd (1 assertions)
-RESULT: 1 assertions, 0 failures
+PASS test_smoke.gd (2 assertions)
+RESULT: 2 assertions, 0 failures
 ```
 
 - [ ] **Step 5: 提交**
