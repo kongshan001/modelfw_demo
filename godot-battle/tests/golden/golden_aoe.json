@@ -1,0 +1,4791 @@
+{
+  "digests": [
+    {
+      "round": 1,
+      "sha256": "sha256:cd9cc95d7ab94d0c482af407fa6f2e560b09e9348e79b1fe22ebfc69e9fd2787"
+    },
+    {
+      "round": 2,
+      "sha256": "sha256:48e747e58e36bafa5c68f9ac03bd9a66312dd6b16f76d7009330fb8c25fed10d"
+    },
+    {
+      "round": 3,
+      "sha256": "sha256:bf7f4d59f7cfb37f099c676d5b012dc08b7ceb7b8d1428c775f32fdafda6a0b2"
+    },
+    {
+      "round": 4,
+      "sha256": "sha256:a302f8307b761df68681a1cb616c5f276d0a8288cfb40222a98a07aa03a88b84"
+    },
+    {
+      "round": 5,
+      "sha256": "sha256:c4617c984375bbfdf3d81a54345fe20d242b46a494c70d3c9e88e5d8a5afe422"
+    },
+    {
+      "round": 6,
+      "sha256": "sha256:588228f4d75dc7adec1dc80a28d6f09c23716a65d5b3b521291478d948b5afcc"
+    },
+    {
+      "round": 7,
+      "sha256": "sha256:964572ed3712773f68e2ec1b55c9610dec43eb64bd2b9f64d569da8273afa534"
+    },
+    {
+      "round": 8,
+      "sha256": "sha256:560e603e8f24182cb782697a9f5713e488224c2f2384aacfed56c8984ab7b9d1"
+    },
+    {
+      "round": 9,
+      "sha256": "sha256:b05a57e38efc92cb59842a2ac5f6b0a6721d1e595a0c6873decf2ec628d989d7"
+    },
+    {
+      "round": 10,
+      "sha256": "sha256:f284506561f25707dad3c627ec34fb5eb648840b3702ca6cd28169f17f923992"
+    },
+    {
+      "round": 11,
+      "sha256": "sha256:b0b3e23d37a2ff2208ac7d03cd944c31f1ebd9aecba9dc649d4c0ed26b071d7c"
+    },
+    {
+      "round": 12,
+      "sha256": "sha256:44bf77891ad898557e7aa524dc8ba03293cca3759448886843ad739c80d0de9b"
+    }
+  ],
+  "events": [
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "hero_mage",
+          "boss_fox",
+          "hero_healer",
+          "mob_b",
+          "mob_a",
+          "boss_brute"
+        ]
+      },
+      "round": 1,
+      "seq": 1,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "hero_mage",
+        "boss_fox",
+        "hero_healer",
+        "mob_b",
+        "mob_a",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "sweep"
+      },
+      "round": 1,
+      "seq": 2,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_a",
+        "mob_b",
+        "boss_brute"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 30,
+        "mp_after": 50,
+        "mp_before": 80,
+        "reason": "skill",
+        "skill_id": "sweep"
+      },
+      "round": 1,
+      "seq": 3,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 80,
+        "crit": false,
+        "hp_after": 300,
+        "hp_before": 380,
+        "source_type": "sweep"
+      },
+      "round": 1,
+      "seq": 4,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 78,
+        "crit": false,
+        "hp_after": 302,
+        "hp_before": 380,
+        "source_type": "sweep"
+      },
+      "round": 1,
+      "seq": 5,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 57,
+        "crit": false,
+        "hp_after": 663,
+        "hp_before": 720,
+        "source_type": "sweep"
+      },
+      "round": 1,
+      "seq": 6,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 7,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a",
+        "mob_b",
+        "boss_brute",
+        "boss_fox"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 45,
+        "mp_after": 175,
+        "mp_before": 220,
+        "reason": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 8,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 97,
+        "crit": false,
+        "hp_after": 203,
+        "hp_before": 300,
+        "source_type": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 9,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 101,
+        "crit": false,
+        "hp_after": 201,
+        "hp_before": 302,
+        "source_type": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 10,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 105,
+        "crit": false,
+        "hp_after": 558,
+        "hp_before": 663,
+        "source_type": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 11,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 94,
+        "crit": false,
+        "hp_after": 326,
+        "hp_before": 420,
+        "source_type": "thunder_storm"
+      },
+      "round": 1,
+      "seq": 12,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "fox_fire"
+      },
+      "round": 1,
+      "seq": 13,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 20,
+        "mp_after": 100,
+        "mp_before": 120,
+        "reason": "skill",
+        "skill_id": "fox_fire"
+      },
+      "round": 1,
+      "seq": 14,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 102,
+        "crit": false,
+        "hp_after": 438,
+        "hp_before": 540,
+        "source_type": "fox_fire"
+      },
+      "round": 1,
+      "seq": 15,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 1,
+      "seq": 16,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer",
+        "hero_mage",
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "mp_after": 130,
+        "mp_before": 180,
+        "reason": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 1,
+      "seq": 17,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 80,
+        "hp_after": 518,
+        "hp_before": 438
+      },
+      "round": 1,
+      "seq": 18,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 0,
+        "hp_after": 460,
+        "hp_before": 460
+      },
+      "round": 1,
+      "seq": 19,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 0,
+        "hp_after": 620,
+        "hp_before": 620
+      },
+      "round": 1,
+      "seq": 20,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "poison_strike"
+      },
+      "round": 1,
+      "seq": 21,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 29,
+        "crit": false,
+        "hp_after": 591,
+        "hp_before": 620,
+        "source_type": "poison_strike"
+      },
+      "round": 1,
+      "seq": 22,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "duration": 3,
+        "status_id": "poison"
+      },
+      "round": 1,
+      "seq": 23,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 1,
+      "seq": 24,
+      "source_id": "mob_a",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "crit": false,
+        "hp_after": 468,
+        "hp_before": 518,
+        "source_type": "attack"
+      },
+      "round": 1,
+      "seq": 25,
+      "source_id": "mob_a",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "war_cry"
+      },
+      "round": 1,
+      "seq": 26,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 15,
+        "mp_after": 45,
+        "mp_before": 60,
+        "reason": "skill",
+        "skill_id": "war_cry"
+      },
+      "round": 1,
+      "seq": 27,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "duration": 2,
+        "status_id": "war_cry"
+      },
+      "round": 1,
+      "seq": 28,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "round": 1
+      },
+      "round": 1,
+      "seq": 29,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "mob_b",
+          "mob_a",
+          "boss_brute"
+        ]
+      },
+      "round": 2,
+      "seq": 30,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "mob_b",
+        "mob_a",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "hp_after": 541,
+        "hp_before": 591,
+        "status_id": "poison"
+      },
+      "round": 2,
+      "seq": 31,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "sweep"
+      },
+      "round": 2,
+      "seq": 32,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_a",
+        "mob_b",
+        "boss_brute"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 30,
+        "mp_after": 20,
+        "mp_before": 50,
+        "reason": "skill",
+        "skill_id": "sweep"
+      },
+      "round": 2,
+      "seq": 33,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 73,
+        "crit": false,
+        "hp_after": 130,
+        "hp_before": 203,
+        "source_type": "sweep"
+      },
+      "round": 2,
+      "seq": 34,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 71,
+        "crit": false,
+        "hp_after": 130,
+        "hp_before": 201,
+        "source_type": "sweep"
+      },
+      "round": 2,
+      "seq": 35,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 62,
+        "crit": false,
+        "hp_after": 496,
+        "hp_before": 558,
+        "source_type": "sweep"
+      },
+      "round": 2,
+      "seq": 36,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 2,
+      "seq": 37,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 25,
+        "mp_after": 75,
+        "mp_before": 100,
+        "reason": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 2,
+      "seq": 38,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "duration": 1,
+        "status_id": "sealed"
+      },
+      "round": 2,
+      "seq": 39,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 40,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a",
+        "mob_b",
+        "boss_brute",
+        "boss_fox"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 45,
+        "mp_after": 130,
+        "mp_before": 175,
+        "reason": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 41,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 108,
+        "crit": false,
+        "hp_after": 22,
+        "hp_before": 130,
+        "source_type": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 42,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 109,
+        "crit": false,
+        "hp_after": 21,
+        "hp_before": 130,
+        "source_type": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 43,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 98,
+        "crit": false,
+        "hp_after": 398,
+        "hp_before": 496,
+        "source_type": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 44,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 88,
+        "crit": false,
+        "hp_after": 238,
+        "hp_before": 326,
+        "source_type": "thunder_storm"
+      },
+      "round": 2,
+      "seq": 45,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "sealed"
+      },
+      "round": 2,
+      "seq": 46,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_skipped"
+    },
+    {
+      "data": {
+        "reason": "sealed",
+        "status_id": "sealed"
+      },
+      "round": 2,
+      "seq": 47,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "poison_strike"
+      },
+      "round": 2,
+      "seq": 48,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 37,
+        "crit": false,
+        "hp_after": 431,
+        "hp_before": 468,
+        "source_type": "poison_strike"
+      },
+      "round": 2,
+      "seq": 49,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "duration": 3,
+        "status_id": "poison"
+      },
+      "round": 2,
+      "seq": 50,
+      "source_id": "mob_b",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 2,
+      "seq": 51,
+      "source_id": "mob_a",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 57,
+        "crit": false,
+        "hp_after": 403,
+        "hp_before": 460,
+        "source_type": "attack"
+      },
+      "round": 2,
+      "seq": 52,
+      "source_id": "mob_a",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "ground_split"
+      },
+      "round": 2,
+      "seq": 53,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer",
+        "hero_mage"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 20,
+        "mp_after": 25,
+        "mp_before": 45,
+        "reason": "skill",
+        "skill_id": "ground_split"
+      },
+      "round": 2,
+      "seq": 54,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 86,
+        "crit": false,
+        "hp_after": 345,
+        "hp_before": 431,
+        "source_type": "ground_split"
+      },
+      "round": 2,
+      "seq": 55,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 106,
+        "crit": false,
+        "hp_after": 297,
+        "hp_before": 403,
+        "source_type": "ground_split"
+      },
+      "round": 2,
+      "seq": 56,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 2
+      },
+      "round": 2,
+      "seq": 57,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "mob_b",
+          "mob_a",
+          "boss_brute"
+        ]
+      },
+      "round": 3,
+      "seq": 58,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "mob_b",
+        "mob_a",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "hp_after": 491,
+        "hp_before": 541,
+        "status_id": "poison"
+      },
+      "round": 3,
+      "seq": 59,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "amount": 43,
+        "hp_after": 302,
+        "hp_before": 345,
+        "status_id": "poison"
+      },
+      "round": 3,
+      "seq": 60,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 3,
+      "seq": 61,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 3,
+      "seq": 62,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 3,
+      "seq": 63,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 3,
+      "seq": 64,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 3,
+      "seq": 65,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 25,
+        "mp_after": 50,
+        "mp_before": 75,
+        "reason": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 3,
+      "seq": 66,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "status_id": "sealed"
+      },
+      "round": 3,
+      "seq": 67,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_resist"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 68,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a",
+        "mob_b",
+        "boss_brute",
+        "boss_fox"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 45,
+        "mp_after": 85,
+        "mp_before": 130,
+        "reason": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 69,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 102,
+        "crit": false,
+        "hp_after": 0,
+        "hp_before": 22,
+        "source_type": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 70,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+
+      },
+      "round": 3,
+      "seq": 71,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_a"
+      ],
+      "type": "death"
+    },
+    {
+      "data": {
+        "amount": 107,
+        "crit": false,
+        "hp_after": 0,
+        "hp_before": 21,
+        "source_type": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 72,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+
+      },
+      "round": 3,
+      "seq": 73,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "mob_b"
+      ],
+      "type": "death"
+    },
+    {
+      "data": {
+        "amount": 109,
+        "crit": false,
+        "hp_after": 289,
+        "hp_before": 398,
+        "source_type": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 74,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 79,
+        "crit": false,
+        "hp_after": 159,
+        "hp_before": 238,
+        "source_type": "thunder_storm"
+      },
+      "round": 3,
+      "seq": 75,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 3,
+      "seq": 76,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer",
+        "hero_mage",
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "mp_after": 80,
+        "mp_before": 130,
+        "reason": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 3,
+      "seq": 77,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 81,
+        "hp_after": 383,
+        "hp_before": 302
+      },
+      "round": 3,
+      "seq": 78,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 87,
+        "hp_after": 384,
+        "hp_before": 297
+      },
+      "round": 3,
+      "seq": 79,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 87,
+        "hp_after": 578,
+        "hp_before": 491
+      },
+      "round": 3,
+      "seq": 80,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "reason": "dead"
+      },
+      "round": 3,
+      "seq": 81,
+      "source_id": "mob_b",
+      "target_ids": [],
+      "type": "action_skipped"
+    },
+    {
+      "data": {
+        "reason": "dead"
+      },
+      "round": 3,
+      "seq": 82,
+      "source_id": "mob_a",
+      "target_ids": [],
+      "type": "action_skipped"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 3,
+      "seq": 83,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 83,
+        "crit": false,
+        "hp_after": 300,
+        "hp_before": 383,
+        "source_type": "attack"
+      },
+      "round": 3,
+      "seq": 84,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "duration",
+        "status_id": "war_cry"
+      },
+      "round": 3,
+      "seq": 85,
+      "source_id": "",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "round": 3
+      },
+      "round": 3,
+      "seq": 86,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "hero_mage",
+          "boss_fox",
+          "hero_healer",
+          "boss_brute"
+        ]
+      },
+      "round": 4,
+      "seq": 87,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "hero_mage",
+        "boss_fox",
+        "hero_healer",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "hp_after": 528,
+        "hp_before": 578,
+        "status_id": "poison"
+      },
+      "round": 4,
+      "seq": 88,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "amount": 43,
+        "hp_after": 257,
+        "hp_before": 300,
+        "status_id": "poison"
+      },
+      "round": 4,
+      "seq": 89,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 4,
+      "seq": 90,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 4,
+      "seq": 91,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 4,
+      "seq": 92,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 4,
+      "seq": 93,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 4,
+      "seq": 94,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 4,
+      "seq": 95,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute",
+        "boss_fox"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 45,
+        "mp_after": 40,
+        "mp_before": 85,
+        "reason": "skill",
+        "skill_id": "thunder_storm"
+      },
+      "round": 4,
+      "seq": 96,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 98,
+        "crit": false,
+        "hp_after": 191,
+        "hp_before": 289,
+        "source_type": "thunder_storm"
+      },
+      "round": 4,
+      "seq": 97,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "amount": 78,
+        "crit": false,
+        "hp_after": 81,
+        "hp_before": 159,
+        "source_type": "thunder_storm"
+      },
+      "round": 4,
+      "seq": 98,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 4,
+      "seq": 99,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 25,
+        "mp_after": 25,
+        "mp_before": 50,
+        "reason": "skill",
+        "skill_id": "charm_seal"
+      },
+      "round": 4,
+      "seq": 100,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "duration": 1,
+        "status_id": "sealed"
+      },
+      "round": 4,
+      "seq": 101,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "reason": "sealed"
+      },
+      "round": 4,
+      "seq": 102,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_skipped"
+    },
+    {
+      "data": {
+        "reason": "sealed",
+        "status_id": "sealed"
+      },
+      "round": 4,
+      "seq": 103,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "war_cry"
+      },
+      "round": 4,
+      "seq": 104,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 15,
+        "mp_after": 10,
+        "mp_before": 25,
+        "reason": "skill",
+        "skill_id": "war_cry"
+      },
+      "round": 4,
+      "seq": 105,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "duration": 2,
+        "status_id": "war_cry"
+      },
+      "round": 4,
+      "seq": 106,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "reason": "duration",
+        "status_id": "poison"
+      },
+      "round": 4,
+      "seq": 107,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "round": 4
+      },
+      "round": 4,
+      "seq": 108,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "boss_brute"
+        ]
+      },
+      "round": 5,
+      "seq": 109,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "amount": 43,
+        "hp_after": 214,
+        "hp_before": 257,
+        "status_id": "poison"
+      },
+      "round": 5,
+      "seq": 110,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_tick"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 5,
+      "seq": 111,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 5,
+      "seq": 112,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 5,
+      "seq": 113,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 5,
+      "seq": 114,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 5,
+      "seq": 115,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 5,
+      "seq": 116,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "fox_fire"
+      },
+      "round": 5,
+      "seq": 117,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 20,
+        "mp_after": 5,
+        "mp_before": 25,
+        "reason": "skill",
+        "skill_id": "fox_fire"
+      },
+      "round": 5,
+      "seq": 118,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "boss_fox"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 105,
+        "crit": false,
+        "hp_after": 109,
+        "hp_before": 214,
+        "source_type": "fox_fire"
+      },
+      "round": 5,
+      "seq": 119,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 5,
+      "seq": 120,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 5,
+      "seq": 121,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 5,
+      "seq": 122,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 5,
+      "seq": 123,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer",
+        "hero_mage",
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 50,
+        "mp_after": 30,
+        "mp_before": 80,
+        "reason": "skill",
+        "skill_id": "heal_all"
+      },
+      "round": 5,
+      "seq": 124,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "mp_change"
+    },
+    {
+      "data": {
+        "amount": 82,
+        "hp_after": 191,
+        "hp_before": 109
+      },
+      "round": 5,
+      "seq": 125,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 76,
+        "hp_after": 460,
+        "hp_before": 384
+      },
+      "round": 5,
+      "seq": 126,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "amount": 83,
+        "hp_after": 611,
+        "hp_before": 528
+      },
+      "round": 5,
+      "seq": 127,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "heal"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 5,
+      "seq": 128,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 89,
+        "crit": false,
+        "hp_after": 102,
+        "hp_before": 191,
+        "source_type": "attack"
+      },
+      "round": 5,
+      "seq": 129,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "duration",
+        "status_id": "poison"
+      },
+      "round": 5,
+      "seq": 130,
+      "source_id": "",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "round": 5
+      },
+      "round": 5,
+      "seq": 131,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "boss_brute"
+        ]
+      },
+      "round": 6,
+      "seq": 132,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 6,
+      "seq": 133,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 6,
+      "seq": 134,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 6,
+      "seq": 135,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 6,
+      "seq": 136,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 6,
+      "seq": 137,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 6,
+      "seq": 138,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 6,
+      "seq": 139,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 6,
+      "seq": 140,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 101,
+        "hp_before": 102,
+        "source_type": "attack"
+      },
+      "round": 6,
+      "seq": 141,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 6,
+      "seq": 142,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 6,
+      "seq": 143,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 6,
+      "seq": 144,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 6,
+      "seq": 145,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 6,
+      "seq": 146,
+      "source_id": "hero_healer",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 6,
+      "seq": 147,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 6,
+      "seq": 148,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 6,
+      "seq": 149,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 44,
+        "crit": false,
+        "hp_after": 57,
+        "hp_before": 101,
+        "source_type": "attack"
+      },
+      "round": 6,
+      "seq": 150,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "duration",
+        "status_id": "war_cry"
+      },
+      "round": 6,
+      "seq": 151,
+      "source_id": "",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "round": 6
+      },
+      "round": 6,
+      "seq": 152,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "boss_brute"
+        ]
+      },
+      "round": 7,
+      "seq": 153,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 7,
+      "seq": 154,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 7,
+      "seq": 155,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 7,
+      "seq": 156,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 157,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 7,
+      "seq": 158,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 7,
+      "seq": 159,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 160,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 7,
+      "seq": 161,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 56,
+        "hp_before": 57,
+        "source_type": "attack"
+      },
+      "round": 7,
+      "seq": 162,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 163,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 7,
+      "seq": 164,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 7,
+      "seq": 165,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 166,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 167,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 7,
+      "seq": 168,
+      "source_id": "hero_healer",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 7,
+      "seq": 169,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 7,
+      "seq": 170,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 7,
+      "seq": 171,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 32,
+        "crit": false,
+        "hp_after": 24,
+        "hp_before": 56,
+        "source_type": "attack"
+      },
+      "round": 7,
+      "seq": 172,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 7
+      },
+      "round": 7,
+      "seq": 173,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "hero_healer",
+          "boss_brute"
+        ]
+      },
+      "round": 8,
+      "seq": 174,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "hero_healer",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 8,
+      "seq": 175,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 8,
+      "seq": 176,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 8,
+      "seq": 177,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 178,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 8,
+      "seq": 179,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 8,
+      "seq": 180,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 181,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 8,
+      "seq": 182,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 23,
+        "hp_before": 24,
+        "source_type": "attack"
+      },
+      "round": 8,
+      "seq": 183,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 184,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 8,
+      "seq": 185,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 8,
+      "seq": 186,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 187,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 188,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 8,
+      "seq": 189,
+      "source_id": "hero_healer",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 8,
+      "seq": 190,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 8,
+      "seq": 191,
+      "source_id": "hero_healer",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 8,
+      "seq": 192,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 35,
+        "crit": false,
+        "hp_after": 0,
+        "hp_before": 23,
+        "source_type": "attack"
+      },
+      "round": 8,
+      "seq": 193,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+
+      },
+      "round": 8,
+      "seq": 194,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_healer"
+      ],
+      "type": "death"
+    },
+    {
+      "data": {
+        "round": 8
+      },
+      "round": 8,
+      "seq": 195,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "boss_brute"
+        ]
+      },
+      "round": 9,
+      "seq": 196,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 9,
+      "seq": 197,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 9,
+      "seq": 198,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 9,
+      "seq": 199,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 9,
+      "seq": 200,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 9,
+      "seq": 201,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 9,
+      "seq": 202,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 9,
+      "seq": 203,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 610,
+        "hp_before": 611,
+        "source_type": "attack"
+      },
+      "round": 9,
+      "seq": 204,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 9,
+      "seq": 205,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 9,
+      "seq": 206,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 9,
+      "seq": 207,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 9,
+      "seq": 208,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 9,
+      "seq": 209,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 33,
+        "crit": false,
+        "hp_after": 577,
+        "hp_before": 610,
+        "source_type": "attack"
+      },
+      "round": 9,
+      "seq": 210,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 9
+      },
+      "round": 9,
+      "seq": 211,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "boss_brute"
+        ]
+      },
+      "round": 10,
+      "seq": 212,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 10,
+      "seq": 213,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 10,
+      "seq": 214,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 10,
+      "seq": 215,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 10,
+      "seq": 216,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 10,
+      "seq": 217,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 10,
+      "seq": 218,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 10,
+      "seq": 219,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 576,
+        "hp_before": 577,
+        "source_type": "attack"
+      },
+      "round": 10,
+      "seq": 220,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 10,
+      "seq": 221,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 10,
+      "seq": 222,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 10,
+      "seq": 223,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 10,
+      "seq": 224,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 10,
+      "seq": 225,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 31,
+        "crit": false,
+        "hp_after": 545,
+        "hp_before": 576,
+        "source_type": "attack"
+      },
+      "round": 10,
+      "seq": 226,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 10
+      },
+      "round": 10,
+      "seq": 227,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "boss_brute"
+        ]
+      },
+      "round": 11,
+      "seq": 228,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 11,
+      "seq": 229,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 11,
+      "seq": 230,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 11,
+      "seq": 231,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 11,
+      "seq": 232,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 11,
+      "seq": 233,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 11,
+      "seq": 234,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 11,
+      "seq": 235,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 1,
+        "crit": false,
+        "hp_after": 544,
+        "hp_before": 545,
+        "source_type": "attack"
+      },
+      "round": 11,
+      "seq": 236,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 11,
+      "seq": 237,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 11,
+      "seq": 238,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 11,
+      "seq": 239,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 11,
+      "seq": 240,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 11,
+      "seq": 241,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 34,
+        "crit": false,
+        "hp_after": 510,
+        "hp_before": 544,
+        "source_type": "attack"
+      },
+      "round": 11,
+      "seq": 242,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 11
+      },
+      "round": 11,
+      "seq": 243,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    },
+    {
+      "data": {
+        "order": [
+          "hero_swordsman",
+          "boss_fox",
+          "hero_mage",
+          "boss_brute"
+        ]
+      },
+      "round": 12,
+      "seq": 244,
+      "source_id": "",
+      "target_ids": [
+        "hero_swordsman",
+        "boss_fox",
+        "hero_mage",
+        "boss_brute"
+      ],
+      "type": "round_start"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 12,
+      "seq": 245,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "invalid"
+      },
+      "round": 12,
+      "seq": 246,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "boss_brute"
+      ],
+      "type": "intent_rejected"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 12,
+      "seq": 247,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 12,
+      "seq": 248,
+      "source_id": "hero_swordsman",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 12,
+      "seq": 249,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 12,
+      "seq": 250,
+      "source_id": "hero_swordsman",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 12,
+      "seq": 251,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 3,
+        "crit": true,
+        "hp_after": 457,
+        "hp_before": 460,
+        "source_type": "attack"
+      },
+      "round": 12,
+      "seq": 252,
+      "source_id": "boss_fox",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "reason": "owner_action",
+        "status_id": "defending"
+      },
+      "round": 12,
+      "seq": 253,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_expire"
+    },
+    {
+      "data": {
+        "kind": "defend"
+      },
+      "round": 12,
+      "seq": 254,
+      "source_id": "hero_mage",
+      "target_ids": [],
+      "type": "action_start"
+    },
+    {
+      "data": {
+
+      },
+      "round": 12,
+      "seq": 255,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "defend"
+    },
+    {
+      "data": {
+        "status_id": "defending"
+      },
+      "round": 12,
+      "seq": 256,
+      "source_id": "hero_mage",
+      "target_ids": [
+        "hero_mage"
+      ],
+      "type": "status_apply"
+    },
+    {
+      "data": {
+        "kind": "attack"
+      },
+      "round": 12,
+      "seq": 257,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "action_start"
+    },
+    {
+      "data": {
+        "amount": 31,
+        "crit": false,
+        "hp_after": 479,
+        "hp_before": 510,
+        "source_type": "attack"
+      },
+      "round": 12,
+      "seq": 258,
+      "source_id": "boss_brute",
+      "target_ids": [
+        "hero_swordsman"
+      ],
+      "type": "damage"
+    },
+    {
+      "data": {
+        "round": 12
+      },
+      "round": 12,
+      "seq": 259,
+      "source_id": "",
+      "target_ids": [],
+      "type": "round_end"
+    }
+  ],
+  "meta": {
+    "battle_id": "enc_bamboo_01",
+    "build": "debug",
+    "content_hash": "sha256:4381648dff17081e3d1bdd6ace73753fcc0bffc562ee03e4f24e1b6e0ef25975",
+    "created_at": "2026-10-24T13:33:44",
+    "engine": "4.6-stable (official)",
+    "seed": 1002
+  },
+  "replay_version": 1,
+  "result": {
+    "digest": "sha256:44bf77891ad898557e7aa524dc8ba03293cca3759448886843ad739c80d0de9b",
+    "outcome": 0,
+    "rounds": 12
+  },
+  "rounds": [
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 1
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 2
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "mob_a"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 3
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 4
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 5
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 6
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 7
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_healer",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "heal_all",
+          "target_ids": [
+            "hero_healer"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 8
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 9
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 10
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 11
+    },
+    {
+      "debug_ops": [],
+      "intents": [
+        {
+          "actor_id": "hero_swordsman",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "sweep",
+          "target_ids": [
+            "boss_brute"
+          ]
+        },
+        {
+          "actor_id": "hero_mage",
+          "item_id": "",
+          "kind": 1,
+          "skill_id": "thunder_storm",
+          "target_ids": [
+            "boss_brute"
+          ]
+        }
+      ],
+      "resolved": true,
+      "round": 12
+    }
+  ],
+  "snapshots": [
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 1,
+      "units": [
+        {
+          "alive": true,
+          "hp": 620,
+          "id": "hero_swordsman",
+          "mp": 80,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 220,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 540,
+          "id": "hero_healer",
+          "mp": 180,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 380,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 380,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 720,
+          "id": "boss_brute",
+          "mp": 60,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 420,
+          "id": "boss_fox",
+          "mp": 120,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 2,
+      "units": [
+        {
+          "alive": true,
+          "hp": 591,
+          "id": "hero_swordsman",
+          "mp": 50,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 3
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 175,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 468,
+          "id": "hero_healer",
+          "mp": 130,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 203,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 201,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 558,
+          "id": "boss_brute",
+          "mp": 45,
+          "statuses": [
+            {
+              "id": "war_cry",
+              "remaining": 2
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 326,
+          "id": "boss_fox",
+          "mp": 100,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 3,
+      "units": [
+        {
+          "alive": true,
+          "hp": 541,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 2
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 297,
+          "id": "hero_mage",
+          "mp": 130,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 345,
+          "id": "hero_healer",
+          "mp": 130,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 3
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 22,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 21,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 398,
+          "id": "boss_brute",
+          "mp": 25,
+          "statuses": [
+            {
+              "id": "war_cry",
+              "remaining": 1
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 238,
+          "id": "boss_fox",
+          "mp": 75,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 4,
+      "units": [
+        {
+          "alive": true,
+          "hp": 578,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 1
+            },
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 384,
+          "id": "hero_mage",
+          "mp": 85,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 300,
+          "id": "hero_healer",
+          "mp": 80,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 2
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 289,
+          "id": "boss_brute",
+          "mp": 25,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 159,
+          "id": "boss_fox",
+          "mp": 50,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 5,
+      "units": [
+        {
+          "alive": true,
+          "hp": 528,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 384,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 257,
+          "id": "hero_healer",
+          "mp": 80,
+          "statuses": [
+            {
+              "id": "poison",
+              "remaining": 1
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": [
+            {
+              "id": "war_cry",
+              "remaining": 2
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 25,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 6,
+      "units": [
+        {
+          "alive": true,
+          "hp": 611,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 102,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": [
+            {
+              "id": "war_cry",
+              "remaining": 1
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 7,
+      "units": [
+        {
+          "alive": true,
+          "hp": 611,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 57,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 8,
+      "units": [
+        {
+          "alive": true,
+          "hp": 611,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 24,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 9,
+      "units": [
+        {
+          "alive": true,
+          "hp": 611,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 10,
+      "units": [
+        {
+          "alive": true,
+          "hp": 577,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 11,
+      "units": [
+        {
+          "alive": true,
+          "hp": 545,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    },
+    {
+      "item_uses": {
+        "potion_hp": 3,
+        "potion_mp": 3
+      },
+      "round": 12,
+      "units": [
+        {
+          "alive": true,
+          "hp": 510,
+          "id": "hero_swordsman",
+          "mp": 20,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": true,
+          "hp": 460,
+          "id": "hero_mage",
+          "mp": 40,
+          "statuses": [
+            {
+              "id": "defending",
+              "remaining": 99
+            }
+          ]
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "hero_healer",
+          "mp": 30,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_a",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": false,
+          "hp": 0,
+          "id": "mob_b",
+          "mp": 0,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 191,
+          "id": "boss_brute",
+          "mp": 10,
+          "statuses": []
+        },
+        {
+          "alive": true,
+          "hp": 81,
+          "id": "boss_fox",
+          "mp": 5,
+          "statuses": []
+        }
+      ]
+    }
+  ]
+}
