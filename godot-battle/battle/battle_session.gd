@@ -137,8 +137,10 @@ func _show_replay_label() -> void:
 	_replay_label = panel
 
 func _build_units() -> void:
-	var enemy_positions := [Vector2(180, 700), Vector2(350, 740), Vector2(520, 780), Vector2(690, 820)]
-	var ally_positions := [Vector2(980, 760), Vector2(1150, 730), Vector2(1280, 700)]
+	var enemy_positions := [Vector2(180, 700), Vector2(350, 740), Vector2(500, 780), Vector2(700, 820)]
+	# 剑客贴指令面板左侧（命中区右缘 1355，面板 1368，留 13px）；
+	# 法师/医师向左展开，避免法球与右尾落入相邻命中区。
+	var ally_positions := [Vector2(1290, 760), Vector2(1120, 730), Vector2(940, 700)]
 	for index in engine.state.units.size():
 		var unit := engine.state.units[index]
 		var view := UnitView.new()

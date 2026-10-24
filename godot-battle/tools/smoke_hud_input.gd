@@ -266,13 +266,24 @@ func _check_layout() -> void:
 			if panel_rect.intersects(info):
 				_fail("unit %s info rect %s overlaps %s %s" % [view.unit_id, str(info), panel.name, str(panel_rect)])
 				return
+	var min_gap := INF
 	for i in views.size():
 		for j in range(i + 1, views.size()):
 			var a: UnitView = views[i]
 			var b: UnitView = views[j]
-			if a.hit_rect().intersects(b.hit_rect()):
-				_fail("living unit hit rects overlap: %s %s vs %s %s" % [a.unit_id, str(a.hit_rect()), b.unit_id, str(b.hit_rect())])
+			var a_rect := a.hit_rect()
+			var b_rect := b.hit_rect()
+			if a_rect.intersects(b_rect):
+				_fail("living unit hit rects overlap: %s %s vs %s %s" % [a.unit_id, str(a_rect), b.unit_id, str(b_rect)])
 				return
+			var gap := b_rect.position.x - a_rect.end.x if a_rect.end.x <= b_rect.position.x else a_rect.position.x - b_rect.end.x
+			min_gap = minf(min_gap, gap)
+	if min_gap < 16.0:
+		_fail("unit hit rects too close: min horizontal gap=%.1fpx (want >=16px)" % min_gap)
+		return
+	print("HUD_INPUT: unit hit rect min horizontal gap=%.1fpx" % min_gap)
+	if not _check_appendage_points(views):
+		return
 	var swordsman: UnitView = _view_of(&"hero_swordsman")
 	var healer: UnitView = _view_of(&"hero_healer")
 	var command_panel := _hud.get_node_or_null("CommandPanel") as Control
@@ -284,6 +295,34 @@ func _check_layout() -> void:
 			return
 		print("HUD_INPUT: swordsman/command-panel gap=%.1fpx healer/command-panel gap=%.1fpx" % [swordsman_gap, healer_gap])
 	print("HUD_INPUT: 7 unit hit rects non-overlapping and clear of HUD panels/info bands")
+
+func _check_appendage_points(views: Array) -> bool:
+	# 附属件探针：法球 / 双尾尖 / 斧头必须落在自身命中区内，且不落入任何邻居命中区。
+	# 仅做矩形探针会漏掉“命中区有缝但装饰件越界”的情况。
+	for required in [&"hero_mage", &"boss_fox", &"boss_brute"]:
+		var required_view := _view_of(required)
+		if required_view == null or required_view.appendage_points().is_empty():
+			_fail("missing appendage points for %s" % required)
+			return false
+	var checked := 0
+	for value in views:
+		var view: UnitView = value
+		var owner_rect := view.hit_rect()
+		for local in view.appendage_points():
+			var world := view.to_global(local)
+			if not owner_rect.has_point(world):
+				_fail("appendage point %s of %s is outside its own hit rect %s (world %s)" % [str(local), view.unit_id, str(owner_rect), str(world)])
+				return false
+			for other_value in views:
+				var other: UnitView = other_value
+				if other == view:
+					continue
+				if other.hit_rect().has_point(world):
+					_fail("appendage point %s of %s falls in %s hit rect %s (world %s)" % [str(local), view.unit_id, other.unit_id, str(other.hit_rect()), str(world)])
+					return false
+			checked += 1
+	print("HUD_INPUT: %d appendage points inside owner hit rects and clear of all neighbors" % checked)
+	return true
 
 func _sweep_unit_clicks() -> void:
 	var hits := {}

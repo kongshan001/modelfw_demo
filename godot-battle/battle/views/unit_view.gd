@@ -5,8 +5,8 @@ signal clicked(view: UnitView)
 
 # 原创程序化 Q 版角色。所有角色共用同一套描边 / 高光 / 脸部语言，
 # 只在轮廓、配色、发型与武器上区分职业与阵营。
-# 设计坐标系：脚底 y=0，向上为负；普通角色约 250px，小妖约 215px，
-# 妖将约 290px（draw_set_transform 缩放，UI 与命中区不受影响）。
+# 设计坐标系：脚底 y=0，向上为负；普通角色身体约 250–270px、含武器约 300px，
+# 小妖约 225px，妖将约 300px（draw_set_transform 缩放，UI 与命中区不受影响）。
 
 const BAR_WIDTH := 104.0
 const BAR_HEIGHT := 8.0
@@ -106,7 +106,7 @@ func _art_scale_for(id: String) -> float:
 			return 1.0
 
 func _info_offset_for(id: String) -> float:
-	# 小妖实际身高约 200px，信息条贴近头顶；其他单位保持原有悬空高度。
+	# 小妖实际身高约 225px，信息条贴近头顶；其他单位保持原有悬空高度。
 	match id:
 		"mob_a", "mob_b":
 			return 76.0
@@ -270,14 +270,14 @@ func _draw_mage() -> void:
 	var cream := Color(0.9, 0.96, 0.95)
 	var hair := Color(0.11, 0.18, 0.28)
 	var hair_hi := Color(0.22, 0.38, 0.5)
-	# 法杖（身后）
-	_line(Vector2(66, -8), Vector2(88, -264), Color(0.3, 0.22, 0.17), 7.0)
+	# 法杖（身后，杖身贴近身体，法球落在自身命中区内）
+	_line(Vector2(44, -8), Vector2(52, -264), Color(0.3, 0.22, 0.17), 7.0)
 	for band_y: float in [-80.0, -158.0, -232.0]:
-		draw_line(Vector2(70, band_y), Vector2(84, band_y + 3), GOLD_DARK, 4.0, true)
-	draw_circle(Vector2(88, -280), 38.0, Color(0.5, 0.9, 1.0, 0.09))
-	draw_circle(Vector2(88, -280), 26.0, Color(0.55, 0.93, 1.0, 0.16))
-	_circle(Vector2(88, -280), 15.0, Color(0.58, 0.92, 1.0), 3.0)
-	draw_circle(Vector2(84, -285), 5.0, Color(1, 1, 1, 0.85))
+		draw_line(Vector2(46, band_y), Vector2(58, band_y + 3), GOLD_DARK, 4.0, true)
+	draw_circle(Vector2(52, -280), 34.0, Color(0.5, 0.9, 1.0, 0.09))
+	draw_circle(Vector2(52, -280), 24.0, Color(0.55, 0.93, 1.0, 0.16))
+	_circle(Vector2(52, -280), 15.0, Color(0.58, 0.92, 1.0), 3.0)
+	draw_circle(Vector2(48, -285), 5.0, Color(1, 1, 1, 0.85))
 	# 后发（长发及腰）
 	_circle(Vector2(0, -210), 56, hair, 4.0)
 	_poly(PackedVector2Array([Vector2(-50, -226), Vector2(-66, -160), Vector2(-72, -86), Vector2(-48, -70), Vector2(-34, -150), Vector2(-28, -196)]), hair)
@@ -308,8 +308,8 @@ func _draw_mage() -> void:
 	draw_circle(Vector2(-58, -196), 8.0, Color(0.55, 0.95, 1.0, 0.28))
 	draw_circle(Vector2(-58, -196), 3.0, Color(0.8, 1.0, 1.0, 0.9))
 	# 右臂握杖
-	_capsule(Vector2(34, -166), Vector2(64, -140), 16, teal)
-	_capsule(Vector2(64, -140), Vector2(72, -120), 12, cream)
+	_capsule(Vector2(34, -166), Vector2(52, -142), 16, teal)
+	_capsule(Vector2(52, -142), Vector2(50, -120), 12, cream)
 	# 颈与头
 	_poly(PackedVector2Array([Vector2(-11, -168), Vector2(11, -168), Vector2(11, -148), Vector2(-11, -148)]), SKIN_SHADE, 2.0)
 	_circle(Vector2(0, -204), 50, SKIN, 4.0)
@@ -334,10 +334,10 @@ func _draw_mage() -> void:
 	_blush(Vector2(-29, -188))
 	_blush(Vector2(29, -188))
 	# 杖顶碎光
-	for spark: Vector2 in [Vector2(58, -314), Vector2(112, -300), Vector2(72, -252), Vector2(108, -262)]:
+	for spark: Vector2 in [Vector2(32, -304), Vector2(62, -294), Vector2(34, -252), Vector2(62, -262)]:
 		_circle(spark, 3.0, Color(0.75, 1.0, 1.0, 0.85), 1.0)
 	# 握杖手
-	_circle(Vector2(74, -118), 8.5, SKIN, 2.5)
+	_circle(Vector2(50, -118), 8.5, SKIN, 2.5)
 
 # ---------------------------------------------------------------- 医师·白术
 
@@ -548,9 +548,9 @@ func _draw_brute() -> void:
 	_capsule(Vector2(-96, -128), Vector2(-88, -94), 22, skin)
 	_circle(Vector2(-86, -82), 19, skin, 4.0)
 	draw_line(Vector2(-98, -84), Vector2(-74, -84), skin_dark, 2.5, true)
-	# 右臂（握斧）
-	_capsule(Vector2(66, -170), Vector2(94, -134), 26, skin)
-	_capsule(Vector2(94, -134), Vector2(88, -106), 22, skin)
+	# 右臂（握斧，收拢在自身命中区内）
+	_capsule(Vector2(66, -170), Vector2(86, -136), 26, skin)
+	_capsule(Vector2(86, -136), Vector2(60, -108), 22, skin)
 	# 颈与头
 	_poly(PackedVector2Array([Vector2(-16, -180), Vector2(16, -180), Vector2(16, -158), Vector2(-16, -158)]), skin_dark, 2.0)
 	_circle(Vector2(0, -214), 46, skin, 4.0)
@@ -575,14 +575,14 @@ func _draw_brute() -> void:
 	# 战纹
 	draw_line(Vector2(-26, -236), Vector2(-14, -228), Color(0.82, 0.26, 0.2), 4.0, true)
 	draw_line(Vector2(26, -236), Vector2(14, -228), Color(0.82, 0.26, 0.2), 4.0, true)
-	# 巨斧
-	_line(Vector2(56, -58), Vector2(112, -252), Color(0.33, 0.23, 0.15), 11.0)
-	_poly(PackedVector2Array([Vector2(112, -250), Vector2(88, -288), Vector2(64, -274), Vector2(80, -252), Vector2(62, -236), Vector2(96, -228), Vector2(126, -242)]), Color(0.62, 0.64, 0.66), 4.0)
-	draw_line(Vector2(88, -284), Vector2(72, -260), Color(0.9, 0.94, 0.97), 3.0, true)
-	draw_line(Vector2(96, -232), Vector2(122, -244), Color(0.9, 0.94, 0.97), 3.0, true)
-	draw_line(Vector2(88, -252), Vector2(112, -252), Color(0.4, 0.4, 0.43), 4.0, true)
+	# 巨斧（斧头收在局部 x≈76 内，避开右侧狐妖命中区）
+	_line(Vector2(48, -66), Vector2(54, -240), Color(0.33, 0.23, 0.15), 11.0)
+	_poly(PackedVector2Array([Vector2(54, -242), Vector2(34, -276), Vector2(18, -260), Vector2(32, -240), Vector2(14, -224), Vector2(44, -216), Vector2(72, -230)]), Color(0.62, 0.64, 0.66), 4.0)
+	draw_line(Vector2(34, -272), Vector2(22, -250), Color(0.9, 0.94, 0.97), 3.0, true)
+	draw_line(Vector2(44, -220), Vector2(70, -232), Color(0.9, 0.94, 0.97), 3.0, true)
+	draw_line(Vector2(34, -244), Vector2(54, -244), Color(0.4, 0.4, 0.43), 4.0, true)
 	# 握斧手
-	_circle(Vector2(88, -106), 15.0, skin, 3.5)
+	_circle(Vector2(56, -106), 15.0, skin, 3.5)
 
 # ---------------------------------------------------------------- 狐妖·媚娘
 
@@ -595,9 +595,9 @@ func _draw_fox() -> void:
 	var hair := Color(0.78, 0.4, 0.56)
 	var hair_hi := Color(0.95, 0.62, 0.72)
 	# 双尾（身后）：一尾向上卷起，一尾绕向侧上方，避免对称成“手臂”。
-	# 右尾收在局部 x≈160 内，与右侧我方单位保持空隙。
-	_fluffy_tail(Vector2(-18, -84), Vector2(-104, -104), Vector2(-160, -190), Vector2(-120, -246), 23.0, 7.0, plum, cream)
-	_fluffy_tail(Vector2(20, -86), Vector2(96, -44), Vector2(158, -122), Vector2(148, -204), 21.0, 6.0, Color(0.58, 0.26, 0.56), Color(1.0, 0.82, 0.9))
+	# 尾尖收进自身命中区（局部 x∈[-65,65]）；中段外扩但远离相邻单位命中区。
+	_fluffy_tail(Vector2(-16, -84), Vector2(-86, -74), Vector2(-106, -140), Vector2(-58, -162), 21.0, 6.0, Color(0.78, 0.38, 0.58), cream)
+	_fluffy_tail(Vector2(18, -86), Vector2(82, -64), Vector2(106, -128), Vector2(58, -150), 20.0, 6.0, Color(0.9, 0.52, 0.68), Color(1.0, 0.82, 0.9))
 	# 后发
 	_circle(Vector2(0, -212), 54, hair, 4.0)
 	_poly(PackedVector2Array([Vector2(-48, -232), Vector2(-62, -170), Vector2(-72, -92), Vector2(-48, -74), Vector2(-32, -156), Vector2(-26, -204)]), hair)
@@ -885,6 +885,21 @@ func _build_click_area() -> void:
 func hit_rect() -> Rect2:
 	# 世界坐标下的点击矩形（用于工具校验间距 / 与 HUD 面板的边界）。
 	return Rect2(global_position + CLICK_CENTER - CLICK_SIZE * 0.5, CLICK_SIZE)
+
+func appendage_points() -> Array[Vector2]:
+	# 关键附属件的局部坐标点（绘制坐标系），供输入探针校验：
+	# 必须落在自身 hit_rect() 内，且不落入任何相邻单位命中区。
+	# 仅法师法球 / 狐妖双尾尖 / 妖将斧头有附属件需要校验。
+	var points: Array[Vector2] = []
+	match String(unit_id):
+		"hero_mage":
+			points.append(Vector2(52, -280))
+		"boss_fox":
+			points.append(Vector2(-58, -162))
+			points.append(Vector2(58, -150))
+		"boss_brute":
+			points.append(Vector2(54, -244) * _art_scale)
+	return points
 
 func info_rect() -> Rect2:
 	# 名字 / 血蓝条 / 状态徽章组成的悬浮信息带。
