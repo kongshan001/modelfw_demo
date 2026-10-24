@@ -26,6 +26,10 @@ func resolve_round(player_intents: Array[BattleIntent]) -> Array[BattleEvent]:
 	for unit in order:
 		order_ids.append(String(unit.id))
 	_emit(&"round_start", &"", order_ids, {"order": order_ids})
+	_tick_round_start_statuses(order)
+	_check_end()
+	if state.is_over():
+		return events
 	var intents := _validate_player_intents(player_intents)
 	for enemy in state.living(BattleTypes.Side.ENEMY):
 		intents[enemy.id] = _decide_ai(enemy)
@@ -99,6 +103,14 @@ func _is_valid_intent(actor: BattleUnitState, intent: BattleIntent) -> bool:
 			if skill.target_type == SkillData.TargetType.SINGLE_ALLY or skill.target_type == SkillData.TargetType.ALL_ALLIES:
 				return skill_target.side == actor.side
 			return skill_target.side != actor.side
+		BattleTypes.IntentKind.ITEM:
+			if intent.target_ids.size() != 1:
+				return false
+			var item := content.get_item(intent.item_id)
+			if item == null or state.item_remaining(item.id) <= 0:
+				return false
+			var item_target := state.get_unit(intent.target_ids[0])
+			return item_target != null and item_target.is_alive() and item_target.side == actor.side
 		BattleTypes.IntentKind.DEFEND:
 			return true
 		_:
@@ -124,14 +136,22 @@ func _execute_intent(intent: BattleIntent) -> void:
 		if actor != null:
 			_emit(&"action_skipped", actor.id, [], {"reason": "dead"})
 		return
-	if actor.has_status(&"defending"):
-		actor.remove_status(&"defending")
-		_emit(&"status_expire", actor.id, [actor.id], {"status_id": "defending", "reason": "owner_action"})
+	for status in actor.statuses.duplicate():
+		if status.data.expires_on_owner_action:
+			actor.remove_status(status.data.id)
+			_emit(&"status_expire", actor.id, [actor.id], {"status_id": String(status.data.id), "reason": "owner_action"})
+	if actor.has_status(&"sealed"):
+		actor.remove_status(&"sealed")
+		_emit(&"action_skipped", actor.id, [actor.id], {"reason": "sealed"})
+		_emit(&"status_expire", actor.id, [actor.id], {"status_id": "sealed", "reason": "sealed"})
+		return
 	match intent.kind:
 		BattleTypes.IntentKind.ATTACK:
 			_execute_attack(actor, intent)
 		BattleTypes.IntentKind.SKILL:
 			_execute_skill(actor, intent)
+		BattleTypes.IntentKind.ITEM:
+			_execute_item(actor, intent)
 		BattleTypes.IntentKind.DEFEND:
 			_execute_defend(actor)
 		_:
@@ -231,6 +251,21 @@ func _check_end() -> void:
 		_emit(&"battle_end", &"", [], {"outcome": state.outcome})
 
 func _finish_round() -> void:
+	for unit in state.units:
+		if not unit.is_alive():
+			continue
+		for status in unit.statuses.duplicate():
+			if status.data.expires_on_owner_action:
+				continue
+			if status.applied_round >= state.round:
+				continue
+			status.remaining -= 1
+			if status.remaining <= 0:
+				unit.remove_status(status.data.id)
+				_emit(&"status_expire", &"", [unit.id], {
+					"status_id": String(status.data.id),
+					"reason": "duration",
+				})
 	_emit(&"round_end", &"", [], {"round": state.round})
 	if state.round >= state.max_rounds and not state.is_over():
 		state.outcome = BattleTypes.Outcome.DEFEAT
@@ -326,6 +361,16 @@ func _apply_effect(source: BattleUnitState, target: BattleUnitState, effect: Bat
 			if not target.is_alive():
 				return
 			_apply_heal(source, target, effect)
+		BattleEffect.Kind.APPLY_STATUS:
+			if not target.is_alive():
+				return
+			_apply_status_effect(source.id, target, effect)
+		BattleEffect.Kind.CLEANSE:
+			_apply_cleanse(source.id, target, effect)
+		BattleEffect.Kind.RESTORE_MP:
+			if not target.is_alive():
+				return
+			_restore_mp(source, target, effect)
 
 func _apply_heal(source: BattleUnitState, target: BattleUnitState, effect: BattleEffect) -> void:
 	var amount := 0
@@ -340,3 +385,88 @@ func _apply_heal(source: BattleUnitState, target: BattleUnitState, effect: Battl
 		"hp_before": hp_before,
 		"hp_after": target.hp,
 	})
+
+func compute_status_chance(target: BattleUnitState, base_chance: float) -> float:
+	return clampf(base_chance * (1.0 - target.seal_resist_bonus()), 0.0, 1.0)
+
+func _tick_round_start_statuses(order: Array[BattleUnitState]) -> void:
+	for unit in order:
+		if not unit.is_alive():
+			continue
+		for status in unit.statuses.duplicate():
+			if not unit.is_alive():
+				break
+			if status.data.poison_max_hp_ratio > 0.0:
+				var amount := maxi(1, roundi(float(unit.data.max_hp) * status.data.poison_max_hp_ratio))
+				var hp_before := unit.hp
+				unit.hp = maxi(0, unit.hp - amount)
+				_emit(&"status_tick", unit.id, [unit.id], {
+					"status_id": String(status.data.id),
+					"amount": amount,
+					"hp_before": hp_before,
+					"hp_after": unit.hp,
+				})
+				if unit.hp <= 0 and unit.alive:
+					unit.alive = false
+					unit.statuses.clear()
+					_emit(&"death", unit.id, [unit.id], {})
+
+func _apply_status_effect(source_id: StringName, target: BattleUnitState, effect: BattleEffect) -> void:
+	var status := content.get_status(effect.status_id)
+	if status == null:
+		push_error("Missing status: " + String(effect.status_id))
+		return
+	var chance := effect.status_chance
+	if status.skips_action:
+		chance = compute_status_chance(target, chance)
+	if chance <= 0.0:
+		_emit(&"status_resist", source_id, [target.id], {"status_id": String(status.id)})
+		return
+	if chance < 1.0 and not rng.chance(chance):
+		_emit(&"status_resist", source_id, [target.id], {"status_id": String(status.id)})
+		return
+	var applied := target.add_status(status, state.round)
+	_emit(&"status_apply" if applied else &"status_refresh", source_id, [target.id], {
+		"status_id": String(status.id),
+		"duration": status.duration,
+	})
+
+func _apply_cleanse(source_id: StringName, target: BattleUnitState, effect: BattleEffect) -> void:
+	var removed := 0
+	for status in target.statuses.duplicate():
+		if removed >= effect.cleanse_count:
+			break
+		if status.data.kind == StatusData.Kind.DEBUFF:
+			target.remove_status(status.data.id)
+			removed += 1
+			_emit(&"status_expire", source_id, [target.id], {
+				"status_id": String(status.data.id),
+				"reason": "cleanse",
+			})
+
+func _restore_mp(source: BattleUnitState, target: BattleUnitState, effect: BattleEffect) -> void:
+	var mp_before := target.mp
+	target.mp = mini(target.data.max_mp, target.mp + effect.flat_amount)
+	_emit(&"mp_change", source.id, [target.id], {
+		"amount": target.mp - mp_before,
+		"mp_before": mp_before,
+		"mp_after": target.mp,
+		"reason": "item",
+	})
+
+func _execute_item(actor: BattleUnitState, intent: BattleIntent) -> void:
+	var item := content.get_item(intent.item_id)
+	if item == null or state.item_remaining(item.id) <= 0:
+		_emit(&"intent_rejected", actor.id, [], {"reason": "item"})
+		_execute_defend(actor)
+		return
+	var target := actor
+	if not intent.target_ids.is_empty():
+		var candidate := state.get_unit(intent.target_ids[0])
+		if candidate != null and candidate.is_alive() and candidate.side == actor.side:
+			target = candidate
+	_emit(&"action_start", actor.id, [target.id], {"kind": "item", "item_id": String(item.id)})
+	state.consume_item(item.id)
+	_emit(&"item_used", actor.id, [target.id], {"item_id": String(item.id), "remaining": state.item_remaining(item.id)})
+	for effect in item.effects:
+		_apply_effect(actor, target, effect, item.id)
