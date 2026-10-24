@@ -98,7 +98,7 @@ func _build_bars() -> void:
 	_mp_fill = _bar(Color(0.35, 0.65, 1.0), Vector2(-BAR_WIDTH / 2, -226))
 
 	_status_row = HBoxContainer.new()
-	_status_row.position = Vector2(-BAR_WIDTH / 2, -214)
+	_status_row.position = Vector2(-BAR_WIDTH / 2, -286)
 	_status_row.size = Vector2(BAR_WIDTH, 18)
 	_status_row.add_theme_constant_override("separation", 4)
 	add_child(_status_row)
@@ -111,7 +111,7 @@ func _build_bars() -> void:
 	add_child(_selection)
 
 	_target_arrow = Polygon2D.new()
-	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -292), Vector2(14, -292), Vector2(0, -270)])
+	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -336), Vector2(14, -336), Vector2(0, -314)])
 	_target_arrow.color = Color(1.0, 0.85, 0.15)
 	_target_arrow.visible = false
 	add_child(_target_arrow)
@@ -227,6 +227,8 @@ func cast_pose() -> void:
 	tween.tween_property(self, "scale", Vector2.ONE, 0.2)
 	tween.parallel().tween_property(self, "modulate", Color.WHITE, 0.2)
 	await tween.finished
+	if unit_state != null and unit_state.is_alive():
+		_start_idle()
 
 func hurt() -> void:
 	stop_animations()

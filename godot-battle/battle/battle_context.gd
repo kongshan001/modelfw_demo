@@ -13,6 +13,7 @@ var ui_layer: CanvasLayer
 
 var unit_views: Dictionary = {}
 var visual_rng := RandomNumberGenerator.new()
+var _vfx: VFXFactory
 
 func _init(p_tree: SceneTree, p_scene: Node2D) -> void:
 	scene_tree = p_tree
@@ -21,6 +22,11 @@ func _init(p_tree: SceneTree, p_scene: Node2D) -> void:
 
 func unit_view(unit_id: StringName) -> UnitView:
 	return unit_views.get(unit_id)
+
+func vfx_factory() -> VFXFactory:
+	if _vfx == null:
+		_vfx = VFXFactory.new(scene_tree, vfx_layer, ui_layer, visual_rng.seed)
+	return _vfx
 
 func wait(seconds: float) -> void:
 	var speed := maxf(0.001, sequencer.playback_speed if sequencer != null else 1.0)

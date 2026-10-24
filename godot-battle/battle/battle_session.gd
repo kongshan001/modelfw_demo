@@ -17,6 +17,7 @@ var _result_shown := false
 func start(p_seed: int = 20261024) -> void:
 	seed_value = p_seed
 	content = ContentDB.load_all()
+	director.setup(content)
 	encounter = content.get_encounter(&"enc_bamboo_01")
 	engine = BattleEngine.new(encounter, content, seed_value)
 	_result_shown = false

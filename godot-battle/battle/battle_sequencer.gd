@@ -43,11 +43,7 @@ func play_all() -> void:
 		if generation != _generation:
 			break
 	if generation != _generation:
-		if ctx != null and ctx.session != null:
-			ctx.apply_snapshot(ctx.session.engine.state)
-		if ctx != null:
-			for view in ctx.unit_views.values():
-				view.stop_animations()
+		_restore_views()
 		_skip = false
 		playback_speed = 1.0
 	_playing = false
@@ -55,16 +51,23 @@ func play_all() -> void:
 
 func skip_all() -> void:
 	if not _playing:
-		if ctx != null and ctx.session != null:
-			ctx.apply_snapshot(ctx.session.engine.state)
-		if ctx != null:
-			for view in ctx.unit_views.values():
-				view.stop_animations()
+		_restore_views()
 		return
 	_generation += 1
 	_queue.clear()
 	_skip = true
 	playback_speed = 1000.0
+
+func _restore_views() -> void:
+	if ctx == null:
+		return
+	if ctx.session != null:
+		ctx.apply_snapshot(ctx.session.engine.state)
+	for view in ctx.unit_views.values():
+		if view.unit_state != null and view.unit_state.is_alive():
+			view.reset_pose()
+		else:
+			view.stop_animations()
 
 func is_skipping() -> bool:
 	return _skip
