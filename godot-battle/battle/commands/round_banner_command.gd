@@ -7,12 +7,16 @@ func _init(p_event: BattleEvent) -> void:
 	event = p_event
 
 func play(ctx: BattleContext) -> void:
-	if ctx.ui_layer == null:
-		await ctx.wait(0.2)
-		return
 	var round_number := int(event.data.get("round", event.round))
 	if round_number <= 0:
 		round_number = event.round
+	if ctx.hud != null and ctx.hud.has_method("show_round"):
+		ctx.hud.show_round(round_number, event.data.get("order", []))
+	if ctx.hud != null and ctx.hud.has_method("log_event"):
+		ctx.hud.log_event(event)
+	if ctx.ui_layer == null:
+		await ctx.wait(0.2)
+		return
 	var label := Label.new()
 	label.text = "第 %d 回合" % round_number
 	label.add_theme_font_override("font", FontUtil.cjk_font())
@@ -30,7 +34,10 @@ func play(ctx: BattleContext) -> void:
 	label.z_index = 80
 	ctx.ui_layer.add_child(label)
 
-	var order_strip := _build_order_strip(ctx)
+	# HUD 存在时由左上出手顺序条负责展示；仅无 HUD 时绘制临时预览条。
+	var order_strip: Node = null
+	if ctx.hud == null:
+		order_strip = _build_order_strip(ctx)
 
 	var tween_in := label.create_tween()
 	tween_in.set_parallel(true)

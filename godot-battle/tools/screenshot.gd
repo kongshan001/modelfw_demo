@@ -5,6 +5,7 @@ const INTERVAL := 0.8
 
 func _initialize() -> void:
 	var scene: Node = load("res://scenes/battle_scene.tscn").instantiate()
+	scene.start_auto_mode = true
 	root.add_child(scene)
 	await process_frame
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://screenshots"))

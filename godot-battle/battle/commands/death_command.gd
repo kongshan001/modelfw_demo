@@ -7,6 +7,8 @@ func _init(p_event: BattleEvent) -> void:
 	event = p_event
 
 func play(ctx: BattleContext) -> void:
+	if ctx.hud != null and ctx.hud.has_method("log_event"):
+		ctx.hud.log_event(event)
 	var target: UnitView = _target_view(ctx)
 	if target == null:
 		await ctx.wait(0.05)

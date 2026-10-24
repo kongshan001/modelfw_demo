@@ -55,6 +55,8 @@ func _run_battle() -> void:
 			intents = _auto_intents()
 		else:
 			intents = await context.hud.collect_intents(engine, content)
+		if context.hud != null and context.hud.has_method("set_command_visible"):
+			context.hud.set_command_visible(false)
 		var events := engine.resolve_round(intents)
 		for command in director.build(events):
 			sequencer.enqueue(command)

@@ -7,6 +7,10 @@ func _init(p_event: BattleEvent) -> void:
 	event = p_event
 
 func play(ctx: BattleContext) -> void:
+	if ctx.hud != null and ctx.hud.has_method("log_event"):
+		ctx.hud.log_event(event)
+	if ctx.hud != null and ctx.hud.has_method("highlight_actor"):
+		ctx.hud.highlight_actor(event.source_id)
 	var source: UnitView = ctx.unit_view(event.source_id)
 	var kind := String(event.data.get("kind", "attack"))
 	match kind:

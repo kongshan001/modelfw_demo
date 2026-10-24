@@ -2,6 +2,7 @@ extends SceneTree
 
 func _initialize() -> void:
 	var scene: Node = load("res://scenes/battle_scene.tscn").instantiate()
+	scene.start_auto_mode = true
 	root.add_child(scene)
 	await process_frame
 	var session: BattleSession = scene.get_node("BattleSession")

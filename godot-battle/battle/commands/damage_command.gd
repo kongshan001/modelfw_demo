@@ -12,6 +12,8 @@ func _init(p_event: BattleEvent, p_content: ContentDB = null) -> void:
 	content = p_content
 
 func play(ctx: BattleContext) -> void:
+	if ctx.hud != null and ctx.hud.has_method("log_event"):
+		ctx.hud.log_event(event)
 	var target: UnitView = _target_view(ctx)
 	if target == null or target.unit_state == null:
 		await ctx.wait(0.05)

@@ -9,6 +9,8 @@ func _init(p_event: BattleEvent) -> void:
 	event = p_event
 
 func play(ctx: BattleContext) -> void:
+	if ctx.hud != null and ctx.hud.has_method("log_event"):
+		ctx.hud.log_event(event)
 	match event.type:
 		&"mp_change":
 			var mp_view := _affected_view(ctx)

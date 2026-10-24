@@ -1,9 +1,14 @@
 extends Node2D
 
+# 工具（冒烟/截图）在 add_child 前设为 true，即可跳过手动指令阶段。
+var start_auto_mode := false
+
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
 func _ready() -> void:
+	# UnitView 用 Area2D 接收点击，需开启视口物理拾取。
+	get_viewport().physics_object_picking = true
 	var background := BackgroundView.new()
 	background.name = "Background"
 	add_child(background)
@@ -40,7 +45,15 @@ func _ready() -> void:
 	ctx.session = session
 	ctx.sequencer = sequencer
 	ctx.ui_layer = ui_layer
+
+	var hud := BattleHUD.new()
+	hud.name = "BattleHUD"
+	ui_layer.add_child(hud)
+	hud.setup(ctx)
+	ctx.hud = hud
+
 	session.context = ctx
 	session.sequencer = sequencer
-	session.auto_mode = true
+	session.context.hud = hud
+	session.auto_mode = start_auto_mode
 	session.start(20261024)
