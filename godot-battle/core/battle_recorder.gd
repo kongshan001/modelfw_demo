@@ -12,6 +12,12 @@ var result: Dictionary = {}
 var _previous_digest: String = ""
 
 func begin(encounter: EncounterData, seed_value: int, content_hash: String, state: BattleState) -> void:
+	rounds.clear()
+	events.clear()
+	digests.clear()
+	snapshots.clear()
+	result.clear()
+	_previous_digest = ""
 	meta = {
 		"battle_id": String(encounter.id),
 		"content_hash": content_hash,
@@ -26,7 +32,7 @@ func _ensure_round(round_number: int) -> Dictionary:
 	for entry in rounds:
 		if int(entry["round"]) == round_number:
 			return entry
-	var entry := {"round": round_number, "intents": [], "debug_ops": []}
+	var entry := {"round": round_number, "intents": [], "debug_ops": [], "resolved": false}
 	rounds.append(entry)
 	return entry
 
@@ -36,6 +42,7 @@ func record_intents(round_number: int, intents: Array[BattleIntent]) -> void:
 	for intent in intents:
 		list.append(intent.to_dict())
 	entry["intents"] = list
+	entry["resolved"] = true
 
 func record_debug_op(round_number: int, op: Dictionary) -> void:
 	var entry := _ensure_round(round_number)
@@ -98,7 +105,7 @@ func save(path: String = "") -> String:
 	if path.is_empty():
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://replays"))
 		var battle_id := String(meta.get("battle_id", "battle"))
-		var stamp := int(Time.get_unix_time_from_system())
+		var stamp := int(Time.get_unix_time_from_system() * 1000.0)
 		path = "user://replays/%s_%d.json" % [battle_id, stamp]
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:

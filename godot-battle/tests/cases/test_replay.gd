@@ -68,6 +68,19 @@ func run(t: TestContext) -> void:
 			break
 	var tampered_result := BattleReplay.verify(tampered, content, true)
 	t.ok(not bool(tampered_result["ok"]), "篡改后的录像校验失败")
+	t.ok(" ".join(tampered_result["errors"]).contains("digest"), "篡改报告指出摘要不一致: " + str(tampered_result["errors"]))
+
+	var intent_tampered := replay.duplicate(true)
+	intent_tampered["rounds"][0]["intents"][0]["kind"] = BattleTypes.IntentKind.DEFEND
+	var intent_result := BattleReplay.verify(intent_tampered, content, true)
+	t.ok(not bool(intent_result["ok"]), "篡改意图后的录像校验失败")
+	t.eq(String(intent_result["first_divergence"].get("reason", "")), "event_mismatch", "指令篡改通过摘要链后被事件比对发现")
+
+	var partial_engine := BattleEngine.new(encounter, content, 555)
+	partial_engine.apply_debug_op({"op": "kill", "unit_id": "mob_a"})
+	var partial_path := partial_engine.dump_replay("user://test_replay_partial.json")
+	var partial_result := BattleReplay.verify(BattleReplay.load_file(partial_path), content, true)
+	t.ok(bool(partial_result["ok"]), "未解算回合不会产生假分歧: " + str(partial_result["errors"]))
 
 	var debug_engine := BattleEngine.new(encounter, content, 999)
 	debug_engine.apply_debug_op({"op": "kill", "unit_id": "mob_a"})

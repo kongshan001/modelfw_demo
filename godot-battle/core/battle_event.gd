@@ -29,7 +29,7 @@ func to_dict() -> Dictionary:
 		"type": String(type),
 		"source_id": String(source_id),
 		"target_ids": targets,
-		"data": data,
+		"data": data.duplicate(true),
 	}
 
 static func from_dict(source: Dictionary) -> BattleEvent:
@@ -44,4 +44,4 @@ static func from_dict(source: Dictionary) -> BattleEvent:
 	return event
 
 func canonical_json() -> String:
-	return JSON.stringify(to_dict(), "", true)
+	return BattleDigest.canonical_json(to_dict())
