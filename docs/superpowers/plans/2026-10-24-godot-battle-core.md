@@ -20,7 +20,7 @@
 - 事件必须带自增 `seq`（从 1 开始）；同一输入与种子必须产生逐字节一致的事件序列。
 - 代码文件编码 UTF-8；GDScript 2.0 语法；类型标注尽量完整。
 - 所有命令从仓库根目录 `/Users/ks_128/Documents/modelfw_demo` 执行；Godot 可执行文件为 `godot`。
-- 测试命令固定为 `godot --headless --path godot-battle -s tests/run_tests.gd`，退出码 0 才算通过。
+- 测试门禁固定为 `bash godot-battle/tools/run_tests.sh`：先自动 import，运行 runner 后强制校验 `RESULT: N assertions, 0 failures` 行、拒绝 `SCRIPT ERROR` / `Parse Error` / `ERROR:`、零断言或缺少 `run(t)` 算失败，退出码 0 才算通过。
 - 每个任务结束必须提交，提交信息使用本计划给出的文案。
 
 ---
@@ -81,10 +81,11 @@ godot-battle/
 - Create: `godot-battle/tests/test_context.gd`
 - Create: `godot-battle/tests/run_tests.gd`
 - Create: `godot-battle/tests/cases/test_smoke.gd`
+- Create: `godot-battle/tools/run_tests.sh`
 
 **Interfaces:**
 - Consumes: 无
-- Produces: `TestContext`（`ok` / `eq` / `in_range` / `near`）；`tests/run_tests.gd` 约定所有 `tests/cases/*.gd` 暴露 `func run(t: TestContext) -> void`。
+- Produces: `TestContext`（`ok` / `eq` / `in_range` / `near`）；`tests/run_tests.gd` 约定所有 `tests/cases/*.gd` 暴露 `func run(t: TestContext) -> void`；`tools/run_tests.sh` 为唯一测试门禁（import + RESULT 行 + 引擎错误 + 超时校验）。
 
 - [ ] **Step 1: 先写冒烟测试**
 
@@ -187,7 +188,7 @@ func _initialize() -> void:
 	var total_failures := 0
 	var cases_dir := DirAccess.open("res://tests/cases")
 	if cases_dir == null:
-		printerr("Cannot open res://tests/cases")
+		printerr("TEST_HARNESS_FAIL: cannot open res://tests/cases")
 		quit(1)
 		return
 	var files := cases_dir.get_files()
@@ -198,14 +199,22 @@ func _initialize() -> void:
 		var path := "res://tests/cases/" + file_name
 		var script: Script = load(path)
 		if script == null:
-			printerr("FAILED TO LOAD " + path)
+			printerr("FAIL %s: cannot load" % file_name)
 			total_failures += 1
 			continue
 		var test_case: Object = script.new()
+		if not test_case.has_method("run"):
+			printerr("FAIL %s: missing run(t)" % file_name)
+			total_failures += 1
+			continue
 		var ctx := TestContext.new()
 		Callable(test_case, "run").call(ctx)
 		total_assertions += ctx.assertions
 		total_failures += ctx.failures.size()
+		if ctx.assertions == 0:
+			printerr("FAIL %s: zero assertions" % file_name)
+			total_failures += 1
+			continue
 		if ctx.failures.is_empty():
 			print("PASS %s (%d assertions)" % [file_name, ctx.assertions])
 		else:
@@ -216,14 +225,60 @@ func _initialize() -> void:
 	quit(0 if total_failures == 0 else 1)
 ```
 
-- [ ] **Step 4: 导入工程并运行测试**
+`godot-battle/tools/run_tests.sh`:
+
+```bash
+#!/usr/bin/env bash
+# Canonical test gate for godot-battle.
+set -uo pipefail
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+project_dir="$(cd "$script_dir/.." && pwd)"
+cd "$project_dir" || exit 1
+
+# A fresh clone has no .godot/global_script_class_cache.cfg; import first.
+if ! godot --headless --path . --editor --quit >/dev/null 2>&1; then
+	echo "TEST_HARNESS_FAIL: godot editor import failed" >&2
+	exit 1
+fi
+
+tmp="$(mktemp -t godot-battle-tests.XXXXXX)"
+trap 'rm -f "$tmp"' EXIT
+
+run_with_timeout() {
+	if command -v gtimeout >/dev/null 2>&1; then
+		gtimeout 600 "$@"
+	else
+		perl -e 'alarm 600; exec @ARGV' -- "$@"
+	fi
+}
+
+run_with_timeout godot --headless --path . -s tests/run_tests.gd 2>&1 | tee "$tmp"
+status="${PIPESTATUS[0]}"
+
+if grep -qE 'SCRIPT ERROR|Parse Error|ERROR:|TEST_HARNESS_FAIL' "$tmp"; then
+	echo "TEST_HARNESS_FAIL: engine/script errors detected" >&2
+	exit 1
+fi
+if ! grep -qE '^RESULT: [0-9]+ assertions, 0 failures$' "$tmp"; then
+	echo "TEST_HARNESS_FAIL: missing clean RESULT line" >&2
+	exit 1
+fi
+if [ "$status" -ne 0 ]; then
+	echo "TEST_HARNESS_FAIL: godot exited $status" >&2
+	exit 1
+fi
+exit 0
+```
+
+- [ ] **Step 4: 运行测试门禁**
 
 Run:
 
 ```bash
 cd /Users/ks_128/Documents/modelfw_demo
-godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
+echo "exit=$?"
 ```
 
 Expected:
@@ -231,13 +286,14 @@ Expected:
 ```text
 PASS test_smoke.gd (2 assertions)
 RESULT: 2 assertions, 0 failures
+exit=0
 ```
 
 - [ ] **Step 5: 提交**
 
 ```bash
 cd /Users/ks_128/Documents/modelfw_demo
-git add godot-battle/project.godot godot-battle/.gitignore godot-battle/tests
+git add godot-battle/project.godot godot-battle/.gitignore godot-battle/tests godot-battle/tools/run_tests.sh
 git commit -m "build(battle): Godot 工程骨架与 headless 测试运行器"
 ```
 
@@ -307,7 +363,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 解析错误，提示 `BattleRng` / `BattleEvent` / `BattleIntent` 未定义。
 
@@ -455,7 +511,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `RESULT: ... 0 failures`，且包含 `PASS test_rng.gd`、`PASS test_serialization.gd`。
@@ -535,7 +591,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 解析错误，提示资源类或 `ContentDB` 未定义。
 
@@ -1025,7 +1081,7 @@ Run:
 godot --headless --path godot-battle --editor --quit
 godot --headless --path godot-battle -s tools/build_content.gd
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `CONTENT_BUILT units=7 skills=13 statuses=5 items=2`，随后测试 `RESULT: ... 0 failures`，包含 `PASS test_content.gd`。
@@ -1166,7 +1222,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 解析错误，提示 `BattleState` / `BattleUnitState` / `BattleResolver` / `BattleEngine` 未定义。
 
@@ -1616,7 +1672,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `PASS test_battle_basic.gd`，`RESULT: ... 0 failures`。
@@ -1751,7 +1807,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 测试失败，横扫千军的伤害事件数为 0（技能尚未实现）。
 
@@ -1896,7 +1952,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `PASS test_skills.gd`，全部测试 0 failures。
@@ -2044,7 +2100,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 失败（无 `status_tick` / `item_used` / `_apply_status_effect`）。
 
@@ -2219,7 +2275,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `PASS test_status_items.gd`，全部 0 failures。
@@ -2345,7 +2401,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 失败（逃跑意图被当成 unsupported，AI 不会使用技能）。
 
@@ -2473,7 +2529,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `PASS test_flee_ai.gd`，全部 0 failures。
@@ -2597,7 +2653,7 @@ func run(t: TestContext) -> void:
 
 - [ ] **Step 2: 运行，确认失败**
 
-Run: `godot --headless --path godot-battle -s tests/run_tests.gd`
+Run: `bash godot-battle/tools/run_tests.sh`
 
 Expected: 解析错误，提示 `BattleInvariants` / `BattleRecorder` / `BattleReplay` 未定义。
 
@@ -2991,7 +3047,7 @@ Run:
 
 ```bash
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected: `PASS test_replay.gd`，全部 0 failures。
@@ -3196,7 +3252,7 @@ Run:
 godot --headless --path godot-battle --editor --quit
 godot --headless --path godot-battle -s tools/make_golden.gd
 godot --headless --path godot-battle --editor --quit
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 ```
 
 Expected:
@@ -3227,7 +3283,7 @@ RESULT: ... 0 failures
   - 测试初期直接在真实遭遇战里验证治疗/封印，敌方先手会干扰断言。解决：用“真实单位 + 慢速木桩敌人”的合成状态做单元测试，真实遭遇战只用于集成/黄金回放。
   - 状态持续时间与中毒 tick 的时序容易错。解决：中毒在回合开始 tick；状态在回合结束递减，且施加回合不递减；封印在跳过行动时消耗；防御在自身下次行动开始解除。对应测试覆盖。
 - 验证：
-  - 命令：`godot --headless --path godot-battle -s tests/run_tests.gd`
+  - 命令：`bash godot-battle/tools/run_tests.sh`
   - 结果：把实际输出的 `RESULT: ... 0 failures` 原样粘贴到此处。
   - 黄金回放：3 个文件位于 `tests/golden/`，`--strict-content` 校验通过。
 - 风险与遗留：表现层、UI、美术与调试浮层属于 Plan 2；当前没有音画表现。
@@ -3277,7 +3333,7 @@ RESULT: ... 0 failures
 Run:
 
 ```bash
-godot --headless --path godot-battle -s tests/run_tests.gd
+bash godot-battle/tools/run_tests.sh
 echo "exit=$?"
 ```
 
