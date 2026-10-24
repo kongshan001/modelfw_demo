@@ -1,0 +1,31 @@
+{
+  "_comment": "Optional art drop-in catalog. Leave every path empty to use the original procedural art. See assets/art/README.md for the schema.",
+  "units": {
+    "hero_swordsman": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "hero_mage": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "hero_healer": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "mob_a": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "mob_b": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "boss_brute": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "boss_fox": {"sprite": "", "scale": 1.0, "offset": [0, 0]}
+  },
+  "background": {
+    "path": "",
+    "scale": 1.0,
+    "modulate": [1.0, 1.0, 1.0, 1.0]
+  },
+  "status_icons": {
+    "poison": {"path": ""},
+    "armor_down": {"path": ""},
+    "war_cry": {"path": ""},
+    "defending": {"path": ""},
+    "sealed": {"path": ""}
+  },
+  "command_icons": {
+    "attack": {"path": ""},
+    "skill": {"path": ""},
+    "item": {"path": ""},
+    "defend": {"path": ""},
+    "flee": {"path": ""}
+  }
+}

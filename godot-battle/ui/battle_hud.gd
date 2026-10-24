@@ -52,6 +52,7 @@ var _log: BattleLog
 var _speed_button: Button
 var _skip_button: Button
 var _flee_button: Button
+var _badge_buttons: Array = []
 var _selector := TargetSelector.new()
 
 func setup(p_ctx: BattleContext) -> void:
@@ -370,6 +371,7 @@ func _submit(intent: BattleIntent) -> void:
 
 func _process(delta: float) -> void:
 	_refresh_control_states()
+	_refresh_badge_states()
 	if not _collecting or _timed_out:
 		return
 	_time_left = maxf(0.0, _time_left - delta)
@@ -486,6 +488,17 @@ func _refresh_control_states() -> void:
 	if _flee_button != null:
 		_flee_button.disabled = not _input_active() or _mode != MenuMode.ROOT
 
+func _refresh_badge_states() -> void:
+	var alive: Array = []
+	for pair in _badge_buttons:
+		var button = pair[0]
+		var badge = pair[1]
+		if not is_instance_valid(button) or not is_instance_valid(badge):
+			continue
+		badge.modulate = Color(0.55, 0.52, 0.5, 0.65) if button.disabled else Color.WHITE
+		alive.append(pair)
+	_badge_buttons = alive
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not _collecting or not _input_active():
 		return
@@ -523,52 +536,32 @@ func _build_theme() -> void:
 	theme = _hud_theme
 
 func _make_panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.13, 0.085, 0.055, 0.94)
-	style.border_color = Color(0.84, 0.66, 0.32, 0.95)
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(12)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	style.shadow_color = Color(0, 0, 0, 0.45)
-	style.shadow_size = 8
-	return style
+	return UiStyle.panel_style(12, Vector2i(16, 12))
 
 func _make_button_style(bg: Color, border: Color, width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = border
-	style.set_border_width_all(width)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	return style
+	return UiStyle.button_style(bg, border, width, 9)
 
 func _style_button(button: Button, danger := false) -> Button:
-	button.add_theme_font_size_override("font_size", 22)
-	button.add_theme_color_override("font_color", Color(1.0, 0.93, 0.76))
-	button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 0.9))
-	button.add_theme_color_override("font_pressed_color", Color(1.0, 0.86, 0.5))
-	button.add_theme_color_override("font_disabled_color", Color(0.58, 0.55, 0.5))
-	var border := Color(0.92, 0.58, 0.4) if danger else Color(0.76, 0.58, 0.28)
-	button.add_theme_stylebox_override("normal", _make_button_style(Color(0.26, 0.16, 0.09), border, 2))
-	button.add_theme_stylebox_override("hover", _make_button_style(Color(0.37, 0.23, 0.12), GOLD, 2))
-	button.add_theme_stylebox_override("pressed", _make_button_style(Color(0.48, 0.31, 0.14), GOLD, 2))
-	button.add_theme_stylebox_override("disabled", _make_button_style(Color(0.16, 0.13, 0.11), Color(0.35, 0.31, 0.27), 1))
-	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	return button
+	return UiStyle.apply_button(button, danger, 22)
 
-func _new_button(text: String, danger := false) -> Button:
+func _new_button(text: String, danger := false, badge := "", command_id := "") -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(150, 46)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.focus_mode = Control.FOCUS_NONE
 	_style_button(button, danger)
+	if not command_id.is_empty():
+		var icon := VisualCatalog.command_icon(StringName(command_id))
+		if icon != null:
+			button.icon = icon
+			button.expand_icon = false
+			button.add_theme_constant_override("icon_max_width", 26)
+			button.add_theme_constant_override("h_separation", 10)
+		elif not badge.is_empty():
+			var badge_node := UiStyle.attach_button_badge(button, badge)
+			if badge_node != null:
+				_badge_buttons.append([button, badge_node])
 	button.pressed.connect(_play_click)
 	return button
 
@@ -589,6 +582,7 @@ func _build_order_panel() -> void:
 	_order_panel.position = Vector2(24, 164)
 	_order_panel.add_theme_stylebox_override("panel", _make_panel_style())
 	add_child(_order_panel)
+	UiStyle.attach_inner_border(_order_panel, 9)
 
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
@@ -631,6 +625,7 @@ func _build_playback_panel() -> void:
 	panel.position = Vector2(1512, 24)
 	panel.add_theme_stylebox_override("panel", _make_panel_style())
 	add_child(panel)
+	UiStyle.attach_inner_border(panel, 9)
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -654,6 +649,7 @@ func _build_command_panel() -> void:
 	_command_panel.add_theme_stylebox_override("panel", _make_panel_style())
 	_command_panel.visible = false
 	add_child(_command_panel)
+	UiStyle.attach_inner_border(_command_panel, 9)
 
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
@@ -664,9 +660,12 @@ func _build_command_panel() -> void:
 	box.add_child(title_row)
 
 	_title_label = Label.new()
-	_title_label.text = "指令阶段"
+	_title_label.text = "◆ 指令阶段"
 	_title_label.add_theme_font_size_override("font_size", 26)
 	_title_label.add_theme_color_override("font_color", GOLD)
+	_title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	_title_label.add_theme_constant_override("shadow_offset_x", 1)
+	_title_label.add_theme_constant_override("shadow_offset_y", 2)
 	title_row.add_child(_title_label)
 
 	var spacer := Control.new()
@@ -704,7 +703,7 @@ func _build_command_panel() -> void:
 
 func _build_flee_button() -> void:
 	# 规格 6.4：逃跑是独立的整队按钮，不放在指令面板内。
-	_flee_button = _new_button("逃跑", true)
+	_flee_button = _new_button("逃跑", true, "逃", "flee")
 	_flee_button.name = "PartyFleeButton"
 	_flee_button.position = Vector2(1368, 552)
 	_flee_button.custom_minimum_size = Vector2(180, 46)
@@ -735,6 +734,15 @@ func _make_order_chip(unit_id: StringName, number: int) -> PanelContainer:
 	row.add_child(index_label)
 
 	var unit := _unit_state(unit_id)
+	var team_dot := Label.new()
+	team_dot.text = "●"
+	team_dot.add_theme_font_size_override("font_size", 10)
+	var team_color := ENEMY_COLOR
+	if unit != null and unit.side == BattleTypes.Side.ALLY:
+		team_color = ALLY_COLOR
+	team_dot.add_theme_color_override("font_color", team_color)
+	row.add_child(team_dot)
+
 	var name_label := Label.new()
 	name_label.text = unit.data.display_name if unit != null else String(unit_id)
 	name_label.add_theme_font_size_override("font_size", 16)
@@ -770,19 +778,19 @@ func _show_root(ally: BattleUnitState) -> void:
 	grid.add_theme_constant_override("v_separation", 10)
 	_body.add_child(grid)
 
-	var attack := _new_button("攻击")
+	var attack := _new_button("攻击", false, "攻", "attack")
 	attack.pressed.connect(select_attack)
 	grid.add_child(attack)
 
-	var skills := _new_button("法术")
+	var skills := _new_button("法术", false, "法", "skill")
 	skills.pressed.connect(_show_skills.bind(ally))
 	grid.add_child(skills)
 
-	var items := _new_button("道具")
+	var items := _new_button("道具", false, "药", "item")
 	items.pressed.connect(_show_items.bind(ally))
 	grid.add_child(items)
 
-	var defend := _new_button("防御")
+	var defend := _new_button("防御", false, "守", "defend")
 	defend.pressed.connect(select_defend)
 	grid.add_child(defend)
 

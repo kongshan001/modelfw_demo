@@ -1,0 +1,92 @@
+# 美术资源与 AI 美术接入
+
+当前版本（Plan 2B）的战场、角色、图标全部由 GDScript 程序化绘制：没有外部位图、
+没有第三方素材、没有版权风险。程序化绘制始终可用，是任何缺失资源的兜底。
+
+## 为什么还是程序化美术
+
+Seedream / 方舟生图在本机被 403 / SSO 阻断（详见 `CREDITS.md`），无法产出 AI 立绘。
+因此本任务把“风格统一”和“未来可替换”拆开：
+
+1. 先做出统一风格的 Q 版程序化角色 + 竹林黎明日景；
+2. 再用 `assets/visuals/visual_catalog.json` 预留 AI 美术的 drop-in 接口。
+
+## 目录
+
+```
+assets/
+  art/
+    README.md          # 本文件
+    CREDITS.md         # 版权与来源说明
+  visuals/
+    visual_catalog.json
+    units/             # （可选）放置角色立绘 PNG/WebP
+    background/        # （可选）放置 1920x1080 背景图
+    status/            # （可选）状态图标
+    commands/          # （可选）指令图标
+```
+
+## 接入角色立绘
+
+1. 把透明背景 PNG（推荐高度 220–300px，脚底贴图片底边）放到
+   `assets/visuals/units/`，文件名建议与单位 id 一致，例如
+   `hero_swordsman.png`。
+2. 编辑 `assets/visuals/visual_catalog.json`：
+
+```json
+"units": {
+  "hero_swordsman": {
+    "sprite": "res://assets/visuals/units/hero_swordsman.png",
+    "scale": 1.0,
+    "offset": [0, 0]
+  }
+}
+```
+
+- `sprite`：`res://` 或 `user://` 路径；为空则使用程序化角色。
+- `scale`：整体缩放；默认 1.0。
+- `offset`：以“脚底为原点”的像素偏移，向上为负 y。
+
+UnitView 会把图片底边对齐到角色脚底（`y = 0`），血条 / 名字 / 状态 / 点击区域
+保持原有布局。图片缺失、损坏或导入失败时自动回退到程序化角色。
+
+`core/data/unit_data.gd` 里已有 `sprite_path` / `visual_scale` 字段，可作为
+备用入口；`visual_catalog.json` 优先级更高，核心数据无需改动。
+
+## 接入战场背景
+
+把 1920×1080 的背景图放到 `assets/visuals/background/`，然后：
+
+```json
+"background": {
+  "path": "res://assets/visuals/background/bamboo_dawn.png",
+  "scale": 1.0,
+  "modulate": [1.0, 0.98, 0.94, 1.0]
+}
+```
+
+背景图会铺在程序化背景之前并替换它；暗角仍会保留以维持统一的画面边缘。
+路径为空或加载失败时继续使用程序化竹林。
+
+## 接入状态 / 指令图标
+
+```json
+"status_icons": {
+  "poison": {"path": "res://assets/visuals/status/poison.png"}
+},
+"command_icons": {
+  "attack": {"path": "res://assets/visuals/commands/attack.png"}
+}
+```
+
+- 状态图标会替代单位头顶的圆形文字徽章（推荐 24×24 透明 PNG）。
+- 指令图标会作为 Button 的 `icon` 显示，替代一字符金色徽章
+  （推荐 28×28 透明 PNG）。
+
+## 注意
+
+- Godot 4 需要先导入位图（编辑器打开一次或运行 `godot --headless --path
+  godot-battle --editor --quit`）；未导入的 res:// 图片会尝试用
+  `Image.load_from_file` 直接加载，但正式发布请走导入管线。
+- 新增美术文件不会改变 `res://data/**` 的内容哈希，因此不会影响黄金回放与核心门禁。
+- 请只接入自有或明确授权（如 CC0）的素材，并同步更新 `CREDITS.md`。

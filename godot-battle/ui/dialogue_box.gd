@@ -35,14 +35,14 @@ func _init() -> void:
 
 func _build() -> void:
 	_bar_top = ColorRect.new()
-	_bar_top.color = Color(0.0, 0.0, 0.0, 0.86)
+	_bar_top.color = Color(0.015, 0.01, 0.025, 0.9)
 	_bar_top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar_top.anchor_right = 1.0
 	_bar_top.offset_bottom = BAR_TOP_HEIGHT
 	add_child(_bar_top)
 
 	_bar_bottom = ColorRect.new()
-	_bar_bottom.color = Color(0.0, 0.0, 0.0, 0.86)
+	_bar_bottom.color = Color(0.015, 0.01, 0.025, 0.9)
 	_bar_bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bar_bottom.anchor_top = 1.0
 	_bar_bottom.anchor_right = 1.0
@@ -61,19 +61,20 @@ func _build() -> void:
 	_panel.offset_top = -196.0
 	_panel.offset_bottom = -26.0
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.05, 0.07, 0.93)
-	style.border_color = Color(0.82, 0.66, 0.36, 0.9)
+	style.bg_color = Color(0.055, 0.04, 0.075, 0.96)
+	style.border_color = Color(0.86, 0.7, 0.4, 0.95)
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(14)
-	style.content_margin_left = 34
-	style.content_margin_right = 34
-	style.content_margin_top = 16
+	style.set_corner_radius_all(16)
+	style.content_margin_left = 38
+	style.content_margin_right = 38
+	style.content_margin_top = 18
 	style.content_margin_bottom = 12
-	style.shadow_color = Color(0, 0, 0, 0.55)
-	style.shadow_size = 10
+	style.shadow_color = Color(0, 0, 0, 0.6)
+	style.shadow_size = 14
 	_panel.add_theme_stylebox_override("panel", style)
 	_panel.gui_input.connect(_on_panel_gui_input)
 	add_child(_panel)
+	UiStyle.attach_inner_border(_panel, 12)
 
 	var box := VBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -83,11 +84,14 @@ func _build() -> void:
 	_label = Label.new()
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.add_theme_font_override("font", FontUtil.cjk_font())
-	_label.add_theme_font_size_override("font_size", 34)
-	_label.add_theme_color_override("font_color", Color(0.97, 0.95, 0.91))
+	_label.add_theme_font_size_override("font_size", 35)
+	_label.add_theme_color_override("font_color", Color(0.98, 0.96, 0.9))
 	_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))
+	_label.add_theme_color_override("font_outline_color", Color(0.04, 0.02, 0.05, 0.6))
+	_label.add_theme_constant_override("outline_size", 3)
 	_label.add_theme_constant_override("shadow_offset_x", 2)
 	_label.add_theme_constant_override("shadow_offset_y", 3)
+	_label.add_theme_constant_override("line_spacing", 8)
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -95,11 +99,11 @@ func _build() -> void:
 
 	_hint = Label.new()
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hint.text = "点击 / 空格 继续"
+	_hint.text = "◆ 点击 / 空格 继续"
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_hint.add_theme_font_override("font", FontUtil.cjk_font())
 	_hint.add_theme_font_size_override("font_size", 15)
-	_hint.add_theme_color_override("font_color", Color(0.62, 0.6, 0.56))
+	_hint.add_theme_color_override("font_color", Color(0.72, 0.62, 0.46))
 	box.add_child(_hint)
 
 # ---------------------------------------------------------------- public API
