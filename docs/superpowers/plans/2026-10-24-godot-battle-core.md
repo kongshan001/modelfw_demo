@@ -2592,6 +2592,8 @@ git commit -m "feat(battle): 逃跑、敌方 AI 与回合上限"
   - `BattleEngine.new(encounter, content, seed, record := true)`、`apply_debug_op(op)`、`dump_replay(path := "") -> String`
   - CLI：`godot --headless --path godot-battle -s tools/replay.gd -- --file <path> [--strict-content]`
 
+> **实现修正（review）**：摘要规范化统一走 `BattleDigest.canonical_json`（整数化浮点），recorder 与 verifier 共用；`begin()` 清空状态；`rounds[]` 增加 `resolved` 标记；`verify()` 不修改输入并校验 `result.digest`；补意图篡改与部分录像测试。
+
 - [ ] **Step 1: 写失败测试**
 
 `godot-battle/tests/cases/test_replay.gd`:
