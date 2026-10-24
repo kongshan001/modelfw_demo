@@ -2,6 +2,7 @@ extends RefCounted
 
 func run(t: TestContext) -> void:
 	var db := ContentDB.load_all()
+	t.eq(db.base_dir, "res://data", "ContentDB 记录根目录")
 	t.eq(db.units.size(), 7, "7 个单位")
 	t.eq(db.skills.size(), 13, "13 个技能")
 	t.eq(db.statuses.size(), 5, "5 个状态")

@@ -7,9 +7,11 @@ var statuses: Dictionary = {}
 var items: Dictionary = {}
 var encounters: Dictionary = {}
 var _hash_cache: String = ""
+var base_dir: String = "res://data"
 
 static func load_all(base_dir: String = "res://data") -> ContentDB:
 	var db := ContentDB.new()
+	db.base_dir = base_dir
 	db._load_dir(base_dir + "/units", db.units)
 	db._load_dir(base_dir + "/skills", db.skills)
 	db._load_dir(base_dir + "/statuses", db.statuses)
@@ -30,6 +32,8 @@ func _load_dir(dir_path: String, target: Dictionary) -> void:
 			push_error("Cannot load content: " + dir_path + "/" + file_name)
 			continue
 		target[resource.get("id")] = resource
+	for sub_dir in dir.get_directories():
+		_load_dir(dir_path + "/" + sub_dir, target)
 
 func get_unit(id: StringName) -> UnitData:
 	return units.get(id)
@@ -45,7 +49,7 @@ func get_encounter(id: StringName) -> EncounterData:
 func content_hash() -> String:
 	if not _hash_cache.is_empty():
 		return _hash_cache
-	var files := _collect_tres("res://data")
+	var files := _collect_tres(base_dir)
 	files.sort()
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
