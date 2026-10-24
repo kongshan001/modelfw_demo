@@ -60,7 +60,8 @@ godot-battle/
 ├── tools/
 │   ├── build_content.gd
 │   ├── make_golden.gd
-│   └── replay.gd
+│   ├── replay.gd
+│   └── run_tests.sh
 ├── tests/
 │   ├── test_context.gd
 │   ├── run_tests.gd
