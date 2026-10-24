@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_weiib"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_fkkj0"]
+
+[sub_resource type="Resource" id="Resource_5xuo2"]
+script = ExtResource("1_weiib")
+damage_type = 1
+power = 1.5
+
+[resource]
+script = ExtResource("2_fkkj0")
+id = &"fire_spell"
+display_name = "烈火咒"
+mp_cost = 25
+effects = Array[ExtResource("1_weiib")]([SubResource("Resource_5xuo2")])
+visual_id = &"fire"
+shout_text = "烈火焚身！"

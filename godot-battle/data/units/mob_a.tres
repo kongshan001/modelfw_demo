@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_0i1nv"]
+
+[resource]
+script = ExtResource("1_0i1nv")
+id = &"mob_a"
+display_name = "妖兵·甲"
+max_hp = 380
+atk = 82
+defense = 40
+magic = 10
+resistance = 30
+speed = 70
+crit_rate = 0.05
+ai_profile = &"melee"

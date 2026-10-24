@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_olooa"]
+[ext_resource type="Script" path="res://core/data/item_data.gd" id="2_pkqvk"]
+
+[sub_resource type="Resource" id="Resource_vkraf"]
+script = ExtResource("1_olooa")
+kind = 1
+damage_type = 2
+power = 0.0
+flat_amount = 220
+
+[resource]
+script = ExtResource("2_pkqvk")
+id = &"potion_hp"
+display_name = "金疮药"
+effects = Array[ExtResource("1_olooa")]([SubResource("Resource_vkraf")])

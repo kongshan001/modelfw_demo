@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_htouh"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_m4mhm"]
+
+[sub_resource type="Resource" id="Resource_rhpcj"]
+script = ExtResource("1_htouh")
+kind = 1
+damage_type = 2
+power = 1.6
+
+[resource]
+script = ExtResource("2_m4mhm")
+id = &"heal_single"
+display_name = "回春术"
+mp_cost = 30
+target_type = 2
+effects = Array[ExtResource("1_htouh")]([SubResource("Resource_rhpcj")])
+visual_id = &"heal"
+shout_text = "回春术！"

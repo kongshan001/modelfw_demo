@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="StatusData" format=3]
+
+[ext_resource type="Script" path="res://core/data/status_data.gd" id="1_fgati"]
+
+[resource]
+script = ExtResource("1_fgati")
+id = &"defending"
+display_name = "防御"
+duration = 99
+expires_on_owner_action = true
+damage_taken_mult = 0.5
+seal_resist_bonus = 0.3
+display_color = Color(0.4, 0.7, 1, 1)

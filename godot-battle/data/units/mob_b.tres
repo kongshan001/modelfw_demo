@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_sds6x"]
+
+[resource]
+script = ExtResource("1_sds6x")
+id = &"mob_b"
+display_name = "妖兵·乙"
+max_hp = 380
+atk = 78
+defense = 40
+magic = 10
+resistance = 30
+speed = 70
+crit_rate = 0.05
+skills = Array[StringName]([&"poison_strike"])
+ai_profile = &"poison_melee"

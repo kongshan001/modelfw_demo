@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_p1vy6"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_navbt"]
+
+[sub_resource type="Resource" id="Resource_ehg7h"]
+script = ExtResource("1_p1vy6")
+power = 1.25
+
+[sub_resource type="Resource" id="Resource_gktkn"]
+script = ExtResource("1_p1vy6")
+kind = 2
+status_id = &"armor_down"
+
+[resource]
+script = ExtResource("2_navbt")
+id = &"armor_break"
+display_name = "破甲击"
+mp_cost = 20
+effects = Array[ExtResource("1_p1vy6")]([SubResource("Resource_ehg7h"), SubResource("Resource_gktkn")])
+visual_id = &"slash"
+shout_text = "破甲！"

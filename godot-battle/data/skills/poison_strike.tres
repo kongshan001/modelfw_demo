@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_7yiev"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_1wn80"]
+
+[sub_resource type="Resource" id="Resource_nlqfc"]
+script = ExtResource("1_7yiev")
+power = 0.9
+
+[sub_resource type="Resource" id="Resource_x4cab"]
+script = ExtResource("1_7yiev")
+kind = 2
+status_id = &"poison"
+
+[resource]
+script = ExtResource("2_1wn80")
+id = &"poison_strike"
+display_name = "淬毒击"
+effects = Array[ExtResource("1_7yiev")]([SubResource("Resource_nlqfc"), SubResource("Resource_x4cab")])
+visual_id = &"poison"
+shout_text = "尝尝这个！"

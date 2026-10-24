@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_7pm1k"]
+
+[resource]
+script = ExtResource("1_7pm1k")
+id = &"hero_mage"
+display_name = "法师·青鸾"
+max_hp = 460
+max_mp = 220
+atk = 40
+defense = 45
+magic = 135
+resistance = 85
+speed = 85
+crit_rate = 0.1
+skills = Array[StringName]([&"fire_spell", &"thunder_storm", &"seal_talisman"])

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusData" format=3]
+
+[ext_resource type="Script" path="res://core/data/status_data.gd" id="1_fh7le"]
+
+[resource]
+script = ExtResource("1_fh7le")
+id = &"war_cry"
+display_name = "战吼"
+duration = 2
+atk_mult = 1.2
+display_color = Color(1, 0.35, 0.25, 1)

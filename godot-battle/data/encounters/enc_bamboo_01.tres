@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://core/data/encounter_data.gd" id="1_15gqo"]
+[ext_resource type="Script" path="res://core/data/encounter_script.gd" id="2_pxr42"]
+
+[sub_resource type="Resource" id="Resource_atyoj"]
+script = ExtResource("2_pxr42")
+intro_lines = Array[String](["狐妖·媚娘：擅闯竹林的凡人，留下买路财！", "剑客·凌霄：正好试试新练的招式。"])
+first_kill_lines = Array[String](["医师·白术：别恋战，稳住阵型！"])
+victory_lines = Array[String](["剑客·凌霄：不过如此。"])
+defeat_lines = Array[String](["狐妖·媚娘：这点本事也敢闯山？"])
+
+[resource]
+script = ExtResource("1_15gqo")
+id = &"enc_bamboo_01"
+ally_unit_ids = Array[StringName]([&"hero_swordsman", &"hero_mage", &"hero_healer"])
+enemy_unit_ids = Array[StringName]([&"mob_a", &"mob_b", &"boss_brute", &"boss_fox"])
+item_counts = {
+"potion_hp": 3,
+"potion_mp": 3
+}
+reward_exp = 1200
+reward_gold = 350
+script_data = SubResource("Resource_atyoj")

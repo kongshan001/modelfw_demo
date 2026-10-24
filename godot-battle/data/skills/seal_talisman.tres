@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_l5r08"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_2g404"]
+
+[sub_resource type="Resource" id="Resource_05w82"]
+script = ExtResource("1_l5r08")
+kind = 2
+status_id = &"sealed"
+status_chance = 0.65
+
+[resource]
+script = ExtResource("2_2g404")
+id = &"seal_talisman"
+display_name = "定身符"
+mp_cost = 30
+effects = Array[ExtResource("1_l5r08")]([SubResource("Resource_05w82")])
+visual_id = &"seal"
+shout_text = "定！"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_yrlil"]
+
+[resource]
+script = ExtResource("1_yrlil")
+id = &"boss_brute"
+display_name = "妖将·裂山"
+max_hp = 720
+max_mp = 60
+atk = 105
+defense = 65
+magic = 20
+resistance = 45
+speed = 62
+crit_rate = 0.1
+skills = Array[StringName]([&"ground_split", &"war_cry"])
+ai_profile = &"brute"

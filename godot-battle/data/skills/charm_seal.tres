@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_f23ne"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_ju1y2"]
+
+[sub_resource type="Resource" id="Resource_daxqo"]
+script = ExtResource("1_f23ne")
+kind = 2
+status_id = &"sealed"
+status_chance = 0.6
+
+[resource]
+script = ExtResource("2_ju1y2")
+id = &"charm_seal"
+display_name = "魅惑封印"
+mp_cost = 25
+effects = Array[ExtResource("1_f23ne")]([SubResource("Resource_daxqo")])
+visual_id = &"seal"
+shout_text = "别动哦～"

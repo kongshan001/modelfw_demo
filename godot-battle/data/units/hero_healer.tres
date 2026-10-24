@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_xivkx"]
+
+[resource]
+script = ExtResource("1_xivkx")
+id = &"hero_healer"
+display_name = "医师·白术"
+max_hp = 540
+max_mp = 180
+atk = 52
+defense = 58
+magic = 105
+resistance = 78
+speed = 78
+crit_rate = 0.08
+skills = Array[StringName]([&"heal_single", &"cleanse", &"heal_all"])

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_pghae"]
+
+[resource]
+script = ExtResource("1_pghae")
+id = &"hero_swordsman"
+display_name = "剑客·凌霄"
+max_hp = 620
+max_mp = 80
+atk = 118
+defense = 72
+magic = 20
+resistance = 50
+speed = 92
+crit_rate = 0.18
+skills = Array[StringName]([&"sweep", &"armor_break"])

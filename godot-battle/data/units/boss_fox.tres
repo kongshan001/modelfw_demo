@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UnitData" format=3]
+
+[ext_resource type="Script" path="res://core/data/unit_data.gd" id="1_6u2un"]
+
+[resource]
+script = ExtResource("1_6u2un")
+id = &"boss_fox"
+display_name = "狐妖·媚娘"
+max_hp = 420
+max_mp = 120
+atk = 30
+defense = 38
+magic = 110
+resistance = 70
+speed = 88
+crit_rate = 0.08
+skills = Array[StringName]([&"fox_fire", &"charm_seal"])
+ai_profile = &"fox"

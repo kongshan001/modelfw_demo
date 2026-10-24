@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_68w80"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_7gu23"]
+
+[sub_resource type="Resource" id="Resource_o30xy"]
+script = ExtResource("1_68w80")
+kind = 1
+damage_type = 2
+power = 0.8
+
+[resource]
+script = ExtResource("2_7gu23")
+id = &"heal_all"
+display_name = "灵雨"
+mp_cost = 50
+target_type = 3
+max_targets = 99
+effects = Array[ExtResource("1_68w80")]([SubResource("Resource_o30xy")])
+visual_id = &"heal"
+shout_text = "灵雨术！"

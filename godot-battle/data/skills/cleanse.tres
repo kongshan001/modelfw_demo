@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://core/data/battle_effect.gd" id="1_o0t1h"]
+[ext_resource type="Script" path="res://core/data/skill_data.gd" id="2_hlkbm"]
+
+[sub_resource type="Resource" id="Resource_u5fv0"]
+script = ExtResource("1_o0t1h")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_jaxyx"]
+script = ExtResource("1_o0t1h")
+kind = 1
+damage_type = 2
+power = 0.5
+
+[resource]
+script = ExtResource("2_hlkbm")
+id = &"cleanse"
+display_name = "清心咒"
+mp_cost = 25
+target_type = 2
+effects = Array[ExtResource("1_o0t1h")]([SubResource("Resource_u5fv0"), SubResource("Resource_jaxyx")])
+visual_id = &"heal"
+shout_text = "清心！"
