@@ -7,7 +7,11 @@ static func check(state: BattleState) -> Array[String]:
 		issues.append("round is negative")
 	if state.round > state.max_rounds:
 		issues.append("round exceeds max_rounds")
+	var seen_unit_ids := {}
 	for unit in state.units:
+		if seen_unit_ids.has(unit.id):
+			issues.append("duplicate unit id: %s" % String(unit.id))
+		seen_unit_ids[unit.id] = true
 		if unit.hp < 0 or unit.hp > unit.data.max_hp:
 			issues.append("%s hp out of range: %d" % [String(unit.id), unit.hp])
 		if unit.mp < 0 or unit.mp > unit.data.max_mp:

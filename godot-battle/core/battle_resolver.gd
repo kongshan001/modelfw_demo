@@ -87,7 +87,7 @@ func _validate_player_intents(player_intents: Array[BattleIntent], flee_requeste
 		if _is_valid_intent(actor, intent):
 			result[actor.id] = intent
 		else:
-			_emit(&"intent_rejected", actor.id, intent.target_ids, {"reason": "invalid"})
+			_emit(&"intent_rejected", actor.id, intent.target_ids, {"reason": _invalid_reason(actor, intent)})
 			result[actor.id] = BattleIntent.make(actor.id, BattleTypes.IntentKind.DEFEND)
 	if not flee_requested:
 		for ally in state.living(BattleTypes.Side.ALLY):
@@ -132,6 +132,47 @@ func _is_valid_intent(actor: BattleUnitState, intent: BattleIntent) -> bool:
 		_:
 			return false
 
+func _invalid_reason(actor: BattleUnitState, intent: BattleIntent) -> String:
+	match intent.kind:
+		BattleTypes.IntentKind.ATTACK:
+			if intent.target_ids.size() == 1:
+				var attack_target := state.get_unit(intent.target_ids[0])
+				if attack_target != null and not attack_target.is_alive():
+					return "target_dead"
+			return "invalid_target"
+		BattleTypes.IntentKind.SKILL:
+			var skill := content.get_skill(intent.skill_id)
+			if skill == null or not actor.data.skills.has(skill.id):
+				return "unknown_skill"
+			if actor.mp < skill.mp_cost:
+				return "mp"
+			if intent.target_ids.size() != 1:
+				return "invalid_target"
+			var skill_target := state.get_unit(intent.target_ids[0])
+			if skill_target == null:
+				return "invalid_target"
+			if not skill_target.is_alive():
+				return "target_dead"
+			var ally_skill := skill.target_type == SkillData.TargetType.SINGLE_ALLY or skill.target_type == SkillData.TargetType.ALL_ALLIES
+			if ally_skill != (skill_target.side == actor.side):
+				return "invalid_target"
+			return "invalid_target"
+		BattleTypes.IntentKind.ITEM:
+			var item := content.get_item(intent.item_id)
+			if item == null:
+				return "unknown_item"
+			if state.item_remaining(item.id) <= 0:
+				return "item"
+			if intent.target_ids.size() != 1:
+				return "invalid_target"
+			var item_target := state.get_unit(intent.target_ids[0])
+			if item_target == null:
+				return "invalid_target"
+			if not item_target.is_alive():
+				return "target_dead"
+			return "invalid_target"
+	return "unknown_kind"
+
 func _collect_actions(intents: Dictionary) -> Array[BattleIntent]:
 	var actions: Array[BattleIntent] = []
 	for unit in state.units:
@@ -156,10 +197,12 @@ func _execute_intent(intent: BattleIntent) -> void:
 		if status.data.expires_on_owner_action:
 			actor.remove_status(status.data.id)
 			_emit(&"status_expire", actor.id, [actor.id], {"status_id": String(status.data.id), "reason": "owner_action"})
-	if actor.has_status(&"sealed"):
-		actor.remove_status(&"sealed")
-		_emit(&"action_skipped", actor.id, [actor.id], {"reason": "sealed"})
-		_emit(&"status_expire", actor.id, [actor.id], {"status_id": "sealed", "reason": "sealed"})
+	for status in actor.statuses.duplicate():
+		if not status.data.skips_action:
+			continue
+		actor.remove_status(status.data.id)
+		_emit(&"action_skipped", actor.id, [actor.id], {"reason": String(status.data.id), "status_id": String(status.data.id)})
+		_emit(&"status_expire", actor.id, [actor.id], {"status_id": String(status.data.id), "reason": "skipped"})
 		return
 	match intent.kind:
 		BattleTypes.IntentKind.ATTACK:

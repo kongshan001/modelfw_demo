@@ -2,51 +2,51 @@
   "digests": [
     {
       "round": 1,
-      "sha256": "sha256:5830e7f43160d360492baffe494ae62d2dd7f10de8007b0a1f55f51ca46732f2"
+      "sha256": "sha256:9e5527c154d9ca467a8a82ba1c1d8d01d7f27bbb04b1f4555137197700b820d6"
     },
     {
       "round": 2,
-      "sha256": "sha256:945ac7021f027c8ff5a904d481cb51315b3efe86ad7bd7af70481fdcaba7a0ec"
+      "sha256": "sha256:f8a2f3d96ad83450b0ec32e8e2051b28f47901752dac3bb1c1c1d4add2443887"
     },
     {
       "round": 3,
-      "sha256": "sha256:51ff3837bb9afccb5574e34b477903b56abf53b39df42dbd2f6810b9d6951e46"
+      "sha256": "sha256:f975ad3a16a7e1b867e87ee9f252dab00077654d41dd9c0bad9de240773fd529"
     },
     {
       "round": 4,
-      "sha256": "sha256:0f1672ac5eb2be94d42fe324b1ae205d554598b705f574fb143966c5cb030db1"
+      "sha256": "sha256:58d33059d1fcbaa28595de91a05c1154ea46986de5832ecabd8fe1f8c6a9aece"
     },
     {
       "round": 5,
-      "sha256": "sha256:f7e423f55dcd68e006828fa6a903bc592960721007e93e38f23e0d47de184669"
+      "sha256": "sha256:25b1e3d5a7bd3cb92b5db4417da9ffeec60ccef4195a8d05b9035702ae7f726b"
     },
     {
       "round": 6,
-      "sha256": "sha256:075b9df4861cadd0736927278853a2974ba575d8eb79cb6696c35fd4c9cf3b01"
+      "sha256": "sha256:88c308447a9e76b66934b429b954c37f14b8faeb609787fd79a652268e2655b7"
     },
     {
       "round": 7,
-      "sha256": "sha256:dc4ccc4682a5b8439de95ccd62202f84fd34f039b4b0d3d3a8007a2f17fb1ed7"
+      "sha256": "sha256:96450e9182c48d9798ecf6ba36b3870d3d2efdfcef6af063fb541b6e0aac1f6d"
     },
     {
       "round": 8,
-      "sha256": "sha256:ec58e3caa6d8f74ff147296d7ef01160977e1657bd5b2ce6b3ca39965121a94c"
+      "sha256": "sha256:06ba08025480971368a62a933f4a941e05c3b70583a2e1ee50ada17863143b32"
     },
     {
       "round": 9,
-      "sha256": "sha256:c4329fee5835103bda7c68bc0437f8577c4f0b6a5cbcc6edaba7969c3025e9e8"
+      "sha256": "sha256:e9e1a530c172bbbe4369fc713129c6674dbb9a8362969e6b91147b8f486f493e"
     },
     {
       "round": 10,
-      "sha256": "sha256:762da50d0e7b1d1b28350f3e46e56369115abc382c047e6d9080d5b5c95a0603"
+      "sha256": "sha256:dd2c3c98ffe6652b299b0dacfba1474619d407c0e5f304b45128dddc1a197b86"
     },
     {
       "round": 11,
-      "sha256": "sha256:6fd9b69334dfb556405d6a50d3928dd87e6472cc30377a86678e6b2fd9b5e23b"
+      "sha256": "sha256:8b3dce44a6284f40a49f9fe8c1662681990e31a8b01eefe18809dcf4e2daecb5"
     },
     {
       "round": 12,
-      "sha256": "sha256:45b98aa7c92e658c9fa4b4d830ed53b5ff9219c5a118a0cc29f149bea048546e"
+      "sha256": "sha256:e19200d2932f26aa6f8ef21fc2247c89289eaaa1e84ae8e991e8e383af78b21e"
     }
   ],
   "events": [
@@ -176,7 +176,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 1,
       "seq": 9,
@@ -188,7 +189,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 1,
@@ -995,7 +996,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 4,
       "seq": 66,
@@ -1007,7 +1009,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 4,
@@ -2253,13 +2255,13 @@
     "battle_id": "enc_bamboo_01",
     "build": "debug",
     "content_hash": "sha256:4381648dff17081e3d1bdd6ace73753fcc0bffc562ee03e4f24e1b6e0ef25975",
-    "created_at": "2026-10-24T13:33:44",
+    "created_at": "2026-10-24T14:06:06",
     "engine": "4.6-stable (official)",
     "seed": 1001
   },
   "replay_version": 1,
   "result": {
-    "digest": "sha256:45b98aa7c92e658c9fa4b4d830ed53b5ff9219c5a118a0cc29f149bea048546e",
+    "digest": "sha256:e19200d2932f26aa6f8ef21fc2247c89289eaaa1e84ae8e991e8e383af78b21e",
     "outcome": 0,
     "rounds": 12
   },

@@ -98,5 +98,4 @@ func run(t: TestContext) -> void:
 		BattleIntent.make(&"hero_mage", BattleTypes.IntentKind.SKILL, [&"dummy_0"], &"fire_spell"),
 	])
 	var rejected := _event_by_type(mp_events, &"intent_rejected", "hero_mage")
-	t.ok(rejected != null, "MP 不足被拒绝")
-	t.eq(String(rejected.data["reason"]), "invalid", "拒绝原因 invalid")
+	t.ok(rejected != null and String(rejected.data.get("reason", "")) == "mp", "MP 不足被拒绝，原因 mp")

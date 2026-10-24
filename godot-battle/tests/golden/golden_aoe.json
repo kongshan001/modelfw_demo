@@ -6,47 +6,47 @@
     },
     {
       "round": 2,
-      "sha256": "sha256:48e747e58e36bafa5c68f9ac03bd9a66312dd6b16f76d7009330fb8c25fed10d"
+      "sha256": "sha256:09fa6e12f5da98e5f0210df3dee87bb473e1ca13732f4441d0f27a3731b96fe0"
     },
     {
       "round": 3,
-      "sha256": "sha256:bf7f4d59f7cfb37f099c676d5b012dc08b7ceb7b8d1428c775f32fdafda6a0b2"
+      "sha256": "sha256:c3a58916eb0df0bb51fc1359ddc1d6dd111926bc95503f6fc1db7e2aa7e5ebea"
     },
     {
       "round": 4,
-      "sha256": "sha256:a302f8307b761df68681a1cb616c5f276d0a8288cfb40222a98a07aa03a88b84"
+      "sha256": "sha256:2117f9d74d1178331e5abec6b8afcd1be2041538f11c77cb12453333663e77d8"
     },
     {
       "round": 5,
-      "sha256": "sha256:c4617c984375bbfdf3d81a54345fe20d242b46a494c70d3c9e88e5d8a5afe422"
+      "sha256": "sha256:cb4d2b5fef9c6bef22e5a1d69c93e835085f6dda9115b2d9c3bcfa9cea4b0ee1"
     },
     {
       "round": 6,
-      "sha256": "sha256:588228f4d75dc7adec1dc80a28d6f09c23716a65d5b3b521291478d948b5afcc"
+      "sha256": "sha256:8a10346e77698468ad15d3abfe401c407d845690443d9767a60d03f7a84d0269"
     },
     {
       "round": 7,
-      "sha256": "sha256:964572ed3712773f68e2ec1b55c9610dec43eb64bd2b9f64d569da8273afa534"
+      "sha256": "sha256:b5f859075669ec65bf77006b0bc92437882264f58d4c417e0e703ec48e3a5432"
     },
     {
       "round": 8,
-      "sha256": "sha256:560e603e8f24182cb782697a9f5713e488224c2f2384aacfed56c8984ab7b9d1"
+      "sha256": "sha256:4a4c235e64e105cc50e474a59ffd7047f30ffef1ad6e576651ee7a40f245baab"
     },
     {
       "round": 9,
-      "sha256": "sha256:b05a57e38efc92cb59842a2ac5f6b0a6721d1e595a0c6873decf2ec628d989d7"
+      "sha256": "sha256:bb4aacc188dd4f6aeb9d8c21bc54f9a9d86a1677ab5204009c19c03e1470fd29"
     },
     {
       "round": 10,
-      "sha256": "sha256:f284506561f25707dad3c627ec34fb5eb648840b3702ca6cd28169f17f923992"
+      "sha256": "sha256:a53166971d5b688b5920c5f828bb8f1cd4d314ee7a13ffa871702efb58a9871a"
     },
     {
       "round": 11,
-      "sha256": "sha256:b0b3e23d37a2ff2208ac7d03cd944c31f1ebd9aecba9dc649d4c0ed26b071d7c"
+      "sha256": "sha256:34a9bcbb7330abc4235603bec329a88cc19d4d935c70ac7304a94f02b8ae3e9b"
     },
     {
       "round": 12,
-      "sha256": "sha256:44bf77891ad898557e7aa524dc8ba03293cca3759448886843ad739c80d0de9b"
+      "sha256": "sha256:3f30fca2a84bcee2b2de213c908e86ecc4a9987ea92cb483853d667016f83bed"
     }
   ],
   "events": [
@@ -751,7 +751,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 2,
       "seq": 46,
@@ -763,7 +764,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 2,
@@ -974,7 +975,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 3,
       "seq": 61,
@@ -1377,7 +1378,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 4,
       "seq": 90,
@@ -1540,7 +1541,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 4,
       "seq": 102,
@@ -1552,7 +1554,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 4,
@@ -1667,7 +1669,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 5,
       "seq": 111,
@@ -1679,7 +1681,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 5,
       "seq": 112,
@@ -1963,7 +1965,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 6,
       "seq": 133,
@@ -1975,7 +1977,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 6,
       "seq": 134,
@@ -1987,7 +1989,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 6,
       "seq": 135,
@@ -2228,7 +2230,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 7,
       "seq": 154,
@@ -2240,7 +2242,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 7,
       "seq": 155,
@@ -2252,7 +2254,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 7,
       "seq": 156,
@@ -2493,7 +2495,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 8,
       "seq": 175,
@@ -2505,7 +2507,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 8,
       "seq": 176,
@@ -2517,7 +2519,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 8,
       "seq": 177,
@@ -2768,7 +2770,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 9,
       "seq": 197,
@@ -2780,7 +2782,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 9,
       "seq": 198,
@@ -2972,7 +2974,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 10,
       "seq": 213,
@@ -2984,7 +2986,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 10,
       "seq": 214,
@@ -3176,7 +3178,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 11,
       "seq": 229,
@@ -3188,7 +3190,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 11,
       "seq": 230,
@@ -3380,7 +3382,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 12,
       "seq": 245,
@@ -3392,7 +3394,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 12,
       "seq": 246,
@@ -3567,13 +3569,13 @@
     "battle_id": "enc_bamboo_01",
     "build": "debug",
     "content_hash": "sha256:4381648dff17081e3d1bdd6ace73753fcc0bffc562ee03e4f24e1b6e0ef25975",
-    "created_at": "2026-10-24T13:33:44",
+    "created_at": "2026-10-24T14:06:06",
     "engine": "4.6-stable (official)",
     "seed": 1002
   },
   "replay_version": 1,
   "result": {
-    "digest": "sha256:44bf77891ad898557e7aa524dc8ba03293cca3759448886843ad739c80d0de9b",
+    "digest": "sha256:3f30fca2a84bcee2b2de213c908e86ecc4a9987ea92cb483853d667016f83bed",
     "outcome": 0,
     "rounds": 12
   },

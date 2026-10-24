@@ -16,7 +16,7 @@ static func verify(replay: Dictionary, content: ContentDB, strict_content: bool 
 	var errors: Array[String] = []
 	var warnings: Array[String] = []
 	var version: Variant = replay.get("replay_version", 0)
-	if not (version is int or version is float) or int(version) != BattleRecorder.REPLAY_VERSION:
+	if not (version is int or version is float) or float(version) != float(BattleRecorder.REPLAY_VERSION):
 		errors.append("unsupported replay_version")
 		return _failed(errors, warnings)
 	if not (replay.get("meta") is Dictionary):

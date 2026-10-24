@@ -6,47 +6,47 @@
     },
     {
       "round": 2,
-      "sha256": "sha256:6123d3d483e32404cdd98de71b14ea92cba72af8b0e539dde1bb3e171254a66c"
+      "sha256": "sha256:2e8002105347fe4172721ee71bbe891555873ff67d9f98ba34c83962d1c25de1"
     },
     {
       "round": 3,
-      "sha256": "sha256:9d0189767b40e4f72158c6baf9e2870e7ddb79071a1332b26fa7c26e2d5c7b24"
+      "sha256": "sha256:0572f573d3b390f4a207e44966e358c7dc276fd11a9f7a3514c172beb8327afd"
     },
     {
       "round": 4,
-      "sha256": "sha256:4a1ab0321a072dc128a7e4677912dab5ec6fef6985d65b5d34e3e6fccb767f77"
+      "sha256": "sha256:6d81434763b3459f5f487748c0bb3a8f6798a6a1b8acb0ccf36d43449185a02c"
     },
     {
       "round": 5,
-      "sha256": "sha256:921af18f9bd5b5b99f2f7b0a673af8e3874ff6af671e58b63c010ebe3cdc68e3"
+      "sha256": "sha256:c0dc9f8f7ff1bec44d2fa9efc86b61a27e006b1aff0fc6167ae74df90d275036"
     },
     {
       "round": 6,
-      "sha256": "sha256:cf05fe154e6501bf9ee4b43f31ef5ac0ece0bbc5a7c94820b43f293fc2afb902"
+      "sha256": "sha256:35d13b7734305e83890e22b3593e4711c39bcef4a8a2e65d09dae859859a57c9"
     },
     {
       "round": 7,
-      "sha256": "sha256:fba3273f6f45949cab3bb5d1d04263a4e7020e8291261de25f7ca0b4e1478be7"
+      "sha256": "sha256:9e0229e4f2dabda657bce06704e1faa46f1ec396d2e9659069082f6d9da397c9"
     },
     {
       "round": 8,
-      "sha256": "sha256:b547184aa5e5542fd2538647e7589bb7a6975918458508f3ce08d4a9db98392d"
+      "sha256": "sha256:b4d94ca7da5ff3be477f536b4e29ba015e3d9ced9bcf251c32118b0be61ce77c"
     },
     {
       "round": 9,
-      "sha256": "sha256:2049eae2fcaa0c2c82331ac74a0464787c18986ae9155fbf69b044aee703c2d7"
+      "sha256": "sha256:4d9d495e2d025b400b0452f5ff09b65f46af65764bf5140d5b5a9a313d332111"
     },
     {
       "round": 10,
-      "sha256": "sha256:671c98b7a3c7db7c027527bffd987febc88f631f5c2295348c4f0db563973258"
+      "sha256": "sha256:c6e377035e283bedecee0cd8657743cf9be1e28683bae20ff9360724bc8a045f"
     },
     {
       "round": 11,
-      "sha256": "sha256:746b545b7f478e847b4daf00f26283c097c7e88076dcac77ac92febb9baa169a"
+      "sha256": "sha256:ae89e870788a6206060483efe1da2a07d677538b61b0606963dc6c14c69e5632"
     },
     {
       "round": 12,
-      "sha256": "sha256:d044a6bf02231a93f48daeef2152fb8a82092db91bbf4d4521a92591407db4a6"
+      "sha256": "sha256:40f9ce09e1d9a00d0def787a9cde18a08eb553f5dfc8c9681f7d3a5280c8e4a4"
     }
   ],
   "events": [
@@ -483,7 +483,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 2,
       "seq": 30,
@@ -495,7 +496,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 2,
@@ -1230,7 +1231,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 4,
       "seq": 82,
@@ -1242,7 +1244,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 4,
@@ -1417,7 +1419,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 5,
       "seq": 95,
@@ -1547,7 +1549,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 5,
       "seq": 105,
@@ -1559,7 +1562,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 5,
@@ -1691,7 +1694,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 6,
       "seq": 115,
@@ -1792,7 +1795,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 6,
       "seq": 123,
@@ -1804,7 +1808,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 6,
@@ -1976,7 +1980,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 7,
       "seq": 136,
@@ -2119,7 +2123,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 7,
       "seq": 147,
@@ -2131,7 +2136,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 7,
@@ -2258,7 +2263,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 8,
       "seq": 157,
@@ -2270,7 +2275,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 8,
       "seq": 158,
@@ -2329,7 +2334,8 @@
     },
     {
       "data": {
-        "reason": "sealed"
+        "reason": "sealed",
+        "status_id": "sealed"
       },
       "round": 8,
       "seq": 163,
@@ -2341,7 +2347,7 @@
     },
     {
       "data": {
-        "reason": "sealed",
+        "reason": "skipped",
         "status_id": "sealed"
       },
       "round": 8,
@@ -2505,7 +2511,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 9,
       "seq": 176,
@@ -2517,7 +2523,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 9,
       "seq": 177,
@@ -2783,7 +2789,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 10,
       "seq": 197,
@@ -2956,7 +2962,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 11,
       "seq": 210,
@@ -3158,7 +3164,7 @@
     },
     {
       "data": {
-        "reason": "invalid"
+        "reason": "mp"
       },
       "round": 12,
       "seq": 225,
@@ -3314,13 +3320,13 @@
     "battle_id": "enc_bamboo_01",
     "build": "debug",
     "content_hash": "sha256:4381648dff17081e3d1bdd6ace73753fcc0bffc562ee03e4f24e1b6e0ef25975",
-    "created_at": "2026-10-24T13:33:44",
+    "created_at": "2026-10-24T14:06:06",
     "engine": "4.6-stable (official)",
     "seed": 1003
   },
   "replay_version": 1,
   "result": {
-    "digest": "sha256:d044a6bf02231a93f48daeef2152fb8a82092db91bbf4d4521a92591407db4a6",
+    "digest": "sha256:40f9ce09e1d9a00d0def787a9cde18a08eb553f5dfc8c9681f7d3a5280c8e4a4",
     "outcome": 0,
     "rounds": 12
   },
