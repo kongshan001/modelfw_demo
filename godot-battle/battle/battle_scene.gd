@@ -1,7 +1,8 @@
 extends Node2D
 
-# 工具（冒烟/截图）在 add_child 前设为 true，即可跳过手动指令阶段。
+# 工具（冒烟/截图）在 add_child 前设为 true，即可跳过手动指令阶段 / 开场剧情。
 var start_auto_mode := false
+var skip_story := false
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
@@ -46,14 +47,36 @@ func _ready() -> void:
 	ctx.sequencer = sequencer
 	ctx.ui_layer = ui_layer
 
+	var audio := AudioDirector.new()
+	audio.name = "AudioDirector"
+	add_child(audio)
+	ctx.audio = audio
+
 	var hud := BattleHUD.new()
 	hud.name = "BattleHUD"
 	ui_layer.add_child(hud)
 	hud.setup(ctx)
 	ctx.hud = hud
 
+	var bubble := Bubble.new()
+	bubble.name = "Bubble"
+	ui_layer.add_child(bubble)
+	ctx.bubble = bubble
+
+	var dialogue := DialogueBox.new()
+	dialogue.name = "DialogueBox"
+	ui_layer.add_child(dialogue)
+	ctx.dialogue = dialogue
+
+	var victory_panel := VictoryPanel.new()
+	victory_panel.name = "VictoryPanel"
+	victory_panel.setup(audio)
+	ui_layer.add_child(victory_panel)
+	ctx.victory_panel = victory_panel
+
 	session.context = ctx
 	session.sequencer = sequencer
 	session.context.hud = hud
 	session.auto_mode = start_auto_mode
+	session.skip_story = skip_story
 	session.start(20261024)

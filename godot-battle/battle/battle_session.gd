@@ -2,6 +2,7 @@ class_name BattleSession
 extends Node
 
 signal battle_finished(outcome: int)
+signal command_phase_started
 
 var content: ContentDB
 var encounter: EncounterData
@@ -10,6 +11,7 @@ var context: BattleContext
 var director := BattleDirector.new()
 var sequencer: BattleSequencer
 var auto_mode := false
+var skip_story := false
 var seed_value := 20261024
 var _script_state: EncounterScript
 var _result_shown := false
@@ -17,16 +19,18 @@ var _result_shown := false
 func start(p_seed: int = 20261024) -> void:
 	seed_value = p_seed
 	content = ContentDB.load_all()
-	director.setup(content)
 	encounter = content.get_encounter(&"enc_bamboo_01")
-	engine = BattleEngine.new(encounter, content, seed_value)
-	_result_shown = false
 	_script_state = encounter.script_data
 	if _script_state != null:
 		_script_state.reset()
+	director.setup(content, _script_state)
+	engine = BattleEngine.new(encounter, content, seed_value)
+	_result_shown = false
 	sequencer.ctx = context
 	context.session = self
 	context.sequencer = sequencer
+	if context.audio != null:
+		context.audio.play_bgm(encounter.bgm_path)
 	_build_units()
 	if auto_mode:
 		auto_play()
@@ -46,14 +50,15 @@ func _build_units() -> void:
 		context.unit_views[unit.id] = view
 
 func _run_battle() -> void:
-	if _script_state != null and context.hud != null:
+	if not skip_story and _script_state != null:
 		for beat in _script_state.beats_for_start():
-			await context.hud.play_beat(beat)
+			await _play_beat(beat)
 	while not engine.is_over():
 		var intents: Array[BattleIntent]
 		if auto_mode or context.hud == null:
 			intents = _auto_intents()
 		else:
+			command_phase_started.emit()
 			intents = await context.hud.collect_intents(engine, content)
 		if context.hud != null and context.hud.has_method("set_command_visible"):
 			context.hud.set_command_visible(false)
@@ -64,6 +69,14 @@ func _run_battle() -> void:
 		context.apply_snapshot(engine.state)
 	show_result(engine.state.outcome)
 	battle_finished.emit(engine.state.outcome)
+
+func _play_beat(beat: Dictionary) -> void:
+	if context.hud != null and context.hud.has_method("play_beat"):
+		await context.hud.play_beat(beat)
+	elif context.dialogue != null and String(beat.get("kind", "")) == "dialogue":
+		await context.dialogue.play_lines(beat.get("lines", []))
+	else:
+		await context.wait(0.2)
 
 func auto_play() -> void:
 	auto_mode = true
@@ -95,6 +108,18 @@ func show_result(outcome: int) -> void:
 	if _result_shown:
 		return
 	_result_shown = true
+	if context == null:
+		return
+	if context.dialogue != null:
+		context.dialogue.hide_now()
+	if context.bubble != null:
+		context.bubble.hide_now()
+	var exp := encounter.reward_exp if encounter != null else 0
+	var gold := encounter.reward_gold if encounter != null else 0
+	if context.victory_panel != null:
+		context.victory_panel.show_panel(outcome, exp, gold)
+		return
+	# 无面板节点时的降级：保留标题 Label，便于无 UI 层场景/旧冒烟检查。
 	var label := Label.new()
 	label.text = "胜利！" if outcome == BattleTypes.Outcome.VICTORY else ("逃跑成功" if outcome == BattleTypes.Outcome.ESCAPED else "战败…")
 	label.add_theme_font_override("font", FontUtil.cjk_font())
@@ -103,4 +128,5 @@ func show_result(outcome: int) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.position = Vector2(660, 380)
 	label.size = Vector2(600, 100)
-	context.ui_layer.add_child(label)
+	if context.ui_layer != null:
+		context.ui_layer.add_child(label)

@@ -52,6 +52,11 @@ func play_all() -> void:
 
 func skip_all() -> void:
 	Engine.time_scale = 1.0
+	if ctx != null:
+		if ctx.dialogue != null:
+			ctx.dialogue.hide_now()
+		if ctx.bubble != null:
+			ctx.bubble.hide_now()
 	if not _playing:
 		_restore_views()
 		return

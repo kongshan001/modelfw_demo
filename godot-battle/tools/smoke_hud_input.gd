@@ -13,11 +13,13 @@ var _session: BattleSession
 var _sequencer: BattleSequencer
 var _submitted: Array = []
 var _submitted_count := 0
+var _phase_started := false
 
 func _initialize() -> void:
 	_scene = load("res://scenes/battle_scene.tscn").instantiate()
 	# BattleSession 在场景 _ready 中创建，手动模式必须在入树前确定。
 	_scene.start_auto_mode = false
+	_scene.skip_story = true
 	root.add_child(_scene)
 	await process_frame
 	_hud = _scene.get_node("UILayer/BattleHUD")
@@ -25,9 +27,13 @@ func _initialize() -> void:
 	_sequencer = _scene.get_node("BattleSequencer")
 	_session.auto_mode = false
 	_hud.phase_submitted.connect(_on_phase_submitted)
+	_session.command_phase_started.connect(_on_command_phase_started)
+	# 场景 _ready 会同步推进到首个指令阶段，信号可能早于连接。
+	if _hud.is_collecting():
+		_phase_started = true
 
-	print("HUD_INPUT: window=%s physics_picking=%s" % [str(root.size), str(root.physics_object_picking)])
-	if not await _wait_until(func() -> bool: return _hud.is_collecting(), PHASE_TIMEOUT):
+	print("HUD_INPUT: window=%s physics_picking=%s skip_story=%s" % [str(root.size), str(root.physics_object_picking), str(_scene.skip_story)])
+	if not await _wait_until(func() -> bool: return _phase_started and _hud.is_collecting(), PHASE_TIMEOUT):
 		_fail("command phase did not start")
 		return
 	await _check_layout()
@@ -108,6 +114,9 @@ func _initialize() -> void:
 func _on_phase_submitted(intents: Array) -> void:
 	_submitted = intents.duplicate()
 	_submitted_count += 1
+
+func _on_command_phase_started() -> void:
+	_phase_started = true
 
 func _check_layout() -> void:
 	var views: Array = _session.context.unit_views.values()

@@ -28,6 +28,7 @@ func play(ctx: BattleContext) -> void:
 	var impact_position := target.global_position + Vector2(0, -110)
 	if visual_id == &"aoe":
 		impact_position = target.global_position
+	ctx.play_sfx(&"hit")
 	ctx.vfx_factory().play_impact(visual_id, impact_position)
 	await _hit_stop(ctx)
 

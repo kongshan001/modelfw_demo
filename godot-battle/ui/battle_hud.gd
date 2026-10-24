@@ -564,7 +564,12 @@ func _new_button(text: String, danger := false) -> Button:
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.focus_mode = Control.FOCUS_NONE
 	_style_button(button, danger)
+	button.pressed.connect(_play_click)
 	return button
+
+func _play_click() -> void:
+	if context != null:
+		context.play_sfx(&"click")
 
 func _build_ui() -> void:
 	_build_order_panel()
@@ -904,14 +909,19 @@ func _item_name(item_id: StringName) -> String:
 			return item.display_name
 	return String(item_id)
 
-# ---------------------------------------------------------------- 其余剧情 beat（Task 4 升级为对白框）
+# ---------------------------------------------------------------- 剧情 beat
 
 func play_beat(beat: Dictionary) -> void:
 	if context == null:
 		return
+	var lines: Array = beat.get("lines", [])
 	if String(beat.get("kind", "")) == "dialogue":
-		for line in beat.get("lines", []):
+		for line in lines:
 			log_system(String(line), Color(0.86, 0.88, 0.95))
-			await context.wait(0.45)
+		if context.dialogue != null:
+			await context.dialogue.play_lines(lines)
+		else:
+			for line in lines:
+				await context.wait(0.45)
 	else:
 		await context.wait(0.2)

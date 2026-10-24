@@ -13,6 +13,7 @@ func play(ctx: BattleContext) -> void:
 	if target == null:
 		await ctx.wait(0.05)
 		return
+	ctx.play_sfx(&"death")
 	ctx.vfx_factory().death_burst(target.global_position + Vector2(0, -110))
 	await target.die()
 	await ctx.wait(0.12)

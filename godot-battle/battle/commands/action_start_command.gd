@@ -15,6 +15,15 @@ func play(ctx: BattleContext) -> void:
 	var kind := String(event.data.get("kind", "attack"))
 	match kind:
 		"attack":
+			ctx.play_sfx(&"slash")
+		"skill":
+			ctx.play_sfx(&"cast")
+		"item":
+			ctx.play_sfx(&"heal")
+		"defend":
+			ctx.play_sfx(&"status")
+	match kind:
+		"attack":
 			var target: UnitView = _target_view(ctx)
 			if source != null and target != null:
 				await source.lunge_to(target.global_position)

@@ -17,6 +17,7 @@ func play(ctx: BattleContext) -> void:
 		return
 	view.set_statuses(view.unit_state.statuses)
 
+	ctx.play_sfx(&"status")
 	var status_id := StringName(event.data.get("status_id", ""))
 	var status: StatusData = content.get_status(status_id) if content != null else null
 	var label := status.display_name if status != null else String(status_id)

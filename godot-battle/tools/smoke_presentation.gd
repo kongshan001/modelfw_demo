@@ -19,7 +19,7 @@ func _initialize() -> void:
 		print("PRESENTATION_SMOKE_OK")
 		quit(0)
 	)
-	await create_timer(45.0).timeout
+	await create_timer(90.0).timeout
 	printerr("PRESENTATION_SMOKE_TIMEOUT")
 	quit(1)
 

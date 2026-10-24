@@ -8,7 +8,10 @@ var sequencer: BattleSequencer
 var camera: CameraRig
 var vfx_layer: Node2D
 var hud: Control
-var audio: Node
+var audio: AudioDirector
+var dialogue: DialogueBox
+var bubble: Bubble
+var victory_panel: VictoryPanel
 var ui_layer: CanvasLayer
 
 var unit_views: Dictionary = {}
@@ -31,6 +34,10 @@ func vfx_factory() -> VFXFactory:
 func wait(seconds: float) -> void:
 	var speed := maxf(0.001, sequencer.playback_speed if sequencer != null else 1.0)
 	await scene_tree.create_timer(seconds / speed).timeout
+
+func play_sfx(sfx_name: StringName) -> void:
+	if audio != null:
+		audio.play_sfx(sfx_name)
 
 func is_skipping() -> bool:
 	return sequencer != null and sequencer.is_skipping()
