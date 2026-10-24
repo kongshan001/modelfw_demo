@@ -563,7 +563,7 @@ git commit -m "feat(battle): 核心类型、确定性 RNG 与事件序列化"
   - `SkillData`（`id/display_name/mp_cost/target_type/max_targets/effects/visual_id/shout_text`）
   - `StatusData`（`id/display_name/kind/duration/expires_on_owner_action/skips_action/damage_taken_mult/seal_resist_bonus/atk_mult/defense_mult/poison_max_hp_ratio/icon_path/display_color`）
   - `ItemData`（`id/display_name/effects/max_uses/icon_path`）
-  - `EncounterData`（`id/ally_unit_ids/enemy_unit_ids/item_counts/reward_exp/reward_gold/max_rounds/background_path/bgm_path/script`）
+  - `EncounterData`（`id/ally_unit_ids/enemy_unit_ids/item_counts/reward_exp/reward_gold/max_rounds/background_path/bgm_path/script_data`）
   - `EncounterScript`（`intro_lines/first_kill_lines/victory_lines/defeat_lines`、`beats_for_start()`、`beats_for_event(ev)`、`beats_for_end(outcome)`）
   - `BattleDigest.sha256(text) -> String`
   - `ContentDB.load_all(base_dir) -> ContentDB`、`get_unit/get_skill/get_status/get_item/get_encounter`、`content_hash()`
@@ -789,8 +789,10 @@ extends Resource
 @export var max_rounds: int = 30
 @export var background_path: String = ""
 @export var bgm_path: String = ""
-@export var script: EncounterScript
+@export var script_data: EncounterScript
 ```
+
+> 注意：字段命名为 `script_data`，因为 Godot 的 `Object` 已有 `script` 属性，4.6 不允许重名导出。下游统一使用 `script_data`。
 
 `godot-battle/core/battle_digest.gd`:
 
@@ -1083,7 +1085,7 @@ func _build_encounter() -> EncounterData:
 	encounter.reward_exp = 1200
 	encounter.reward_gold = 350
 	encounter.max_rounds = 30
-	encounter.script = script
+	encounter.script_data = script
 	return encounter
 ```
 
