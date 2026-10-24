@@ -2,6 +2,7 @@ class_name DamageCommand
 extends BattleCommand
 
 const HIT_STOP := 0.06
+const HIT_STOP_TIME_SCALE := 0.05
 
 var event: BattleEvent
 var content: ContentDB
@@ -23,7 +24,10 @@ func play(ctx: BattleContext) -> void:
 
 	var visual_id := &"poison" if status_tick else _visual_for_source(source_type)
 	var impact_position := target.global_position + Vector2(0, -110)
+	if visual_id == &"aoe":
+		impact_position = target.global_position
 	ctx.vfx_factory().play_impact(visual_id, impact_position)
+	await _hit_stop(ctx)
 
 	var text_color := Color(1.0, 0.86, 0.25) if crit else Color(1, 1, 1, 0.96)
 	if status_tick:
@@ -43,12 +47,18 @@ func play(ctx: BattleContext) -> void:
 	if crit:
 		ctx.vfx_factory().screen_flash(Color(1.0, 0.9, 0.55), 0.22)
 
-	await ctx.wait(HIT_STOP)
-
 	if source_type == "attack":
 		var source: UnitView = ctx.unit_view(event.source_id)
 		if source != null and source != target:
 			source.reset_pose()
+
+func _hit_stop(ctx: BattleContext) -> void:
+	# 真顿帧：整场慢放到 5%，用不受时间缩放影响的计时器冻结 0.06 秒。
+	if ctx.is_skipping():
+		return
+	Engine.time_scale = HIT_STOP_TIME_SCALE
+	await ctx.scene_tree.create_timer(HIT_STOP, true, false, true).timeout
+	Engine.time_scale = 1.0
 
 func _visual_for_source(source_type: String) -> StringName:
 	if source_type == "attack":

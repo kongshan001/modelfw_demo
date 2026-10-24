@@ -44,9 +44,13 @@ func play_skill(visual_id: StringName, position: Vector2) -> void:
 			generic(position)
 
 func play_impact(visual_id: StringName, position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	play_skill(visual_id, position)
 
 func slash(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	for index in 3:
 		var arc := Line2D.new()
@@ -70,6 +74,8 @@ func slash(position: Vector2) -> void:
 	tween.chain().tween_callback(root.queue_free)
 
 func fire(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var flash := _flash(root, 52.0, Color(1.0, 0.5, 0.12, 0.55))
 	var flash_tween := flash.create_tween()
@@ -81,6 +87,8 @@ func fire(position: Vector2) -> void:
 	_schedule_free(root, 0.45, 0.5)
 
 func thunder(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	for layer in 2:
 		var bolt := Line2D.new()
@@ -101,6 +109,8 @@ func thunder(position: Vector2) -> void:
 	_schedule_free(root, 0.12, 0.32)
 
 func heal(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var ring := _ring(root, 72.0, Color(0.45, 1.0, 0.6, 0.9), 5.0)
 	ring.position = Vector2(0, 62)
@@ -119,6 +129,8 @@ func heal(position: Vector2) -> void:
 	_schedule_free(root, 0.6, 0.45)
 
 func seal(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var ring := _ring(root, 78.0, Color(0.82, 0.45, 1.0, 0.95), 6.0)
 	ring.scale = Vector2(0.3, 0.3)
@@ -147,6 +159,8 @@ func seal(position: Vector2) -> void:
 	_schedule_free(root, 0.55, 0.5)
 
 func poison(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	_flash(root, 40.0, Color(0.55, 0.25, 0.75, 0.35))
 	_burst(root, Color(0.55, 0.95, 0.35, 0.9), 20, 0.9, 30.0, 110.0, Vector3.UP, 55.0, Vector3(0, -35, 0), 0.25, 0.65)
@@ -154,6 +168,8 @@ func poison(position: Vector2) -> void:
 	_schedule_free(root, 0.55, 0.45)
 
 func aoe(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var ring := _ring(root, 105.0, Color(1.0, 0.55, 0.2, 0.9), 7.0)
 	ring.scale = Vector2(0.25, 0.09)
@@ -170,6 +186,8 @@ func aoe(position: Vector2) -> void:
 	_schedule_free(root, 0.35, 0.35)
 
 func buff(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var ring := _ring(root, 64.0, Color(1.0, 0.85, 0.35, 0.9), 5.0)
 	ring.position = Vector2(0, 58)
@@ -182,7 +200,22 @@ func buff(position: Vector2) -> void:
 	motes.position = Vector2(0, 55)
 	_schedule_free(root, 0.5, 0.4)
 
+func cast_ring(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
+	var root := _root(position)
+	var ring := _ring(root, 58.0, Color(0.7, 0.9, 1.0, 0.85), 4.0)
+	ring.scale = Vector2(0.35, 0.12)
+	var tween := ring.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(ring, "scale", Vector2(1.1, 0.38), 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ring, "modulate:a", 0.0, 0.32)
+	_burst(root, Color(0.75, 0.9, 1.0, 0.8), 10, 0.4, 20.0, 70.0, Vector3.UP, 50.0, Vector3(0, -20, 0), 0.12, 0.3)
+	_schedule_free(root, 0.12, 0.25)
+
 func generic(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	var flash := _flash(root, 42.0, Color(1.0, 0.92, 0.7, 0.7))
 	var tween := flash.create_tween()
@@ -193,6 +226,8 @@ func generic(position: Vector2) -> void:
 	_schedule_free(root, 0.2, 0.3)
 
 func death_burst(position: Vector2) -> void:
+	if not visuals_enabled:
+		return
 	var root := _root(position)
 	_flash(root, 54.0, Color(0.12, 0.05, 0.2, 0.55))
 	_burst(root, Color(0.42, 0.18, 0.62, 0.9), 26, 0.9, 50.0, 190.0, Vector3.UP, 180.0, Vector3(0, 110, 0), 0.25, 0.7)

@@ -43,6 +43,7 @@ func play_all() -> void:
 		if generation != _generation:
 			break
 	if generation != _generation:
+		Engine.time_scale = 1.0
 		_restore_views()
 		_skip = false
 		playback_speed = 1.0
@@ -50,6 +51,7 @@ func play_all() -> void:
 	idle.emit()
 
 func skip_all() -> void:
+	Engine.time_scale = 1.0
 	if not _playing:
 		_restore_views()
 		return

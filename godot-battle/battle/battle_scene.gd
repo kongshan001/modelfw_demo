@@ -1,5 +1,8 @@
 extends Node2D
 
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
+
 func _ready() -> void:
 	var background := BackgroundView.new()
 	background.name = "Background"

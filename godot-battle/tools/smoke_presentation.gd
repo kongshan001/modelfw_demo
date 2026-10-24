@@ -11,7 +11,7 @@ func _initialize() -> void:
 			quit(1)
 			return
 		var ui_layer: CanvasLayer = scene.get_node_or_null("UILayer")
-		if not _has_text_label(ui_layer):
+		if not _has_result_label(ui_layer):
 			printerr("PRESENTATION_SMOKE_FAIL: result label missing")
 			quit(1)
 			return
@@ -22,12 +22,14 @@ func _initialize() -> void:
 	printerr("PRESENTATION_SMOKE_TIMEOUT")
 	quit(1)
 
-func _has_text_label(node: Node) -> bool:
+func _has_result_label(node: Node) -> bool:
 	if node == null:
 		return false
 	for child in node.get_children():
-		if child is Label and not String(child.text).strip_edges().is_empty():
-			return true
-		if _has_text_label(child):
+		if child is Label:
+			var text := String(child.text).strip_edges()
+			if text == "胜利！" or text == "战败…" or text == "逃跑成功":
+				return true
+		if _has_result_label(child):
 			return true
 	return false

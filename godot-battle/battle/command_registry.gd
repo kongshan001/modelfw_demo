@@ -13,7 +13,7 @@ func create(event: BattleEvent) -> BattleCommand:
 		&"round_start":
 			return RoundBannerCommand.new(event)
 		&"action_start":
-			return ActionStartCommand.new(event, content)
+			return ActionStartCommand.new(event)
 		&"damage":
 			return DamageCommand.new(event, content)
 		&"heal":
