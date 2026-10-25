@@ -158,6 +158,8 @@ godot-battle/
 - 两排站位由 `battle/battle_field_layout.gd` 管理：后排约 0.90–0.92 倍、前排 1.05 倍，角色按脚底 Y 排序；只翻转美术层面向对方，名字/血条/命中区不翻转。
 - 透视石台/地面网格由 `battle/views/background_view.gd` 绘制；前后排命中区在 x 方向留 ≥10px 间隔，避免抢点击；点击与数字键对前后排均可用。
 - 默认 3v4 阵型可按遭遇战替换；新增单位/阵型时改 `BattleFieldLayout`，跑 `tests/cases/test_formation.gd`、HUD 真实输入探针并重截 1920×1080 截图。
+- **方向造型**：我方显示背影（后脑发束、袍背、背带/武器侧面），敌方显示正面；`slot.view = back/front` 数据驱动，`VisualCatalog` 支持 `sprites.front/back`，未来 AI 立绘可直接替换，缺失回退程序化。
+- **缩放**：全局美术缩放约 0.75（后排再 ×0.9）；名字/血条/状态/气泡锚点与命中区已随造型收拢，HUD 不变。
 
 ## 已知限制
 
