@@ -153,6 +153,12 @@ godot-battle/
 - 未使用任何受版权保护的图片、字体或角色造型；字体走系统字体回退。来源说明见 `assets/art/CREDITS.md` 与 `assets/CREDITS.md`。
 - 后续接入 AI 美术的规格、缩放换算和回退验证步骤见 `assets/art/README.md`。
 
+## 战场站位（2.5D 俯视）
+
+- 两排站位由 `battle/battle_field_layout.gd` 管理：后排约 0.90–0.92 倍、前排 1.05 倍，角色按脚底 Y 排序；只翻转美术层面向对方，名字/血条/命中区不翻转。
+- 透视石台/地面网格由 `battle/views/background_view.gd` 绘制；前后排命中区在 x 方向留 ≥10px 间隔，避免抢点击；点击与数字键对前后排均可用。
+- 默认 3v4 阵型可按遭遇战替换；新增单位/阵型时改 `BattleFieldLayout`，跑 `tests/cases/test_formation.gd`、HUD 真实输入探针并重截 1920×1080 截图。
+
 ## 已知限制
 
 1. **手动验收待用户签字**：自动探针已覆盖完整输入链路，但“真人从打开游戏到打完一局并检查对白/倍速/跳过/F1/F3/F6/F7”的清单尚未由用户亲自执行；见 `docs/PROGRESS.md` 末尾。
@@ -167,5 +173,5 @@ godot-battle/
 
 - `docs/DEBUGGING.md`：dump/replay、分歧定位、快照、黄金回放、fuzz、F3/F6/F7、截图与修复流程。
 - `docs/EXTENDING.md`：新增技能、状态、道具、单位、表现命令、剧情 beat、视觉目录与内容变更后的黄金回归。
-- `docs/PROGRESS.md`：Plan 1 内核、Plan 2A 表现层、Plan 2B 调试/美术/验收的真实过程、决策和证据。
-- `docs/TECH_NOTES.md`：双轨架构、确定性/回放、表现层、HUD、剧情、调试、美术与 Godot 踩坑。
+- `docs/PROGRESS.md`：Plan 1 内核、Plan 2A 表现层、Plan 2B 调试/美术/验收、2.5D 阵型的真实过程、决策和证据。
+- `docs/TECH_NOTES.md`：双轨架构、确定性/回放、表现层、HUD、剧情、调试、美术、2.5D 阵型与 Godot 踩坑。
