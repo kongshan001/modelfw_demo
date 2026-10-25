@@ -169,7 +169,7 @@ func _play_phase() -> int:
 		if view == null:
 			_fail("missing UnitView for target %s" % target.id)
 			return -1
-		var point := _to_screen(view.global_position + Vector2(0, -140))
+		var point := _to_screen(view.global_position + Vector2(0, -100))
 		print("HUD_INPUT: click target %s at %s" % [target.id, str(point)])
 		_click_at(point)
 		await physics_frame
@@ -255,8 +255,8 @@ func _check_layout() -> void:
 		var view: UnitView = value
 		var hit := view.hit_rect()
 		var info := view.info_rect()
-		var point := _to_screen(view.global_position + Vector2(0, -140))
-		if not hit.has_point(view.global_position + Vector2(0, -140)):
+		var point := _to_screen(view.global_position + Vector2(0, -100))
+		if not hit.has_point(view.global_position + Vector2(0, -100)):
 			_fail("unit %s center click point is outside its hit rect %s" % [view.unit_id, str(hit)])
 			return
 		for panel in blockers:
@@ -332,8 +332,17 @@ func _check_formation(views: Array) -> bool:
 		if view._facing != int(slot["art_flip"]):
 			_fail("unit %s facing %d != slot %d" % [view.unit_id, view._facing, int(slot["art_flip"])])
 			return false
-		if absf(view.visual_scale() - view._art_scale * float(slot["depth"])) > 0.001:
-			_fail("unit %s visual_scale %.3f does not include formation depth" % [view.unit_id, view.visual_scale()])
+		if view.art_view() != String(slot["view"]):
+			_fail("unit %s art_view %s != slot %s" % [view.unit_id, view.art_view(), String(slot["view"])])
+			return false
+		if view.is_ally and view.art_view() != "back":
+			_fail("ally %s must use back view (got %s)" % [view.unit_id, view.art_view()])
+			return false
+		if not view.is_ally and view.art_view() != "front":
+			_fail("enemy %s must use front view (got %s)" % [view.unit_id, view.art_view()])
+			return false
+		if absf(view.visual_scale() - view._art_scale * UnitView.BASE_ART_SCALE * float(slot["depth"])) > 0.001:
+			_fail("unit %s visual_scale %.3f does not include base scale + formation depth" % [view.unit_id, view.visual_scale()])
 			return false
 		if int(slot["row"]) == 1:
 			front_count += 1
@@ -347,7 +356,7 @@ func _check_formation(views: Array) -> bool:
 	if front_min_y <= back_max_y:
 		_fail("front row feet y %.1f must be greater than back row feet y %.1f" % [front_min_y, back_max_y])
 		return false
-	print("HUD_INPUT: formation OK 3 front (y=%.0f) / 4 back (y=%.0f), depth+facing match layout, y_sort=on" % [front_min_y, back_max_y])
+	print("HUD_INPUT: formation OK 3 front (y=%.0f) / 4 back (y=%.0f), depth+facing+view match layout, y_sort=on" % [front_min_y, back_max_y])
 	return true
 
 func _check_appendage_points(views: Array) -> bool:
@@ -388,7 +397,7 @@ func _sweep_unit_clicks() -> void:
 		view.clicked.connect(func(clicked_view: UnitView) -> void:
 			hits[clicked_view.unit_id] = true
 		)
-		_click_at(_to_screen(view.global_position + Vector2(0, -140)))
+		_click_at(_to_screen(view.global_position + Vector2(0, -100)))
 		await physics_frame
 		await process_frame
 	for value in views:
@@ -407,13 +416,14 @@ func _view_of(unit_id: StringName) -> UnitView:
 	return _session.context.unit_view(unit_id)
 
 func _boundary_offset(edge: String) -> Vector2:
+	# 新命中区 96×208（中心 y=-100）：左右缘取 ±42，仍在 rect 内且不越界。
 	match edge:
 		"left":
-			return Vector2(-63, -170)
+			return Vector2(-42, -100)
 		"right":
-			return Vector2(63, -170)
+			return Vector2(42, -100)
 		_:
-			return Vector2(0, -170)
+			return Vector2(0, -100)
 
 func _probe_boundary_clicks() -> bool:
 	var fox := _view_of(&"boss_fox")

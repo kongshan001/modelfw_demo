@@ -6,17 +6,24 @@ signal clicked(view: UnitView)
 # 原创程序化 Q 版角色。所有角色共用同一套描边 / 高光 / 脸部语言，
 # 只在轮廓、配色、发型与武器上区分职业与阵营。
 # 设计坐标系：脚底 y=0，向上为负；普通角色身体约 250–270px、含武器约 300px，
-# 小妖约 225px，妖将约 300px（draw_set_transform 缩放，UI 与命中区不受影响）。
+# 小妖约 225px，妖将约 300px（draw_set_transform 缩放；名字/血条文字不缩放，
+# 只随剪影高度移动锚点，命中区按缩小后的身体调整）。
+# 全局 BASE_ART_SCALE 把角色压到约 3/4；阵型 depth 再乘在美术层上。
+# 镜头位于我方背后：我方 view=back 叠加后脑/袍背，敌方 view=front 保持正面。
 
-const BAR_WIDTH := 104.0
+const BASE_ART_SCALE := 0.75
+const BAR_WIDTH := 96.0
 const BAR_HEIGHT := 8.0
-const HP_Y := -332.0
-const MP_Y := -321.0
-const NAME_Y := -360.0
-const STATUS_Y := -384.0
-const CLICK_SIZE := Vector2(130, 320)
-const CLICK_CENTER := Vector2(0, -170)
-const BUBBLE_GAP := 26.0
+const HP_Y := -225.0
+const MP_Y := -214.0
+const NAME_Y := -253.0
+const STATUS_Y := -277.0
+const CLICK_SIZE := Vector2(96, 208)
+const CLICK_CENTER := Vector2(0, -100)
+const BUBBLE_GAP := 20.0
+# 信息带锚点：head_top=-256 的标准角色在 0.75 全局缩放后头顶约 -192，
+# 此时信息带底部（MP 条下沿）落在 -206，距头顶 14px。
+const INFO_BASE_HEAD_TOP := -192.0
 
 const OUTLINE := Color(0.105, 0.072, 0.125, 0.96)
 const SKIN := Color(1.0, 0.84, 0.71)
@@ -56,6 +63,7 @@ var _has_texture := false
 var _info_offset_y := 0.0
 var _formation_depth := 1.0
 var _facing := 1
+var _art_view := "front"
 var _sprite_base_scale := 1.0
 var _sprite_base_position := Vector2.ZERO
 
@@ -74,9 +82,7 @@ func setup(unit: BattleUnitState, home: Vector2, ally: bool) -> void:
 	_visual_rng.seed = hash(String(unit_id)) + 17
 	_body_color = Color(0.32, 0.62, 1.0) if ally else Color(0.95, 0.36, 0.3)
 	_art_scale = _art_scale_for(String(unit_id))
-	_info_offset_y = _info_offset_for(String(unit_id))
-	if _info_root != null:
-		_info_root.position = Vector2(0, _info_offset_y)
+	_refresh_info_anchor()
 	_name_label.text = unit.data.display_name
 	_apply_click_bounds()
 	_apply_visual_override()
@@ -86,10 +92,18 @@ func setup(unit: BattleUnitState, home: Vector2, ally: bool) -> void:
 	visible = true
 	_start_idle()
 
-func apply_formation(depth: float, facing: int) -> void:
-	# 只影响美术层：命中区、信息条、气泡与名字/血条保持原尺寸、不镜像。
+func apply_formation(depth: float, facing: int, view: String = "front") -> void:
+	# 只影响美术层：名字/血条字号与命中区尺寸不变、不镜像；
+	# 信息条/气泡仅按新剪影高度移动锚点，命中区不随 depth 缩放。
+	# view 决定正面/背影造型（我方 back / 敌方 front），同样只改美术层。
 	_formation_depth = maxf(0.05, depth)
 	_facing = -1 if facing < 0 else 1
+	var normalized_view := "back" if view == "back" else "front"
+	var view_changed := normalized_view != _art_view
+	_art_view = normalized_view
+	if view_changed:
+		_apply_visual_override()
+	_refresh_info_anchor()
 	_apply_shadow_scale()
 	_apply_sprite_formation()
 	queue_redraw()
@@ -120,28 +134,41 @@ func _art_scale_for(id: String) -> float:
 		_:
 			return 1.0
 
-func _info_offset_for(id: String) -> float:
-	# 小妖实际身高约 225px，信息条贴近头顶；其他单位保持原有悬空高度。
-	match id:
+func _refresh_info_anchor() -> void:
+	# 信息带随造型缩放/深度移动：底部始终贴在该单位剪影头顶上方 14px。
+	if _info_root == null:
+		return
+	_info_offset_y = _silhouette_top() * _art_scale * BASE_ART_SCALE * _formation_depth - INFO_BASE_HEAD_TOP
+	_info_root.position = Vector2(0, _info_offset_y)
+
+func _silhouette_top() -> float:
+	# 未缩放设计坐标中的剪影最高点（不含手持武器，避免法杖/长剑把血条顶得过高）。
+	match String(unit_id):
 		"mob_a", "mob_b":
-			return 76.0
+			return -246.0
+		"boss_brute":
+			return -284.0
+		"boss_fox":
+			return -292.0
+		"hero_healer":
+			return -276.0
 		_:
-			return 0.0
+			return -256.0
 
 func _apply_shadow_scale() -> void:
 	if _shadow == null:
 		return
 	var wide := 1.25 if String(unit_id) == "boss_brute" else 1.08
-	var scale_value := _art_scale * _formation_depth
+	var scale_value := _art_scale * BASE_ART_SCALE * _formation_depth
 	_shadow.scale = Vector2(scale_value * wide, scale_value)
 
 func _apply_visual_override() -> void:
 	if _sprite == null or unit_state == null or unit_state.data == null:
 		return
-	var entry := VisualCatalog.unit_entry(unit_id)
-	var path := String(entry.get("sprite", entry.get("path", ""))).strip_edges()
-	var scale_value := float(entry.get("scale", 1.0))
-	if not entry.has("scale") and unit_state.data.visual_scale > 0.0:
+	var sprite_info := VisualCatalog.unit_sprite(unit_id, _art_view)
+	var path := String(sprite_info.get("path", "")).strip_edges()
+	var scale_value := float(sprite_info.get("scale", 1.0))
+	if not sprite_info.has("scale") and unit_state.data.visual_scale > 0.0:
 		scale_value = unit_state.data.visual_scale
 	if path.is_empty() and not unit_state.data.sprite_path.is_empty():
 		path = unit_state.data.sprite_path
@@ -154,7 +181,7 @@ func _apply_visual_override() -> void:
 	_sprite.texture = texture
 	_sprite_base_scale = scale_value
 	_sprite_base_position = Vector2(0, -texture.get_height() * 0.5 * scale_value)
-	var offset: Variant = entry.get("offset", [])
+	var offset: Variant = sprite_info.get("offset", [])
 	if offset is Array and offset.size() >= 2:
 		_sprite_base_position += Vector2(float(offset[0]), float(offset[1]))
 	_sprite.visible = true
@@ -165,9 +192,9 @@ func _apply_visual_override() -> void:
 func _apply_sprite_formation() -> void:
 	if _sprite == null or not _has_texture:
 		return
-	var scale_value := _sprite_base_scale * _formation_depth
+	var scale_value := _sprite_base_scale * BASE_ART_SCALE * _formation_depth
 	_sprite.scale = Vector2(scale_value * _facing, scale_value)
-	_sprite.position = Vector2(_sprite_base_position.x * _facing, _sprite_base_position.y)
+	_sprite.position = Vector2(_sprite_base_position.x * _facing, _sprite_base_position.y) * BASE_ART_SCALE
 
 func _build_placeholder() -> void:
 	_sprite = Sprite2D.new()
@@ -182,7 +209,8 @@ func _build_placeholder() -> void:
 func _draw() -> void:
 	if _has_texture:
 		return
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(_art_scale * _formation_depth * _facing, _art_scale * _formation_depth))
+	var art_scale_value := _art_scale * BASE_ART_SCALE * _formation_depth
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(art_scale_value * _facing, art_scale_value))
 	match String(unit_id):
 		"hero_swordsman":
 			_draw_swordsman()
@@ -200,6 +228,8 @@ func _draw() -> void:
 			_draw_fox()
 		_:
 			_draw_generic()
+	if _art_view == "back":
+		_draw_back_overlay()
 
 func _draw_generic() -> void:
 	_circle(Vector2(0, -196), 50, SKIN, 4.0)
@@ -295,14 +325,14 @@ func _draw_mage() -> void:
 	var cream := Color(0.9, 0.96, 0.95)
 	var hair := Color(0.11, 0.18, 0.28)
 	var hair_hi := Color(0.22, 0.38, 0.5)
-	# 法杖（身后，杖身贴近身体，法球落在自身命中区内）
-	_line(Vector2(44, -8), Vector2(52, -264), Color(0.3, 0.22, 0.17), 7.0)
+	# 法杖（身后侧方；杖身收在披背长发之外，背影下仍清晰可见）
+	_line(Vector2(66, -8), Vector2(74, -264), Color(0.3, 0.22, 0.17), 7.0)
 	for band_y: float in [-80.0, -158.0, -232.0]:
-		draw_line(Vector2(46, band_y), Vector2(58, band_y + 3), GOLD_DARK, 4.0, true)
-	draw_circle(Vector2(52, -280), 34.0, Color(0.5, 0.9, 1.0, 0.09))
-	draw_circle(Vector2(52, -280), 24.0, Color(0.55, 0.93, 1.0, 0.16))
-	_circle(Vector2(52, -280), 15.0, Color(0.58, 0.92, 1.0), 3.0)
-	draw_circle(Vector2(48, -285), 5.0, Color(1, 1, 1, 0.85))
+		draw_line(Vector2(68, band_y), Vector2(80, band_y + 3), GOLD_DARK, 4.0, true)
+	draw_circle(Vector2(74, -280), 34.0, Color(0.5, 0.9, 1.0, 0.09))
+	draw_circle(Vector2(74, -280), 24.0, Color(0.55, 0.93, 1.0, 0.16))
+	_circle(Vector2(74, -280), 15.0, Color(0.58, 0.92, 1.0), 3.0)
+	draw_circle(Vector2(70, -285), 5.0, Color(1, 1, 1, 0.85))
 	# 后发（长发及腰）
 	_circle(Vector2(0, -210), 56, hair, 4.0)
 	_poly(PackedVector2Array([Vector2(-50, -226), Vector2(-66, -160), Vector2(-72, -86), Vector2(-48, -70), Vector2(-34, -150), Vector2(-28, -196)]), hair)
@@ -333,8 +363,8 @@ func _draw_mage() -> void:
 	draw_circle(Vector2(-58, -196), 8.0, Color(0.55, 0.95, 1.0, 0.28))
 	draw_circle(Vector2(-58, -196), 3.0, Color(0.8, 1.0, 1.0, 0.9))
 	# 右臂握杖
-	_capsule(Vector2(34, -166), Vector2(52, -142), 16, teal)
-	_capsule(Vector2(52, -142), Vector2(50, -120), 12, cream)
+	_capsule(Vector2(34, -166), Vector2(66, -142), 16, teal)
+	_capsule(Vector2(66, -142), Vector2(64, -120), 12, cream)
 	# 颈与头
 	_poly(PackedVector2Array([Vector2(-11, -168), Vector2(11, -168), Vector2(11, -148), Vector2(-11, -148)]), SKIN_SHADE, 2.0)
 	_circle(Vector2(0, -204), 50, SKIN, 4.0)
@@ -359,10 +389,10 @@ func _draw_mage() -> void:
 	_blush(Vector2(-29, -188))
 	_blush(Vector2(29, -188))
 	# 杖顶碎光
-	for spark: Vector2 in [Vector2(32, -304), Vector2(62, -294), Vector2(34, -252), Vector2(62, -262)]:
+	for spark: Vector2 in [Vector2(54, -304), Vector2(84, -294), Vector2(56, -252), Vector2(84, -262)]:
 		_circle(spark, 3.0, Color(0.75, 1.0, 1.0, 0.85), 1.0)
 	# 握杖手
-	_circle(Vector2(50, -118), 8.5, SKIN, 2.5)
+	_circle(Vector2(64, -118), 8.5, SKIN, 2.5)
 
 # ---------------------------------------------------------------- 医师·白术
 
@@ -441,6 +471,139 @@ func _draw_healer() -> void:
 	_circle(Vector2(70, -260), 4.0, Color(0.75, 1.0, 0.72), 1.5)
 	# 握杖手
 	_circle(Vector2(68, -120), 8.0, SKIN, 2.5)
+
+# ---------------------------------------------------------------- 我方背影层
+# 镜头在我方背后：先按正面画完（保留腿、侧臂、武器），再叠加背影层。
+# 顺序：发带/饰物（最靠后）→ 袍背/腰带 → 后脑头发 → 发带/发簪（在头发上）。
+# 后脑发团必须盖住眉眼与嘴；袍背面板盖住正面交领；再补背缝/背结/背带。
+
+func _draw_back_overlay() -> void:
+	match String(unit_id):
+		"hero_swordsman":
+			_draw_swordsman_back()
+		"hero_mage":
+			_draw_mage_back()
+		"hero_healer":
+			_draw_healer_back()
+
+func _draw_swordsman_back() -> void:
+	var blue := Color(0.22, 0.43, 0.79)
+	var blue_dark := Color(0.13, 0.27, 0.55)
+	var blue_light := Color(0.49, 0.7, 0.96)
+	var hair := Color(0.12, 0.14, 0.24)
+	var hair_hi := Color(0.27, 0.31, 0.48)
+	# 蓝色发带尾（两条窄飘带，先画，根部随后被头发/发带压住）
+	_poly(PackedVector2Array([Vector2(-24, -224), Vector2(-56, -210), Vector2(-76, -184), Vector2(-86, -156), Vector2(-72, -152), Vector2(-62, -178), Vector2(-44, -200), Vector2(-20, -212)]), blue_dark, 2.5)
+	draw_line(Vector2(-30, -212), Vector2(-66, -168), blue_light, 2.5, true)
+	_poly(PackedVector2Array([Vector2(24, -224), Vector2(58, -208), Vector2(78, -182), Vector2(88, -158), Vector2(74, -154), Vector2(62, -180), Vector2(44, -200), Vector2(20, -212)]), blue_dark, 2.5)
+	draw_line(Vector2(30, -212), Vector2(68, -170), blue_light, 2.5, true)
+	# 袍背：上衣后片（盖住正面白色交领）
+	_poly(PackedVector2Array([Vector2(-37, -180), Vector2(37, -180), Vector2(44, -146), Vector2(-44, -146)]), blue)
+	draw_colored_polygon(PackedVector2Array([Vector2(8, -180), Vector2(37, -180), Vector2(44, -146), Vector2(10, -146)]), blue_dark)
+	draw_line(Vector2(0, -176), Vector2(0, -148), blue_dark, 2.4, true)
+	# 袍背：下摆后片（盖住正面白色中缝）
+	_poly(PackedVector2Array([Vector2(-34, -152), Vector2(34, -152), Vector2(48, -62), Vector2(30, -42), Vector2(0, -36), Vector2(-30, -42), Vector2(-48, -62)]), blue)
+	draw_colored_polygon(PackedVector2Array([Vector2(8, -150), Vector2(34, -152), Vector2(48, -62), Vector2(30, -42), Vector2(12, -40)]), blue_dark)
+	draw_line(Vector2(0, -150), Vector2(0, -42), blue_dark, 2.4, true)
+	draw_polyline(PackedVector2Array([Vector2(-40, -48), Vector2(-14, -42), Vector2(14, -42), Vector2(40, -48)]), GOLD_DARK, 2.5, true)
+	# 背腰带 + 背结 + 垂带
+	_poly(PackedVector2Array([Vector2(-40, -140), Vector2(40, -140), Vector2(38, -122), Vector2(-38, -122)]), blue_dark, 2.4)
+	_poly(PackedVector2Array([Vector2(-9, -139), Vector2(9, -139), Vector2(8, -123), Vector2(-8, -123)]), blue_light, 2.0)
+	draw_line(Vector2(0, -140), Vector2(0, -122), blue_dark, 1.6, true)
+	draw_line(Vector2(-8, -137), Vector2(-21, -112), blue_dark, 5.0, true)
+	draw_line(Vector2(8, -137), Vector2(21, -112), blue_dark, 5.0, true)
+	# 后脑短发：整圆发团盖住面部，下缘补后颈发尾
+	_circle(Vector2(0, -202), 54, hair, 4.0)
+	_poly(PackedVector2Array([Vector2(-46, -230), Vector2(-41, -176), Vector2(-26, -150), Vector2(0, -143), Vector2(26, -150), Vector2(41, -176), Vector2(46, -230)]), hair, 3.0)
+	draw_line(Vector2(-30, -240), Vector2(-18, -162), hair_hi, 3.0, true)
+	draw_line(Vector2(28, -242), Vector2(16, -164), hair_hi, 2.6, true)
+	draw_line(Vector2(0, -234), Vector2(0, -150), Color(0.08, 0.09, 0.16), 1.6, true)
+	# 后脑发带 + 中心结
+	_poly(PackedVector2Array([Vector2(-52, -228), Vector2(-24, -235), Vector2(24, -235), Vector2(52, -228), Vector2(50, -216), Vector2(0, -224), Vector2(-50, -216)]), blue_dark, 2.5)
+	draw_line(Vector2(-48, -223), Vector2(48, -223), blue_light, 2.0, true)
+	_circle(Vector2(0, -226), 6.5, blue_dark, 2.0)
+	_circle(Vector2(0, -226), 3.0, blue_light, 1.5)
+
+func _draw_mage_back() -> void:
+	var teal := Color(0.12, 0.52, 0.55)
+	var teal_dark := Color(0.07, 0.3, 0.4)
+	var rust := Color(0.85, 0.56, 0.44)
+	var hair := Color(0.11, 0.18, 0.28)
+	var hair_hi := Color(0.22, 0.38, 0.5)
+	# 袍背：上衣后片 + 下摆后片（盖住正面米色交领/中缝）
+	_poly(PackedVector2Array([Vector2(-36, -180), Vector2(36, -180), Vector2(42, -148), Vector2(-42, -148)]), teal)
+	draw_colored_polygon(PackedVector2Array([Vector2(8, -180), Vector2(36, -180), Vector2(42, -148), Vector2(10, -148)]), teal_dark)
+	_poly(PackedVector2Array([Vector2(-30, -150), Vector2(30, -150), Vector2(40, -56), Vector2(28, -42), Vector2(0, -46), Vector2(-28, -42), Vector2(-40, -56)]), teal)
+	draw_polyline(PackedVector2Array([Vector2(-38, -50), Vector2(-12, -44), Vector2(12, -44), Vector2(38, -50)]), GOLD_DARK, 2.5, true)
+	# 后腰带（长发会盖住中间，只露出两侧）
+	_poly(PackedVector2Array([Vector2(-40, -143), Vector2(40, -143), Vector2(38, -127), Vector2(-38, -127)]), rust, 2.4)
+	_circle(Vector2(-36, -135), 5.0, rust, 1.5)
+	_circle(Vector2(36, -135), 5.0, rust, 1.5)
+	# 后脑发团 + 披背长发（盖住面部、颈与正面交领）
+	_circle(Vector2(0, -204), 54, hair, 4.0)
+	_poly(PackedVector2Array([
+		Vector2(-50, -244), Vector2(-56, -214), Vector2(-52, -176), Vector2(-46, -138),
+		Vector2(-38, -104), Vector2(-26, -78), Vector2(-12, -62), Vector2(0, -58),
+		Vector2(12, -62), Vector2(26, -78), Vector2(38, -104), Vector2(46, -138),
+		Vector2(52, -176), Vector2(56, -214), Vector2(50, -244),
+	]), hair, 3.5)
+	draw_line(Vector2(-30, -236), Vector2(-42, -132), hair_hi, 3.0, true)
+	draw_line(Vector2(-10, -238), Vector2(-18, -92), hair_hi, 2.2, true)
+	draw_line(Vector2(14, -238), Vector2(20, -94), hair_hi, 2.2, true)
+	draw_line(Vector2(30, -240), Vector2(40, -128), hair_hi, 2.6, true)
+	draw_line(Vector2(0, -236), Vector2(2, -92), Color(0.07, 0.12, 0.2), 1.6, true)
+	draw_polyline(PackedVector2Array([Vector2(-26, -78), Vector2(-10, -64), Vector2(10, -64), Vector2(26, -78)]), hair_hi, 2.2, true)
+	# 发尾错层，避免整片长发读成斗篷
+	draw_line(Vector2(-32, -112), Vector2(-22, -76), Color(0.08, 0.14, 0.23), 2.0, true)
+	draw_line(Vector2(34, -116), Vector2(24, -80), Color(0.08, 0.14, 0.23), 2.0, true)
+	# 金色发簪（背视横簪 + 簪头）
+	_line(Vector2(-36, -232), Vector2(36, -238), GOLD, 3.0)
+	_circle(Vector2(38, -238), 4.0, GOLD, 2.0)
+	draw_circle(Vector2(38, -238), 2.0, Color(1, 1, 1, 0.8))
+	draw_line(Vector2(-38, -230), Vector2(-46, -225), GOLD, 2.0, true)
+	# 背腰带垂饰（发侧露出）
+	draw_line(Vector2(-34, -132), Vector2(-42, -100), rust, 4.0, true)
+	draw_line(Vector2(34, -132), Vector2(42, -102), rust, 4.0, true)
+
+func _draw_healer_back() -> void:
+	var cream := Color(0.93, 0.96, 0.9)
+	var green := Color(0.36, 0.62, 0.42)
+	var green_dark := Color(0.22, 0.43, 0.3)
+	var hair := Color(0.44, 0.29, 0.22)
+	var hair_hi := Color(0.63, 0.44, 0.32)
+	# 袍背：米色后片 + 绿色侧缘（盖住正面绿色交领）
+	_poly(PackedVector2Array([Vector2(-37, -180), Vector2(37, -180), Vector2(42, -146), Vector2(-42, -146)]), cream)
+	draw_colored_polygon(PackedVector2Array([Vector2(8, -180), Vector2(37, -180), Vector2(42, -146), Vector2(10, -146)]), Color(0.87, 0.92, 0.83))
+	_poly(PackedVector2Array([Vector2(-38, -158), Vector2(-24, -158), Vector2(-28, -48), Vector2(-44, -50), Vector2(-50, -58)]), green, 2.5)
+	_poly(PackedVector2Array([Vector2(38, -158), Vector2(24, -158), Vector2(28, -48), Vector2(44, -50), Vector2(50, -58)]), green, 2.5)
+	_poly(PackedVector2Array([Vector2(-32, -156), Vector2(32, -156), Vector2(44, -58), Vector2(28, -42), Vector2(0, -46), Vector2(-28, -42), Vector2(-44, -58)]), cream)
+	draw_polyline(PackedVector2Array([Vector2(-38, -48), Vector2(-14, -43), Vector2(14, -43), Vector2(38, -48)]), green_dark, 2.5, true)
+	# 背腰带 + 背结（盖住正面绿腰带）
+	_poly(PackedVector2Array([Vector2(-40, -142), Vector2(40, -142), Vector2(38, -126), Vector2(-38, -126)]), green, 2.4)
+	draw_line(Vector2(-32, -134), Vector2(32, -134), Color(0.85, 0.93, 0.7), 2.0, true)
+	_circle(Vector2(0, -134), 6.0, green_dark, 1.8)
+	draw_line(Vector2(-3, -130), Vector2(-10, -108), green_dark, 4.0, true)
+	draw_line(Vector2(3, -130), Vector2(10, -108), green_dark, 4.0, true)
+	# 药囊背带（斜跨后背，接到左胯药囊）+ 扣环
+	_line(Vector2(34, -176), Vector2(-30, -112), Color(0.36, 0.25, 0.16), 7.0)
+	draw_line(Vector2(30, -171), Vector2(-27, -115), Color(0.6, 0.44, 0.27), 2.4, true)
+	_poly(PackedVector2Array([Vector2(-8, -146), Vector2(3, -150), Vector2(6, -140), Vector2(-5, -136)]), GOLD_DARK, 1.5)
+	draw_line(Vector2(-30, -112), Vector2(-40, -102), Color(0.36, 0.25, 0.16), 5.0, true)
+	# 后脑发团 + 后颈发尾（盖住面部与正面衣领）
+	_circle(Vector2(0, -202), 53, hair, 4.0)
+	_poly(PackedVector2Array([Vector2(-46, -228), Vector2(-41, -176), Vector2(-26, -148), Vector2(0, -140), Vector2(26, -148), Vector2(41, -176), Vector2(46, -228)]), hair, 3.0)
+	draw_line(Vector2(-24, -238), Vector2(-16, -162), hair_hi, 3.0, true)
+	draw_line(Vector2(22, -240), Vector2(14, -164), hair_hi, 2.6, true)
+	# 背视发髻（盖住正面发髻）：突出于后脑发团之上 + 绿色发圈 + 金簪
+	_circle(Vector2(0, -256), 20, hair, 3.5)
+	draw_arc(Vector2(0, -256), 13.0, deg_to_rad(-150.0), deg_to_rad(40.0), 14, hair_hi, 2.5, true)
+	draw_line(Vector2(-18, -242), Vector2(-8, -238), green, 4.0, true)
+	draw_line(Vector2(18, -242), Vector2(8, -238), green, 4.0, true)
+	draw_line(Vector2(-9, -240), Vector2(9, -240), green_dark, 2.0, true)
+	_line(Vector2(-24, -260), Vector2(24, -268), GOLD, 3.0)
+	_circle(Vector2(26, -268), 4.0, GOLD, 2.0)
+	draw_circle(Vector2(26, -268), 2.0, Color(1, 1, 1, 0.8))
+	_circle(Vector2(-26, -260), 2.6, GOLD, 1.5)
 
 # ---------------------------------------------------------------- 妖兵·甲 / 乙
 
@@ -875,7 +1038,7 @@ func _build_bars() -> void:
 	add_child(_selection)
 
 	_target_arrow = Polygon2D.new()
-	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -432), Vector2(14, -432), Vector2(0, -408)])
+	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -325), Vector2(14, -325), Vector2(0, -302)])
 	_target_arrow.color = Color(1.0, 0.85, 0.15)
 	_target_arrow.visible = false
 	_info_root.add_child(_target_arrow)
@@ -914,12 +1077,16 @@ func _apply_click_bounds() -> void:
 
 func hit_rect() -> Rect2:
 	# 世界坐标下的点击矩形（用于工具校验间距 / 与 HUD 面板的边界）。
-	# 阵型只缩放美术层，命中区保持 130px 宽且不镜像。
+	# 阵型只缩放美术层，命中区保持身体大小（96×208）且不镜像。
 	return Rect2(global_position + CLICK_CENTER - CLICK_SIZE * 0.5, CLICK_SIZE)
 
 func visual_scale() -> float:
-	# 程序化绘制的整体缩放（_draw 内 draw_set_transform 使用），含阵型深度。
-	return _art_scale * _formation_depth
+	# 程序化绘制的整体缩放（_draw 内 draw_set_transform 使用），含全局缩放与阵型深度。
+	return _art_scale * BASE_ART_SCALE * _formation_depth
+
+func art_view() -> String:
+	# 当前美术视图：back=我方背影 / front=敌方正面。
+	return _art_view
 
 func appendage_points() -> Array[Vector2]:
 	# 关键附属件的局部坐标点（已按 _facing 镜像，未乘 visual_scale()），供输入探针校验：
@@ -931,7 +1098,7 @@ func appendage_points() -> Array[Vector2]:
 		"hero_swordsman":
 			points.append(Vector2(104, -300))
 		"hero_mage":
-			points.append(Vector2(52, -280))
+			points.append(Vector2(74, -280))
 		"boss_fox":
 			points.append(Vector2(-58, -162))
 			points.append(Vector2(58, -150))
@@ -951,7 +1118,7 @@ func appendage_points() -> Array[Vector2]:
 
 func info_rect() -> Rect2:
 	# 名字 / 血蓝条 / 状态徽章组成的悬浮信息带。
-	return Rect2(global_position + Vector2(-100.0, STATUS_Y + _info_offset_y), Vector2(200.0, 60.0))
+	return Rect2(global_position + Vector2(-100.0, STATUS_Y + _info_offset_y), Vector2(200.0, 74.0))
 
 func bubble_anchor() -> Vector2:
 	# 喊招气泡尾巴落在状态行上方，避免盖住名字与状态徽章。

@@ -30,29 +30,40 @@ assets/
 ## 接入角色立绘
 
 1. 把透明背景 PNG（脚底贴图片底边）放到 `assets/visuals/units/`，
-   文件名建议与单位 id 一致，例如 `hero_swordsman.png`。
-2. 以 **目标高度 300px** 为基准换算缩放：`scale = 300 / 图片像素高度`
+   文件名建议与单位 id 一致，例如 `hero_swordsman.png`。背影单位可加
+   `_back` 后缀，例如 `hero_swordsman_back.png`。
+2. 以 **设计高度 300px** 为基准换算缩放：`scale = 300 / 图片像素高度`
    （例如 1024px 高的原图填 `scale: 0.293`）。小妖等矮单位可在目标高度
-   基础上再乘 0.8–0.9，确保信息条贴近头顶且不压住角色。
-3. 编辑 `assets/visuals/visual_catalog.json`：
+   基础上再乘 0.8–0.9。UnitView 会再乘全局 `BASE_ART_SCALE=0.75`
+   与阵型 depth，因此 300px 的设计高度在屏上约 225px。
+3. 编辑 `assets/visuals/visual_catalog.json`，按视图分别提供贴图：
 
 ```json
 "units": {
   "hero_swordsman": {
-    "sprite": "res://assets/visuals/units/hero_swordsman.png",
+    "sprites": {
+      "front": "res://assets/visuals/units/hero_swordsman.png",
+      "back": "res://assets/visuals/units/hero_swordsman_back.png"
+    },
     "scale": 1.0,
     "offset": [0, 0]
   }
 }
 ```
 
-- `sprite`：`res://` 或 `user://` 路径；为空则使用程序化角色。
-- `scale`：整体缩放；默认 1.0。未来 AI 图片必须按目标高度（推荐 300px）
+- `sprites.front` / `sprites.back`：当前视图的贴图。值可以是路径字符串，
+  也可以是 `{"sprite": "...", "scale": 0.29, "offset": [0, 0]}` 字典以单独
+  覆盖该视图的缩放/偏移。当前视图由 `BattleFieldLayout` 的 slot 数据驱动：
+  镜头在我方背后，我方 `back`、敌方 `front`。
+- 旧版 `sprite` / `path` 仍兼容：没有对应视图的 `sprites` 条目时，
+  两视图共用旧版贴图。
+- `scale`：整体缩放；默认 1.0。未来 AI 图片必须按设计高度（推荐 300px）
   换算，而不是直接沿用 1.0。
-- `offset`：以“脚底为原点”的像素偏移，向上为负 y。
+- `offset`：以“脚底为原点”的像素偏移，向上为负 y；会随全局缩放一起缩。
 
-UnitView 会把图片底边对齐到角色脚底（`y = 0`），血条 / 名字 / 状态 / 点击区域
-保持原有布局。图片缺失、损坏或导入失败时自动回退到程序化角色。
+UnitView 会把图片底边对齐到角色脚底（`y = 0`），并让名字 / 血蓝条 / 状态 /
+命中区按剪影高度与全局缩放同步收拢。某个视图的图片缺失、损坏或导入失败时，
+自动回退到该视图对应的程序化正面/背影绘制。
 
 `core/data/unit_data.gd` 里已有 `sprite_path` / `visual_scale` 字段，可作为
 备用入口；`visual_catalog.json` 优先级更高，核心数据无需改动。

@@ -146,7 +146,7 @@ func _build_units() -> void:
 		var view := UnitView.new()
 		context.scene.add_child(view)
 		view.setup(unit, slot.get("pos", Vector2.ZERO), is_ally)
-		view.apply_formation(float(slot.get("depth", 1.0)), int(slot.get("art_flip", 1)))
+		view.apply_formation(float(slot.get("depth", 1.0)), int(slot.get("art_flip", 1)), String(slot.get("view", "front")))
 		context.unit_views[unit.id] = view
 
 func _run_battle() -> void:

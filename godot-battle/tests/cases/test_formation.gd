@@ -1,7 +1,8 @@
 extends RefCounted
 
-# 2.5D 阵型表：3 我方 / 4 敌方，两排；位置唯一、行/深度/朝向正确、在屏内、
+# 2.5D 阵型表：3 我方 / 4 敌方，两排；位置唯一、行/深度/朝向/视图正确、在屏内、
 # 命中区 x 区间互不相交（>=10px），保证前后排与相邻单位不会互相抢点击。
+# 镜头在我方背后：我方 view=back（背影），敌方 view=front（正面）。
 
 func run(t: TestContext) -> void:
 	var layout := BattleFieldLayout.new()
@@ -20,22 +21,27 @@ func run(t: TestContext) -> void:
 	t.eq(layout.slot(BattleTypes.Side.ALLY, 3), {}, "ally out-of-range slot is empty")
 	t.eq(layout.slot(BattleTypes.Side.ENEMY, -1), {}, "enemy negative slot is empty")
 
-	# 表驱动期望：行 / 深度 / 美术朝向。
+	# 表驱动期望：行 / 深度 / 美术朝向 / 视图。
 	var expected_ally := [
-		[1, 1.05, -1],
-		[0, 0.92, -1],
-		[0, 0.90, -1],
+		[1, 1.05, -1, "back"],
+		[0, 0.92, -1, "back"],
+		[0, 0.90, -1, "back"],
 	]
 	var expected_enemy := [
-		[1, 1.05, 1],
-		[0, 0.90, 1],
-		[1, 1.05, 1],
-		[0, 0.90, 1],
+		[1, 1.05, 1, "front"],
+		[0, 0.90, 1, "front"],
+		[1, 1.05, 1, "front"],
+		[0, 0.90, 1, "front"],
 	]
 	for index in allies.size():
 		_check_slot(t, allies[index], expected_ally[index], "ally[%d]" % index)
 	for index in enemies.size():
 		_check_slot(t, enemies[index], expected_enemy[index], "enemy[%d]" % index)
+	# 两侧视图严格分离：我方全部背影、敌方全部正面。
+	for index in allies.size():
+		t.eq(String(allies[index].get("view", "")), "back", "ally[%d] view is back" % index)
+	for index in enemies.size():
+		t.eq(String(enemies[index].get("view", "")), "front", "enemy[%d] view is front" % index)
 
 	# 位置唯一、在屏内、脚底落在战场石台高度带。
 	var seen := {}
@@ -78,8 +84,11 @@ func _check_slot(t: TestContext, slot: Dictionary, expected: Array, label: Strin
 	var row := int(slot["row"])
 	var depth := float(slot["depth"])
 	var flip := int(slot["art_flip"])
+	var view := String(slot.get("view", ""))
 	t.eq(row, int(expected[0]), "%s row" % label)
 	t.near(depth, float(expected[1]), 0.0001, "%s depth" % label)
 	t.eq(flip, int(expected[2]), "%s art_flip" % label)
+	t.eq(view, String(expected[3]), "%s view" % label)
 	t.ok(flip == 1 or flip == -1, "%s art_flip is ±1" % label)
+	t.ok(view == "back" or view == "front", "%s view is back/front" % label)
 	t.in_range(depth, 0.85, 1.10, "%s depth within formation range" % label)

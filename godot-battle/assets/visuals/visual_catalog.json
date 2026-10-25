@@ -1,13 +1,13 @@
 {
-  "_comment": "Optional art drop-in catalog. Leave every path empty to use the original procedural art. For AI sprites, scale = target height (recommended 300px) / image pixel height. See assets/art/README.md for the schema.",
+  "_comment": "Optional art drop-in catalog. Leave every path empty to use the original procedural art. Unit entries accept sprites.front / sprites.back (string path or {sprite, scale, offset}); legacy sprite/path still works. For AI sprites, scale = target height (recommended 300px) / image pixel height; the global UnitView.BASE_ART_SCALE (0.75) is applied on top. See assets/art/README.md for the schema.",
   "units": {
-    "hero_swordsman": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "hero_mage": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "hero_healer": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "mob_a": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "mob_b": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "boss_brute": {"sprite": "", "scale": 1.0, "offset": [0, 0]},
-    "boss_fox": {"sprite": "", "scale": 1.0, "offset": [0, 0]}
+    "hero_swordsman": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "hero_mage": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "hero_healer": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "mob_a": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "mob_b": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "boss_brute": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]},
+    "boss_fox": {"sprites": {"front": "", "back": ""}, "sprite": "", "scale": 1.0, "offset": [0, 0]}
   },
   "background": {
     "path": "",
