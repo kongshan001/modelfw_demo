@@ -22,6 +22,8 @@ func _ready() -> void:
 
 	var world := Node2D.new()
 	world.name = "World"
+	# 脚底 Y 排序：前排（y=800）压在后排（y=680）之上。
+	world.y_sort_enabled = true
 	add_child(world)
 
 	var vfx_layer := Node2D.new()

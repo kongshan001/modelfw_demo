@@ -55,6 +55,8 @@ func _draw() -> void:
 		_draw_canopies()
 		_draw_bamboo()
 		_draw_ground()
+	# 2.5D 战场石台：压在草地上、角色脚下；替换背景贴图后仍保留。
+	_draw_battle_platform()
 	# 光柱 / 地面光斑 / 地面薄雾属于氛围叠加层，替换背景贴图后仍要绘制。
 	_draw_ground_light()
 	_draw_light_shafts()
@@ -230,6 +232,95 @@ func _draw_ground() -> void:
 		for blade in 3:
 			var offset := float(blade - 1) * 5.0
 			draw_line(Vector2(x + offset, base), Vector2(x + offset + rng.randf_range(-3.0, 3.0), base - rng.randf_range(8.0, 20.0)), Color(0.15, 0.26, 0.17, 0.5), 1.5, true)
+
+func _draw_battle_platform() -> void:
+	# 透视石台：上窄下宽的梯形 + 收敛网格 + 描金边 + 中心暗纹。
+	# 顶边略高于后排脚底 (680)，底边落在前景草线之前；角色与 HUD 均在其上层。
+	var tl := Vector2(220, 640)
+	var tr := Vector2(1700, 640)
+	var bl := Vector2(80, 950)
+	var br := Vector2(1840, 950)
+	var outer := PackedVector2Array([tl, tr, br, bl])
+
+	# 外沿落影，把石台从草地上“托”起来
+	var shadow := PackedVector2Array([tl + Vector2(-10, -6), tr + Vector2(10, -6), br + Vector2(26, 12), bl + Vector2(-26, 12)])
+	draw_colored_polygon(shadow, Color(0.04, 0.05, 0.035, 0.4))
+
+	draw_colored_polygon(outer, Color(0.17, 0.17, 0.145, 0.9))
+	var center := Vector2(960, 810)
+	var inner := PackedVector2Array([
+		center.lerp(tl, 0.975), center.lerp(tr, 0.975),
+		center.lerp(br, 0.968), center.lerp(bl, 0.968),
+	])
+	draw_colored_polygon(inner, Color(0.245, 0.235, 0.205, 0.92))
+
+	# 前沿石唇：让石台读起来有厚度，而非一块贴地色块
+	var lip_left := bl + Vector2(0, -13)
+	var lip_right := br + Vector2(0, -13)
+	draw_colored_polygon(PackedVector2Array([lip_left, lip_right, br, bl]), Color(0.115, 0.115, 0.095, 0.96))
+	draw_line(lip_left, lip_right, Color(0.8, 0.68, 0.4, 0.3), 2.0, true)
+
+	# 纵向石缝：随梯形宽度收缩，形成透视
+	for i in range(1, 9):
+		var f := float(i) / 9.0
+		draw_line(tl.lerp(tr, f), bl.lerp(br, f), Color(0.9, 0.8, 0.55, 0.12), 2.0, true)
+	# 横向石缝：越靠近顶边越密
+	for i in range(1, 8):
+		var t := pow(float(i) / 7.0, 1.45)
+		draw_line(tl.lerp(bl, t), tr.lerp(br, t), Color(0.9, 0.8, 0.55, 0.1), 1.6, true)
+
+	# 石面深浅变化与细裂纹（确定性，避免每帧抖动）
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 0x2A17
+	for i in 9:
+		var t := float(i) / 8.0
+		var left := tl.lerp(bl, t)
+		var right := tr.lerp(br, t)
+		var band := PackedVector2Array([
+			left, right,
+			tr.lerp(br, minf(t + 0.1, 1.0)), tl.lerp(bl, minf(t + 0.1, 1.0)),
+		])
+		if i % 2 == 0:
+			draw_colored_polygon(band, Color(0.1, 0.11, 0.085, 0.12))
+	for i in 16:
+		var f := rng.randf_range(0.06, 0.94)
+		var t := pow(rng.randf_range(0.08, 0.94), 1.3)
+		var point := tl.lerp(tr, f).lerp(bl.lerp(br, f), t)
+		draw_line(point, point + Vector2(rng.randf_range(7.0, 24.0), rng.randf_range(-4.0, 4.0)), Color(0.07, 0.07, 0.06, 0.28), 1.4, true)
+
+	# 描金边：外沿粗、内沿细
+	var border := outer.duplicate()
+	border.append(tl)
+	draw_polyline(border, Color(0.62, 0.52, 0.3, 0.5), 3.0, true)
+	var inner_border := inner.duplicate()
+	inner_border.append(inner[0])
+	draw_polyline(inner_border, Color(0.86, 0.72, 0.42, 0.22), 1.5, true)
+	# 四角菱形石饰
+	for corner: Vector2 in [tl, tr, bl, br]:
+		var inset := corner.lerp(center, 0.035)
+		draw_colored_polygon(PackedVector2Array([
+			inset + Vector2(0, -9), inset + Vector2(7, 0),
+			inset + Vector2(0, 9), inset + Vector2(-7, 0),
+		]), Color(0.86, 0.72, 0.42, 0.3))
+
+	# 中心暗纹：双层椭圆环 + 菱形，低对比，不抢角色
+	_ellipse_ring(center, 190.0, 58.0, Color(0.9, 0.78, 0.48, 0.1), 3.0)
+	_ellipse_ring(center, 122.0, 37.0, Color(0.9, 0.78, 0.48, 0.07), 2.0)
+	var diamond := PackedVector2Array([
+		center + Vector2(0, -28), center + Vector2(20, 0),
+		center + Vector2(0, 28), center + Vector2(-20, 0), center + Vector2(0, -28),
+	])
+	draw_polyline(diamond, Color(0.9, 0.78, 0.48, 0.12), 2.0, true)
+
+	# 顶边暖色高光，衔接晨光
+	draw_line(tl + Vector2(0, 2), tr + Vector2(0, 2), Color(1.0, 0.9, 0.65, 0.18), 3.0, true)
+
+func _ellipse_ring(center: Vector2, rx: float, ry: float, color: Color, width: float) -> void:
+	var points := PackedVector2Array()
+	for i in 33:
+		var angle := TAU * float(i) / 32.0
+		points.append(center + Vector2(cos(angle) * rx, sin(angle) * ry))
+	draw_polyline(points, color, width, true)
 
 func _draw_ground_light() -> void:
 	# 晨光下的中央场地 + 阳光暖斑；独立于程序化地面，背景贴图覆盖时仍保留。

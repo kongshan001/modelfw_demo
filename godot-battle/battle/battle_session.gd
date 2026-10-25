@@ -137,18 +137,16 @@ func _show_replay_label() -> void:
 	_replay_label = panel
 
 func _build_units() -> void:
-	# 妖将右移 40px，与妖兵乙的毒矛头拉开；左拳同时收进自身命中区。
-	var enemy_positions := [Vector2(180, 700), Vector2(350, 740), Vector2(540, 780), Vector2(700, 820)]
-	# 剑客贴指令面板左侧（命中区右缘 1355，面板 1368，留 13px）；
-	# 法师/医师向左展开，避免法球与右尾落入相邻命中区。
-	var ally_positions := [Vector2(1290, 760), Vector2(1120, 730), Vector2(940, 700)]
+	# 2.5D 阵型：前后两排，脚底 Y 排序，后排 0.9×/前排 1.05×，美术层翻转面向。
+	var layout := BattleFieldLayout.new()
 	for index in engine.state.units.size():
 		var unit := engine.state.units[index]
+		var is_ally := unit.side == BattleTypes.Side.ALLY
+		var slot := layout.slot(unit.side, unit.slot)
 		var view := UnitView.new()
 		context.scene.add_child(view)
-		var is_ally := unit.side == BattleTypes.Side.ALLY
-		var pos: Vector2 = ally_positions[unit.slot] if is_ally else enemy_positions[unit.slot]
-		view.setup(unit, pos, is_ally)
+		view.setup(unit, slot.get("pos", Vector2.ZERO), is_ally)
+		view.apply_formation(float(slot.get("depth", 1.0)), int(slot.get("art_flip", 1)))
 		context.unit_views[unit.id] = view
 
 func _run_battle() -> void:

@@ -16,9 +16,6 @@ const NAME_Y := -360.0
 const STATUS_Y := -384.0
 const CLICK_SIZE := Vector2(130, 320)
 const CLICK_CENTER := Vector2(0, -170)
-# 妖兵乙的毒矛头在局部 +111，命中区向右加宽以覆盖该附属件（左缘仍为 -65）。
-const MOB_B_CLICK_SIZE := Vector2(173, 320)
-const MOB_B_CLICK_CENTER := Vector2(21.5, -170)
 const BUBBLE_GAP := 26.0
 
 const OUTLINE := Color(0.105, 0.072, 0.125, 0.96)
@@ -57,6 +54,10 @@ var _visual_rng := RandomNumberGenerator.new()
 var _art_scale := 1.0
 var _has_texture := false
 var _info_offset_y := 0.0
+var _formation_depth := 1.0
+var _facing := 1
+var _sprite_base_scale := 1.0
+var _sprite_base_position := Vector2.ZERO
 
 func _ready() -> void:
 	_build_placeholder()
@@ -84,6 +85,14 @@ func setup(unit: BattleUnitState, home: Vector2, ally: bool) -> void:
 	refresh_from_state(unit)
 	visible = true
 	_start_idle()
+
+func apply_formation(depth: float, facing: int) -> void:
+	# 只影响美术层：命中区、信息条、气泡与名字/血条保持原尺寸、不镜像。
+	_formation_depth = maxf(0.05, depth)
+	_facing = -1 if facing < 0 else 1
+	_apply_shadow_scale()
+	_apply_sprite_formation()
+	queue_redraw()
 
 func refresh_from_state(unit: BattleUnitState) -> void:
 	unit_state = unit
@@ -123,7 +132,8 @@ func _apply_shadow_scale() -> void:
 	if _shadow == null:
 		return
 	var wide := 1.25 if String(unit_id) == "boss_brute" else 1.08
-	_shadow.scale = Vector2(_art_scale * wide, _art_scale)
+	var scale_value := _art_scale * _formation_depth
+	_shadow.scale = Vector2(scale_value * wide, scale_value)
 
 func _apply_visual_override() -> void:
 	if _sprite == null or unit_state == null or unit_state.data == null:
@@ -142,14 +152,22 @@ func _apply_visual_override() -> void:
 		return
 	scale_value = maxf(0.05, scale_value)
 	_sprite.texture = texture
-	_sprite.scale = Vector2(scale_value, scale_value)
-	_sprite.position = Vector2(0, -texture.get_height() * 0.5 * scale_value)
+	_sprite_base_scale = scale_value
+	_sprite_base_position = Vector2(0, -texture.get_height() * 0.5 * scale_value)
 	var offset: Variant = entry.get("offset", [])
 	if offset is Array and offset.size() >= 2:
-		_sprite.position += Vector2(float(offset[0]), float(offset[1]))
+		_sprite_base_position += Vector2(float(offset[0]), float(offset[1]))
 	_sprite.visible = true
 	_has_texture = true
+	_apply_sprite_formation()
 	queue_redraw()
+
+func _apply_sprite_formation() -> void:
+	if _sprite == null or not _has_texture:
+		return
+	var scale_value := _sprite_base_scale * _formation_depth
+	_sprite.scale = Vector2(scale_value * _facing, scale_value)
+	_sprite.position = Vector2(_sprite_base_position.x * _facing, _sprite_base_position.y)
 
 func _build_placeholder() -> void:
 	_sprite = Sprite2D.new()
@@ -164,7 +182,7 @@ func _build_placeholder() -> void:
 func _draw() -> void:
 	if _has_texture:
 		return
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(_art_scale, _art_scale))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(_art_scale * _formation_depth * _facing, _art_scale * _formation_depth))
 	match String(unit_id):
 		"hero_swordsman":
 			_draw_swordsman()
@@ -888,35 +906,29 @@ func _build_click_area() -> void:
 	_click_area.input_event.connect(_on_input_event)
 	_apply_click_bounds()
 
-func _click_size_for(id: String) -> Vector2:
-	return MOB_B_CLICK_SIZE if id == "mob_b" else CLICK_SIZE
-
-func _click_center_for(id: String) -> Vector2:
-	return MOB_B_CLICK_CENTER if id == "mob_b" else CLICK_CENTER
-
 func _apply_click_bounds() -> void:
 	if _click_rect == null:
 		return
-	var id := String(unit_id)
-	_click_rect.size = _click_size_for(id)
-	_click_shape.position = _click_center_for(id)
+	_click_rect.size = CLICK_SIZE
+	_click_shape.position = CLICK_CENTER
 
 func hit_rect() -> Rect2:
 	# 世界坐标下的点击矩形（用于工具校验间距 / 与 HUD 面板的边界）。
-	var id := String(unit_id)
-	var size := _click_size_for(id)
-	return Rect2(global_position + _click_center_for(id) - size * 0.5, size)
+	# 阵型只缩放美术层，命中区保持 130px 宽且不镜像。
+	return Rect2(global_position + CLICK_CENTER - CLICK_SIZE * 0.5, CLICK_SIZE)
 
 func visual_scale() -> float:
-	# 程序化绘制的整体缩放（_draw 内 draw_set_transform 使用），供附属件探针换算。
-	return _art_scale
+	# 程序化绘制的整体缩放（_draw 内 draw_set_transform 使用），含阵型深度。
+	return _art_scale * _formation_depth
 
 func appendage_points() -> Array[Vector2]:
-	# 关键附属件的局部坐标点（绘制坐标系，未乘 visual_scale()），供输入探针校验：
-	# 探针按 visual_scale() 缩放后，必须落在自身 hit_rect() 内，且不落入相邻单位命中区。
-	# 法师法球 / 狐妖双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头。
+	# 关键附属件的局部坐标点（已按 _facing 镜像，未乘 visual_scale()），供输入探针校验：
+	# 探针按 visual_scale() 缩放后，附属件允许伸出自身命中区，但不得落入邻居命中区。
+	# 法师法球 / 狐妖双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头 / 剑客剑尖。
 	var points: Array[Vector2] = []
 	match String(unit_id):
+		"hero_swordsman":
+			points.append(Vector2(104, -300))
 		"hero_mage":
 			points.append(Vector2(52, -280))
 		"boss_fox":
@@ -927,6 +939,9 @@ func appendage_points() -> Array[Vector2]:
 			points.append(Vector2(54, -244))
 		"mob_b":
 			points.append(Vector2(111, -292))
+	if _facing < 0:
+		for index in points.size():
+			points[index] = Vector2(-points[index].x, points[index].y)
 	return points
 
 func info_rect() -> Rect2:

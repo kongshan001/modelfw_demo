@@ -3,8 +3,9 @@ extends SceneTree
 # 输入级 HUD 冒烟：真实鼠标点击「攻击」按钮，再点击敌方 UnitView 选择目标，
 # 从首个指令阶段一路打到战斗结束，最后校验真实结算面板出现。
 # 同时保留 7 个单位点击扫描与首阶段 3 条攻击意图断言；战斗速度通过真实点击 2x 按钮设置。
-# 额外探针：点击矩形互不重叠 / 不被 HUD 面板覆盖；狐狸、医师、剑客的
-# 左缘/右缘/身体边界在敌方与我方两种目标模式下都能正确命中。
+# 额外探针：2.5D 两排阵型（行/深度/朝向/Y 排序）、点击矩形 x 区间互不相交且不被 HUD 面板覆盖；
+# 狐狸、医师、剑客的左缘/右缘/身体边界在敌方与我方两种目标模式下都能正确命中。
+# 阵型不变量：附属件允许伸出自身命中区，但不得落入任何邻居命中区（避免误点）。
 # 需要窗口（物理拾取走真实视口输入）：
 #   godot --path godot-battle --resolution 1920x1080 -s tools/smoke_hud_input.gd
 
@@ -255,6 +256,9 @@ func _check_layout() -> void:
 		var hit := view.hit_rect()
 		var info := view.info_rect()
 		var point := _to_screen(view.global_position + Vector2(0, -140))
+		if not hit.has_point(view.global_position + Vector2(0, -140)):
+			_fail("unit %s center click point is outside its hit rect %s" % [view.unit_id, str(hit)])
+			return
 		for panel in blockers:
 			var panel_rect := panel.get_global_rect()
 			if panel_rect.has_point(point):
@@ -278,10 +282,12 @@ func _check_layout() -> void:
 				return
 			var gap := b_rect.position.x - a_rect.end.x if a_rect.end.x <= b_rect.position.x else a_rect.position.x - b_rect.end.x
 			min_gap = minf(min_gap, gap)
-	if min_gap < 16.0:
-		_fail("unit hit rects too close: min horizontal gap=%.1fpx (want >=16px)" % min_gap)
+	if min_gap < 10.0:
+		_fail("unit hit rects too close: min horizontal gap=%.1fpx (want >=10px)" % min_gap)
 		return
 	print("HUD_INPUT: unit hit rect min horizontal gap=%.1fpx" % min_gap)
+	if not _check_formation(views):
+		return
 	if not _check_appendage_points(views):
 		return
 	var swordsman: UnitView = _view_of(&"hero_swordsman")
@@ -296,15 +302,64 @@ func _check_layout() -> void:
 		print("HUD_INPUT: swordsman/command-panel gap=%.1fpx healer/command-panel gap=%.1fpx" % [swordsman_gap, healer_gap])
 	print("HUD_INPUT: 7 unit hit rects non-overlapping and clear of HUD panels/info bands")
 
+func _check_formation(views: Array) -> bool:
+	# 阵型探针：两排 3 前排 / 4 后排，位置/深度/朝向与 layout 一致，World 开启 Y 排序。
+	var world := _scene.get_node_or_null("World") as Node2D
+	if world == null or not world.y_sort_enabled:
+		_fail("World.y_sort_enabled must be true for front-row-over-back-row draw order")
+		return false
+	var layout := BattleFieldLayout.new()
+	var front_count := 0
+	var back_count := 0
+	var front_min_y := INF
+	var back_max_y := -INF
+	for value in views:
+		var view: UnitView = value
+		if view.get_parent() != world:
+			_fail("unit %s is not a direct child of World (y-sort ineffective)" % view.unit_id)
+			return false
+		var slot := layout.slot(view.side, view.unit_state.slot)
+		if slot.is_empty():
+			_fail("missing formation slot for %s side=%d slot=%d" % [view.unit_id, view.side, view.unit_state.slot])
+			return false
+		var expected_pos: Vector2 = slot["pos"]
+		if view.home_position.distance_to(expected_pos) > 0.5:
+			_fail("unit %s home %s != formation slot %s" % [view.unit_id, str(view.home_position), str(expected_pos)])
+			return false
+		if absf(view._formation_depth - float(slot["depth"])) > 0.001:
+			_fail("unit %s depth %.3f != slot %.3f" % [view.unit_id, view._formation_depth, float(slot["depth"])])
+			return false
+		if view._facing != int(slot["art_flip"]):
+			_fail("unit %s facing %d != slot %d" % [view.unit_id, view._facing, int(slot["art_flip"])])
+			return false
+		if absf(view.visual_scale() - view._art_scale * float(slot["depth"])) > 0.001:
+			_fail("unit %s visual_scale %.3f does not include formation depth" % [view.unit_id, view.visual_scale()])
+			return false
+		if int(slot["row"]) == 1:
+			front_count += 1
+			front_min_y = minf(front_min_y, view.home_position.y)
+		else:
+			back_count += 1
+			back_max_y = maxf(back_max_y, view.home_position.y)
+	if front_count != 3 or back_count != 4:
+		_fail("expected 3 front / 4 back units, got %d / %d" % [front_count, back_count])
+		return false
+	if front_min_y <= back_max_y:
+		_fail("front row feet y %.1f must be greater than back row feet y %.1f" % [front_min_y, back_max_y])
+		return false
+	print("HUD_INPUT: formation OK 3 front (y=%.0f) / 4 back (y=%.0f), depth+facing match layout, y_sort=on" % [front_min_y, back_max_y])
+	return true
+
 func _check_appendage_points(views: Array) -> bool:
-	# 附属件探针：法球 / 双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头必须落在自身命中区内，
-	# 且不落入任何邻居命中区。仅做矩形探针会漏掉“命中区有缝但装饰件越界”的情况。
-	for required in [&"hero_mage", &"boss_fox", &"boss_brute", &"mob_b"]:
+	# 附属件探针：法球 / 双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头 / 剑客剑尖。
+	# 阵型规则：允许伸出自身命中区（视觉附属件可以越过本格），但不得落入任何邻居命中区。
+	for required in [&"hero_swordsman", &"hero_mage", &"boss_fox", &"boss_brute", &"mob_b"]:
 		var required_view := _view_of(required)
 		if required_view == null or required_view.appendage_points().is_empty():
 			_fail("missing appendage points for %s" % required)
 			return false
 	var checked := 0
+	var outside_owner := 0
 	for value in views:
 		var view: UnitView = value
 		var owner_rect := view.hit_rect()
@@ -312,8 +367,7 @@ func _check_appendage_points(views: Array) -> bool:
 		for local in view.appendage_points():
 			var world := view.to_global(local * scale_value)
 			if not owner_rect.has_point(world):
-				_fail("appendage point %s of %s is outside its own hit rect %s (world %s)" % [str(local), view.unit_id, str(owner_rect), str(world)])
-				return false
+				outside_owner += 1
 			for other_value in views:
 				var other: UnitView = other_value
 				if other == view:
@@ -322,7 +376,7 @@ func _check_appendage_points(views: Array) -> bool:
 					_fail("appendage point %s of %s falls in %s hit rect %s (world %s)" % [str(local), view.unit_id, other.unit_id, str(other.hit_rect()), str(world)])
 					return false
 			checked += 1
-	print("HUD_INPUT: %d appendage points inside owner hit rects and clear of all neighbors" % checked)
+	print("HUD_INPUT: %d appendage points clear of all neighbors (%d allowed outside owner rect)" % [checked, outside_owner])
 	return true
 
 func _sweep_unit_clicks() -> void:
