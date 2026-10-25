@@ -351,9 +351,10 @@ func _check_formation(views: Array) -> bool:
 	return true
 
 func _check_appendage_points(views: Array) -> bool:
-	# 附属件探针：法球 / 双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头 / 剑客剑尖。
+	# 附属件探针：剑尖 / 法球 / 狐妖双尾尖与右尾外缘 / 妖将左拳与斧刃外缘 /
+	# 妖兵乙毒矛头 / 妖兵甲棒头外缘。
 	# 阵型规则：允许伸出自身命中区（视觉附属件可以越过本格），但不得落入任何邻居命中区。
-	for required in [&"hero_swordsman", &"hero_mage", &"boss_fox", &"boss_brute", &"mob_b"]:
+	for required in [&"hero_swordsman", &"hero_mage", &"boss_fox", &"boss_brute", &"mob_b", &"mob_a"]:
 		var required_view := _view_of(required)
 		if required_view == null or required_view.appendage_points().is_empty():
 			_fail("missing appendage points for %s" % required)

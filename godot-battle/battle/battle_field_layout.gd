@@ -14,10 +14,10 @@ const ALLY_SLOTS := [
 ]
 
 const ENEMY_SLOTS := [
-	{"row": 1, "pos": Vector2(750, 800), "depth": 1.05, "art_flip": 1}, # 妖兵甲·前排
-	{"row": 0, "pos": Vector2(610, 680), "depth": 0.90, "art_flip": 1}, # 妖兵乙·后排
-	{"row": 1, "pos": Vector2(470, 800), "depth": 1.05, "art_flip": -1}, # 妖将·前排（斧朝左）
-	{"row": 0, "pos": Vector2(260, 680), "depth": 0.90, "art_flip": -1}, # 狐妖·后排（尾朝左）
+	{"row": 1, "pos": Vector2(790, 800), "depth": 1.05, "art_flip": 1}, # 妖兵甲·前排
+	{"row": 0, "pos": Vector2(650, 680), "depth": 0.90, "art_flip": 1}, # 妖兵乙·后排
+	{"row": 1, "pos": Vector2(450, 800), "depth": 1.05, "art_flip": 1}, # 妖将·前排
+	{"row": 0, "pos": Vector2(230, 680), "depth": 0.90, "art_flip": 1}, # 狐妖·后排
 ]
 
 func slot(side: int, index: int) -> Dictionary:

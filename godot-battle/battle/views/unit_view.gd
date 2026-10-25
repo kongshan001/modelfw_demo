@@ -531,12 +531,12 @@ func _draw_goblin(poison: bool) -> void:
 		draw_circle(Vector2(105, -275), 5.0, Color(0.45, 0.95, 0.35, 0.35))
 		_poly(PackedVector2Array([Vector2(86, -268), Vector2(66, -256), Vector2(78, -250), Vector2(92, -258)]), accent, 1.5)
 	else:
-		# 狼牙棒
-		_line(Vector2(42, -116), Vector2(70, -246), Color(0.34, 0.24, 0.16), 8.0)
-		_circle(Vector2(74, -258), 20.0, Color(0.4, 0.29, 0.19), 3.5)
-		for spike: Vector2 in [Vector2(56, -262), Vector2(70, -282), Vector2(88, -272), Vector2(92, -250), Vector2(74, -240)]:
+		# 狼牙棒：面向右时收在身体右侧，棒头不探入医师命中区（+1 阵型下 x 上限约 855）。
+		_line(Vector2(47, -116), Vector2(47, -236), Color(0.34, 0.24, 0.16), 8.0)
+		_circle(Vector2(47, -250), 16.0, Color(0.4, 0.29, 0.19), 3.5)
+		for spike: Vector2 in [Vector2(33, -254), Vector2(45, -272), Vector2(60, -263), Vector2(62, -242), Vector2(47, -232)]:
 			_poly(PackedVector2Array([spike + Vector2(-3, 1), spike + Vector2(3, 1), spike * 1.06 + Vector2(0, -10)]), Color(0.72, 0.66, 0.56), 1.5)
-		_circle(Vector2(74, -258), 6.0, leather_hi, 1.5)
+		_circle(Vector2(47, -250), 5.0, leather_hi, 1.5)
 	# 握武器手
 	_circle(Vector2(48, -116), 8.5, skin, 2.5)
 
@@ -924,7 +924,8 @@ func visual_scale() -> float:
 func appendage_points() -> Array[Vector2]:
 	# 关键附属件的局部坐标点（已按 _facing 镜像，未乘 visual_scale()），供输入探针校验：
 	# 探针按 visual_scale() 缩放后，附属件允许伸出自身命中区，但不得落入邻居命中区。
-	# 法师法球 / 狐妖双尾尖 / 妖将左拳与斧头 / 妖兵乙毒矛头 / 剑客剑尖。
+	# 法师法球 / 狐妖双尾尖与右尾外缘 / 妖将左拳与斧刃外缘 / 妖兵乙毒矛头 /
+	# 妖兵甲棒头外缘 / 剑客剑尖。
 	var points: Array[Vector2] = []
 	match String(unit_id):
 		"hero_swordsman":
@@ -934,11 +935,15 @@ func appendage_points() -> Array[Vector2]:
 		"boss_fox":
 			points.append(Vector2(-58, -162))
 			points.append(Vector2(58, -150))
+			points.append(Vector2(98, -100))
 		"boss_brute":
 			points.append(Vector2(-56, -82))
 			points.append(Vector2(54, -244))
+			points.append(Vector2(72, -230))
 		"mob_b":
 			points.append(Vector2(111, -292))
+		"mob_a":
+			points.append(Vector2(66.5, -250))
 	if _facing < 0:
 		for index in points.size():
 			points[index] = Vector2(-points[index].x, points[index].y)

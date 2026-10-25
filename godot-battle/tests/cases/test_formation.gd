@@ -29,8 +29,8 @@ func run(t: TestContext) -> void:
 	var expected_enemy := [
 		[1, 1.05, 1],
 		[0, 0.90, 1],
-		[1, 1.05, -1],
-		[0, 0.90, -1],
+		[1, 1.05, 1],
+		[0, 0.90, 1],
 	]
 	for index in allies.size():
 		_check_slot(t, allies[index], expected_ally[index], "ally[%d]" % index)
