@@ -12,6 +12,7 @@ var _layer: Node2D
 var _ui_layer: CanvasLayer
 
 static var _soft_texture: ImageTexture
+static var _additive: CanvasItemMaterial
 
 func _init(p_tree: SceneTree, p_layer: Node2D, p_ui_layer: CanvasLayer = null, seed_value: int = 9001) -> void:
 	_scene_tree = p_tree
@@ -64,6 +65,7 @@ func slash(position: Vector2) -> void:
 		arc.width = 11.0 - index * 3.5
 		arc.default_color = Color(1.0, 0.96 - index * 0.14, 0.66 - index * 0.16, 0.95)
 		arc.antialiased = true
+		arc.material = _additive_material()
 		root.add_child(arc)
 	root.scale = Vector2(0.55, 0.55)
 	_burst(root, Color(1.0, 0.95, 0.7, 0.9), 16, 0.45, 80.0, 260.0, Vector3.UP, 110.0, Vector3(0, 260, 0), 0.18, 0.5)
@@ -78,6 +80,7 @@ func fire(position: Vector2) -> void:
 		return
 	var root := _root(position)
 	var flash := _flash(root, 52.0, Color(1.0, 0.5, 0.12, 0.55))
+	flash.material = _additive_material()
 	var flash_tween := flash.create_tween()
 	flash_tween.set_parallel(true)
 	flash_tween.tween_property(flash, "scale", Vector2(2.0, 2.0), 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -113,6 +116,7 @@ func heal(position: Vector2) -> void:
 		return
 	var root := _root(position)
 	var ring := _ring(root, 72.0, Color(0.45, 1.0, 0.6, 0.9), 5.0)
+	ring.material = _additive_material()
 	ring.position = Vector2(0, 62)
 	ring.scale = Vector2(0.4, 0.14)
 	var ring_tween := ring.create_tween()
@@ -123,6 +127,7 @@ func heal(position: Vector2) -> void:
 	motes.position = Vector2(0, 58)
 	_burst(root, Color(0.9, 1.0, 0.9, 0.9), 12, 0.9, 30.0, 90.0, Vector3.UP, 40.0, Vector3(0, -20, 0), 0.12, 0.3).position = Vector2(0, 40)
 	var glow := _flash(root, 44.0, Color(0.4, 1.0, 0.55, 0.3))
+	glow.material = _additive_material()
 	var glow_tween := glow.create_tween()
 	glow_tween.tween_property(glow, "scale", Vector2(1.8, 1.8), 0.6)
 	glow_tween.parallel().tween_property(glow, "modulate:a", 0.0, 0.6)
@@ -133,6 +138,7 @@ func seal(position: Vector2) -> void:
 		return
 	var root := _root(position)
 	var ring := _ring(root, 78.0, Color(0.82, 0.45, 1.0, 0.95), 6.0)
+	ring.material = _additive_material()
 	ring.scale = Vector2(0.3, 0.3)
 	var ring_tween := ring.create_tween()
 	ring_tween.set_parallel(true)
@@ -145,6 +151,7 @@ func seal(position: Vector2) -> void:
 		rune.color = Color(1.0, 0.85, 0.4, 0.9)
 		rune.position = Vector2(cos(angle), sin(angle)) * 92.0
 		rune.rotation = angle + PI / 2.0
+		rune.material = _additive_material()
 		root.add_child(rune)
 	var glyph := Label.new()
 	glyph.text = "封"
@@ -213,6 +220,82 @@ func cast_ring(position: Vector2) -> void:
 	_burst(root, Color(0.75, 0.9, 1.0, 0.8), 10, 0.4, 20.0, 70.0, Vector3.UP, 50.0, Vector3(0, -20, 0), 0.12, 0.3)
 	_schedule_free(root, 0.12, 0.25)
 
+func projectile(from_position: Vector2, to_position: Vector2, visual_id: StringName) -> void:
+	# 远程技能弹道：发光圆球 + 世界坐标拖尾，从施法者飞向目标；
+	# 命中特效仍由 Damage/Heal/Status 命令播放，避免双重特效。
+	if not visuals_enabled:
+		return
+	var color := Color(1.0, 0.86, 0.55)
+	match visual_id:
+		&"fire":
+			color = Color(1.0, 0.55, 0.16)
+		&"seal":
+			color = Color(0.84, 0.5, 1.0)
+		&"heal":
+			color = Color(0.5, 1.0, 0.62)
+	var root := _root(from_position, 21)
+	var dir := (to_position - from_position).normalized()
+	var perp := Vector2(-dir.y, dir.x)
+	# 实体彗尾保证在明亮天空/草地上仍能读出弹道方向。
+	var tail := Polygon2D.new()
+	tail.polygon = PackedVector2Array([
+		-dir * 110.0 + perp * 22.0,
+		perp * 8.0,
+		-perp * 8.0,
+		-dir * 110.0 - perp * 22.0,
+	])
+	tail.color = Color(color.r, color.g, color.b, 0.5)
+	tail.z_index = -2
+	root.add_child(tail)
+	var glow := _flash(root, 30.0, Color(color.r, color.g, color.b, 0.3))
+	glow.material = _additive_material()
+	var body := _flash(root, 15.0, Color(color.r, color.g, color.b, 0.98))
+	var rim_color := color.darkened(0.7)
+	var rim := _ring(root, 15.0, Color(rim_color.r, rim_color.g, rim_color.b, 0.8), 3.0)
+	var spark := _flash(root, 6.0, Color(1.0, 0.98, 0.92, 0.95))
+	spark.material = _additive_material()
+	body.z_index = 1
+	rim.z_index = 2
+	spark.z_index = 3
+	var trail := GPUParticles2D.new()
+	trail.texture = _soft_circle_texture()
+	trail.amount = 72
+	trail.lifetime = 0.3
+	trail.one_shot = false
+	trail.explosiveness = 0.0
+	trail.local_coords = false
+	trail.z_index = -1
+	trail.material = _additive_material()
+	var trail_material := ParticleProcessMaterial.new()
+	trail_material.direction = Vector3.LEFT
+	trail_material.spread = 180.0
+	trail_material.initial_velocity_min = 6.0
+	trail_material.initial_velocity_max = 30.0
+	trail_material.gravity = Vector3.ZERO
+	trail_material.color = Color(color.r, color.g, color.b, 0.85)
+	trail_material.scale_min = 0.25
+	trail_material.scale_max = 0.65
+	trail_material.damping_min = 20.0
+	trail_material.damping_max = 40.0
+	trail.process_material = trail_material
+	root.add_child(trail)
+	trail.emitting = true
+	var distance := from_position.distance_to(to_position)
+	var duration := clampf(distance / 2400.0, 0.24, 0.30)
+	var tween := root.create_tween()
+	tween.tween_property(root, "position", to_position, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	await tween.finished
+	# 拖尾交接给特效层自行消散；光球快速淡出。
+	trail.emitting = false
+	root.remove_child(trail)
+	_layer.add_child(trail)
+	trail.position = Vector2.ZERO
+	trail.z_index = 20
+	_schedule_free(trail, 0.0, 0.3)
+	var fade := root.create_tween()
+	fade.tween_property(root, "modulate:a", 0.0, 0.1)
+	fade.tween_callback(root.queue_free)
+
 func generic(position: Vector2) -> void:
 	if not visuals_enabled:
 		return
@@ -273,7 +356,9 @@ func _flash(parent: Node2D, radius: float, color: Color) -> Polygon2D:
 func _burst(parent: Node2D, color: Color, amount: int, lifetime: float, velocity_min: float, velocity_max: float, direction: Vector3, spread: float, gravity: Vector3, scale_min: float, scale_max: float) -> GPUParticles2D:
 	var particles := GPUParticles2D.new()
 	particles.texture = _soft_circle_texture()
-	particles.amount = amount
+	# 叠加混合 + 加倍粒子，让火焰/治疗/雷击读成发光体而不是平涂圆点。
+	particles.amount = maxi(2, amount * 2)
+	particles.material = _additive_material()
 	particles.lifetime = lifetime
 	particles.one_shot = true
 	particles.explosiveness = 0.92
@@ -308,6 +393,12 @@ static func _circle_points(radius: float, count: int = 40) -> PackedVector2Array
 		var angle := TAU * float(index) / float(count)
 		points.append(Vector2(cos(angle) * radius, sin(angle) * radius))
 	return points
+
+static func _additive_material() -> CanvasItemMaterial:
+	if _additive == null:
+		_additive = CanvasItemMaterial.new()
+		_additive.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	return _additive
 
 static func _soft_circle_texture() -> ImageTexture:
 	if _soft_texture != null:

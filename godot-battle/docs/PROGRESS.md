@@ -141,3 +141,19 @@ RESULT: 786 assertions, 0 failures
 - 视觉验收（1920×1080，无 HUD 纯场景，与评审同口径）：平均亮度 104.2→154.9，平均饱和度 24.4%→38.0%；HUD 全景 97.3→134.4 亮度、26.2%→35.4% 饱和度（HUD 深色面板未改，全景均值略低于场景口径）。无矩形平台/网格/描金边；敌群落在受光地面；单位脚底阴影、HUD、日志与前后排可读。
 - 验证：核心 `RESULT: 901 assertions, 0 failures`；`PRESENTATION_SMOKE_OK` / `SMOKE_OK`；`HUD_INPUT_OK`（12 回合真实输入）/`SMOKE_OK`；`screenshot_art.gd` 全场景/HUD/技能/胜利均 1920×1080；GIF 15s/720×405/10fps/96 色 5.4MB（`.superpowers/sdd/bamboo-clearing.gif`，未入库）。
 - 遗留：胜利面板仍按原 0.7 压暗（评审 P1-4，未在本次范围）；HUD 深色面板拉低全景均值；程序化空地仍是兜底美术，未来可经 VisualCatalog 换手绘背景。
+
+## 2026-10-25 · 打击感增强与敌方比例/光照 P0
+
+- 目标：落实独立美术评审剩余 P0（P0-2 战斗 juice、P0-3 敌方尺度/打光）；保留 P0-1 的自然竹林空地曝光，不放大 `BASE_ART_SCALE`。
+- 完成：
+  - 攻击 `lunge_to()` 增加 0.08s 预备（后拉 12px + 压扁）；新增 `return_pose()` 收势归位（越过家门 16px 再收住）；`cast_pose()` 增加 0.08s 蓄力后再闪光。
+  - 顿帧 0.06→0.12s；普通命中震屏 5→7px，暴击 10px + 1.06 punch-zoom，普通命中补 1.02 punch。
+  - 飘字：普通伤害 42→56px、暴击 58→76px、治疗 44→56px、状态 40→52px；描边/阴影加强。
+  - `VFXFactory` 粒子改用 `BLEND_MODE_ADD` 叠加混合且数量×2；新增 `projectile()` 发光球+彗尾拖尾（0.24~0.30s），`fire`/`seal`/`heal` 由 `ActionStartCommand` 等弹道到达后再播放命中；雷击保留落雷，不改为弹道。
+  - 敌方 depth 0.74–0.86→0.88–0.96；我方 0.98/1.12/1.08→1.0/1.08/1.06；位置、斜向中心线、前后排关系、朝向与视图不变，我方最小 depth 仍大于敌方最大。
+  - `BackgroundView` 在 (500,560) 增加敌侧暖光地斑，左上竹林/冠层提亮减暗；`UnitView` 信息带锚点下移 4px，避开左上出手顺序条。
+- 视觉验收：无 HUD 场景平均亮度 152.6 / 饱和度 38.2%（目标 ≥135/≥35）；含 HUD 全景 133.2 / 35.5%。敌方主体增大到约 18–20% 屏高（妖将 20.1%、狐妖 17.8%），我方仍更近更大；林间空地、雾/光柱与 HUD 可读性保持。新增 `plan2b_art_projectile.png` / `plan2b_art_lunge.png` / `plan2b_art_float.png` 验收图。
+- 验证：核心 `RESULT: 901 assertions, 0 failures`；`PRESENTATION_SMOKE_OK` / `SMOKE_OK`；`HUD_INPUT_OK`（12 回合真实输入完整战斗）/`SMOKE_OK`；`STORY_PROBE_OK` / `SMOKE_OK`；`DEBUG_SMOKE_OK` / `SMOKE_OK`；临时跳过探针 `SKIP_OK`（time_scale=1.0、存活单位复位）。
+- 产物：8 张 1920×1080 截图（`plan2b_art_full/scene/skill/skill_late/projectile/lunge/float/victory.png`）；GIF 18s/720×405/10fps/96 色 5.6MB（`.superpowers/sdd/p0-combat.gif`，未入库）。
+- 遗留：胜利面板仍按原 0.7 压暗（评审 P1-4；不在 P0 范围，未改 UI）；GIF 10fps 下 0.08s 预备动作只有约 1 帧，需看静帧/实时确认；程序化美术本体未变。
+- 提交：`feat(presentation): 打击感增强与敌方比例/光照 P0`。

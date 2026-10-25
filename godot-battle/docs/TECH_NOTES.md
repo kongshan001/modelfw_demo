@@ -79,8 +79,8 @@ BattleScene (Node2D)
 ### 表现命令
 
 - `RoundBannerCommand`：回合横幅 + 回合开始日志；HUD 存在时顺手刷新出手顺序。
-- `ActionStartCommand`：日志、音效、攻击突进、施法姿势/法环、镜头轻推；技能喊招由 Director 额外插入 `BubbleCommand`。
-- `DamageCommand`：扣血前的高光/目标抖动、伤害数字、镜头震动、暴击闪屏、真实顿帧；`status_tick` 使用毒特效与紫色数字。
+- `ActionStartCommand`：日志、音效、攻击预备→突进、施法蓄力→闪光/法环、镜头轻推；`fire`/`seal`/`heal` 技能先播放 `VFXFactory.projectile()` 弹道（0.24~0.30s，发光球+拖尾）再交给命中命令；技能喊招由 Director 额外插入 `BubbleCommand`。
+- `DamageCommand`：扣血前的高光/目标抖动、56px 伤害数字（暴击 76px）、7px 镜头震动（暴击 10px + 更强 punch-zoom）、暴击闪屏、0.12s 真实顿帧；攻击者用 `return_pose()` 收势归位；`status_tick` 使用毒特效与紫色数字。
 - `HealCommand` / `StatusCommand` / `DeathCommand`：治疗/状态/死亡各自的视觉反馈。
 - `BattleEndCommand`：结局音效、显示结算面板、短等待。
 - `DialogueCommand`：经 DialogueBox 播放对白；`skip()` 直接隐藏。
@@ -102,7 +102,7 @@ BattleScene (Node2D)
 
 ### 真顿帧
 
-- `DamageCommand` 在伤害数字之前把 `Engine.time_scale` 设为 `0.05`，用 `SceneTree.create_timer(HIT_STOP, true, false, true)`（`ignore_time_scale=true`）冻结真实的 0.06 秒，再恢复 `1.0`。
+- `DamageCommand` 在伤害数字之前把 `Engine.time_scale` 设为 `0.05`，用 `SceneTree.create_timer(HIT_STOP, true, false, true)`（`ignore_time_scale=true`）冻结真实的 0.12 秒，再恢复 `1.0`。
 - 跳过中不触发顿帧；`BattleScene._exit_tree()` 和 sequencer 的跳过收尾都会把 `Engine.time_scale` 复位，避免退出后全局时间残留。
 - 镜头震动/缩放和闪屏是表现层效果，与逻辑无关；headless 下 VFX 直接跳过。
 

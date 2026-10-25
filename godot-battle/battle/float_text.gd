@@ -11,9 +11,12 @@ static func spawn(ctx: BattleContext, world_position: Vector2, text: String, col
 	label.add_theme_font_override("font", FontUtil.cjk_font())
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_outline_color", Color(0.08, 0.05, 0.03, 0.95))
-	label.add_theme_constant_override("outline_size", 7)
-	label.size = Vector2(340, font_size + 26)
+	label.add_theme_color_override("font_outline_color", Color(0.045, 0.03, 0.02, 0.98))
+	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.6))
+	label.add_theme_constant_override("outline_size", clampi(int(round(float(font_size) * 0.17)), 6, 12) + (1 if crit else 0))
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+	label.size = Vector2(420, font_size + 30)
 	label.pivot_offset = label.size * 0.5
 	label.position = world_position - Vector2(label.size.x * 0.5, 36.0)
 	label.z_index = 50

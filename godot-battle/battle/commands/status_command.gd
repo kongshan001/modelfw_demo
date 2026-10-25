@@ -26,18 +26,18 @@ func play(ctx: BattleContext) -> void:
 	match event.type:
 		&"status_tick":
 			view.set_hp(int(event.data.get("hp_after", view.unit_state.hp)), true)
-			FloatText.spawn(ctx, view.global_position + Vector2(0, -250), "-%d" % int(event.data.get("amount", 0)), Color(0.78, 0.5, 1.0), 40)
+			FloatText.spawn(ctx, view.global_position + Vector2(0, -250), "-%d" % int(event.data.get("amount", 0)), Color(0.78, 0.5, 1.0), 52)
 			ctx.vfx_factory().play_skill(_visual_for_status(status_id), view.global_position + Vector2(0, -110))
 			if ctx.camera != null:
 				ctx.camera.shake(2.0, 0.08)
 			await ctx.wait(0.22)
 		&"status_apply", &"status_refresh":
 			var text := label if event.type == &"status_apply" else label + "·刷新"
-			FloatText.spawn(ctx, view.global_position + Vector2(0, -244), text, color, 26)
+			FloatText.spawn(ctx, view.global_position + Vector2(0, -244), text, color, 32)
 			ctx.vfx_factory().play_skill(_visual_for_status(status_id), view.global_position + Vector2(0, -110))
 			await ctx.wait(0.16)
 		_:
-			FloatText.spawn(ctx, view.global_position + Vector2(0, -244), label + " 解除", Color(0.78, 0.78, 0.84), 24)
+			FloatText.spawn(ctx, view.global_position + Vector2(0, -244), label + " 解除", Color(0.78, 0.78, 0.84), 28)
 			await ctx.wait(0.12)
 
 func _visual_for_status(status_id: StringName) -> StringName:

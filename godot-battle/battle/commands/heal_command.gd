@@ -17,7 +17,7 @@ func play(ctx: BattleContext) -> void:
 	ctx.play_sfx(&"heal")
 	target.set_hp(int(event.data.get("hp_after", target.unit_state.hp)), true)
 	if amount > 0:
-		FloatText.spawn(ctx, target.global_position + Vector2(0, -244), "+%d" % amount, Color(0.45, 1.0, 0.55), 44)
+		FloatText.spawn(ctx, target.global_position + Vector2(0, -244), "+%d" % amount, Color(0.45, 1.0, 0.55), 56)
 	ctx.vfx_factory().heal(target.global_position + Vector2(0, -110))
 	await ctx.wait(0.3)
 

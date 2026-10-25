@@ -1,7 +1,7 @@
 class_name DamageCommand
 extends BattleCommand
 
-const HIT_STOP := 0.06
+const HIT_STOP := 0.12
 const HIT_STOP_TIME_SCALE := 0.05
 
 var event: BattleEvent
@@ -35,7 +35,7 @@ func play(ctx: BattleContext) -> void:
 	var text_color := Color(1.0, 0.86, 0.25) if crit else Color(1, 1, 1, 0.96)
 	if status_tick:
 		text_color = Color(0.78, 0.5, 1.0)
-	FloatText.spawn(ctx, target.global_position + Vector2(0, -250), str(amount), text_color, 58 if crit else 42, crit)
+	FloatText.spawn(ctx, target.global_position + Vector2(0, -250), str(amount), text_color, 76 if crit else 56, crit)
 
 	await target.hurt()
 
@@ -43,20 +43,21 @@ func play(ctx: BattleContext) -> void:
 		if status_tick:
 			ctx.camera.shake(2.0, 0.08)
 		elif crit:
-			ctx.camera.shake(7.0, 0.16)
-			ctx.camera.punch_zoom(1.045, 0.18)
+			ctx.camera.shake(10.0, 0.18)
+			ctx.camera.punch_zoom(1.06, 0.2)
 		else:
-			ctx.camera.shake(5.0, 0.12)
+			ctx.camera.shake(7.0, 0.13)
+			ctx.camera.punch_zoom(1.02, 0.1)
 	if crit:
 		ctx.vfx_factory().screen_flash(Color(1.0, 0.9, 0.55), 0.22)
 
 	if source_type == "attack":
 		var source: UnitView = ctx.unit_view(event.source_id)
 		if source != null and source != target:
-			source.reset_pose()
+			await source.return_pose()
 
 func _hit_stop(ctx: BattleContext) -> void:
-	# 真顿帧：整场慢放到 5%，用不受时间缩放影响的计时器冻结 0.06 秒。
+	# 真顿帧：整场慢放到 5%，用不受时间缩放影响的计时器冻结 0.12 秒。
 	if ctx.is_skipping():
 		return
 	Engine.time_scale = HIT_STOP_TIME_SCALE

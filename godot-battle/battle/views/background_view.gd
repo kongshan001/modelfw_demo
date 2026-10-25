@@ -139,11 +139,11 @@ func _draw_horizon_mist() -> void:
 	_ellipse(Vector2(1530, 580), 580, 32, Color(1.0, 0.92, 0.78, 0.06))
 
 func _draw_canopies() -> void:
-	# 画面上缘的竹林冠层：把天空与中景压到一起，形成剧场式框景（比旧版更透光）。
-	_ellipse(Vector2(70, 34), 270, 190, Color(0.1, 0.2, 0.14, 0.13))
+	# 画面上缘的竹林冠层：把天空与中景压到一起，形成剧场式框景（敌侧略透光）。
+	_ellipse(Vector2(70, 34), 270, 190, Color(0.1, 0.2, 0.14, 0.1))
 	_ellipse(Vector2(1852, 20), 300, 200, Color(0.1, 0.2, 0.14, 0.11))
-	_canopy(Vector2(96, 24), 1.0, Color(0.13, 0.26, 0.18, 0.4))
-	_canopy(Vector2(344, -18), 0.8, Color(0.15, 0.29, 0.19, 0.28))
+	_canopy(Vector2(96, 24), 1.0, Color(0.13, 0.26, 0.18, 0.32))
+	_canopy(Vector2(344, -18), 0.8, Color(0.15, 0.29, 0.19, 0.22))
 	_canopy(Vector2(1816, 10), -1.0, Color(0.13, 0.26, 0.18, 0.38))
 	_canopy(Vector2(1588, -24), -0.75, Color(0.2, 0.33, 0.21, 0.23))
 
@@ -175,6 +175,10 @@ func _draw_bamboo_far() -> void:
 		var width := rng.randf_range(4.0, 8.0)
 		var edge := clampf(absf(x - 960.0) / 960.0, 0.0, 1.0)
 		var color := Color(0.38, 0.54, 0.39, 0.2 + 0.22 * edge)
+		# 敌侧（左上）竹林受晨光照射，颜色更暖更亮，避免敌群落在暗带里。
+		var enemy_side := clampf((760.0 - x) / 760.0, 0.0, 1.0)
+		if enemy_side > 0.0:
+			color = color.lerp(Color(0.64, 0.64, 0.44, color.a), enemy_side * 0.55)
 		_draw_stalk(x, base_y, height, lean, width, color, rng.randf_range(0.0, TAU))
 	# 中央再做几根淡竹，让背景有纵深但不抢角色
 	for x: float in [420.0, 760.0, 1160.0, 1510.0]:
@@ -330,9 +334,9 @@ static func _get_clearing_texture() -> ImageTexture:
 			g = lerpf(g, 0.545, near_mix)
 			b = lerpf(b, 0.23, near_mix)
 			# 敌侧后方一束暖光 + 中央受光空地
-			var ex := (wx - 440.0) / 430.0
-			var ey := (wy - 585.0) / 300.0
-			var sun := maxf(0.0, 1.0 - ex * ex - ey * ey) * 0.14
+			var ex := (wx - 500.0) / 450.0
+			var ey := (wy - 575.0) / 300.0
+			var sun := maxf(0.0, 1.0 - ex * ex - ey * ey) * 0.17
 			var cx := (wx - 690.0) / 620.0
 			var cy := (wy - 750.0) / 360.0
 			sun += maxf(0.0, 1.0 - cx * cx - cy * cy) * 0.13
@@ -573,9 +577,10 @@ func _flower(origin: Vector2, size: float, palette: int) -> void:
 # ---------------------------------------------------------------- 光、雾、前景
 
 func _draw_ground_light() -> void:
-	# 左上敌群背后补一层暖光，避免敌方后排落在竹林暗带里；
+	# 左上敌群背后 (500,560) 补一层暖光地斑，避免敌方后排落在竹林暗带里；
 	# 其余为中央受光空地、右中与近景的晨光衰减。
-	_soft_ellipse(Vector2(470, 588), 500.0, 168.0, Color(1.0, 0.83, 0.5, 0.16), 5)
+	_soft_ellipse(Vector2(500, 560), 460.0, 200.0, Color(1.0, 0.84, 0.5, 0.14), 5)
+	_soft_ellipse(Vector2(500, 566), 300.0, 130.0, Color(1.0, 0.9, 0.6, 0.06), 4)
 	_soft_ellipse(Vector2(760, 792), 650.0, 230.0, Color(1.0, 0.86, 0.55, 0.09), 5)
 	_soft_ellipse(Vector2(1120, 850), 480.0, 160.0, Color(1.0, 0.87, 0.58, 0.05), 4)
 	_soft_ellipse(Vector2(1450, 700), 320.0, 110.0, Color(1.0, 0.89, 0.62, 0.04), 3)

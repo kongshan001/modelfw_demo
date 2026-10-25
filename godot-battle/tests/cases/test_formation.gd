@@ -24,15 +24,15 @@ func run(t: TestContext) -> void:
 
 	# 表驱动期望：行 / 深度 / 美术朝向 / 视图。
 	var expected_ally := [
-		[1, 0.98, -1, "back"],
-		[0, 1.12, -1, "back"],
+		[1, 1.0, -1, "back"],
 		[0, 1.08, -1, "back"],
+		[0, 1.06, -1, "back"],
 	]
 	var expected_enemy := [
-		[1, 0.84, 1, "front"],
-		[0, 0.74, 1, "front"],
-		[1, 0.86, 1, "front"],
-		[0, 0.74, 1, "front"],
+		[1, 0.92, 1, "front"],
+		[0, 0.88, 1, "front"],
+		[1, 0.96, 1, "front"],
+		[0, 0.88, 1, "front"],
 	]
 	for index in allies.size():
 		_check_slot(t, allies[index], expected_ally[index], "ally[%d]" % index)
@@ -132,4 +132,4 @@ func _check_slot(t: TestContext, slot: Dictionary, expected: Array, label: Strin
 	t.eq(view, String(expected[3]), "%s view" % label)
 	t.ok(flip == 1 or flip == -1, "%s art_flip is ±1" % label)
 	t.ok(view == "back" or view == "front", "%s view is back/front" % label)
-	t.in_range(depth, 0.60, 1.15, "%s depth within formation range" % label)
+	t.in_range(depth, 0.85, 1.15, "%s depth within formation range" % label)

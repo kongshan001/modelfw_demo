@@ -21,9 +21,9 @@ const STATUS_Y := -277.0
 const CLICK_SIZE := Vector2(96, 208)
 const CLICK_CENTER := Vector2(0, -100)
 const BUBBLE_GAP := 20.0
-# 信息带锚点：head_top=-256 的标准角色在 0.75 全局缩放后头顶约 -192，
-# 此时信息带底部（MP 条下沿）落在 -206，距头顶 14px。
-const INFO_BASE_HEAD_TOP := -192.0
+# 信息带锚点：head_top=-256 的标准角色在 0.75 全局缩放后头顶约 -192。
+# 锚点再下移 4px（-196），为放大后的敌方后排信息带避开左上出手顺序条留余量。
+const INFO_BASE_HEAD_TOP := -196.0
 
 const OUTLINE := Color(0.105, 0.072, 0.125, 0.96)
 const SKIN := Color(1.0, 0.84, 0.71)
@@ -1226,9 +1226,32 @@ func lunge_to(target_position: Vector2) -> void:
 	stop_animations()
 	var direction := signf(target_position.x - home_position.x)
 	var destination := target_position - Vector2(direction * 120.0, 0)
+	var windup := home_position - Vector2(direction * 12.0, 0)
 	var tween := create_tween()
+	# 预备：后拉半步并压扁蓄力，再向前冲出；冲势保留一点横向拉伸。
+	tween.tween_property(self, "position", windup, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "scale", Vector2(0.92, 1.06), 0.08)
 	tween.tween_property(self, "position", destination, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "scale", Vector2(1.05, 0.95), 0.18)
 	await tween.finished
+
+func return_pose() -> void:
+	# 收势归位：先越过家门半步再收住，避免瞬移回位。
+	if _idle_tween != null and _idle_tween.is_valid():
+		_idle_tween.kill()
+	_idle_tween = null
+	if position.distance_to(home_position) < 1.0:
+		reset_pose()
+		return
+	var overshoot := home_position - Vector2(signf(position.x - home_position.x) * 16.0, 0)
+	var tween := create_tween()
+	tween.tween_property(self, "position", overshoot, 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "scale", Vector2(0.98, 1.02), 0.10)
+	tween.tween_property(self, "position", home_position, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(self, "scale", Vector2.ONE, 0.05)
+	await tween.finished
+	if unit_state == null or unit_state.is_alive():
+		_start_idle()
 
 func reset_pose() -> void:
 	stop_animations()
@@ -1237,6 +1260,9 @@ func reset_pose() -> void:
 func cast_pose() -> void:
 	stop_animations()
 	var tween := create_tween()
+	# 蓄力：短暂压扁/后坐，再亮起施法闪光。
+	tween.tween_property(self, "scale", Vector2(0.94, 1.06), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(self, "modulate", Color(0.9, 0.95, 1.05), 0.08)
 	tween.tween_property(self, "scale", Vector2(1.06, 1.06), 0.18)
 	tween.parallel().tween_property(self, "modulate", Color(1.4, 1.6, 2.0), 0.18)
 	tween.tween_property(self, "scale", Vector2.ONE, 0.2)

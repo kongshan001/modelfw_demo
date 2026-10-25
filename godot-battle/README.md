@@ -7,7 +7,7 @@
 - 我方 3 人（剑客·凌霄、法师·青鸾、医师·白术）对敌方 4 妖（妖兵·甲/乙、妖将·裂山、狐妖·媚娘），一局完整胜负。
 - 指令阶段支持普攻、法术、道具、防御、全队逃跑；法术包含单体、AOE、治疗、净化与状态。
 - 战斗内核确定性：所有战斗随机来自注入种子的 `BattleRng`；同一内容版本 + 同一意图 + 同一种子可重放出逐事件一致的结果。
-- 表现层包括回合横幅、出手顺序、技能特效、飘字、受击顿帧、对白、喊招气泡、战斗日志、胜利/战败/逃跑结算与程序化音效。
+- 表现层包括回合横幅、出手顺序、技能特效、飘字、攻击预备/收势、远程弹道、受击顿帧、对白、喊招气泡、战斗日志、胜利/战败/逃跑结算与程序化音效。
 - 调试工具包括 F1 控制台、F3 状态浮层、F6/F7 单步、录像 dump/replay、快照校验与黄金回放。
 - 美术为项目内原创的程序化 Q 版绘制；没有使用第三方图片、字体或商业素材。AI 美术接入点已留在 `assets/visuals/visual_catalog.json`。
 
@@ -94,14 +94,14 @@ godot --headless --path godot-battle -s tools/smoke_debug.gd
 
 预期关键输出：
 
-- `RESULT: 792 assertions, 0 failures`
+- `RESULT: 901 assertions, 0 failures`
 - `PRESENTATION_SMOKE_OK`
 - `HUD_INPUT_OK`
 - `STORY_PROBE_OK`
 - `DEBUG_SMOKE_OK`
 - 四个烟测/探针各输出一行 `SMOKE_OK <script>` 且 `exit=0`
 - `REPLAY_OK`
-- 四个截图工具 exit 0，输出 `SCREENSHOT: <绝对路径>`。
+- 四个截图工具 exit 0，输出 `SCREENSHOT: <绝对路径>`；`screenshot_art.gd` 额外输出 `plan2b_art_projectile.png`、`plan2b_art_lunge.png`、`plan2b_art_float.png` 三张打击感验收图（弹道/预备/飘字）。
 
 截图写入 Godot 用户目录：
 

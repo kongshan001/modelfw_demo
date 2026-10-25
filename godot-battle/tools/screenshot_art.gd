@@ -56,6 +56,31 @@ func _initialize() -> void:
 	await create_timer(0.28).timeout
 	await _capture("plan2b_art_skill_late.png")
 
+	# 远程弹道：法师到妖将的发光弹丸 + 拖尾（截取飞行中段）
+	await create_timer(0.6).timeout
+	var caster: UnitView = session.context.unit_view(&"hero_mage")
+	if caster != null:
+		vfx.projectile(caster.global_position + Vector2(0, -140), impact, &"fire")
+		await create_timer(0.08).timeout
+		await _capture("plan2b_art_projectile.png")
+		await create_timer(0.3).timeout
+
+	# 攻击预备：剑客后拉蓄力（截取预备帧）
+	var swordsman: UnitView = session.context.unit_view(&"hero_swordsman")
+	if swordsman != null:
+		swordsman.lunge_to(view.global_position)
+		await create_timer(0.045).timeout
+		await _capture("plan2b_art_lunge.png")
+		swordsman.reset_pose()
+
+	# 飘字可读性：普通伤害 + 暴击
+	FloatText.spawn(session.context, view.global_position + Vector2(-70, -250), "128", Color(1, 1, 1, 0.96), 56)
+	if fox_view != null:
+		FloatText.spawn(session.context, fox_view.global_position + Vector2(36, -244), "246", Color(1.0, 0.86, 0.25), 76, true)
+	await create_timer(0.12).timeout
+	await _capture("plan2b_art_float.png")
+	await create_timer(0.8).timeout
+
 	# 胜利面板（与真实战斗共用同一 VictoryPanel）
 	await create_timer(1.0).timeout
 	var victory: VictoryPanel = scene.get_node("UILayer/VictoryPanel")
