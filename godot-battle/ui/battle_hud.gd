@@ -705,7 +705,7 @@ func _build_flee_button() -> void:
 	# 规格 6.4：逃跑是独立的整队按钮，不放在指令面板内。
 	_flee_button = _new_button("逃跑", true, "逃", "flee")
 	_flee_button.name = "PartyFleeButton"
-	_flee_button.position = Vector2(1368, 552)
+	_flee_button.position = Vector2(1580, 552)
 	_flee_button.custom_minimum_size = Vector2(180, 46)
 	_flee_button.size = Vector2(180, 46)
 	_flee_button.tooltip_text = "全队逃跑（丢弃已下指令）"

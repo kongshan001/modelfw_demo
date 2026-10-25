@@ -23,15 +23,15 @@ func run(t: TestContext) -> void:
 
 	# 表驱动期望：行 / 深度 / 美术朝向 / 视图。
 	var expected_ally := [
-		[1, 1.05, -1, "back"],
-		[0, 0.92, -1, "back"],
-		[0, 0.90, -1, "back"],
+		[1, 1.12, -1, "back"],
+		[0, 0.98, -1, "back"],
+		[0, 0.96, -1, "back"],
 	]
 	var expected_enemy := [
-		[1, 1.05, 1, "front"],
-		[0, 0.90, 1, "front"],
-		[1, 1.05, 1, "front"],
-		[0, 0.90, 1, "front"],
+		[1, 0.84, 1, "front"],
+		[0, 0.74, 1, "front"],
+		[1, 0.84, 1, "front"],
+		[0, 0.74, 1, "front"],
 	]
 	for index in allies.size():
 		_check_slot(t, allies[index], expected_ally[index], "ally[%d]" % index)
@@ -53,7 +53,7 @@ func run(t: TestContext) -> void:
 		seen[pos] = true
 		t.ok(screen.has_point(pos), "formation position %s is on screen" % str(pos))
 		t.in_range(pos.x, half_width, 1920.0 - half_width, "feet x leaves room for hit rect")
-		t.in_range(pos.y, 640.0, 960.0, "feet y inside arena band")
+		t.in_range(pos.y, 560.0, 960.0, "feet y inside arena band")
 
 	# 命中区 x 区间互不相交，相邻间隙 >=10px。
 	var sorted := all.duplicate()
@@ -70,15 +70,24 @@ func run(t: TestContext) -> void:
 			t.ok(left - previous_end >= 10.0, "hit rect x gap >=10px before x=%.0f (gap %.1f)" % [x, left - previous_end])
 		previous_end = right
 
-	# 两排都存在，且前排脚底 Y 大于后排（配合 World.y_sort_enabled 形成遮挡）。
-	var front_y := INF
-	var back_y := -INF
-	for slot in all:
-		if int(slot["row"]) == 1:
-			front_y = minf(front_y, (slot["pos"] as Vector2).y)
-		else:
-			back_y = maxf(back_y, (slot["pos"] as Vector2).y)
-	t.ok(front_y > back_y, "front row feet y (%.0f) is greater than back row feet y (%.0f)" % [front_y, back_y])
+	# 每侧两排都存在，且同侧前排脚底 Y 大于后排（配合 World.y_sort_enabled 形成遮挡）。
+	for side_table in [allies, enemies]:
+		var front_y := INF
+		var back_y := -INF
+		for slot in side_table:
+			if int(slot["row"]) == 1:
+				front_y = minf(front_y, (slot["pos"] as Vector2).y)
+			else:
+				back_y = maxf(back_y, (slot["pos"] as Vector2).y)
+		t.ok(front_y > back_y, "front row feet y (%.0f) is greater than back row feet y (%.0f)" % [front_y, back_y])
+
+	# 镜头在我方背后：我方整体更近/更大/更低，敌方整体更远/更小/更高。
+	var ally_front_depth := float(allies[0]["depth"])
+	var enemy_front_depth := float(enemies[0]["depth"])
+	t.ok(ally_front_depth > enemy_front_depth, "ally side is closer (depth %.2f > %.2f)" % [ally_front_depth, enemy_front_depth])
+	var ally_back_y := float(allies[1]["pos"].y)
+	var enemy_back_y := float(enemies[1]["pos"].y)
+	t.ok(ally_back_y > enemy_back_y, "ally side is lower/closer (y %.0f > %.0f)" % [ally_back_y, enemy_back_y])
 
 func _check_slot(t: TestContext, slot: Dictionary, expected: Array, label: String) -> void:
 	var row := int(slot["row"])
@@ -91,4 +100,4 @@ func _check_slot(t: TestContext, slot: Dictionary, expected: Array, label: Strin
 	t.eq(view, String(expected[3]), "%s view" % label)
 	t.ok(flip == 1 or flip == -1, "%s art_flip is ±1" % label)
 	t.ok(view == "back" or view == "front", "%s view is back/front" % label)
-	t.in_range(depth, 0.85, 1.10, "%s depth within formation range" % label)
+	t.in_range(depth, 0.60, 1.15, "%s depth within formation range" % label)

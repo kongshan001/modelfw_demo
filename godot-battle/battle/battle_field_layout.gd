@@ -7,18 +7,19 @@ extends RefCounted
 # -1 面向左（我方默认），+1 面向右（敌方默认）。
 # view 只影响美术层：镜头位于我方队伍背后，我方显示背影（back），敌方显示正面（front）。
 # pos 为脚底世界坐标；命中区以它为中心，保持 x 区间互不相交。
+# 镜头在我方背后：我方靠近镜头（depth 更高、脚底 y 更低），敌方远离镜头（depth 更低、脚底 y 更高）。
 
 const ALLY_SLOTS := [
-	{"row": 1, "pos": Vector2(1150, 800), "depth": 1.05, "art_flip": -1, "view": "back"}, # 剑客·前排
-	{"row": 0, "pos": Vector2(1290, 680), "depth": 0.92, "art_flip": -1, "view": "back"}, # 法师·后排
-	{"row": 0, "pos": Vector2(930, 680), "depth": 0.90, "art_flip": -1, "view": "back"}, # 医师·后排
+	{"row": 1, "pos": Vector2(1150, 880), "depth": 1.12, "art_flip": -1, "view": "back"}, # 剑客·前排
+	{"row": 0, "pos": Vector2(1290, 790), "depth": 0.98, "art_flip": -1, "view": "back"}, # 法师·后排
+	{"row": 0, "pos": Vector2(930, 790), "depth": 0.96, "art_flip": -1, "view": "back"}, # 医师·后排
 ]
 
 const ENEMY_SLOTS := [
-	{"row": 1, "pos": Vector2(790, 800), "depth": 1.05, "art_flip": 1, "view": "front"}, # 妖兵甲·前排
-	{"row": 0, "pos": Vector2(650, 680), "depth": 0.90, "art_flip": 1, "view": "front"}, # 妖兵乙·后排
-	{"row": 1, "pos": Vector2(450, 800), "depth": 1.05, "art_flip": 1, "view": "front"}, # 妖将·前排
-	{"row": 0, "pos": Vector2(230, 680), "depth": 0.90, "art_flip": 1, "view": "front"}, # 狐妖·后排
+	{"row": 1, "pos": Vector2(790, 720), "depth": 0.84, "art_flip": 1, "view": "front"}, # 妖兵甲·前排
+	{"row": 0, "pos": Vector2(650, 630), "depth": 0.74, "art_flip": 1, "view": "front"}, # 妖兵乙·后排
+	{"row": 1, "pos": Vector2(450, 720), "depth": 0.84, "art_flip": 1, "view": "front"}, # 妖将·前排
+	{"row": 0, "pos": Vector2(230, 630), "depth": 0.74, "art_flip": 1, "view": "front"}, # 狐妖·后排
 ]
 
 func slot(side: int, index: int) -> Dictionary:

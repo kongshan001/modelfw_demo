@@ -311,8 +311,10 @@ func _check_formation(views: Array) -> bool:
 	var layout := BattleFieldLayout.new()
 	var front_count := 0
 	var back_count := 0
-	var front_min_y := INF
-	var back_max_y := -INF
+	var ally_front_min_y := INF
+	var ally_back_max_y := -INF
+	var enemy_front_min_y := INF
+	var enemy_back_max_y := -INF
 	for value in views:
 		var view: UnitView = value
 		if view.get_parent() != world:
@@ -346,17 +348,29 @@ func _check_formation(views: Array) -> bool:
 			return false
 		if int(slot["row"]) == 1:
 			front_count += 1
-			front_min_y = minf(front_min_y, view.home_position.y)
+			if view.side == BattleTypes.Side.ALLY:
+				ally_front_min_y = minf(ally_front_min_y, view.home_position.y)
+			else:
+				enemy_front_min_y = minf(enemy_front_min_y, view.home_position.y)
 		else:
 			back_count += 1
-			back_max_y = maxf(back_max_y, view.home_position.y)
+			if view.side == BattleTypes.Side.ALLY:
+				ally_back_max_y = maxf(ally_back_max_y, view.home_position.y)
+			else:
+				enemy_back_max_y = maxf(enemy_back_max_y, view.home_position.y)
 	if front_count != 3 or back_count != 4:
 		_fail("expected 3 front / 4 back units, got %d / %d" % [front_count, back_count])
 		return false
-	if front_min_y <= back_max_y:
-		_fail("front row feet y %.1f must be greater than back row feet y %.1f" % [front_min_y, back_max_y])
+	if ally_front_min_y <= ally_back_max_y:
+		_fail("ally front row feet y %.1f must be greater than ally back row feet y %.1f" % [ally_front_min_y, ally_back_max_y])
 		return false
-	print("HUD_INPUT: formation OK 3 front (y=%.0f) / 4 back (y=%.0f), depth+facing+view match layout, y_sort=on" % [front_min_y, back_max_y])
+	if enemy_front_min_y <= enemy_back_max_y:
+		_fail("enemy front row feet y %.1f must be greater than enemy back row feet y %.1f" % [enemy_front_min_y, enemy_back_max_y])
+		return false
+	if ally_front_min_y <= enemy_front_min_y:
+		_fail("ally side must be closer/lower than enemy side (ally front y %.1f <= enemy front y %.1f)" % [ally_front_min_y, enemy_front_min_y])
+		return false
+	print("HUD_INPUT: formation OK allies front y=%.0f/back y=%.0f; enemies front y=%.0f/back y=%.0f; depth+facing+view match layout, y_sort=on" % [ally_front_min_y, ally_back_max_y, enemy_front_min_y, enemy_back_max_y])
 	return true
 
 func _check_appendage_points(views: Array) -> bool:
