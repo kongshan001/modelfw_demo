@@ -313,10 +313,24 @@ func _check_formation(views: Array) -> bool:
 	var back_count := 0
 	var ally_front_min_y := INF
 	var ally_back_max_y := -INF
+	var ally_front_min_x := INF
+	var ally_back_max_x := -INF
 	var enemy_front_min_y := INF
 	var enemy_back_max_y := -INF
+	var enemy_front_max_x := -INF
+	var enemy_back_min_x := INF
+	var ally_center_sum := Vector2.ZERO
+	var enemy_center_sum := Vector2.ZERO
+	var ally_count := 0
+	var enemy_count := 0
 	for value in views:
 		var view: UnitView = value
+		if view.side == BattleTypes.Side.ALLY:
+			ally_center_sum += view.home_position
+			ally_count += 1
+		else:
+			enemy_center_sum += view.home_position
+			enemy_count += 1
 		if view.get_parent() != world:
 			_fail("unit %s is not a direct child of World (y-sort ineffective)" % view.unit_id)
 			return false
@@ -350,27 +364,44 @@ func _check_formation(views: Array) -> bool:
 			front_count += 1
 			if view.side == BattleTypes.Side.ALLY:
 				ally_front_min_y = minf(ally_front_min_y, view.home_position.y)
+				ally_front_min_x = minf(ally_front_min_x, view.home_position.x)
 			else:
 				enemy_front_min_y = minf(enemy_front_min_y, view.home_position.y)
+				enemy_front_max_x = maxf(enemy_front_max_x, view.home_position.x)
 		else:
 			back_count += 1
 			if view.side == BattleTypes.Side.ALLY:
 				ally_back_max_y = maxf(ally_back_max_y, view.home_position.y)
+				ally_back_max_x = maxf(ally_back_max_x, view.home_position.x)
 			else:
 				enemy_back_max_y = maxf(enemy_back_max_y, view.home_position.y)
+				enemy_back_min_x = minf(enemy_back_min_x, view.home_position.x)
 	if front_count != 3 or back_count != 4:
 		_fail("expected 3 front / 4 back units, got %d / %d" % [front_count, back_count])
 		return false
-	if ally_front_min_y <= ally_back_max_y:
-		_fail("ally front row feet y %.1f must be greater than ally back row feet y %.1f" % [ally_front_min_y, ally_back_max_y])
+	if ally_front_min_y >= ally_back_max_y:
+		_fail("ally front row should be farther/up; got front y %.1f >= ally back y %.1f" % [ally_front_min_y, ally_back_max_y])
 		return false
 	if enemy_front_min_y <= enemy_back_max_y:
-		_fail("enemy front row feet y %.1f must be greater than enemy back row feet y %.1f" % [enemy_front_min_y, enemy_back_max_y])
+		_fail("enemy front row must be nearer/lower; got front y %.1f <= enemy back y %.1f" % [enemy_front_min_y, enemy_back_max_y])
+		return false
+	if ally_front_min_x >= ally_back_max_x:
+		_fail("ally front row must be toward the opponent/left; got front x %.1f >= back x %.1f" % [ally_front_min_x, ally_back_max_x])
+		return false
+	if enemy_front_max_x <= enemy_back_min_x:
+		_fail("enemy front row must be toward the opponent/right; got front x %.1f <= back x %.1f" % [enemy_front_max_x, enemy_back_min_x])
 		return false
 	if ally_front_min_y <= enemy_front_min_y:
 		_fail("ally side must be closer/lower than enemy side (ally front y %.1f <= enemy front y %.1f)" % [ally_front_min_y, enemy_front_min_y])
 		return false
-	print("HUD_INPUT: formation OK allies front y=%.0f/back y=%.0f; enemies front y=%.0f/back y=%.0f; depth+facing+view match layout, y_sort=on" % [ally_front_min_y, ally_back_max_y, enemy_front_min_y, enemy_back_max_y])
+	var ally_center := ally_center_sum / float(ally_count)
+	var enemy_center := enemy_center_sum / float(enemy_count)
+	var center_angle := rad_to_deg(atan2(ally_center.y - enemy_center.y, ally_center.x - enemy_center.x))
+	if center_angle < 20.0 or center_angle > 40.0:
+		_fail("formation center line must be diagonal 20°~40°; got %.1f° (ally=%s enemy=%s)" % [center_angle, str(ally_center), str(enemy_center)])
+		return false
+	print("HUD_INPUT: formation OK allies front y=%.0f/x=%.0f, back y=%.0f/x=%.0f; enemies front y=%.0f/x=%.0f, back y=%.0f/x=%.0f; depth+facing+view match layout, y_sort=on" % [ally_front_min_y, ally_front_min_x, ally_back_max_y, ally_back_max_x, enemy_front_min_y, enemy_front_max_x, enemy_back_max_y, enemy_back_min_x])
+	print("HUD_INPUT: formation centers ally=%s enemy=%s angle=%.1f° (diagonal)" % [str(ally_center), str(enemy_center), center_angle])
 	return true
 
 func _check_appendage_points(views: Array) -> bool:

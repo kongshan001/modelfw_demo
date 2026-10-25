@@ -234,12 +234,13 @@ func _draw_ground() -> void:
 			draw_line(Vector2(x + offset, base), Vector2(x + offset + rng.randf_range(-3.0, 3.0), base - rng.randf_range(8.0, 20.0)), Color(0.15, 0.26, 0.17, 0.5), 1.5, true)
 
 func _draw_battle_platform() -> void:
-	# 透视石台：上窄下宽的梯形 + 收敛网格 + 描金边 + 中心暗纹。
-	# 顶边略高于后排脚底 (680)，底边落在前景草线之前；角色与 HUD 均在其上层。
-	var tl := Vector2(220, 640)
-	var tr := Vector2(1700, 640)
-	var bl := Vector2(80, 950)
-	var br := Vector2(1840, 950)
+	# 透视石台：上窄下宽的四边形 + 收敛网格 + 描金边 + 中心暗纹。
+	# 顶边左高右低（左上 y≈462，右侧 y≈620 融入地平线），覆盖到敌方后排脚底 (y≈520)，
+	# 让左上敌军也站在台面上；底边落在前景草线之前，角色与 HUD 均在其上层。
+	var tl := Vector2(130, 462)
+	var tr := Vector2(1740, 620)
+	var bl := Vector2(70, 955)
+	var br := Vector2(1850, 955)
 	var outer := PackedVector2Array([tl, tr, br, bl])
 
 	# 外沿落影，把石台从草地上“托”起来
@@ -328,6 +329,8 @@ func _draw_ground_light() -> void:
 	_ellipse(Vector2(960, 872), 590, 150, Color(0.98, 0.84, 0.58, 0.06))
 	_ellipse(Vector2(1380, 806), 420, 120, Color(1.0, 0.9, 0.62, 0.045))
 	_ellipse(Vector2(520, 846), 360, 104, Color(1.0, 0.9, 0.62, 0.035))
+	# 远端（左上）也保留一层很淡的暖光，避免扩展后的石台上半段发死。
+	_ellipse(Vector2(470, 592), 420, 96, Color(1.0, 0.9, 0.66, 0.03))
 
 func _draw_light_shafts() -> void:
 	# 从右上破晓处斜射进竹林的光柱，宽面低透明度 + 亮芯
@@ -358,6 +361,8 @@ func _draw_ground_mist() -> void:
 	_ellipse(Vector2(960, 704), 1100, 44, Color(1.0, 0.92, 0.79, 0.055))
 	_ellipse(Vector2(520, 760), 540, 30, Color(1.0, 0.9, 0.76, 0.04))
 	_ellipse(Vector2(1470, 788), 500, 28, Color(1.0, 0.9, 0.76, 0.04))
+	# 远端薄雾：压住抬高后的石台顶边，让左上敌群读起来更远。
+	_ellipse(Vector2(470, 552), 620, 34, Color(1.0, 0.94, 0.86, 0.045))
 
 func _draw_foreground() -> void:
 	# 前景草簇（画面下缘 + 两侧收边）
