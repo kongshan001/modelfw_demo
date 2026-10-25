@@ -420,13 +420,33 @@ func _begin_target(side: int, prompt: String) -> void:
 	hint.custom_minimum_size = Vector2(470, 0)
 	_body.add_child(hint)
 	var keys := Label.new()
-	keys.text = "点击单位选择，或按 1-4（敌方）/ Q W E（我方）"
+	keys.text = "1–4 / QWE 选择目标（点击目标也可）"
 	keys.add_theme_font_size_override("font_size", 17)
 	keys.add_theme_color_override("font_color", MUTED)
 	keys.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	keys.custom_minimum_size = Vector2(470, 0)
 	_body.add_child(keys)
+	var mapping := Label.new()
+	mapping.text = _target_key_map(side)
+	mapping.add_theme_font_size_override("font_size", 16)
+	mapping.add_theme_color_override("font_color", Color(0.82, 0.78, 0.66))
+	mapping.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mapping.custom_minimum_size = Vector2(470, 0)
+	_body.add_child(mapping)
 	_add_back_button()
+
+func _target_key_map(side: int) -> String:
+	if _engine == null:
+		return ""
+	var key_names := ["1", "2", "3", "4"] if side == BattleTypes.Side.ENEMY else ["Q", "W", "E"]
+	var units := _engine.state.living(side)
+	units.sort_custom(func(a: BattleUnitState, b: BattleUnitState) -> bool: return a.slot < b.slot)
+	var parts: Array[String] = []
+	for unit in units:
+		if unit.slot < 0 or unit.slot >= key_names.size():
+			continue
+		parts.append("%s %s" % [key_names[unit.slot], unit.data.display_name])
+	return "目标键位：" + "　".join(parts)
 
 func _exit_target_mode() -> void:
 	_selector.end()

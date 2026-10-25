@@ -27,8 +27,8 @@ const CLEARING_EDGE := [
 	Vector2(1920, 574),
 ]
 
-# 空地中央的石环锚点（很淡、非网格）。
-const RING_CENTER := Vector2(900, 788)
+# 空地中央的石环锚点（很淡、非网格），落在双方菱形尖端之间 (925,750)。
+const RING_CENTER := Vector2(925, 750)
 const RING_RX := 300.0
 const RING_RY := 92.0
 
@@ -422,29 +422,32 @@ func _flat_stone(origin: Vector2, radius: float, alpha: float) -> void:
 
 func _draw_center_ring() -> void:
 	# 半埋石环：只当“场地中心”的暗示，不连线、不成格、不描金。
-	_soft_ellipse(RING_CENTER, RING_RX * 1.06, RING_RY * 1.04, Color(0.96, 0.86, 0.56, 0.05), 4)
+	# 两条很淡的椭圆线 + 断续石块，让双方尖端之间能读出一圈圆形场地。
+	_soft_ellipse(RING_CENTER, RING_RX * 1.08, RING_RY * 1.12, Color(0.96, 0.86, 0.56, 0.07), 5)
+	_ellipse_ring(RING_CENTER, RING_RX, RING_RY, Color(0.33, 0.32, 0.24, 0.26), 3.0)
+	_ellipse_ring(RING_CENTER, RING_RX * 0.9, RING_RY * 0.9, Color(0.9, 0.82, 0.6, 0.09), 1.6)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 0x0A11
-	for i in 34:
-		if i == 7 or i == 18 or i == 29:
+	for i in 44:
+		if i == 7 or i == 18 or i == 29 or i == 38:
 			continue
-		var angle := TAU * float(i) / 34.0 + rng.randf_range(-0.025, 0.025)
+		var angle := TAU * float(i) / 44.0 + rng.randf_range(-0.02, 0.02)
 		var radius_scale := rng.randf_range(0.97, 1.03)
 		var p := RING_CENTER + Vector2(cos(angle) * RING_RX * radius_scale, sin(angle) * RING_RY * radius_scale)
-		var size := rng.randf_range(9.0, 18.0)
+		var size := rng.randf_range(10.0, 20.0)
 		if i % 5 == 0:
-			size += 3.5
-		_ellipse(p + Vector2(0, size * 0.3), size * 1.1, size * 0.32, Color(0.16, 0.2, 0.12, 0.12), 12)
+			size += 4.0
+		_ellipse(p + Vector2(0, size * 0.32), size * 1.12, size * 0.34, Color(0.16, 0.2, 0.12, 0.16), 12)
 		var stone := PackedVector2Array([
 			p + Vector2(-size, 0.0), p + Vector2(-size * 0.7, -size * 0.42),
 			p + Vector2(-size * 0.15, -size * 0.55), p + Vector2(size * 0.55, -size * 0.38),
 			p + Vector2(size, 0.0), p + Vector2(size * 0.5, size * 0.26), p + Vector2(-size * 0.5, size * 0.28),
 		])
-		draw_colored_polygon(stone, Color(0.58, 0.57, 0.47, 0.58))
-		draw_line(p + Vector2(-size * 0.55, -size * 0.35), p + Vector2(size * 0.2, -size * 0.42), Color(1.0, 0.92, 0.7, 0.25), 1.4, true)
+		draw_colored_polygon(stone, Color(0.58, 0.57, 0.47, 0.76))
+		draw_line(p + Vector2(-size * 0.55, -size * 0.35), p + Vector2(size * 0.2, -size * 0.42), Color(1.0, 0.92, 0.7, 0.38), 1.6, true)
 	# 环内的暖土与浅苔，给中心一点重量，但保持低对比。
-	_ellipse(RING_CENTER + Vector2(0, 8), 160.0, 42.0, Color(0.88, 0.79, 0.54, 0.045), 24)
-	_ellipse(RING_CENTER + Vector2(-34, 2), 82.0, 28.0, Color(0.45, 0.55, 0.3, 0.055), 20)
+	_ellipse(RING_CENTER + Vector2(0, 8), 160.0, 42.0, Color(0.88, 0.79, 0.54, 0.055), 24)
+	_ellipse(RING_CENTER + Vector2(-34, 2), 82.0, 28.0, Color(0.45, 0.55, 0.3, 0.07), 20)
 
 func _draw_ground_props() -> void:
 	_draw_bamboo_roots()

@@ -2,27 +2,29 @@ class_name BattleFieldLayout
 extends RefCounted
 
 # 2.5D 俯视阵型表：每侧按 unit.slot 索引。
-# row 是战术前后排：1=靠近对手的前排（战士/近战），0=后排（法系/辅助）。
-# row 只描述战术关系，不直接等于屏幕 Y；镜头在我方背后，所以两侧“靠近镜头”的排不同：
-# 我方后排脚底 y 更大（更近/更大），敌方前排脚底 y 更大（更近/更大）。
-# depth 表示离镜头的远近，乘在美术层上（我方 1.0~1.08，敌方 0.88~0.96），不等同于 row。
+# 阵型为 FWJ 式紧凑菱形/箭头：每侧只有一个 row=1 的“尖端”（战士），
+# 法系/辅助以 row=0 背向两侧展开，整队围绕中央石环，双方尖端几乎相接。
+# row 只描述战术关系，不直接等于屏幕 Y；镜头在我方背后，尖端都朝向对手。
+# depth 表示离镜头的远近，乘在美术层上（我方 0.98~1.10，敌方 0.86~0.94），不等同于 row。
 # art_flip 只翻转美术层：-1 面向左（我方默认），+1 面向右（敌方默认）。
 # view 只影响美术层：镜头位于我方队伍背后，我方显示背影（back），敌方显示正面（front）。
-# pos 为脚底世界坐标；命中区以它为中心，保持 x 区间互不相交。
-# 两个阵型中心约 (1100, 890) 与 (528, 590)，连线呈约 28° 斜线：
-# 敌方整体在左上（远/小），我方整体在右下（近/大）；双方前排战士沿线相向而立。
+# pos 为脚底世界坐标。命中区允许在屏幕空间重叠（参考作同样如此），
+# 目标选择以“1–4 / QWE”按键和单一目标箭头为主，鼠标点击尖端作为补充。
+# 两侧阵型中心约 (1057,857) 与 (750,635)，连线约 36°：
+# 敌方整体在左上（远/小），我方整体在右下（近/大）；尖端 (1000,800)/(850,700)
+# 是双方最近的一对，连线中点正落在中央石环 (925,750)。
 
 const ALLY_SLOTS := [
-	{"row": 1, "pos": Vector2(950, 840), "depth": 1.0, "art_flip": -1, "view": "back"}, # 剑客·前排（离对手近，离镜头远）
-	{"row": 0, "pos": Vector2(1090, 930), "depth": 1.08, "art_flip": -1, "view": "back"}, # 法师·后排（离镜头近）
-	{"row": 0, "pos": Vector2(1260, 900), "depth": 1.06, "art_flip": -1, "view": "back"}, # 医师·后排（离镜头近）
+	{"row": 1, "pos": Vector2(1000, 800), "depth": 0.98, "art_flip": -1, "view": "back"}, # 剑客·尖端（唯一前排，面向敌方）
+	{"row": 0, "pos": Vector2(1100, 860), "depth": 1.10, "art_flip": -1, "view": "back"}, # 法师·后排（镜头最近）
+	{"row": 0, "pos": Vector2(1070, 910), "depth": 1.06, "art_flip": -1, "view": "back"}, # 医师·后排
 ]
 
 const ENEMY_SLOTS := [
-	{"row": 1, "pos": Vector2(620, 660), "depth": 0.92, "art_flip": 1, "view": "front"}, # 妖兵甲·前排
-	{"row": 0, "pos": Vector2(450, 540), "depth": 0.88, "art_flip": 1, "view": "front"}, # 妖兵乙·后排
-	{"row": 1, "pos": Vector2(810, 640), "depth": 0.96, "art_flip": 1, "view": "front"}, # 妖将·前排（靠近对手）
-	{"row": 0, "pos": Vector2(230, 520), "depth": 0.88, "art_flip": 1, "view": "front"}, # 狐妖·后排
+	{"row": 0, "pos": Vector2(760, 640), "depth": 0.90, "art_flip": 1, "view": "front"}, # 妖兵甲·后排
+	{"row": 0, "pos": Vector2(740, 620), "depth": 0.88, "art_flip": 1, "view": "front"}, # 妖兵乙·后排
+	{"row": 1, "pos": Vector2(850, 700), "depth": 0.94, "art_flip": 1, "view": "front"}, # 妖将·尖端（唯一前排，面向我方）
+	{"row": 0, "pos": Vector2(650, 580), "depth": 0.86, "art_flip": 1, "view": "front"}, # 狐妖·后排（最远）
 ]
 
 func slot(side: int, index: int) -> Dictionary:

@@ -1,11 +1,15 @@
 extends SceneTree
 
-# 输入级 HUD 冒烟：真实鼠标点击「攻击」按钮，再点击敌方 UnitView 选择目标，
+# 输入级 HUD 冒烟：真实鼠标点击「攻击」按钮 + 真实数字键 1–4 选择目标，
 # 从首个指令阶段一路打到战斗结束，最后校验真实结算面板出现。
-# 同时保留 7 个单位点击扫描与首阶段 3 条攻击意图断言；战斗速度通过真实点击 2x 按钮设置。
-# 额外探针：2.5D 两排阵型（行/深度/朝向/Y 排序）、点击矩形 x 区间互不相交且不被 HUD 面板覆盖；
-# 狐狸、医师、剑客的左缘/右缘/身体边界在敌方与我方两种目标模式下都能正确命中。
-# 阵型不变量：附属件允许伸出自身命中区，但不得落入任何邻居命中区（避免误点）。
+#
+# 紧凑菱形阵型（参考 FWJ）：每侧一个前排尖端，后排围绕中央石环展开，
+# 命中区允许屏幕空间重叠。因此不再断言单位点击矩形互不相交，也不再做全单位边界点击扫描；
+# 改为验证：
+#   - 1–4 键可选每个存活敌方槽位，Q/W/E 键可选每个存活我方槽位；
+#   - 单一目标箭头默认落在尖端，鼠标点击敌方/我方尖端均能提交；
+#   - 全部命中区/信息带避开 HUD 面板，尖端点击点不被其他命中区抢走；
+#   - 完整 12 回合真实输入战斗到结算面板。
 # 需要窗口（物理拾取走真实视口输入）：
 #   godot --path godot-battle --resolution 1920x1080 -s tools/smoke_hud_input.gd
 
@@ -13,6 +17,7 @@ const PHASE_TIMEOUT := 20.0
 const END_TIMEOUT := 30.0
 const BATTLE_TIMEOUT := 120.0
 const MAX_ROUNDS := 31
+const TIP_CLICK_OFFSET := Vector2(0, -120)
 
 var _scene: Node
 var _hud: BattleHUD
@@ -20,13 +25,13 @@ var _session: BattleSession
 var _sequencer: BattleSequencer
 var _submitted: Array = []
 var _submitted_enemy_ids: Array[StringName] = []
+var _expected_targets: Array[StringName] = []
 var _submitted_count := 0
 var _phase_started := false
 var _finished := false
 var _outcome := BattleTypes.Outcome.NONE
 var _rounds_played := 0
 var _deadline_msec := 0
-var _probe_hits: Dictionary = {}
 
 func _initialize() -> void:
 	_deadline_msec = Time.get_ticks_msec() + int(BATTLE_TIMEOUT * 1000.0)
@@ -39,8 +44,6 @@ func _initialize() -> void:
 	_hud = _scene.get_node("UILayer/BattleHUD")
 	_session = _scene.get_node("BattleSession")
 	_sequencer = _scene.get_node("BattleSequencer")
-	for value in _session.context.unit_views.values():
-		(value as UnitView).clicked.connect(_on_probe_unit_clicked)
 	_session.auto_mode = false
 	_hud.phase_submitted.connect(_on_phase_submitted)
 	_session.command_phase_started.connect(_on_command_phase_started)
@@ -53,17 +56,19 @@ func _initialize() -> void:
 	if not await _wait_until(func() -> bool: return _phase_started and _hud.is_collecting(), PHASE_TIMEOUT):
 		_fail("command phase did not start")
 		return
-	await _check_layout()
-	await _sweep_unit_clicks()
-	if not await _probe_boundary_clicks():
+	if not _check_layout():
+		return
+	if not await _probe_target_keys():
+		return
+	if not await _probe_tip_clicks():
 		return
 	if not await _click_speed_button():
 		_fail("2x speed button click did not set playback speed (speed=%s)" % str(_sequencer.playback_speed))
 		return
 
-	# 首阶段：三名存活我方逐一真实点击，校验 phase_submitted 的 3 条攻击意图。
+	# 首阶段：三名存活我方逐一真实点击「攻击」+ 真实数字键，校验 3 条攻击意图。
 	var initial_round := _session.engine.state.round
-	var first_allies: Array = _session.engine.state.living(BattleTypes.Side.ALLY)
+	var first_allies := _living_sorted(BattleTypes.Side.ALLY)
 	var before := _submitted_count
 	var expected := await _play_phase()
 	if expected < 0:
@@ -72,7 +77,7 @@ func _initialize() -> void:
 		return
 	if not _verify_submitted(first_allies):
 		return
-	print("HUD_INPUT: first phase_submitted with %d attacks OK" % expected)
+	print("HUD_INPUT: first phase_submitted with %d key-selected attacks OK" % expected)
 
 	if not await _wait_until(func() -> bool: return _session.engine.state.round > initial_round or _finished, PHASE_TIMEOUT):
 		_fail("round did not resolve (round=%d)" % _session.engine.state.round)
@@ -80,17 +85,17 @@ func _initialize() -> void:
 	print("HUD_INPUT: round resolved %d -> %d" % [initial_round, _session.engine.state.round])
 	_rounds_played = 1
 
-	# 后续回合：持续用真实输入下达攻击，直到引擎结束。
+	# 后续回合：持续用真实鼠标 + 数字键下达攻击，直到引擎结束。
 	while not _session.engine.is_over() and not _finished:
 		if _rounds_played >= MAX_ROUNDS:
 			_fail("round guard exceeded (%d)" % _rounds_played)
 			return
-		if not await _wait_until(func() -> bool: return _finished or (_hud.is_collecting() and _hud._awaiting_intent and _hud._mode == BattleHUD.MenuMode.ROOT), PHASE_TIMEOUT):
+		if not await _wait_until(func() -> bool: return _finished or _root_ready(), PHASE_TIMEOUT):
 			_fail("next command phase did not start (round=%d collecting=%s)" % [_session.engine.state.round, str(_hud.is_collecting())])
 			return
 		if _finished or _session.engine.is_over():
 			break
-		var allies: Array = _session.engine.state.living(BattleTypes.Side.ALLY)
+		var allies := _living_sorted(BattleTypes.Side.ALLY)
 		before = _submitted_count
 		expected = await _play_phase()
 		if expected < 0:
@@ -139,13 +144,172 @@ func _on_battle_finished(outcome: int) -> void:
 	_finished = true
 	_outcome = outcome
 
-# 对当前指令阶段的所有存活我方：真实点击「攻击」→ 真实点击存活敌方 UnitView。
+# ---------------------------------------------------------------- 目标键探针
+
+# 1–4 / QWE 逐一选择每个存活槽位：进入目标模式 → 按真实键 → 校验意图目标 → 返回。
+func _probe_target_keys() -> bool:
+	var enemies := _living_sorted(BattleTypes.Side.ENEMY)
+	for enemy in enemies:
+		if not await _open_root_button("攻击"):
+			return false
+		if _hud._mode != BattleHUD.MenuMode.TARGET:
+			_fail("attack click did not enter enemy target mode (mode=%d)" % _hud._mode)
+			return false
+		if not _check_single_arrow(&"boss_brute", "enemy target mode"):
+			return false
+		if not _check_target_prompt():
+			return false
+		var key := KEY_1 + enemy.slot
+		print("HUD_INPUT: press %s for enemy slot %d (%s)" % [OS.get_keycode_string(key), enemy.slot, enemy.id])
+		if not await _press_key_and_check(key, enemy.id, "enemy key %s" % OS.get_keycode_string(key)):
+			return false
+		if not await _return_to_root():
+			return false
+
+	for ally in _living_sorted(BattleTypes.Side.ALLY):
+		if not await _open_ally_target_mode():
+			return false
+		if not _check_single_arrow(&"hero_swordsman", "ally target mode"):
+			return false
+		var key := KEY_Q
+		match ally.slot:
+			0:
+				key = KEY_Q
+			1:
+				key = KEY_W
+			2:
+				key = KEY_E
+			_:
+				_fail("unexpected ally slot %d" % ally.slot)
+				return false
+		print("HUD_INPUT: press %s for ally slot %d (%s)" % [OS.get_keycode_string(key), ally.slot, ally.id])
+		if not await _press_key_and_check(key, ally.id, "ally key %s" % OS.get_keycode_string(key)):
+			return false
+		if not await _return_to_root():
+			return false
+
+	if _hud._ally_index != 0 or not _hud._intents.is_empty():
+		_fail("target key probes left HUD state dirty (index=%d intents=%d)" % [_hud._ally_index, _hud._intents.size()])
+		return false
+	print("HUD_INPUT: 1–4 keys selected all %d enemy slots; QWE keys selected all %d ally slots" % [enemies.size(), _living_sorted(BattleTypes.Side.ALLY).size()])
+	return true
+
+# 真实鼠标点击敌方尖端（妖将）与我方尖端（剑客），校验提交目标。
+func _probe_tip_clicks() -> bool:
+	var brute: UnitView = _view_of(&"boss_brute")
+	var swordsman: UnitView = _view_of(&"hero_swordsman")
+	if brute == null or swordsman == null:
+		_fail("missing tip unit views")
+		return false
+
+	if not await _open_root_button("攻击"):
+		return false
+	if _hud._mode != BattleHUD.MenuMode.TARGET:
+		_fail("attack click did not enter enemy target mode (mode=%d)" % _hud._mode)
+		return false
+	if not _check_single_arrow(&"boss_brute", "enemy tip click"):
+		return false
+	# 悬停后箭头移动到当前悬停目标，且仍然只有一个箭头。
+	var fox: UnitView = _view_of(&"boss_fox")
+	if fox == null:
+		_fail("missing boss_fox for hover probe")
+		return false
+	_move_mouse(_to_screen(fox.global_position + TIP_CLICK_OFFSET))
+	await physics_frame
+	await process_frame
+	if not _check_single_arrow(&"boss_fox", "hover"):
+		return false
+	print("HUD_INPUT: hover moved the single target arrow to boss_fox")
+	var enemy_tip_point := _to_screen(brute.global_position + TIP_CLICK_OFFSET)
+	print("HUD_INPUT: click enemy tip %s at %s" % [brute.unit_id, str(enemy_tip_point)])
+	_click_at(enemy_tip_point)
+	await physics_frame
+	await process_frame
+	if not await _wait_until(func() -> bool: return _root_ready(), 3.0):
+		_fail("enemy tip click did not submit (mode=%d awaiting=%s)" % [_hud._mode, str(_hud._awaiting_intent)])
+		return false
+	if not _last_intent_targets(brute.unit_id):
+		return false
+	if not await _return_to_root():
+		return false
+
+	if not await _open_ally_target_mode():
+		return false
+	if not _check_single_arrow(&"hero_swordsman", "ally tip click"):
+		return false
+	var ally_tip_point := _to_screen(swordsman.global_position + TIP_CLICK_OFFSET)
+	print("HUD_INPUT: click ally tip %s at %s" % [swordsman.unit_id, str(ally_tip_point)])
+	_click_at(ally_tip_point)
+	await physics_frame
+	await process_frame
+	if not await _wait_until(func() -> bool: return _root_ready(), 3.0):
+		_fail("ally tip click did not submit (mode=%d awaiting=%s)" % [_hud._mode, str(_hud._awaiting_intent)])
+		return false
+	if not _last_intent_targets(swordsman.unit_id):
+		return false
+	if not await _return_to_root():
+		return false
+	print("HUD_INPUT: tip clicks submitted boss_brute and hero_swordsman")
+	return true
+
+func _press_key_and_check(keycode: int, expected_target: StringName, label: String) -> bool:
+	_press_key(keycode)
+	await process_frame
+	if not await _wait_until(func() -> bool: return _root_ready(), 3.0):
+		_fail("%s did not submit (mode=%d awaiting=%s)" % [label, _hud._mode, str(_hud._awaiting_intent)])
+		return false
+	if not _last_intent_targets(expected_target):
+		return false
+	return true
+
+func _return_to_root() -> bool:
+	_hud.go_back()
+	await process_frame
+	if not await _wait_until(func() -> bool: return _root_ready(), 3.0):
+		_fail("go_back did not restore root menu (mode=%d awaiting=%s)" % [_hud._mode, str(_hud._awaiting_intent)])
+		return false
+	return true
+
+func _last_intent_targets(expected: StringName) -> bool:
+	if _hud._intents.is_empty():
+		_fail("expected intent targeting %s but HUD intent list is empty" % expected)
+		return false
+	var intent: BattleIntent = _hud._intents[_hud._intents.size() - 1]
+	if intent.target_ids.size() != 1 or intent.target_ids[0] != expected:
+		_fail("intent target mismatch: expected %s got %s" % [expected, str(intent.to_dict())])
+		return false
+	return true
+
+func _check_single_arrow(expected: StringName, label: String) -> bool:
+	var highlighted: Array[StringName] = []
+	for value in _session.context.unit_views.values():
+		var view: UnitView = value
+		if view.is_target_highlighted():
+			highlighted.append(view.unit_id)
+	if highlighted.size() != 1 or highlighted[0] != expected:
+		_fail("%s: expected single arrow on %s, got %s" % [label, expected, str(highlighted)])
+		return false
+	return true
+
+func _check_target_prompt() -> bool:
+	if not _has_label_text("1–4 / QWE 选择目标"):
+		_fail("target prompt does not show '1–4 / QWE 选择目标'")
+		return false
+	if not _has_label_text("目标键位："):
+		_fail("target prompt does not show the key-to-slot mapping")
+		return false
+	return true
+
+# ---------------------------------------------------------------- 回合指令
+
+# 对当前指令阶段的所有存活我方：真实点击「攻击」→ 真实按数字键选择敌方槽位。
 # 返回该阶段应提交的意图数；失败返回 -1。
 func _play_phase() -> int:
-	var allies: Array = _session.engine.state.living(BattleTypes.Side.ALLY)
+	var allies := _living_sorted(BattleTypes.Side.ALLY)
+	_expected_targets.clear()
 	var submitted := 0
 	for index in allies.size():
-		if not await _wait_until(func() -> bool: return _hud.is_collecting() and _hud._awaiting_intent and _hud._mode == BattleHUD.MenuMode.ROOT, PHASE_TIMEOUT):
+		if not await _wait_until(func() -> bool: return _root_ready(), PHASE_TIMEOUT):
 			_fail("ally %d root menu not ready (collecting=%s mode=%d)" % [index, str(_hud.is_collecting()), _hud._mode])
 			return -1
 		var attack := _find_button("攻击")
@@ -160,27 +324,29 @@ func _play_phase() -> int:
 			_fail("attack click did not enter target mode (ally %d mode=%d)" % [index, _hud._mode])
 			return -1
 
-		var enemies: Array = _session.engine.state.living(BattleTypes.Side.ENEMY)
+		var enemies := _living_sorted(BattleTypes.Side.ENEMY)
 		if enemies.is_empty():
 			_fail("no living enemies for ally %d" % index)
 			return -1
 		var target: BattleUnitState = enemies[index % enemies.size()]
-		var view: UnitView = _session.context.unit_view(target.id)
-		if view == null:
-			_fail("missing UnitView for target %s" % target.id)
-			return -1
-		var point := _to_screen(view.global_position + Vector2(0, -100))
-		print("HUD_INPUT: click target %s at %s" % [target.id, str(point)])
-		_click_at(point)
-		await physics_frame
+		var key := KEY_1 + target.slot
+		print("HUD_INPUT: press %s -> %s (slot %d) for ally %d" % [OS.get_keycode_string(key), target.id, target.slot, index])
+		_press_key(key)
 		await process_frame
 		if _hud._mode == BattleHUD.MenuMode.TARGET and _hud._awaiting_intent:
-			# 物理拾取可能晚一帧。
-			await physics_frame
+			# 输入分发可能晚一帧。
 			await process_frame
 		if _hud._mode == BattleHUD.MenuMode.TARGET and _hud._awaiting_intent:
-			_fail("target click did not submit ally %d (mode=%d awaiting=%s)" % [index, _hud._mode, str(_hud._awaiting_intent)])
+			_fail("digit key did not submit ally %d (mode=%d)" % [index, _hud._mode])
 			return -1
+		if _hud._intents.size() != submitted + 1:
+			_fail("intent count mismatch after key: expected %d got %d" % [submitted + 1, _hud._intents.size()])
+			return -1
+		var last: BattleIntent = _hud._intents[_hud._intents.size() - 1]
+		if last.actor_id != allies[index].id or last.target_ids.size() != 1 or last.target_ids[0] != target.id:
+			_fail("key-selected intent mismatch for ally %d: %s" % [index, str(last.to_dict())])
+			return -1
+		_expected_targets.append(target.id)
 		submitted += 1
 	return submitted
 
@@ -194,6 +360,9 @@ func _wait_for_submission(expected: int, before: int) -> bool:
 	return true
 
 func _verify_submitted(allies: Array) -> bool:
+	if _expected_targets.size() != _submitted.size():
+		_fail("expected target list %d != submitted %d" % [_expected_targets.size(), _submitted.size()])
+		return false
 	for i in _submitted.size():
 		var intent: BattleIntent = _submitted[i]
 		if intent.kind != BattleTypes.IntentKind.ATTACK:
@@ -202,10 +371,13 @@ func _verify_submitted(allies: Array) -> bool:
 		if i >= allies.size() or intent.actor_id != allies[i].id:
 			_fail("intent %d actor mismatch: %s" % [i, str(intent.to_dict())])
 			return false
-		if intent.target_ids.size() != 1 or not _submitted_enemy_ids.has(intent.target_ids[0]):
+		if intent.target_ids.size() != 1 or intent.target_ids[0] != _expected_targets[i]:
+			_fail("intent %d target %s != key-selected %s" % [i, str(intent.target_ids), _expected_targets[i]])
+			return false
+		if not _submitted_enemy_ids.has(intent.target_ids[0]):
 			_fail("intent %d target was not a living enemy at submission: %s" % [i, str(intent.to_dict())])
 			return false
-	print("HUD_INPUT: phase_submitted with %d attacks OK" % _submitted.size())
+	print("HUD_INPUT: phase_submitted with %d key-selected attacks OK" % _submitted.size())
 	return true
 
 func _click_speed_button() -> bool:
@@ -241,96 +413,38 @@ func _result_title(panel: VictoryPanel) -> String:
 			stack.append(child)
 	return ""
 
-func _check_layout() -> void:
+# ---------------------------------------------------------------- 阵型布局探针
+
+func _check_layout() -> bool:
 	var views: Array = _session.context.unit_views.values()
 	if views.size() != 7:
 		_fail("expected 7 unit views, got %d" % views.size())
-		return
+		return false
+	var world := _scene.get_node_or_null("World") as Node2D
+	if world == null or not world.y_sort_enabled:
+		_fail("World.y_sort_enabled must be true for front-row-over-back-row draw order")
+		return false
+
 	var blockers: Array[Control] = []
 	for node_name in ["CommandPanel", "BattleLog", "TurnOrderBar", "PlaybackControls", "PartyFleeButton"]:
 		var panel := _hud.get_node_or_null(node_name) as Control
 		if panel != null and panel.visible:
 			blockers.append(panel)
-	for value in views:
-		var view: UnitView = value
-		var hit := view.hit_rect()
-		var info := view.info_rect()
-		var point := _to_screen(view.global_position + Vector2(0, -100))
-		if not hit.has_point(view.global_position + Vector2(0, -100)):
-			_fail("unit %s center click point is outside its hit rect %s" % [view.unit_id, str(hit)])
-			return
-		for panel in blockers:
-			var panel_rect := panel.get_global_rect()
-			if panel_rect.has_point(point):
-				_fail("unit %s click point %s blocked by %s" % [view.unit_id, str(point), panel.name])
-				return
-			if panel_rect.intersects(hit):
-				_fail("unit %s hit rect %s overlaps %s %s" % [view.unit_id, str(hit), panel.name, str(panel_rect)])
-				return
-			if panel_rect.intersects(info):
-				_fail("unit %s info rect %s overlaps %s %s" % [view.unit_id, str(info), panel.name, str(panel_rect)])
-				return
-	var min_gap := INF
-	for i in views.size():
-		for j in range(i + 1, views.size()):
-			var a: UnitView = views[i]
-			var b: UnitView = views[j]
-			var a_rect := a.hit_rect()
-			var b_rect := b.hit_rect()
-			if a_rect.intersects(b_rect):
-				_fail("living unit hit rects overlap: %s %s vs %s %s" % [a.unit_id, str(a_rect), b.unit_id, str(b_rect)])
-				return
-			var gap := b_rect.position.x - a_rect.end.x if a_rect.end.x <= b_rect.position.x else a_rect.position.x - b_rect.end.x
-			min_gap = minf(min_gap, gap)
-	if min_gap < 10.0:
-		_fail("unit hit rects too close: min horizontal gap=%.1fpx (want >=10px)" % min_gap)
-		return
-	print("HUD_INPUT: unit hit rect min horizontal gap=%.1fpx" % min_gap)
-	if not _check_formation(views):
-		return
-	if not _check_appendage_points(views):
-		return
-	var swordsman: UnitView = _view_of(&"hero_swordsman")
-	var healer: UnitView = _view_of(&"hero_healer")
-	var command_panel := _hud.get_node_or_null("CommandPanel") as Control
-	if swordsman != null and healer != null and command_panel != null and command_panel.visible:
-		var swordsman_gap := command_panel.get_global_rect().position.x - swordsman.hit_rect().end.x
-		var healer_gap := command_panel.get_global_rect().position.x - healer.hit_rect().end.x
-		if swordsman_gap < 8.0 or healer_gap < 8.0:
-			_fail("unit hit rect too close to CommandPanel: swordsman=%.1fpx healer=%.1fpx" % [swordsman_gap, healer_gap])
-			return
-		print("HUD_INPUT: swordsman/command-panel gap=%.1fpx healer/command-panel gap=%.1fpx" % [swordsman_gap, healer_gap])
-	print("HUD_INPUT: 7 unit hit rects non-overlapping and clear of HUD panels/info bands")
 
-func _check_formation(views: Array) -> bool:
-	# 阵型探针：两排 3 前排 / 4 后排，位置/深度/朝向与 layout 一致，World 开启 Y 排序。
-	var world := _scene.get_node_or_null("World") as Node2D
-	if world == null or not world.y_sort_enabled:
-		_fail("World.y_sort_enabled must be true for front-row-over-back-row draw order")
-		return false
 	var layout := BattleFieldLayout.new()
-	var front_count := 0
-	var back_count := 0
-	var ally_front_min_y := INF
-	var ally_back_max_y := -INF
-	var ally_front_min_x := INF
-	var ally_back_max_x := -INF
-	var enemy_front_min_y := INF
-	var enemy_back_max_y := -INF
-	var enemy_front_max_x := -INF
-	var enemy_back_min_x := INF
+	var ally_views: Array[UnitView] = []
+	var enemy_views: Array[UnitView] = []
+	var ally_tips: Array[UnitView] = []
+	var enemy_tips: Array[UnitView] = []
+	var ally_depth_min := INF
+	var enemy_depth_max := -INF
 	var ally_center_sum := Vector2.ZERO
 	var enemy_center_sum := Vector2.ZERO
-	var ally_count := 0
-	var enemy_count := 0
+	var hit_overlap_pairs := 0
+	var info_overlap_pairs := 0
+
 	for value in views:
 		var view: UnitView = value
-		if view.side == BattleTypes.Side.ALLY:
-			ally_center_sum += view.home_position
-			ally_count += 1
-		else:
-			enemy_center_sum += view.home_position
-			enemy_count += 1
 		if view.get_parent() != world:
 			_fail("unit %s is not a direct child of World (y-sort ineffective)" % view.unit_id)
 			return false
@@ -351,6 +465,9 @@ func _check_formation(views: Array) -> bool:
 		if view.art_view() != String(slot["view"]):
 			_fail("unit %s art_view %s != slot %s" % [view.unit_id, view.art_view(), String(slot["view"])])
 			return false
+		if view.is_ally != (view.side == BattleTypes.Side.ALLY):
+			_fail("unit %s ally flag mismatch" % view.unit_id)
+			return false
 		if view.is_ally and view.art_view() != "back":
 			_fail("ally %s must use back view (got %s)" % [view.unit_id, view.art_view()])
 			return false
@@ -360,185 +477,117 @@ func _check_formation(views: Array) -> bool:
 		if absf(view.visual_scale() - view._art_scale * UnitView.BASE_ART_SCALE * float(slot["depth"])) > 0.001:
 			_fail("unit %s visual_scale %.3f does not include base scale + formation depth" % [view.unit_id, view.visual_scale()])
 			return false
+		if view.is_target_highlighted():
+			_fail("target arrow visible before target mode for %s" % view.unit_id)
+			return false
+
+		var hit := view.hit_rect()
+		var info := view.info_rect()
+		for panel in blockers:
+			var panel_rect := panel.get_global_rect()
+			if hit.intersects(panel_rect):
+				_fail("unit %s hit rect %s overlaps %s %s" % [view.unit_id, str(hit), panel.name, str(panel_rect)])
+				return false
+			if info.intersects(panel_rect):
+				_fail("unit %s info rect %s overlaps %s %s" % [view.unit_id, str(info), panel.name, str(panel_rect)])
+				return false
+		if not hit.has_point(view.global_position + TIP_CLICK_OFFSET):
+			_fail("unit %s body click point is outside its hit rect %s" % [view.unit_id, str(hit)])
+			return false
+
 		if int(slot["row"]) == 1:
-			front_count += 1
-			if view.side == BattleTypes.Side.ALLY:
-				ally_front_min_y = minf(ally_front_min_y, view.home_position.y)
-				ally_front_min_x = minf(ally_front_min_x, view.home_position.x)
-			else:
-				enemy_front_min_y = minf(enemy_front_min_y, view.home_position.y)
-				enemy_front_max_x = maxf(enemy_front_max_x, view.home_position.x)
-		else:
-			back_count += 1
-			if view.side == BattleTypes.Side.ALLY:
-				ally_back_max_y = maxf(ally_back_max_y, view.home_position.y)
-				ally_back_max_x = maxf(ally_back_max_x, view.home_position.x)
-			else:
-				enemy_back_max_y = maxf(enemy_back_max_y, view.home_position.y)
-				enemy_back_min_x = minf(enemy_back_min_x, view.home_position.x)
-	if front_count != 3 or back_count != 4:
-		_fail("expected 3 front / 4 back units, got %d / %d" % [front_count, back_count])
-		return false
-	if ally_front_min_y >= ally_back_max_y:
-		_fail("ally front row should be farther/up; got front y %.1f >= ally back y %.1f" % [ally_front_min_y, ally_back_max_y])
-		return false
-	if enemy_front_min_y <= enemy_back_max_y:
-		_fail("enemy front row must be nearer/lower; got front y %.1f <= enemy back y %.1f" % [enemy_front_min_y, enemy_back_max_y])
-		return false
-	if ally_front_min_x >= ally_back_max_x:
-		_fail("ally front row must be toward the opponent/left; got front x %.1f >= back x %.1f" % [ally_front_min_x, ally_back_max_x])
-		return false
-	if enemy_front_max_x <= enemy_back_min_x:
-		_fail("enemy front row must be toward the opponent/right; got front x %.1f <= back x %.1f" % [enemy_front_max_x, enemy_back_min_x])
-		return false
-	if ally_front_min_y <= enemy_front_min_y:
-		_fail("ally side must be closer/lower than enemy side (ally front y %.1f <= enemy front y %.1f)" % [ally_front_min_y, enemy_front_min_y])
-		return false
-	var ally_center := ally_center_sum / float(ally_count)
-	var enemy_center := enemy_center_sum / float(enemy_count)
-	var center_angle := rad_to_deg(atan2(ally_center.y - enemy_center.y, ally_center.x - enemy_center.x))
-	if center_angle < 20.0 or center_angle > 40.0:
-		_fail("formation center line must be diagonal 20°~40°; got %.1f° (ally=%s enemy=%s)" % [center_angle, str(ally_center), str(enemy_center)])
-		return false
-	print("HUD_INPUT: formation OK allies front y=%.0f/x=%.0f, back y=%.0f/x=%.0f; enemies front y=%.0f/x=%.0f, back y=%.0f/x=%.0f; depth+facing+view match layout, y_sort=on" % [ally_front_min_y, ally_front_min_x, ally_back_max_y, ally_back_max_x, enemy_front_min_y, enemy_front_max_x, enemy_back_max_y, enemy_back_min_x])
-	print("HUD_INPUT: formation centers ally=%s enemy=%s angle=%.1f° (diagonal)" % [str(ally_center), str(enemy_center), center_angle])
-	return true
-
-func _check_appendage_points(views: Array) -> bool:
-	# 附属件探针：剑尖 / 法球 / 狐妖双尾尖与右尾外缘 / 妖将左拳与斧刃外缘 /
-	# 妖兵乙毒矛头 / 妖兵甲棒头外缘。
-	# 阵型规则：允许伸出自身命中区（视觉附属件可以越过本格），但不得落入任何邻居命中区。
-	for required in [&"hero_swordsman", &"hero_mage", &"boss_fox", &"boss_brute", &"mob_b", &"mob_a"]:
-		var required_view := _view_of(required)
-		if required_view == null or required_view.appendage_points().is_empty():
-			_fail("missing appendage points for %s" % required)
-			return false
-	var checked := 0
-	var outside_owner := 0
-	for value in views:
-		var view: UnitView = value
-		var owner_rect := view.hit_rect()
-		var scale_value := view.visual_scale()
-		for local in view.appendage_points():
-			var world := view.to_global(local * scale_value)
-			if not owner_rect.has_point(world):
-				outside_owner += 1
-			for other_value in views:
-				var other: UnitView = other_value
-				if other == view:
-					continue
-				if other.hit_rect().has_point(world):
-					_fail("appendage point %s of %s falls in %s hit rect %s (world %s)" % [str(local), view.unit_id, other.unit_id, str(other.hit_rect()), str(world)])
+			if view.is_ally:
+				ally_tips.append(view)
+				if view.unit_id != &"hero_swordsman":
+					_fail("ally tip must be hero_swordsman, got %s" % view.unit_id)
 					return false
-			checked += 1
-	print("HUD_INPUT: %d appendage points clear of all neighbors (%d allowed outside owner rect)" % [checked, outside_owner])
+			else:
+				enemy_tips.append(view)
+				if view.unit_id != &"boss_brute":
+					_fail("enemy tip must be boss_brute, got %s" % view.unit_id)
+					return false
+		if view.is_ally:
+			ally_views.append(view)
+			ally_depth_min = minf(ally_depth_min, view._formation_depth)
+			ally_center_sum += view.home_position
+		else:
+			enemy_views.append(view)
+			enemy_depth_max = maxf(enemy_depth_max, view._formation_depth)
+			enemy_center_sum += view.home_position
+			if view.home_position.y <= BackgroundView._clearing_edge_y(view.home_position.x) + 8.0:
+				_fail("enemy %s at %s is not on the clearing (edge y %.0f)" % [view.unit_id, str(view.home_position), BackgroundView._clearing_edge_y(view.home_position.x)])
+				return false
+
+	# 命中区/信息带允许重叠，仅统计并打印；不再要求 x 区间互不相交。
+	for i in views.size():
+		for j in range(i + 1, views.size()):
+			var a: UnitView = views[i]
+			var b: UnitView = views[j]
+			if a.hit_rect().intersects(b.hit_rect()):
+				hit_overlap_pairs += 1
+			if a.info_rect().intersects(b.info_rect()):
+				info_overlap_pairs += 1
+
+	if ally_tips.size() != 1 or enemy_tips.size() != 1:
+		_fail("expected exactly one tip per side, got ally=%d enemy=%d" % [ally_tips.size(), enemy_tips.size()])
+		return false
+	var ally_tip := ally_tips[0]
+	var enemy_tip := enemy_tips[0]
+
+	# 尖端点击点不得落入其他单位命中区（后排可以重叠，但尖端必须稳定可点）。
+	for pair in [[ally_tip, views], [enemy_tip, views]]:
+		var tip: UnitView = pair[0]
+		var point := tip.global_position + TIP_CLICK_OFFSET
+		for value in pair[1]:
+			var other: UnitView = value
+			if other == tip:
+				continue
+			if other.hit_rect().has_point(point):
+				_fail("tip %s click point %s is stolen by %s hit rect %s" % [tip.unit_id, str(point), other.unit_id, str(other.hit_rect())])
+				return false
+
+	var tip_distance := ally_tip.home_position.distance_to(enemy_tip.home_position)
+	var min_cross := INF
+	for ally in ally_views:
+		for enemy in enemy_views:
+			min_cross = minf(min_cross, ally.home_position.distance_to(enemy.home_position))
+	if absf(min_cross - tip_distance) > 0.01:
+		_fail("tips must be the closest opposing pair: tips=%.2f min cross=%.2f" % [tip_distance, min_cross])
+		return false
+	var tip_mid := (ally_tip.home_position + enemy_tip.home_position) * 0.5
+	if tip_mid.distance_to(BackgroundView.RING_CENTER) > 2.0:
+		_fail("tip midpoint %s is not on the central ring %s" % [str(tip_mid), str(BackgroundView.RING_CENTER)])
+		return false
+
+	var ally_center := ally_center_sum / float(ally_views.size())
+	var enemy_center := enemy_center_sum / float(enemy_views.size())
+	var center_angle := rad_to_deg(atan2(ally_center.y - enemy_center.y, ally_center.x - enemy_center.x))
+	if center_angle < 20.0 or center_angle > 45.0:
+		_fail("formation center line must be diagonal 20°~45°; got %.1f° (ally=%s enemy=%s)" % [center_angle, str(ally_center), str(enemy_center)])
+		return false
+	if ally_depth_min <= enemy_depth_max:
+		_fail("ally side must be closer (min depth %.2f > enemy max %.2f)" % [ally_depth_min, enemy_depth_max])
+		return false
+	if ally_center.y <= enemy_center.y:
+		_fail("ally side must be lower/closer (ally y %.0f <= enemy y %.0f)" % [ally_center.y, enemy_center.y])
+		return false
+
+	print("HUD_INPUT: unit hit rects intentionally overlap in compact diamond: hit pairs=%d info pairs=%d (keys + single arrow are the stable selection)" % [hit_overlap_pairs, info_overlap_pairs])
+	print("HUD_INPUT: formation OK tips %s/%s distance=%.1f midpoint=%s ring=%s; centers ally=%s enemy=%s angle=%.1f°; depth ally_min=%.2f > enemy_max=%.2f; y_sort=on; %d HUD blockers clear" % [
+		ally_tip.unit_id, enemy_tip.unit_id, tip_distance, str(tip_mid), str(BackgroundView.RING_CENTER),
+		str(ally_center), str(enemy_center), center_angle, ally_depth_min, enemy_depth_max, blockers.size(),
+	])
 	return true
 
-func _sweep_unit_clicks() -> void:
-	var hits := {}
-	var views: Array = _session.context.unit_views.values()
-	for value in views:
-		var view: UnitView = value
-		view.clicked.connect(func(clicked_view: UnitView) -> void:
-			hits[clicked_view.unit_id] = true
-		)
-		_click_at(_to_screen(view.global_position + Vector2(0, -100)))
-		await physics_frame
-		await process_frame
-	for value in views:
-		var view: UnitView = value
-		if not hits.has(view.unit_id):
-			_fail("unit %s did not receive a real mouse click" % view.unit_id)
-			return
-	print("HUD_INPUT: all 7 units received real mouse clicks")
+# ---------------------------------------------------------------- 输入辅助
 
-# ---------------------------------------------------------------- 边界点击探针
-
-func _on_probe_unit_clicked(view: UnitView) -> void:
-	_probe_hits[view.unit_id] = true
-
-func _view_of(unit_id: StringName) -> UnitView:
-	return _session.context.unit_view(unit_id)
-
-func _boundary_offset(edge: String) -> Vector2:
-	# 新命中区 96×208（中心 y=-100）：左右缘取 ±42，仍在 rect 内且不越界。
-	match edge:
-		"left":
-			return Vector2(-42, -100)
-		"right":
-			return Vector2(42, -100)
-		_:
-			return Vector2(0, -100)
-
-func _probe_boundary_clicks() -> bool:
-	var fox := _view_of(&"boss_fox")
-	var healer := _view_of(&"hero_healer")
-	var swordsman := _view_of(&"hero_swordsman")
-	if fox == null or healer == null or swordsman == null:
-		_fail("missing unit view for boundary probe")
-		return false
-
-	# 敌方目标模式（攻击）：狐狸左缘 / 右缘 / 身体都应只命中狐狸。
-	for edge in ["left", "right", "body"]:
-		if not await _open_root_button("攻击"):
-			return false
-		if _hud._mode != BattleHUD.MenuMode.TARGET:
-			_fail("attack click did not enter enemy target mode (mode=%d)" % _hud._mode)
-			return false
-		if not await _click_and_check_hit(fox, _boundary_offset(edge), "fox-%s/enemy-target" % edge):
-			return false
-		if not await _submit_and_back():
-			return false
-	# 剑客右缘（指令面板方向）在敌方目标模式下不可选，点击不得提交。
-	if not await _open_root_button("攻击"):
-		return false
-	if not await _click_and_check_hit(swordsman, _boundary_offset("right"), "swordsman-right/enemy-target"):
-		return false
-	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
-		_fail("swordsman click submitted while targeting enemies (mode=%d)" % _hud._mode)
-		return false
-	_hud.go_back()
-	await process_frame
-	# 医师身体在敌方目标模式下同样不可选。
-	if not await _open_root_button("攻击"):
-		return false
-	if not await _click_and_check_hit(healer, _boundary_offset("body"), "healer-body/enemy-target"):
-		return false
-	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
-		_fail("healer click submitted while targeting enemies (mode=%d)" % _hud._mode)
-		return false
-	_hud.go_back()
-	await process_frame
-
-	# 我方目标模式（道具）：医师左缘 / 右缘 / 身体都应只命中医师。
-	for edge in ["left", "right", "body"]:
-		if not await _open_ally_target_mode():
-			return false
-		if not await _click_and_check_hit(healer, _boundary_offset(edge), "healer-%s/ally-target" % edge):
-			return false
-		if not await _submit_and_back():
-			return false
-	# 剑客右缘在我方目标模式下可选中，且不被指令面板遮挡。
-	if not await _open_ally_target_mode():
-		return false
-	if not await _click_and_check_hit(swordsman, _boundary_offset("right"), "swordsman-right/ally-target"):
-		return false
-	if not await _submit_and_back():
-		return false
-	# 狐狸在我方目标模式下不可选。
-	if not await _open_ally_target_mode():
-		return false
-	if not await _click_and_check_hit(fox, _boundary_offset("body"), "fox-body/ally-target"):
-		return false
-	if _hud._mode != BattleHUD.MenuMode.TARGET or not _hud._awaiting_intent:
-		_fail("fox click submitted while targeting allies (mode=%d)" % _hud._mode)
-		return false
-	_hud.go_back()
-	await process_frame
-	print("HUD_INPUT: boundary clicks (fox/healer/swordsman) pass in enemy+ally target modes")
-	return true
+func _root_ready() -> bool:
+	return _hud._mode == BattleHUD.MenuMode.ROOT and _hud._awaiting_intent
 
 func _open_root_button(text: String) -> bool:
+	if not await _wait_until(func() -> bool: return _root_ready(), 3.0):
+		_fail("root menu not ready before %s (mode=%d awaiting=%s)" % [text, _hud._mode, str(_hud._awaiting_intent)])
+		return false
 	var button := _find_button(text)
 	if button == null:
 		_fail("button %s not found (mode=%d)" % [text, _hud._mode])
@@ -562,35 +611,46 @@ func _open_ally_target_mode() -> bool:
 	if _hud._mode != BattleHUD.MenuMode.TARGET:
 		_fail("item click did not enter ally target mode (mode=%d)" % _hud._mode)
 		return false
-	return true
-
-func _click_and_check_hit(view: UnitView, offset: Vector2, label: String) -> bool:
-	_probe_hits.clear()
-	await _click_view_offset(view, offset)
-	if _probe_hits.size() != 1 or not _probe_hits.has(view.unit_id):
-		_fail("%s: expected only %s, got %s" % [label, view.unit_id, str(_probe_hits.keys())])
+	if _hud._selector.side() != BattleTypes.Side.ALLY:
+		_fail("item target mode side is not ALLY")
 		return false
 	return true
 
-func _click_view_offset(view: UnitView, offset: Vector2) -> void:
-	_click_at(_to_screen(view.global_position + offset))
-	await physics_frame
-	await process_frame
+func _move_mouse(point: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	motion.global_position = point
+	root.push_input(motion, true)
 
-func _submit_and_back() -> bool:
-	var root_ready := func() -> bool: return _hud._mode == BattleHUD.MenuMode.ROOT and _hud._awaiting_intent
-	if not await _wait_until(root_ready, 3.0):
-		_fail("target selection did not submit (mode=%d awaiting=%s)" % [_hud._mode, str(_hud._awaiting_intent)])
-		return false
-	if _hud._ally_index <= 0:
-		_fail("expected ally index to advance before go_back (index=%d)" % _hud._ally_index)
-		return false
-	_hud.go_back()
-	await process_frame
-	if _hud._mode != BattleHUD.MenuMode.ROOT or not _hud._awaiting_intent:
-		_fail("go_back did not restore root menu (mode=%d)" % _hud._mode)
-		return false
-	return true
+func _press_key(keycode: int) -> void:
+	var press := InputEventKey.new()
+	press.keycode = keycode
+	press.physical_keycode = keycode
+	press.pressed = true
+	root.push_input(press)
+	var release := InputEventKey.new()
+	release.keycode = keycode
+	release.physical_keycode = keycode
+	release.pressed = false
+	root.push_input(release)
+
+func _view_of(unit_id: StringName) -> UnitView:
+	return _session.context.unit_view(unit_id)
+
+func _living_sorted(side: int) -> Array[BattleUnitState]:
+	var units: Array[BattleUnitState] = _session.engine.state.living(side)
+	units.sort_custom(func(a: BattleUnitState, b: BattleUnitState) -> bool: return a.slot < b.slot)
+	return units
+
+func _has_label_text(needle: String) -> bool:
+	var stack: Array[Node] = [_hud]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Label and String(node.text).contains(needle):
+			return true
+		for child in node.get_children():
+			stack.append(child)
+	return false
 
 func _find_button_prefix(prefix: String) -> Button:
 	var stack: Array[Node] = [_hud]

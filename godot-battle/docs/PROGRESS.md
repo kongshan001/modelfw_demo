@@ -157,3 +157,18 @@ RESULT: 786 assertions, 0 failures
 - 产物：8 张 1920×1080 截图（`plan2b_art_full/scene/skill/skill_late/projectile/lunge/float/victory.png`）；GIF 18s/720×405/10fps/96 色 5.6MB（`.superpowers/sdd/p0-combat.gif`，未入库）。
 - 遗留：胜利面板仍按原 0.7 压暗（评审 P1-4；不在 P0 范围，未改 UI）；GIF 10fps 下 0.08s 预备动作只有约 1 帧，需看静帧/实时确认；程序化美术本体未变。
 - 提交：`feat(presentation): 打击感增强与敌方比例/光照 P0`。
+
+## 2026-10-25 · 单尖端紧凑菱形阵型与数字键选目标
+
+- 反馈：战士站位仍不像梦幻；参考 `/tmp/fwj_ref2/b_3.jpg`、`b_0.png`、`b_1.jpg`（仅分析构图，未复制素材）。目标是把两排横阵改为 FWJ 式紧凑菱形/箭头：每侧一个战士尖端，法系/辅助在后方展开，双方尖端几乎相接，目标靠单一箭头/数字键选择而非互不重叠的点击矩形。
+- 完成：
+  - `BattleFieldLayout`：我方剑客尖端 (1000,800)，法师 (1100,860)、医师 (1070,910)；敌方妖将尖端 (850,700)，妖兵甲 (760,640)、妖兵乙 (740,620)、狐妖 (650,580)。两侧中心 (1056.7,856.7)/(750,635)，中心线 35.9°；尖端距离 180.3px，连线中点 (925,750) 即中央石环圆心。
+  - 纵深：我方 depth 0.98/1.10/1.06，敌方 0.94/0.90/0.88/0.86；我方最小 depth 仍大于敌方最大。每侧仅 `row=1` 尖端，其余 `row=0`。
+  - 背景：石环圆心上移到 (925,750)，用两条很淡的椭圆线 + 44 颗断续石块增强“双尖端之间的圆形场地”可读性；仍是竹林空地，无新平台/网格。
+  - 目标选择：`TargetSelector` 只保留一个目标箭头，默认落在存活尖端；鼠标悬停会移动箭头；HUD 提示改为「1–4 / QWE 选择目标」，并列出「目标键位：1 妖兵·甲 …」。`UnitView.set_targetable` 改为 `set_target_highlight`，新增悬停信号与箭头描边；命中区/信息带允许重叠。
+  - 测试/探针：`test_formation` 删除 x 区间互斥断言，新增单尖端、尖端最近且沿中心轴、中心线 20–45°、敌后落地、HUD 避让、尖端点击点不抢点等断言（201 条）。`smoke_hud_input` 删除全单位边界扫描/附属件扫点，改为真实点击「攻击」+ 真实数字键 1–4 打完 12 回合，并逐键验证 4 敌 / 3 友槽位、悬停箭头、敌我尖端真实点击与 HUD 避让。
+- 验证：核心 `RESULT: 993 assertions, 0 failures`；`PRESENTATION_SMOKE_OK` / `SMOKE_OK`；`HUD_INPUT_OK`（12 回合、outcome=2、战败…，4 敌键 + 3 友键 + 悬停 + 双尖端点击）/`SMOKE_OK`；`STORY_PROBE_OK` / `SMOKE_OK`；`DEBUG_SMOKE_OK` / `SMOKE_OK`。
+- 产物：1920×1080 `plan2b_art_full/scene/skill/skill_late/projectile/lunge/float/victory.png`；目标模式 `task3_hud_target.png`；GIF 18.9s / 720×405 / 10fps / 96 色 / 5.1MB（`.superpowers/sdd/diamond-formation.gif`，未入库）。
+- 视觉检查：两簇均读作尖端朝对手的紧凑菱形；剑客/妖将近似相接，法系在后方；中央石环在两尖端之间可见；HUD/日志/信息带不被遮挡；目标模式只出现一个箭头。
+- 遗留：我方医师站位更靠近镜头，会遮住法师大部分身体；后排重叠时鼠标可能选到被遮单位，稳定选择以数字键 + 单一箭头为准（参考作同样重叠）。
+- 提交：`feat(presentation): 单尖端菱形阵型与数字键选目标`。

@@ -2,6 +2,7 @@ class_name UnitView
 extends Node2D
 
 signal clicked(view: UnitView)
+signal hovered(view: UnitView)
 
 # 原创程序化 Q 版角色。所有角色共用同一套描边 / 高光 / 脸部语言，
 # 只在轮廓、配色、发型与武器上区分职业与阵营。
@@ -52,6 +53,7 @@ var _mp_fill: ColorRect
 var _status_row: HBoxContainer
 var _selection: Polygon2D
 var _target_arrow: Polygon2D
+var _target_arrow_outline: Polygon2D
 var _click_area: Area2D
 var _click_shape: CollisionShape2D
 var _click_rect: RectangleShape2D
@@ -1037,8 +1039,14 @@ func _build_bars() -> void:
 	_selection.visible = false
 	add_child(_selection)
 
+	# 单一目标箭头：深色描边 + 金色主体，只显示在当前选中的目标头顶。
+	_target_arrow_outline = Polygon2D.new()
+	_target_arrow_outline.polygon = PackedVector2Array([Vector2(-21, -340), Vector2(21, -340), Vector2(0, -298)])
+	_target_arrow_outline.color = Color(0.09, 0.06, 0.07, 0.85)
+	_target_arrow_outline.visible = false
+	_info_root.add_child(_target_arrow_outline)
 	_target_arrow = Polygon2D.new()
-	_target_arrow.polygon = PackedVector2Array([Vector2(-14, -325), Vector2(14, -325), Vector2(0, -302)])
+	_target_arrow.polygon = PackedVector2Array([Vector2(-16, -333), Vector2(16, -333), Vector2(0, -305)])
 	_target_arrow.color = Color(1.0, 0.85, 0.15)
 	_target_arrow.visible = false
 	_info_root.add_child(_target_arrow)
@@ -1067,6 +1075,7 @@ func _build_click_area() -> void:
 	_click_area.add_child(_click_shape)
 	add_child(_click_area)
 	_click_area.input_event.connect(_on_input_event)
+	_click_area.mouse_entered.connect(_on_mouse_entered)
 	_apply_click_bounds()
 
 func _apply_click_bounds() -> void:
@@ -1127,6 +1136,9 @@ func bubble_anchor() -> Vector2:
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		clicked.emit(self)
+
+func _on_mouse_entered() -> void:
+	hovered.emit(self)
 
 func _ellipse_points(rx: float, ry: float) -> PackedVector2Array:
 	var points := PackedVector2Array()
@@ -1199,8 +1211,12 @@ func set_selected(value: bool) -> void:
 	if value:
 		_position_glow()
 
-func set_targetable(value: bool) -> void:
+func set_target_highlight(value: bool) -> void:
 	_target_arrow.visible = value
+	_target_arrow_outline.visible = value
+
+func is_target_highlighted() -> bool:
+	return _target_arrow != null and _target_arrow.visible
 
 func _position_glow() -> void:
 	_selection.modulate.a = 0.4 + 0.4 * absf(sin(Time.get_ticks_msec() / 300.0))
