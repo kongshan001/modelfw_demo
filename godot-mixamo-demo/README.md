@@ -26,17 +26,28 @@ godot --path godot-mixamo-demo --resolution 1280x720 -s tools/capture_swap_gif.g
 # 输出：/tmp/mixamo_swap_frames/frame_000.png ... frame_059.png
 ```
 
-GIF：`docs/swap_demo.gif`（角色切换）、`docs/dance_demo.gif`（Michelle SambaDance），均 1280×720 / 4 秒 / 15fps。
+GIF：`docs/swap_demo.gif`（角色切换）、`docs/dance_demo.gif`（Michelle SambaDance）、`docs/baked_run_demo.gif`（离线烘焙 Run），均 1280×720 / 4 秒 / 15fps。
+
+## 离线烘焙 Demo
+
+- 场景：`scenes/baked_demo.tscn`，直接播放 `animation-retarget-kit` 烘焙出的 `Michelle_Run.glb`
+- 运行：`godot --path godot-mixamo-demo scenes/baked_demo.tscn`
+- 流程记录：[`docs/BAKED_RETARGET_DEMO.md`](docs/BAKED_RETARGET_DEMO.md)
+- 验证：`godot --headless --path godot-mixamo-demo -s tools/smoke_baked_demo.gd` → `BAKED_DEMO_SMOKE_OK`
 
 ## 结构
 
 ```text
 godot-mixamo-demo/
-├── assets/characters/   Soldier.glb / Michelle.glb / Xbot.glb
-├── scenes/demo.tscn     main scene
+├── assets/characters/   Soldier.glb / Michelle.glb / Xbot.glb / baked/Michelle_Run.glb
+├── scenes/demo.tscn     main scene（运行时重定向/切换/跳舞）
+├── scenes/baked_demo.tscn  离线烘焙 Run demo
 ├── src/demo.gd          环境、相机、HUD
 ├── src/player.gd        移动 + 三角色 rig + RetargetModifier3D
+├── src/baked_demo.gd     baked clip 播放 + 相机环绕
 ├── tools/smoke_demo.gd  headless 冒烟（含切换）
+├── tools/smoke_baked_demo.gd  baked demo 冒烟
+├── tools/capture_baked_demo.gd baked demo 录帧
 ├── tools/capture_swap_gif.gd  切换录帧脚本
 └── tools/capture_dance_gif.gd 舞蹈录帧脚本
 ```
