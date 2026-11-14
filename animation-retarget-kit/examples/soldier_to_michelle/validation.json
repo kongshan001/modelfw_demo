@@ -1,0 +1,24 @@
+{
+  "path": "examples/soldier_to_michelle/Michelle_Walk.glb",
+  "armatures": 1,
+  "bones": 65,
+  "meshes": 1,
+  "vertices": 17289,
+  "materials": [
+    "Ch03_Body"
+  ],
+  "actions": [
+    "Animation_Character.001"
+  ],
+  "frames": [
+    0,
+    24
+  ],
+  "max_bone_length_deviation": 2e-06,
+  "worst_bone": [
+    "mixamorig:RightHandPinky3",
+    1.6121,
+    1.6121,
+    5
+  ]
+}

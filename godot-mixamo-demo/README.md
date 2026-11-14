@@ -5,8 +5,8 @@
 - 玩家可在 **Michelle / Soldier / Xbot** 之间切换（`Tab`）
 - Michelle：Michelle 网格 + 隐藏的 Soldier 骨架，通过 `RetargetModifier3D` 实时重定向
 - Soldier / Xbot：各自的原生 Mixamo 动画
-- `WASD` 移动，`Shift` 奔跑，`Space` 跳舞（Michelle 的 SambaDance），`Tab` 切换角色
-- 状态机：`Idle / Walk / Run`，Michelle 额外支持 `Dance`
+- `WASD` 移动，`Shift` 奔跑，`Space` 跳舞（三个角色；Michelle 原生 SambaDance，Soldier 离线 bake，Xbot 运行时 simple 重定向），`Tab` 切换角色
+- 状态机：`Idle / Walk / Run / Dance`
 
 ## 运行
 
@@ -24,13 +24,36 @@ godot --headless --path godot-mixamo-demo -s tools/smoke_demo.gd
 
 godot --path godot-mixamo-demo --resolution 1280x720 -s tools/capture_swap_gif.gd
 # 输出：/tmp/mixamo_swap_frames/frame_000.png ... frame_059.png
+
+godot --path godot-mixamo-demo --resolution 1280x720 -s tools/capture_all_dances_gif.gd
+# 输出：/tmp/mixamo_all_dances_frames/frame_000.png ... frame_119.png
 ```
 
-GIF：`docs/swap_demo.gif`（角色切换）、`docs/dance_demo.gif`（Michelle SambaDance）、`docs/baked_run_demo.gif`（离线烘焙 Run），均 1280×720 / 4 秒 / 15fps。
+GIF：`docs/swap_demo.gif`（角色切换）、`docs/dance_demo.gif`（运行时 Michelle SambaDance）、`docs/all_dances_demo.gif`（Michelle / Soldier / Xbot 跳舞）、`docs/dance_showcase.gif`（展示场景 SambaDance）、`docs/baked_run_demo.gif`（离线烘焙 Run），均 1280×720 / 15fps。
 
-## 离线烘焙 Demo
+## 三个角色跳舞
 
-- 场景：`scenes/baked_demo.tscn`，直接播放 `animation-retarget-kit` 烘焙出的 `Michelle_Run.glb`
+- **Michelle**：原生 `SambaDance`（独立 dance rig）；
+- **Soldier**：`animation-retarget-kit` 离线 bake（`assets/characters/baked/Soldier_SambaDance.glb`，Michelle → Soldier，`--simple`）；
+- **Xbot**：glTF 往返会翻转 Xbot 骨骼 rest，离线 bake 在 Godot 中整体倾斜；改用 `src/dance_retarget.gd` 的运行时 **simple 全局增量** 公式，从隐藏的 Michelle `SambaDance` rig 驱动原生 Xbot（世界空间；实测躯干倾斜 6.4°，源 7.4°）；
+- 移动、`Tab` 切角色或再按 `Space` 都会退出舞蹈。
+
+Soldier 舞步复现：
+
+```bash
+cd animation-retarget-kit
+bash tools/blender_retarget.sh \
+  --source assets/target/Michelle.glb \
+  --target assets/source/Soldier.glb \
+  --clip SambaDance \
+  --out ../godot-mixamo-demo/assets/characters/baked/Soldier_SambaDance.glb \
+  --fps 30 --simple
+bash tools/blender_validate.sh ../godot-mixamo-demo/assets/characters/baked/Soldier_SambaDance.glb
+```
+
+## 展示 Demo（SambaDance + 离线烘焙 Run）
+
+- 场景：`scenes/baked_demo.tscn`，默认播放 Michelle **原生 SambaDance**；按 `Space` 切到 `animation-retarget-kit` 烘焙出的 `Michelle_Run.glb`
 - 运行：`godot --path godot-mixamo-demo scenes/baked_demo.tscn`
 - 流程记录：[`docs/BAKED_RETARGET_DEMO.md`](docs/BAKED_RETARGET_DEMO.md)
 - 验证：`godot --headless --path godot-mixamo-demo -s tools/smoke_baked_demo.gd` → `BAKED_DEMO_SMOKE_OK`
@@ -41,15 +64,17 @@ GIF：`docs/swap_demo.gif`（角色切换）、`docs/dance_demo.gif`（Michelle 
 godot-mixamo-demo/
 ├── assets/characters/   Soldier.glb / Michelle.glb / Xbot.glb / baked/Michelle_Run.glb
 ├── scenes/demo.tscn     main scene（运行时重定向/切换/跳舞）
-├── scenes/baked_demo.tscn  离线烘焙 Run demo
+├── scenes/baked_demo.tscn  展示场景（默认 SambaDance / Space 切 baked Run）
 ├── src/demo.gd          环境、相机、HUD
-├── src/player.gd        移动 + 三角色 rig + RetargetModifier3D
-├── src/baked_demo.gd     baked clip 播放 + 相机环绕
-├── tools/smoke_demo.gd  headless 冒烟（含切换）
-├── tools/smoke_baked_demo.gd  baked demo 冒烟
-├── tools/capture_baked_demo.gd baked demo 录帧
+├── src/player.gd        移动 + 三角色 rig + RetargetModifier3D + dance rigs
+├── src/dance_retarget.gd 运行时 simple 全局增量重定向（Xbot 舞步）
+├── src/baked_demo.gd     SambaDance + baked Run 双模式、镜头与舞台
+├── tools/smoke_demo.gd  headless 冒烟（含三角色舞蹈切换）
+├── tools/smoke_baked_demo.gd  双模式冒烟
+├── tools/capture_baked_demo.gd 双模式录帧（默认舞步，`-- --run` 录 Run）
 ├── tools/capture_swap_gif.gd  切换录帧脚本
-└── tools/capture_dance_gif.gd 舞蹈录帧脚本
+├── tools/capture_dance_gif.gd Michelle 舞蹈录帧脚本
+└── tools/capture_all_dances_gif.gd 三角色舞蹈录帧脚本
 ```
 
 

@@ -1,0 +1,4 @@
+{
+  "description": "Explicit source->target bone map. Empty bones means auto-map by normalized Mixamo names (mixamorig: / mixamorig_ / case-insensitive). Add entries for non-Mixamo rigs.",
+  "bones": {}
+}

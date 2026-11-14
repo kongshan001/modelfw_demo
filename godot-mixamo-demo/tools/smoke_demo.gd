@@ -48,11 +48,35 @@ func _initialize() -> void:
 	if String(player.call("get_character_name")) != "Soldier":
 		_fail("switch to Soldier failed")
 		return
+	player.call("set_demo_input", Vector2.ZERO, false)
+	await create_timer(0.1).timeout
+	player.call("toggle_dance")
+	await create_timer(0.2).timeout
+	if String(player.call("get_state")) != "Dance":
+		_fail("Soldier dance did not start")
+		return
+	player.call("toggle_dance")
+	await create_timer(0.1).timeout
+	if String(player.call("get_state")) != "Idle":
+		_fail("Soldier dance did not stop")
+		return
 
 	player.call("cycle_character")
 	await create_timer(0.1).timeout
 	if String(player.call("get_character_name")) != "Xbot":
 		_fail("switch to Xbot failed")
+		return
+	player.call("set_demo_input", Vector2.ZERO, false)
+	await create_timer(0.1).timeout
+	player.call("toggle_dance")
+	await create_timer(0.2).timeout
+	if String(player.call("get_state")) != "Dance":
+		_fail("Xbot dance did not start")
+		return
+	player.call("toggle_dance")
+	await create_timer(0.1).timeout
+	if String(player.call("get_state")) != "Idle":
+		_fail("Xbot dance did not stop")
 		return
 
 	player.call("set_demo_input", Vector2(0.0, -1.0), true)

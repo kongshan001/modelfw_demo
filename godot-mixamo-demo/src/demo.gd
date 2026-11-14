@@ -116,7 +116,7 @@ func _build_hud() -> void:
 	box.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Tab: Michelle / Soldier / Xbot  ·  Space: Dance (Michelle)"
+	subtitle.text = "Tab: Michelle / Soldier / Xbot  ·  Space: Dance (all)"
 	subtitle.add_theme_font_size_override("font_size", 17)
 	subtitle.add_theme_color_override("font_color", Color(0.72, 0.82, 0.92))
 	box.add_child(subtitle)

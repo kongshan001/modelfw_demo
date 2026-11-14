@@ -15,6 +15,11 @@ const SOLDIER_SCENE := preload("res://assets/characters/Soldier.glb")
 const MICHELLE_SCENE := preload("res://assets/characters/Michelle.glb")
 const XBOT_SCENE := preload("res://assets/characters/Xbot.glb")
 
+# Michelle 的 SambaDance 重定向到 Soldier（animation-retarget-kit 离线 bake）。
+# Xbot 的 rest 轴在 glTF 往返后会翻转，改用运行时 simple 重定向。
+const SOLDIER_DANCE_SCENE := preload("res://assets/characters/baked/Soldier_SambaDance.glb")
+const DanceRetargetScript := preload("res://src/dance_retarget.gd")
+
 const WALK_SPEED := 1.7
 const RUN_SPEED := 3.8
 
@@ -25,14 +30,17 @@ var _demo_override := false
 var _demo_dir := Vector2.ZERO
 var _demo_run := false
 var _label: Label3D
-var _dance_rig: Dictionary = {}
+var _dance_rigs: Dictionary = {}
+var _dance_clips: Dictionary = {}
+var _xbot_retarget
+var _xbot_source_ap: AnimationPlayer
 var _dancing := false
 
 func _ready() -> void:
 	await _build_michelle_rig()
 	_build_native_rig("Soldier", SOLDIER_SCENE, {"Idle": "Idle", "Walk": "Walk", "Run": "Run"})
 	_build_native_rig("Xbot", XBOT_SCENE, {"Idle": "idle", "Walk": "walk", "Run": "run"})
-	_build_dance_rig()
+	_build_dance_rigs()
 
 	_label = Label3D.new()
 	_label.name = "PlayerLabel"
@@ -57,6 +65,8 @@ func _process(delta: float) -> void:
 		if moving:
 			_end_dance()
 		else:
+			if get_character_name() == "Xbot" and _xbot_retarget != null:
+				_xbot_retarget.apply()
 			return
 
 	var next_state := "Idle"
@@ -128,8 +138,8 @@ func _set_active(index: int, emit := true) -> void:
 		var ap: AnimationPlayer = rig.get("ap")
 		if ap != null:
 			ap.stop()
-	if _dance_rig.has("root"):
-		(_dance_rig["root"] as Node3D).visible = false
+	for dance_name in _dance_rigs:
+		(_dance_rigs[dance_name]["root"] as Node3D).visible = false
 	_play_state(_state)
 	if _label != null:
 		_label.text = "Player · " + get_character_name()
@@ -137,7 +147,7 @@ func _set_active(index: int, emit := true) -> void:
 		character_changed.emit(get_character_name())
 
 func toggle_dance() -> void:
-	if _rigs.is_empty() or get_character_name() != "Michelle":
+	if _rigs.is_empty() or _dance_rigs.is_empty():
 		return
 	if _dancing:
 		_end_dance()
@@ -145,43 +155,87 @@ func toggle_dance() -> void:
 		_start_dance()
 
 func _start_dance() -> void:
-	if _dancing or _dance_rig.is_empty():
+	if _dancing or _rigs.is_empty():
 		return
-	var ap: AnimationPlayer = _dance_rig.get("ap")
-	if ap == null or not ap.has_animation("SambaDance"):
+	var character_name := get_character_name()
+	if not _dance_rigs.has(character_name):
+		return
+	var dance_rig: Dictionary = _dance_rigs[character_name]
+	var ap: AnimationPlayer = dance_rig.get("ap")
+	var clip_name := String(_dance_clips.get(character_name, ""))
+	if character_name == "Xbot":
+		var active_rig: Dictionary = _rigs[_active]
+		(active_rig["root"] as Node3D).visible = false
+		(dance_rig["root"] as Node3D).visible = true
+		if ap != null:
+			ap.stop()
+		if _xbot_source_ap != null and _xbot_source_ap.has_animation("SambaDance"):
+			_xbot_source_ap.play("SambaDance")
+		_dancing = true
+		state_changed.emit("Dance")
+		return
+	if ap == null or clip_name == "":
 		return
 	var active_rig: Dictionary = _rigs[_active]
 	var source_ap: AnimationPlayer = active_rig.get("ap")
 	if source_ap != null:
 		source_ap.stop()
 	(active_rig["root"] as Node3D).visible = false
-	(_dance_rig["root"] as Node3D).visible = true
-	ap.play("SambaDance")
+	(dance_rig["root"] as Node3D).visible = true
+	ap.play(clip_name)
 	_dancing = true
 	state_changed.emit("Dance")
 
 func _end_dance() -> void:
 	if not _dancing:
 		return
-	var ap: AnimationPlayer = _dance_rig.get("ap")
-	if ap != null:
-		ap.stop()
-	(_dance_rig["root"] as Node3D).visible = false
+	for dance_name in _dance_rigs:
+		var rig: Dictionary = _dance_rigs[dance_name]
+		var ap: AnimationPlayer = rig.get("ap")
+		if ap != null:
+			ap.stop()
+		(rig["root"] as Node3D).visible = false
 	if not _rigs.is_empty():
 		(_rigs[_active]["root"] as Node3D).visible = true
 	_dancing = false
 	_play_state(_state)
 	state_changed.emit(_state)
 
-func _build_dance_rig() -> void:
+func _build_dance_rigs() -> void:
+	_add_dance_rig("Michelle", MICHELLE_SCENE, "SambaDance")
+	_add_dance_rig("Soldier", SOLDIER_DANCE_SCENE, "")
+	_add_dance_rig("Xbot", XBOT_SCENE, "")
+	var michelle_rig: Dictionary = _dance_rigs.get("Michelle", {})
+	var xbot_rig: Dictionary = _dance_rigs.get("Xbot", {})
+	_xbot_source_ap = michelle_rig.get("ap") as AnimationPlayer
+	_xbot_retarget = DanceRetargetScript.new()
+	_xbot_retarget.setup(_find_skeleton(michelle_rig.get("root")), _find_skeleton(xbot_rig.get("root")))
+
+func _add_dance_rig(character_name: String, scene: PackedScene, preferred_clip: String) -> void:
 	var root := Node3D.new()
-	root.name = "Rig_MichelleDance"
+	root.name = "Rig_Dance_" + character_name
 	add_child(root)
-	var model: Node3D = MICHELLE_SCENE.instantiate()
+	var model: Node3D = scene.instantiate()
 	root.add_child(model)
 	var ap := model.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if ap != null:
+		ap.stop()
+	var clip_name := preferred_clip
+	if ap != null and (clip_name == "" or not ap.has_animation(clip_name)):
+		clip_name = _longest_animation(ap)
 	root.visible = false
-	_dance_rig = {"root": root, "ap": ap}
+	_dance_rigs[character_name] = {"root": root, "ap": ap}
+	_dance_clips[character_name] = clip_name
+
+func _longest_animation(ap: AnimationPlayer) -> String:
+	var best := ""
+	var best_length := -1.0
+	for clip_name in ap.get_animation_list():
+		var anim := ap.get_animation(clip_name)
+		if anim.length > best_length:
+			best_length = anim.length
+			best = clip_name
+	return best
 
 func _build_michelle_rig() -> void:
 	var rig := Node3D.new()

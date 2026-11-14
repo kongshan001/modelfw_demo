@@ -123,30 +123,34 @@ P_t_local[bone] = R_t_local[bone]                  // 保持目标 rest
 
 #### 不同 rest 轴/roll 的修正（重要）
 
-上面的 `D * R_t` 在父子 rest 轴一致时成立；源/目标骨骼 roll 不同时（例如 Xbot/Michelle），直接套会出现整肢扭转、上举或拉伸。需要 **parent-rest basis 修正**（Godot `RetargetModifier3D` 同式）：
+上面的 `D * R_t` 是**全局增量**写法，适合只用全局 pose、且父子 rest 轴一致的情况。源/目标父子 rest 轴不同（例如 Xbot/Michelle）时，Godot `RetargetModifier3D` 用的是**局部 pose/rest + 父级全局 rest 基变换**：
 
 ```text
-R_t_world = inverse(ParentRest_t) * ParentRest_s * P_s
-          * inverse(R_s) * inverse(ParentRest_s) * ParentRest_t * R_t
-R_t_local_pose = inverse(P_t_parent * L_t) * R_t_world
+R_t_local_pose = inverse(ParentRest_t) * ParentRest_s * P_s_local
+               * inverse(R_s_local) * inverse(ParentRest_s) * ParentRest_t * R_t_local
 ```
 
-- `ParentRest_s/t`：源/目标**父骨骼**的 rest 全局旋转（根为 identity）
-- `P_s`：源骨骼 pose 全局旋转；`R_s`：源骨骼 rest 全局旋转
-- `R_t`：目标骨骼 rest 全局旋转；`L_t`：目标骨骼相对父骨骼的 rest 局部旋转
-- `P_t_parent`：目标父骨骼的 pose 全局旋转
+- `ParentRest_s/t`：源/目标**父骨骼**的 rest 全局旋转（模型空间，根为 identity）
+- `P_s_local`：源骨骼相对父级的 pose **局部**旋转
+- `R_s_local`：源骨骼相对父级的 rest **局部**旋转
+- `R_t_local`：目标骨骼相对父级的 rest **局部**旋转
+- 输出是目标骨骼的局部 pose；如果引擎存的是 rest-relative basis（Blender `matrix_basis`），再乘 `inverse(R_t_local)`
 
-只保留 `D * R_t` 在“同骨架、同 rest 轴”下才安全；跨角色请用上面的修正版。`animation-retarget-kit/tools/blender_retarget.py` 已按此实现，`blender_validate.py` 会用骨长漂移检测拉伸。
+> **不要把全局 pose/rest 代入本式**：全局量已经包含父级，再乘父级 rest 会重复修正。典型症状是肘/膝被拉直、动作像滑行。Soldier Run → Michelle 实测：误用全局量时手肘 90°→16°；改用局部量后与源差 < 2°，与 Godot `RetargetModifier3D` 一致。`blender_validate.py` 只查骨长漂移，查不出这种姿态错误，必须人工看肘/膝。
 
-> 为什么不用“直接复制 local rotation”：local rotation 绑定在各自的 rest 轴/roll 上；源和目标 rest 不同时，同样的 local 四元数在目标上会扭成不同姿势。上面的全局增量法先把源动作转换到模型空间，再落到目标 rest 上，才是跨骨架可用的。
+只保留 `D * R_t` 在“同骨架、同 rest 轴”下才安全；跨角色请用上面的局部 pose/rest 版本。`animation-retarget-kit/tools/blender_retarget.py` 默认按局部 pose/rest 实现，也可用 `--simple` 切回 Step 6 的全局增量。`blender_validate.py` 会用骨长漂移检测拉伸。
+
+> Xbot 的 SambaDance 用 `--simple` 时，Blender 内躯干与源一致（6°/7°）；但导出 GLB 在 Godot 中可能因 glTF rest 轴翻转而倾斜。遇到这种情况，运行时 simple 重定向更稳（参考 `godot-mixamo-demo/src/dance_retarget.gd`）。
+
+> 为什么不直接复制 local rotation：local rotation 绑定在各自的 rest 轴/roll 上；源/目标 rest 不同时，同样的 local 四元数会扭成不同姿势。局部 pose/rest 版本先用父级全局 rest 做基变换，再落到目标 rest 上，才能跨骨架使用。
 
 ### Step 7：root motion
 
 - 根骨骼/hips 的位移是角色位移，不是普通骨骼动作；
 - 提取 `root_delta = P_s_root_global.translation - R_s_root_global.translation`；
 - 做单位/轴转换后交给角色控制器；
-- 原地动画（in-place）则忽略位移，只保留旋转；
-- 不要把源根位移直接写进目标 hips 的 local position，除非你明确要 bake root motion。
+- **hips 的循环位移是姿态的一部分**（前倾/重心/起伏）；Run 如果把 hips 位移一律清零，会变成直立滑步。默认应保留 hips 位移；`--strip-hips` 才做严格 in-place；
+- **真正的角色位移（root motion）**从 hips 位移中提取/剥离，交给角色控制器；不要把同一份位移既写进 hips 又传给控制器。
 
 ### Step 8：蒙皮与验收
 
@@ -156,6 +160,7 @@ skin_matrix[bone] = P_t_global[bone] * inverse_bind[bone]
 
 - `inverse_bind` 来自 bind pose；如果改了 rest，确认 bind 数据仍一致；
 - 逐骨骼校验目标骨长不变；
+- 校验手肘/膝盖弯曲与源一致（骨长校验查不出姿态被拉直）；
 - 连续播放至少 2 个循环的 Idle/Walk/Run；
 - 看脚底是否滑、root 轨迹是否连续、是否有整体倾斜/麻花；
 - 用 gold pose/clip 做数值回归。
@@ -167,8 +172,8 @@ skin_matrix[bone] = P_t_global[bone] * inverse_bind[bone]
 | 场景 | 做法 |
 |---|---|
 | 同骨架、同 rest | 直接复用 clip（仍需处理坐标/单位/root） |
-| 同骨架、不同 rest（T vs A、roll 不同） | Rest Fixer 统一 rest；或使用上面的全局增量法 |
-| 不同骨架/比例 | 人形骨骼映射 + 全局增量 + 目标 rest 长度；root motion 单独处理 |
+| 同骨架、不同 rest（T vs A、roll 不同） | Rest Fixer 统一 rest；或使用上面的局部 pose/rest 版本 |
+| 不同骨架/比例 | 人形骨骼映射 + 局部 pose/rest 公式 + 目标 rest 长度；root motion 单独处理 |
 | 非人形/多足/翅膀 | 自定义 SkeletonProfile + 手工映射；不能套人形模板 |
 | 需要动态混合/IK | runtime retargeter；否则优先离线 bake |
 
@@ -251,7 +256,8 @@ struct RetargetProfile {
 
 - [ ] rest→rest：源 rest 输入，目标输出应等于目标 rest（误差 < eps）
 - [ ] 目标骨骼长度逐帧不变
-- [ ] 映射骨骼的全局旋转增量与源一致（数值校验）
+- [ ] 手肘/膝盖弯曲角度与源一致（Run 不能直臂滑行）
+- [ ] 映射骨骼的相对姿态（肘/膝角度）与源一致（数值校验）
 - [ ] Idle/Walk/Run 连续 2 个循环：无倾斜、无麻花、无脚底滑
 - [ ] root motion 位移连续、单位正确、循环无缝
 - [ ] 蒙皮网格无爆炸、无拉丝、材质正常
@@ -262,7 +268,7 @@ struct RetargetProfile {
 
 ## 7. 参考实现（本项目）
 
-- `godot-mixamo-demo/`：Godot 4.6 `RetargetModifier3D` 的全局增量实现；Michelle 由隐藏 Soldier 骨架驱动；Soldier/Xbot 原生动作；Space 跳舞；Tab 切换。
+- `godot-mixamo-demo/`：Godot 4.6 `RetargetModifier3D` 的局部 pose/rest 实现；Michelle 由隐藏 Soldier 骨架驱动；Soldier/Xbot 原生动作；Space 跳舞；Tab 切换。
 - `godot-mixamo-demo/tools/blender_inspect.py`：导入期骨架/骨骼/尺寸/材质/T-pose 验收。
 - `docs/MIXAMO_RETARGET.md`：Mixamo → Godot 的实测与踩坑。
 - `godot-mixamo-demo/docs/AI_3D_PIPELINE.md`：概念图 → 图生 3D → 绑定 → Godot 的资产管线。
@@ -279,4 +285,4 @@ tgt_pose.basis = tgt_parent_global_rest.basis.inv
               * tgt_rest.basis
 ```
 
-它和本文的“全局增量 + 目标 rest”是同一件事的不同展开；自研引擎可以直接实现上面的矩阵形式。
+注意 `src_pose` / `src_rest` 是**相对父级的局部量**（Godot `get_bone_pose` / `get_bone_rest`），不是全局量；父级影响已经由 `src_parent_global_rest` / `tgt_parent_global_rest` 负责。自研引擎可以直接实现上面的矩阵形式。

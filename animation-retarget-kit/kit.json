@@ -1,0 +1,45 @@
+{
+  "name": "animation-retarget-kit",
+  "version": "0.2.0",
+  "description": "Engine-agnostic character animation retargeting kit (Blender headless; GLB/FBX; one-click CLI; AI-readable reports).",
+  "engine_agnostic": true,
+  "dependencies": {
+    "blender": ">=3.4",
+    "python": "bundled with Blender; python3 for one-click summaries"
+  },
+  "entrypoints": {
+    "readme": "README.md",
+    "ai": "AGENTS.md",
+    "claude": "CLAUDE.md",
+    "setup": "setup.sh",
+    "one_click": "retarget.sh",
+    "macos_app": "一键迁移.command",
+    "pipeline": "docs/ANIMATION_RETARGET_PIPELINE.md",
+    "operations": "docs/OPERATIONS.md",
+    "acceptance": "docs/ACCEPTANCE.md",
+    "playbook": "docs/AI_PLAYBOOK.md",
+    "clips": "docs/CLIPS.md",
+    "assets": "docs/ASSETS.md"
+  },
+  "tools": {
+    "inspect": "tools/blender_inspect.sh",
+    "retarget": "tools/blender_retarget.sh",
+    "validate": "tools/blender_validate.sh",
+    "example": "tools/run_example.sh"
+  },
+  "assets": {
+    "source": "assets/source/Soldier.glb",
+    "target": "assets/target/Michelle.glb",
+    "sample": "assets/samples/Xbot.glb",
+    "map_template": "assets/maps/mixamo.json"
+  },
+  "examples": {
+    "soldier_to_michelle": "examples/soldier_to_michelle/"
+  },
+  "quickstart": [
+    "./setup.sh",
+    "./retarget.sh --target /path/your_model.fbx --clip samba",
+    "./retarget.sh --target /path/your_model.fbx --clip run --fbx"
+  ],
+  "license": "LICENSES/ASSETS_README.md"
+}
