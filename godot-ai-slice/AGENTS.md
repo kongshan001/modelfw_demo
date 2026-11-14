@@ -1,6 +1,6 @@
 # Codex / Agent Instructions — AI Slice
 
-Read `CLAUDE.md` first; the rules are identical:
+Read `CLAUDE.md` and `.claude/skills/godot-slice/SKILL.md` first; the rules are identical:
 
 - Godot 4.6, GL Compatibility, typed GDScript.
 - Keep `tools/smoke_slice.gd` green.

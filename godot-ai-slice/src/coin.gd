@@ -2,11 +2,14 @@ extends Area3D
 
 # Collectible energy core. The slice only needs one behavior: touch it, score.
 
+const Burst := preload("res://src/burst.gd")
+
 signal collected
 
 var _active := true
 var _visual: Node3D
 var _phase := 0.0
+var _pop_tween: Tween
 
 func _ready() -> void:
 	add_to_group("cores")
@@ -74,10 +77,23 @@ func collect() -> void:
 	if not _active:
 		return
 	_active = false
-	visible = false
+	Burst.burst(get_parent(), global_position, Color(1.0, 0.82, 0.3), 14)
+	var player := get_tree().get_first_node_in_group("player")
+	if player != null and player.has_method("shake"):
+		player.call("shake", 0.12, 0.18)
+	if _pop_tween != null:
+		_pop_tween.kill()
+	_pop_tween = create_tween()
+	_pop_tween.tween_property(_visual, "scale", Vector3.ONE * 1.55, 0.16)
+	_pop_tween.tween_callback(hide)
 	Game.collect_core()
 	collected.emit()
 
 func reset() -> void:
+	if _pop_tween != null:
+		_pop_tween.kill()
+		_pop_tween = null
 	_active = true
 	visible = true
+	if _visual != null:
+		_visual.scale = Vector3.ONE

@@ -7,9 +7,13 @@ const SPEED := 6.0
 const JUMP_VELOCITY := 10.5
 const GRAVITY := 24.0
 const START_POSITION := Vector3(0.0, 1.1, 0.0)
+const CAMERA_BASE := Vector3(0.0, 3.8, 6.2)
 
 var _visual: Node3D
 var _camera: Camera3D
+var _shake_time := 0.0
+var _shake_duration := 0.0
+var _shake_strength := 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -17,6 +21,26 @@ func _ready() -> void:
 	_build_collision()
 	_build_camera()
 	respawn()
+
+func _process(delta: float) -> void:
+	if _camera == null:
+		return
+	if _shake_time > 0.0:
+		_shake_time = maxf(_shake_time - delta, 0.0)
+		var falloff := _shake_time / maxf(_shake_duration, 0.001)
+		var amount := _shake_strength * falloff
+		_camera.position = CAMERA_BASE + Vector3(
+			randf_range(-amount, amount),
+			randf_range(-amount, amount),
+			0.0
+		)
+	else:
+		_camera.position = CAMERA_BASE
+
+func shake(strength: float = 0.12, duration: float = 0.18) -> void:
+	_shake_strength = strength
+	_shake_duration = duration
+	_shake_time = duration
 
 func _physics_process(delta: float) -> void:
 	if not Game.is_playing():
@@ -114,7 +138,7 @@ func _build_camera() -> void:
 	_camera = Camera3D.new()
 	_camera.name = "PlayerCamera"
 	_camera.fov = 55.0
-	_camera.position = Vector3(0.0, 3.8, 6.2)
+	_camera.position = CAMERA_BASE
 	add_child(_camera)
 	_camera.current = true
 	_camera.look_at(global_position + Vector3(0.0, 1.2, 0.0), Vector3.UP)

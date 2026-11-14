@@ -3,6 +3,8 @@ extends Area3D
 # Goal portal. Inactive until all cores are collected; entering an active
 # portal wins the slice.
 
+const Burst := preload("res://src/burst.gd")
+
 var active := false
 var _visual: Node3D
 var _mat: StandardMaterial3D
@@ -13,6 +15,15 @@ func _ready() -> void:
 	_build()
 	body_entered.connect(_on_body_entered)
 	set_active(false)
+
+func _process(_delta: float) -> void:
+	if _visual == null:
+		return
+	if active:
+		var pulse := 1.0 + sin(Time.get_ticks_msec() * 0.005) * 0.05
+		_visual.scale = Vector3.ONE * pulse
+	else:
+		_visual.scale = Vector3.ONE
 
 func _build() -> void:
 	var shape := CollisionShape3D.new()
@@ -50,6 +61,7 @@ func _build() -> void:
 	add_child(_light)
 
 func set_active(value: bool) -> void:
+	var was_active := active
 	active = value
 	if _mat != null:
 		if active:
@@ -60,6 +72,11 @@ func set_active(value: bool) -> void:
 			_mat.emission = Color(0.2, 0.5, 1.0)
 	if _light != null:
 		_light.light_energy = 2.2 if active else 0.0
+	if active and not was_active:
+		Burst.burst(get_parent(), global_position + Vector3(0.0, 1.6, 0.0), Color(1.0, 0.72, 0.25), 18)
+		var player := get_tree().get_first_node_in_group("player")
+		if player != null and player.has_method("shake"):
+			player.call("shake", 0.09, 0.2)
 
 func _on_body_entered(body: Node3D) -> void:
 	if active and body.is_in_group("player"):
@@ -67,6 +84,10 @@ func _on_body_entered(body: Node3D) -> void:
 
 func trigger() -> void:
 	if active:
+		Burst.burst(get_parent(), global_position + Vector3(0.0, 1.6, 0.0), Color(1.0, 0.9, 0.4), 26)
+		var player := get_tree().get_first_node_in_group("player")
+		if player != null and player.has_method("shake"):
+			player.call("shake", 0.16, 0.3)
 		Game.win()
 
 func reset() -> void:

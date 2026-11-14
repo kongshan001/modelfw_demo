@@ -40,6 +40,8 @@ godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
 
 完整步骤、gda 安装、Claude Code/Codex 的 MCP 配置、提示词模板见 [`docs/AI_WORKFLOW.md`](docs/AI_WORKFLOW.md)。
 
+项目级 Claude Skill：[`.claude/skills/godot-slice/SKILL.md`](.claude/skills/godot-slice/SKILL.md)。它固化了“读 GDD → 最小改动 → smoke → 截图 → gda → game-feel 检查”的流程；在 `godot-ai-slice` 目录打开 Claude Code 即可使用。
+
 ## 结构
 
 ```text
@@ -56,6 +58,8 @@ godot-ai-slice/
 ├── tools/
 │   ├── smoke_slice.gd         headless 验收
 │   └── screenshot_slice.gd    1280x720 截图
+├── .claude/skills/godot-slice/
+│   └── SKILL.md               项目级 AI 工作流（smoke/截图/gda/game-feel）
 ├── docs/
 │   ├── AI_WORKFLOW.md         Windows + Claude Code/Codex + gda
 │   ├── GDD.md                 切片设计/验收

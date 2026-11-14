@@ -12,6 +12,7 @@ godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
 
 ## Rules
 
+- Read `.claude/skills/godot-slice/SKILL.md` before gameplay/feel/UI work; it contains the verification and game-feel checklist.
 - **Keep `tools/smoke_slice.gd` green.** Any gameplay/state change must update or preserve it.
 - **Do not edit `.godot/`.** Let Godot import; use `godot --headless --import` if needed.
 - One feature per change. For visual changes, run the screenshot tool and inspect all three shots.

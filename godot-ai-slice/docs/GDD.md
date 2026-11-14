@@ -26,6 +26,14 @@ A tiny yellow robot wakes up on broken sky islands. Collect three energy cores t
 - `AI_SLICE_SMOKE_OK`.
 - Title / play / win screenshots render without missing nodes.
 - The slice remains playable without external assets.
+- Collection and portal activation have visible feedback (pop/burst/shake/toast/HUD flash) and reset cleanly.
+
+## Game feel (implemented)
+
+- Core: scale pop, gold burst, small camera shake, HUD core flash.
+- Portal: burst + pulse + "PORTAL ONLINE" toast + shake on activation.
+- Win: portal burst + shake, win overlay; toast clears on state change.
+- No audio (yet); no external assets.
 
 ## Non-goals (this slice)
 

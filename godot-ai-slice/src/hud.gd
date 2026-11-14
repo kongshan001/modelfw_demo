@@ -9,6 +9,9 @@ var _win_root: Control
 var _cores_label: Label
 var _state_label: Label
 var _debug_label: Label
+var _toast: Label
+var _toast_tween: Tween
+var _cores_tween: Tween
 var _debug_visible := false
 
 func _ready() -> void:
@@ -74,6 +77,16 @@ func _build() -> void:
 	_debug_label.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
 	_hud_root.add_child(_debug_label)
 
+	_toast = Label.new()
+	_toast.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_toast.offset_top = 96.0
+	_toast.offset_bottom = 144.0
+	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast.add_theme_font_size_override("font_size", 24)
+	_toast.add_theme_color_override("font_color", Color(1.0, 0.86, 0.5))
+	_toast.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_hud_root.add_child(_toast)
+
 	_title_root = _make_overlay(Color(0.03, 0.05, 0.08, 0.42))
 	add_child(_title_root)
 	var title_box := _overlay_box(_title_root)
@@ -132,7 +145,31 @@ func _on_state_changed(state: int) -> void:
 		_win_root.visible = state == Game.WON
 	if _state_label != null:
 		_state_label.text = "STATE · " + Game.state_name()
+	if _toast != null:
+		_toast.modulate.a = 0.0
+		if _toast_tween != null:
+			_toast_tween.kill()
+			_toast_tween = null
 
 func _on_cores_changed(collected: int, total: int) -> void:
 	if _cores_label != null:
 		_cores_label.text = "CORES  %d / %d" % [collected, total]
+		if collected > 0:
+			if _cores_tween != null:
+				_cores_tween.kill()
+			_cores_label.modulate = Color(1.55, 1.55, 1.1, 1.0)
+			_cores_tween = create_tween()
+			_cores_tween.tween_property(_cores_label, "modulate", Color.WHITE, 0.3)
+	if collected >= total and total > 0:
+		show_toast("PORTAL ONLINE")
+
+func show_toast(text: String) -> void:
+	if _toast == null:
+		return
+	_toast.text = text
+	_toast.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if _toast_tween != null:
+		_toast_tween.kill()
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(0.8)
+	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.4)
