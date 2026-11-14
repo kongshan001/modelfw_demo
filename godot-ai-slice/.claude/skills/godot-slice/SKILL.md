@@ -30,6 +30,9 @@ godot --headless --path godot-ai-slice -s tools/smoke_slice.gd
 
 godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
 # /tmp/ai_slice_shots/{title,play,win}.png
+
+godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_slice_gif.gd
+# /tmp/ai_slice_gif_frames; ffmpeg encode command is in the script header
 ```
 
 If `gda` is available (Windows uses the `*_console.exe` binary):

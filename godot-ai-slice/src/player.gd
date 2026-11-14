@@ -14,6 +14,9 @@ var _camera: Camera3D
 var _shake_time := 0.0
 var _shake_duration := 0.0
 var _shake_strength := 0.0
+var _demo_override := false
+var _demo_dir := Vector3.ZERO
+var _demo_jump := false
 
 func _ready() -> void:
 	add_to_group("player")
@@ -49,14 +52,20 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var input := Vector3.ZERO
-	if Input.is_key_pressed(KEY_A):
-		input.x -= 1.0
-	if Input.is_key_pressed(KEY_D):
-		input.x += 1.0
-	if Input.is_key_pressed(KEY_W):
-		input.z -= 1.0
-	if Input.is_key_pressed(KEY_S):
-		input.z += 1.0
+	var jump_pressed := false
+	if _demo_override:
+		input = _demo_dir
+		jump_pressed = _demo_jump
+	else:
+		if Input.is_key_pressed(KEY_A):
+			input.x -= 1.0
+		if Input.is_key_pressed(KEY_D):
+			input.x += 1.0
+		if Input.is_key_pressed(KEY_W):
+			input.z -= 1.0
+		if Input.is_key_pressed(KEY_S):
+			input.z += 1.0
+		jump_pressed = Input.is_key_pressed(KEY_SPACE)
 
 	if input.length_squared() > 0.001:
 		input = input.normalized()
@@ -68,7 +77,7 @@ func _physics_process(delta: float) -> void:
 
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
-	elif Input.is_key_pressed(KEY_SPACE):
+	elif jump_pressed:
 		velocity.y = JUMP_VELOCITY
 	else:
 		velocity.y = 0.0
@@ -82,6 +91,16 @@ func respawn() -> void:
 	velocity = Vector3.ZERO
 	if _visual != null:
 		_visual.rotation = Vector3.ZERO
+
+func set_demo_input(dir: Vector3, jump: bool = false) -> void:
+	_demo_override = true
+	_demo_dir = dir
+	_demo_jump = jump
+
+func clear_demo_input() -> void:
+	_demo_override = false
+	_demo_dir = Vector3.ZERO
+	_demo_jump = false
 
 func _build_visual() -> void:
 	_visual = Node3D.new()

@@ -2,7 +2,9 @@
 
 一个 **Godot 4.6 的极简 3D 垂直切片**，专门用来验证“AI 做游戏”的工作流：Codex 做设计、Claude Code 实现、gda 做运行时/截图验证。所有模型都是程序化几何，没有外部资产。
 
-![play](docs/preview_play.png)
+![gameplay](docs/gameplay.gif)
+
+> 7s / 1280×720 / 15fps：标题 → 走到第一个 core → 收集反馈 → 传送门 → 胜利。
 
 ## 运行
 
@@ -28,6 +30,10 @@ godot --headless --path godot-ai-slice -s tools/smoke_slice.gd
 
 # 三张 1280x720 截图（title / play / win）
 godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
+
+# 7 秒演示帧（标题 → 收集 → 传送门 → 胜利）
+godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_slice_gif.gd
+# 输出 /tmp/ai_slice_gif_frames；ffmpeg 编码命令见脚本头部
 ```
 
 ## AI 工作流（Windows）
@@ -57,12 +63,14 @@ godot-ai-slice/
 │   └── hud.gd                 标题 / HUD / 胜利 / F1 调试
 ├── tools/
 │   ├── smoke_slice.gd         headless 验收
-│   └── screenshot_slice.gd    1280x720 截图
+│   ├── screenshot_slice.gd    1280x720 截图
+│   └── capture_slice_gif.gd   7s 演示帧
 ├── .claude/skills/godot-slice/
 │   └── SKILL.md               项目级 AI 工作流（smoke/截图/gda/game-feel）
 ├── docs/
 │   ├── AI_WORKFLOW.md         Windows + Claude Code/Codex + gda
 │   ├── GDD.md                 切片设计/验收
+│   ├── gameplay.gif           7s 演示
 │   └── preview_*.png
 └── mcp/                       Claude Code / Codex MCP 配置示例
 ```
