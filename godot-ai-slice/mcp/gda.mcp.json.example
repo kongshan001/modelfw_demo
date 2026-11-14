@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gda-mcp": {
+      "command": "uvx",
+      "args": ["--from", "gda[mcp]", "gda-mcp"],
+      "env": {
+        "GDA_GODOT": "C:/Tools/Godot_v4.6.3-stable_win64_console.exe",
+        "GDA_PROJECT": "C:/Users/<you>/modelfw_demo/godot-ai-slice"
+      }
+    }
+  }
+}
