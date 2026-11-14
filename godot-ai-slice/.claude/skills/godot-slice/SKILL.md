@@ -16,7 +16,7 @@ A tiny 3D vertical slice. Treat it as a production starter: small diffs, verifie
 ## Implementation rules
 
 - Godot 4.6, GL Compatibility, typed GDScript. Match the existing style.
-- Preserve public methods used by tools/tests: `start_game`, `restart_level`, `force_win`, `respawn`, `reset`, `collect`, `trigger`, `set_active`.
+- Preserve public methods used by tools/tests: `start_game`, `restart_level`, `force_win`, `respawn`, `throw_head`, `reset`, `collect`, `trigger`, `set_active`.
 - Never edit `.godot/`. Let Godot import; use `godot --headless --import` if needed.
 - No external assets/audio/fonts without an explicit license note. The slice is primitive geometry on purpose.
 - UI copy is English; docs may be Chinese.
@@ -33,6 +33,9 @@ godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
 
 godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_slice_gif.gd
 # /tmp/ai_slice_gif_frames; ffmpeg encode command is in the script header
+
+godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_bowling_gif.gd
+# /tmp/ai_slice_bowling_frames; bowling-head demo
 ```
 
 If `gda` is available (Windows uses the `*_console.exe` binary):
@@ -52,7 +55,7 @@ For any interaction (collect, jump, portal, UI):
 - Feedback starts within ~100 ms of the action.
 - The player can tell what changed without reading a log.
 - One strong cue is better than three competing ones.
-- Existing juice: core pop + gold burst + small camera shake; portal activation burst/pulse + "PORTAL ONLINE" toast + HUD core flash.
+- Existing juice: core pop + gold burst + small camera shake; portal activation burst/pulse + "PORTAL ONLINE" toast + HUD core flash; thrown head + toppling pins + "STRIKE!" toast.
 - Do not over-shake or make the HUD unreadable. Keep the title/HUD/win overlays legible.
 - If you add a new effect, make it deterministic enough for screenshots and reset it in `reset()`/`restart_level()`.
 

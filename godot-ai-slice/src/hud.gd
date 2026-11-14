@@ -7,6 +7,7 @@ var _hud_root: Control
 var _title_root: Control
 var _win_root: Control
 var _cores_label: Label
+var _pins_label: Label
 var _state_label: Label
 var _debug_label: Label
 var _toast: Label
@@ -66,7 +67,8 @@ func _build() -> void:
 
 	_add_label(box, "SKY CIRCUIT", 24, Color(1.0, 0.86, 0.5))
 	_cores_label = _add_label(box, "CORES  0 / 3", 22, Color(0.55, 0.92, 1.0))
-	_add_label(box, "WASD Move  ·  Space Jump  ·  F1 Debug", 14, Color(0.82, 0.88, 0.95))
+	_pins_label = _add_label(box, "PINS   0 / 3", 18, Color(1.0, 0.76, 0.88))
+	_add_label(box, "WASD · Space · Q Throw · F1 Debug", 13, Color(0.82, 0.88, 0.95))
 	_state_label = _add_label(box, "STATE · TITLE", 14, Color(0.55, 0.95, 0.72))
 
 	_debug_label = Label.new()
@@ -93,6 +95,7 @@ func _build() -> void:
 	_add_label(title_box, "SKY CIRCUIT", 64, Color(1.0, 0.86, 0.5))
 	_add_label(title_box, "AI Slice · Godot 4.6", 20, Color(0.7, 0.85, 1.0))
 	_add_label(title_box, "Collect 3 cores · Reach the portal", 20, Color(0.9, 0.94, 1.0))
+	_add_label(title_box, "Q · Bowl the 3 pins", 18, Color(0.98, 0.8, 0.9))
 	_add_label(title_box, "Enter / Space to start", 22, Color(0.9, 0.95, 0.85))
 
 	_win_root = _make_overlay(Color(0.02, 0.03, 0.05, 0.68))
@@ -162,6 +165,16 @@ func _on_cores_changed(collected: int, total: int) -> void:
 			_cores_tween.tween_property(_cores_label, "modulate", Color.WHITE, 0.3)
 	if collected >= total and total > 0:
 		show_toast("PORTAL ONLINE")
+
+func set_pins(knocked: int, total: int) -> void:
+	if _pins_label != null:
+		_pins_label.text = "PINS   %d / %d" % [knocked, total]
+		if knocked > 0:
+			_pins_label.modulate = Color(1.55, 1.2, 1.3, 1.0)
+			var tween := create_tween()
+			tween.tween_property(_pins_label, "modulate", Color.WHITE, 0.3)
+	if knocked >= total and total > 0:
+		show_toast("STRIKE!")
 
 func show_toast(text: String) -> void:
 	if _toast == null:

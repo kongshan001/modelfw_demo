@@ -3,6 +3,8 @@ extends CharacterBody3D
 # Minimal third-person controller: WASD move, Space jump, fixed follow camera.
 # The robot is built from primitives so the slice has no external asset deps.
 
+const HeadProjectileScript := preload("res://src/head_projectile.gd")
+
 const SPEED := 6.0
 const JUMP_VELOCITY := 10.5
 const GRAVITY := 24.0
@@ -10,10 +12,13 @@ const START_POSITION := Vector3(0.0, 1.1, 0.0)
 const CAMERA_BASE := Vector3(0.0, 3.8, 6.2)
 
 var _visual: Node3D
+var _head: Node3D
 var _camera: Camera3D
 var _shake_time := 0.0
 var _shake_duration := 0.0
 var _shake_strength := 0.0
+var _head_available := true
+var _head_return := 0.0
 var _demo_override := false
 var _demo_dir := Vector3.ZERO
 var _demo_jump := false
@@ -39,6 +44,12 @@ func _process(delta: float) -> void:
 		)
 	else:
 		_camera.position = CAMERA_BASE
+	if not _head_available:
+		_head_return -= delta
+		if _head_return <= 0.0:
+			_head_available = true
+			if _head != null:
+				_head.visible = true
 
 func shake(strength: float = 0.12, duration: float = 0.18) -> void:
 	_shake_strength = strength
@@ -91,6 +102,33 @@ func respawn() -> void:
 	velocity = Vector3.ZERO
 	if _visual != null:
 		_visual.rotation = Vector3.ZERO
+	_head_available = true
+	_head_return = 0.0
+	if _head != null:
+		_head.visible = true
+
+func throw_head() -> void:
+	if not _head_available or not Game.is_playing():
+		return
+	var parent := get_parent()
+	if parent == null:
+		return
+	_head_available = false
+	_head_return = 1.2
+	if _head != null:
+		_head.visible = false
+	var dir := -_camera.global_transform.basis.z
+	dir.y = 0.0
+	if dir.length_squared() < 0.001:
+		dir = Vector3(0.0, 0.0, -1.0)
+	dir = dir.normalized()
+	var projectile := Area3D.new()
+	projectile.name = "HeadProjectile"
+	projectile.set_script(HeadProjectileScript)
+	parent.add_child(projectile)
+	projectile.global_position = _head.global_position
+	projectile.call("launch", dir)
+	shake(0.06, 0.12)
 
 func set_demo_input(dir: Vector3, jump: bool = false) -> void:
 	_demo_override = true
@@ -111,15 +149,20 @@ func _build_visual() -> void:
 	var dark := Color(0.08, 0.12, 0.18)
 	var accent := Color(0.65, 0.82, 0.95)
 	_add_box(Vector3(0.75, 0.85, 0.55), Vector3(0.0, 0.85, 0.0), body_color)
-	_add_sphere(0.32, Vector3(0.0, 1.52, 0.0), head_color)
-	_add_box(Vector3(0.42, 0.14, 0.08), Vector3(0.0, 1.55, 0.27), dark)
 	_add_box(Vector3(0.18, 0.55, 0.18), Vector3(-0.5, 0.82, 0.0), accent)
 	_add_box(Vector3(0.18, 0.55, 0.18), Vector3(0.5, 0.82, 0.0), accent)
 	_add_box(Vector3(0.2, 0.5, 0.2), Vector3(-0.22, 0.3, 0.0), dark)
 	_add_box(Vector3(0.2, 0.5, 0.2), Vector3(0.22, 0.3, 0.0), dark)
-	_add_box(Vector3(0.5, 0.08, 0.3), Vector3(0.0, 1.82, 0.0), accent)
 
-func _add_box(size: Vector3, pos: Vector3, color: Color) -> void:
+	_head = Node3D.new()
+	_head.name = "Head"
+	_head.position = Vector3(0.0, 1.52, 0.0)
+	_visual.add_child(_head)
+	_add_sphere(0.32, Vector3.ZERO, head_color, _head)
+	_add_box(Vector3(0.42, 0.14, 0.08), Vector3(0.0, 0.03, 0.27), dark, _head)
+	_add_box(Vector3(0.5, 0.08, 0.3), Vector3(0.0, 0.3, 0.0), accent, _head)
+
+func _add_box(size: Vector3, pos: Vector3, color: Color, parent: Node3D = null) -> void:
 	var mesh := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = size
@@ -129,9 +172,12 @@ func _add_box(size: Vector3, pos: Vector3, color: Color) -> void:
 	mat.roughness = 0.55
 	mesh.material_override = mat
 	mesh.position = pos
-	_visual.add_child(mesh)
+	var target: Node3D = _visual
+	if parent != null:
+		target = parent
+	target.add_child(mesh)
 
-func _add_sphere(radius: float, pos: Vector3, color: Color) -> void:
+func _add_sphere(radius: float, pos: Vector3, color: Color, parent: Node3D = null) -> void:
 	var mesh := MeshInstance3D.new()
 	var sphere := SphereMesh.new()
 	sphere.radius = radius
@@ -142,7 +188,10 @@ func _add_sphere(radius: float, pos: Vector3, color: Color) -> void:
 	mat.roughness = 0.5
 	mesh.material_override = mat
 	mesh.position = pos
-	_visual.add_child(mesh)
+	var target: Node3D = _visual
+	if parent != null:
+		target = parent
+	target.add_child(mesh)
 
 func _build_collision() -> void:
 	var shape := CollisionShape3D.new()

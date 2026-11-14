@@ -29,6 +29,20 @@ func _initialize() -> void:
 	if player == null:
 		_fail("Player missing")
 
+	var pins := get_nodes_in_group("pins")
+	if pins.size() != 3:
+		_fail("pin count mismatch: %d" % pins.size())
+	player.call("throw_head")
+	await process_frame
+	var projectiles := get_nodes_in_group("head_projectiles")
+	if projectiles.size() != 1:
+		_fail("head projectile did not spawn")
+	for pin in pins:
+		pin.call("hit")
+	await process_frame
+	if int(scene.get("pins_knocked")) != 3:
+		_fail("pins_knocked mismatch: %d" % int(scene.get("pins_knocked")))
+
 	var coins := get_nodes_in_group("cores")
 	if coins.size() != int(_game.call("total_cores")):
 		_fail("core count mismatch: %d" % coins.size())
@@ -61,6 +75,11 @@ func _initialize() -> void:
 	for coin in get_nodes_in_group("cores"):
 		if not coin.visible:
 			_fail("restart did not restore a coin")
+	if int(scene.get("pins_knocked")) != 0:
+		_fail("restart did not clear pins")
+	for pin in get_nodes_in_group("pins"):
+		if bool(pin.get("down")):
+			_fail("restart did not restore a pin")
 
 	print("AI_SLICE_SMOKE_OK")
 	scene.queue_free()

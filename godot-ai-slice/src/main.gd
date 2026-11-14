@@ -7,12 +7,15 @@ extends Node3D
 const PlayerScript := preload("res://src/player.gd")
 const CoinScript := preload("res://src/coin.gd")
 const PortalScript := preload("res://src/portal.gd")
+const PinScript := preload("res://src/pin.gd")
 const HudScript := preload("res://src/hud.gd")
 
 var player: CharacterBody3D
 var portal: Area3D
 var hud: CanvasLayer
+var pins_knocked := 0
 var _coins: Array[Node] = []
+var _pins: Array[Node] = []
 
 func _ready() -> void:
 	_build_environment()
@@ -33,6 +36,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.keycode == KEY_R and Game.state != Game.TITLE:
 		restart_level()
+		get_viewport().set_input_as_handled()
+		return
+	if event.keycode == KEY_Q and Game.is_playing():
+		if player != null:
+			player.call("throw_head")
 		get_viewport().set_input_as_handled()
 		return
 	if Game.state == Game.TITLE and (event.keycode == KEY_ENTER or event.keycode == KEY_SPACE):
@@ -59,8 +67,15 @@ func force_win() -> void:
 		portal.call("trigger")
 
 func _reset_level() -> void:
+	for projectile in get_tree().get_nodes_in_group("head_projectiles"):
+		projectile.queue_free()
 	for coin in _coins:
 		coin.call("reset")
+	for pin in _pins:
+		pin.call("reset")
+	pins_knocked = 0
+	if hud != null:
+		hud.call("set_pins", 0, _pins.size())
 	if portal != null:
 		portal.call("reset")
 	if player != null:
@@ -69,6 +84,14 @@ func _reset_level() -> void:
 func _on_cores_changed(collected: int, total: int) -> void:
 	if portal != null:
 		portal.call("set_active", collected >= total)
+
+func _on_pin_knocked() -> void:
+	pins_knocked += 1
+	if hud != null:
+		hud.call("set_pins", pins_knocked, _pins.size())
+	if pins_knocked >= _pins.size() and not _pins.is_empty():
+		if player != null:
+			player.call("shake", 0.12, 0.2)
 
 func _build_environment() -> void:
 	var world_env := WorldEnvironment.new()
@@ -97,7 +120,7 @@ func _build_level() -> void:
 	_add_island(Vector3(0.0, -0.5, 0.0), 5.5, 1.0, Color(0.55, 0.86, 0.42))
 	_add_island(Vector3(6.2, 0.6, 2.8), 2.2, 0.6, Color(0.58, 0.82, 0.4))
 	_add_island(Vector3(-5.4, 1.2, 4.2), 2.4, 0.6, Color(0.54, 0.8, 0.38))
-	_add_island(Vector3(2.0, 1.8, -5.5), 2.0, 0.6, Color(0.6, 0.86, 0.45))
+	_add_island(Vector3(0.0, 1.2, -5.0), 2.4, 0.6, Color(0.6, 0.86, 0.45))
 	_add_island(Vector3(5.2, 0.9, -4.2), 2.4, 0.6, Color(0.56, 0.82, 0.42))
 
 	_add_tree(Vector3(-3.2, 0.0, 0.8), 1.0)
@@ -114,6 +137,10 @@ func _build_level() -> void:
 	_build_coin(Vector3(0.0, 1.1, 2.8))
 	_build_coin(Vector3(6.2, 1.9, 2.8))
 	_build_coin(Vector3(-5.4, 2.5, 4.2))
+
+	_build_pin(Vector3(0.0, 1.5, -5.1))
+	_build_pin(Vector3(-0.6, 1.5, -5.3))
+	_build_pin(Vector3(0.6, 1.5, -5.3))
 
 func _build_player() -> void:
 	player = CharacterBody3D.new()
@@ -136,11 +163,21 @@ func _build_coin(pos: Vector3) -> void:
 	add_child(coin)
 	_coins.append(coin)
 
+func _build_pin(pos: Vector3) -> void:
+	var pin := Node3D.new()
+	pin.name = "Pin"
+	pin.set_script(PinScript)
+	pin.position = pos
+	add_child(pin)
+	pin.knocked.connect(_on_pin_knocked)
+	_pins.append(pin)
+
 func _build_hud() -> void:
 	hud = CanvasLayer.new()
 	hud.name = "HUD"
 	hud.set_script(HudScript)
 	add_child(hud)
+	hud.call("set_pins", 0, _pins.size())
 
 func _add_island(pos: Vector3, radius: float, height: float, color: Color) -> void:
 	var body := StaticBody3D.new()

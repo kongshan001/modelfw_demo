@@ -6,6 +6,10 @@
 
 > 7s / 1280×720 / 15fps：标题 → 走到第一个 core → 收集反馈 → 传送门 → 胜利。
 
+![bowling](docs/bowling.gif)
+
+> 4s：按 Q 扔出头，撞倒 3 个球瓶，`PINS 3/3` + `STRIKE!`。
+
 ## 运行
 
 ```bash
@@ -15,11 +19,12 @@ godot --path godot-ai-slice
 控制：
 
 - `WASD` 移动，`Space` 跳跃
+- `Q` 摘下头当保龄球扔出去（撞倒球瓶）
 - `Enter` / `Space` 开始
 - `R` 重新开始
 - `F1` 调试信息（FPS / 坐标 / 状态）
 
-目标：收集 3 个 core，进入激活的传送门。
+目标：收集 3 个 core，进入激活的传送门；顺带用头撞倒 3 个球瓶拿 `STRIKE!`。
 
 ## 验收
 
@@ -34,6 +39,10 @@ godot --path godot-ai-slice --resolution 1280x720 -s tools/screenshot_slice.gd
 # 7 秒演示帧（标题 → 收集 → 传送门 → 胜利）
 godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_slice_gif.gd
 # 输出 /tmp/ai_slice_gif_frames；ffmpeg 编码命令见脚本头部
+
+# 4 秒保龄球头演示
+godot --path godot-ai-slice --resolution 1280x720 -s tools/capture_bowling_gif.gd
+# 输出 /tmp/ai_slice_bowling_frames；ffmpeg 编码命令见脚本头部
 ```
 
 ## AI 工作流（Windows）
@@ -60,17 +69,21 @@ godot-ai-slice/
 │   ├── player.gd              CharacterBody3D + 跟随相机
 │   ├── coin.gd                core 收集
 │   ├── portal.gd              胜利传送门
+│   ├── pin.gd                 球瓶
+│   ├── head_projectile.gd     扔出的头
 │   └── hud.gd                 标题 / HUD / 胜利 / F1 调试
 ├── tools/
 │   ├── smoke_slice.gd         headless 验收
 │   ├── screenshot_slice.gd    1280x720 截图
-│   └── capture_slice_gif.gd   7s 演示帧
+│   ├── capture_slice_gif.gd   7s 收集/传送门演示帧
+│   └── capture_bowling_gif.gd 4s 保龄球头演示帧
 ├── .claude/skills/godot-slice/
 │   └── SKILL.md               项目级 AI 工作流（smoke/截图/gda/game-feel）
 ├── docs/
 │   ├── AI_WORKFLOW.md         Windows + Claude Code/Codex + gda
 │   ├── GDD.md                 切片设计/验收
-│   ├── gameplay.gif           7s 演示
+│   ├── gameplay.gif           7s 收集/传送门演示
+│   ├── bowling.gif            4s 保龄球头演示
 │   └── preview_*.png
 └── mcp/                       Claude Code / Codex MCP 配置示例
 ```
