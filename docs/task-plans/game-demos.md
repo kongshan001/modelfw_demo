@@ -19,8 +19,8 @@
 - 交付: `godot-raft-fishing/` 可玩 Godot 4.6 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创名字/UI/素材；不复制该作者的游戏素材/品牌；可复用 T-20261120-002 的水面（若已完成），否则先简化；1280×720 GL Compatibility，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-003/result.md
 
 ## T-20261120-002 · 像素水面 + 木筏效果复刻
 - 来源: 飞书消息（B 站 BV1ehsm69EnT《我做了一个很酷的效果》，2026-11-20）
