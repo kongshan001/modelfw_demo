@@ -1,0 +1,85 @@
+== old6 · bottom-most boot pixels in walk segment f042–f078 (6s GIF 640×360)
+f042 bottom_y=331 x=[298,352] centroid=326.1
+f043 bottom_y=331 x=[312,335] centroid=321.1
+f044 bottom_y=331 x=[313,344] centroid=329.4
+f045 bottom_y=331 x=[342,352] centroid=346.6
+f046 bottom_y=332 x=[348,355] centroid=351.5
+f047 bottom_y=332 x=[352,360] centroid=355.8
+f048 bottom_y=333 x=[355,362] centroid=358.2
+f049 bottom_y=334 x=[356,363] centroid=359.3
+f050 bottom_y=332 x=[354,372] centroid=361.8
+f051 bottom_y=331 x=[351,376] centroid=363.3
+f052 bottom_y=332 x=[355,371] centroid=364.4
+f053 bottom_y=333 x=[356,367] centroid=361.8
+f054 bottom_y=334 x=[352,359] centroid=356.1
+f055 bottom_y=334 x=[345,354] centroid=349.7
+f056 bottom_y=332 x=[344,353] centroid=348.8
+f057 bottom_y=331 x=[310,355] centroid=339.5
+f058 bottom_y=331 x=[315,322] centroid=318.5
+f059 bottom_y=331 x=[319,328] centroid=323.3
+f060 bottom_y=332 x=[323,330] centroid=326.3
+f061 bottom_y=332 x=[323,334] centroid=328.2
+f062 bottom_y=332 x=[323,335] centroid=328.4
+f063 bottom_y=330 x=[321,343] centroid=329.9
+f064 bottom_y=331 x=[323,340] centroid=330.6
+f065 bottom_y=332 x=[326,336] centroid=331.2
+f066 bottom_y=333 x=[323,331] centroid=327.2
+f067 bottom_y=333 x=[316,323] centroid=319.9
+f068 bottom_y=331 x=[312,339] centroid=323.3
+f069 bottom_y=331 x=[315,347] centroid=333.9
+f070 bottom_y=332 x=[345,352] centroid=348.4
+f071 bottom_y=332 x=[350,357] centroid=353.3
+f072 bottom_y=332 x=[353,362] centroid=357.3
+f073 bottom_y=333 x=[355,364] centroid=359.0
+f074 bottom_y=333 x=[355,367] centroid=360.3
+f075 bottom_y=332 x=[353,373] centroid=361.8
+f076 bottom_y=331 x=[351,375] centroid=363.0
+f077 bottom_y=333 x=[360,370] centroid=365.2
+f078 bottom_y=334 x=[356,364] centroid=360.2
+
+== new6 · bottom-most boot pixels in walk segment f042–f078 (6s GIF 640×360)
+f042 bottom_y=331 x=[298,352] centroid=326.1
+f043 bottom_y=332 x=[298,350] centroid=324.0
+f044 bottom_y=332 x=[297,349] centroid=312.5
+f045 bottom_y=333 x=[296,319] centroid=307.5
+f046 bottom_y=333 x=[296,321] centroid=308.3
+f047 bottom_y=333 x=[296,321] centroid=308.3
+f048 bottom_y=333 x=[296,321] centroid=308.3
+f049 bottom_y=333 x=[296,321] centroid=308.3
+f050 bottom_y=333 x=[296,321] centroid=308.3
+f051 bottom_y=333 x=[296,321] centroid=308.3
+f052 bottom_y=333 x=[296,321] centroid=308.3
+f053 bottom_y=333 x=[297,321] centroid=310.1
+f054 bottom_y=332 x=[304,321] centroid=313.1
+f055 bottom_y=332 x=[311,336] centroid=322.4
+f056 bottom_y=332 x=[313,338] centroid=328.0
+f057 bottom_y=333 x=[328,350] centroid=337.6
+f058 bottom_y=333 x=[327,351] centroid=339.0
+f059 bottom_y=333 x=[327,351] centroid=339.0
+f060 bottom_y=333 x=[327,351] centroid=339.0
+f061 bottom_y=333 x=[327,351] centroid=339.0
+f062 bottom_y=333 x=[327,351] centroid=339.0
+f063 bottom_y=333 x=[327,351] centroid=339.0
+f064 bottom_y=333 x=[327,351] centroid=339.0
+f065 bottom_y=333 x=[328,352] centroid=340.0
+f066 bottom_y=333 x=[339,351] centroid=345.5
+f067 bottom_y=332 x=[298,351] centroid=334.0
+f068 bottom_y=332 x=[297,350] centroid=317.0
+f069 bottom_y=333 x=[297,309] centroid=302.5
+f070 bottom_y=333 x=[296,321] centroid=308.3
+f071 bottom_y=333 x=[296,321] centroid=308.3
+f072 bottom_y=333 x=[296,321] centroid=308.3
+f073 bottom_y=333 x=[296,321] centroid=308.3
+f074 bottom_y=333 x=[296,321] centroid=308.3
+f075 bottom_y=333 x=[296,321] centroid=308.3
+f076 bottom_y=333 x=[296,321] centroid=308.3
+f077 bottom_y=333 x=[296,321] centroid=308.5
+f078 bottom_y=333 x=[302,320] centroid=312.0
+
+
+== stance-window summary (planted boot bottom-x, 6s GIF 640×360) ==
+old6 f043-f053: centroid 321.1-364.4, sweep 43.30px
+old6 f058-f066: centroid 318.5-331.2, sweep 12.70px
+new6 f046-f052: centroid 308.3-308.3, sweep 0.00px
+new6 f058-f064: centroid 339.0-339.0, sweep 0.00px
+new6 f070-f076: centroid 308.3-308.3, sweep 0.00px

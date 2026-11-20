@@ -1,0 +1,13 @@
+== 1/5 headless 启动（600 帧） ==
+  [32mPASS[0m 无 SCRIPT ERROR / Parse Error
+== 2/5 数据与渲染 smoke ==
+  [32mPASS[0m PAPERDOLL_SMOKE_OK slots=17 variants=83 dirs=8 actions=4 presets=16 cards=16 baked_cards=16 combos=≈ 9.0×10²⁶ 种外观 procedural_art=true missing_textures=0
+== 3/5 Intel 帧率（SKIP_GPU=1，跳过） ==
+== 4/5 真机截图（SKIP_GPU=1，跳过） ==
+== 5/5 媒体文件 ==
+  [32mPASS[0m 存在 docs/paperdoll.mp4 (1.1M)
+  [32mPASS[0m 存在 docs/paperdoll.gif (1.8M)
+  [32mPASS[0m docs/paperdoll.mp4 时长 8.533333s（6–10s）
+  [32mPASS[0m docs/paperdoll.gif 时长 8.560000s（6–10s）
+
+PAPERDOLL_VERIFY_OK

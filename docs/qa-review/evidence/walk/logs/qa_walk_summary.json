@@ -1,0 +1,115 @@
+{
+  "build": "18537e75bc0ee5d7acad70f45054edfbe9879bfe",
+  "qa_task": "T-20261121-002",
+  "walk_gate": {
+    "threshold_px": 2.0,
+    "scale": 2.1,
+    "drifting_dirs_px": {
+      "0": [
+        0.0,
+        0.0
+      ],
+      "1": [
+        0.0,
+        0.0
+      ],
+      "2": [
+        0.0,
+        0.0
+      ],
+      "3": [
+        0.0,
+        0.0
+      ],
+      "4": [
+        0.0,
+        0.0
+      ],
+      "5": [
+        0.0,
+        0.0
+      ],
+      "6": [
+        0.0,
+        0.0
+      ],
+      "7": [
+        0.0,
+        0.0
+      ]
+    },
+    "max_drift_px": 0.0,
+    "stance_x_drift_px": 0.0,
+    "sole_dy_local_sharp_model": 0.0,
+    "sole_dy_render_px_at_4x": 3.0,
+    "knee_max_interior_deg": 151.3,
+    "knee_limit_deg": 179.0,
+    "pitch_range_deg": [
+      -15.0,
+      22.0
+    ],
+    "mirror_err_local": 0.0,
+    "mirror_mask_iou": 1.0,
+    "old_bug03_dir6_px": 45.26,
+    "old_bug03_dir0_px": 5.42,
+    "six_s_gif_old_stance_sweep_px": 43.33,
+    "six_s_gif_new_stance_sweep_px": 2.61
+  },
+  "regression": {
+    "smoke_slots": 17,
+    "variants": 83,
+    "dirs": 8,
+    "actions": 4,
+    "presets": 16,
+    "cards": 16,
+    "baked_cards": 16,
+    "missing_textures": 0,
+    "headless_600": "PASS",
+    "screenshot_deterministic_identical": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "07"
+    ],
+    "screenshot_random_expected": [
+      "05",
+      "06"
+    ],
+    "input_probe": "FAIL (pre-existing BUG-04: 16 lineup cards focus=0; arrow with focus moves focus)"
+  },
+  "perf": {
+    "runs": [
+      [
+        "min=33.0",
+        "avg=40.5",
+        "PASS"
+      ],
+      [
+        "min=31.0",
+        "avg=32.5",
+        "PASS"
+      ],
+      [
+        "min=21.0",
+        "avg=27.8",
+        "FAIL"
+      ]
+    ],
+    "bake_p90_ms": [
+      11.0,
+      11.11,
+      11.05
+    ]
+  },
+  "media": {
+    "qa_side_gif": "640x360 60f 2.000s r=30/1",
+    "qa_front_gif": "640x360 60f 2.000s r=30/1",
+    "qa_mp4": "640x360 60f 2.000s 30/1",
+    "product_6s_gif": "640x360 180f 6.000s r=30/1"
+  },
+  "verdict": {
+    "walk_fix": "PASS",
+    "build_release": "BLOCKED (pre-existing BUG-01/02/04/10)"
+  }
+}

@@ -1,0 +1,6 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PAPERDOLL_FPS samples=[33.0, 31.0, 33.0, 33.0, 32.0, 32.0, 34.0] steady_min=31.0 steady_avg=32.5 gpu=Intel(R) HD Graphics 6000
+PAPERDOLL_BAKE_OK card_median_ms=8.88 card_p90_ms=11.11 card_max_ms=13.09 overlay_median_ms=9.31 overlay_p90_ms=11.01 overlay_max_ms=12.92 wall_max_ms=83.1 budget_ms=16.0
+PAPERDOLL_FPS_OK min=31.0 avg=32.5

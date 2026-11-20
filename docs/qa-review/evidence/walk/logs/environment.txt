@@ -1,0 +1,11 @@
+4.6.stable.official.89cea1439
+---
+ProductName:	macOS
+ProductVersion:	12.7.6
+BuildVersion:	21H1320
+---
+Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+---
+ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+---
+18537e75bc0ee5d7acad70f45054edfbe9879bfe

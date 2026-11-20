@@ -20,9 +20,9 @@
 - 交付: `docs/qa-review/paperdoll-walk-qa.md` + `walk_contact_strip`/侧向 GIF；媒体
 - 约束: 只写 QA 证据；失败打回
 - 指派: game-qa-lead worker
-- 状态: queued
+- 状态: done
 - depends_on: T-20261121-001
-- 产出: 待回填
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-002/result.md
 
 ## T-20261121-003 · 走路动画独立复评（Art Director）
 - 父任务: T-20261121-002；依赖: T-20261121-002（done + Git 已发布）

@@ -1,0 +1,6 @@
+frame=000 maskIoU=1.0000 mask_px=34258/34258
+frame=003 maskIoU=1.0000 mask_px=33249/33249
+frame=006 maskIoU=1.0000 mask_px=32970/32970
+frame=015 maskIoU=1.0000 mask_px=34660/34660
+frame=030 maskIoU=1.0000 mask_px=32966/32966
+frame=045 maskIoU=1.0000 mask_px=34676/34676

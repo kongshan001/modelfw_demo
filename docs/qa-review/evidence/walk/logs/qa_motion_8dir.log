@@ -1,0 +1,13 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+QA_WALK dir=0 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=151.3 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=1 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=150.4 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=2 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=149.7 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=3 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=150.4 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=4 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=151.3 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=5 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=150.4 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=6 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=149.7 pitch_deg=[-15.0, 22.0]
+QA_WALK dir=7 left_px=0.00 right_px=0.00 stance_px=0.00/0.00 sole_dy=0.000 knee_max_deg=150.4 pitch_deg=[-15.0, 22.0]
+QA_WALK_SLIDE max_left_px=0.00 max_right_px=0.00 threshold_px=2.0 worst=
+QA_WALK_POSE stance_max_px=0.00 sole_dy_max=0.000 knee_max_deg=151.3 knee_limit_deg=179.0 pitch_deg=[-15.0, 22.0] mirror_err=0.0000 local
+QA_MOTION_OK
