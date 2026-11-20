@@ -2,6 +2,61 @@
 
 ## 进行中
 
+## T-20261120-009 · 纸娃娃美术实现（Game Artist）
+- 来源: 飞书消息（角色分工：美术参与开发，2026-11-20）
+- 父任务: T-20261120-007（美术 brief）/ T-20261120-006（项目）
+- 类型: game-demo（美术实现）
+- 目标: 由 `game-artist` 按评审 brief 实现 P0-1/P0-3/P0-4/P0-5 + P1 视觉项；不改玩法；P0-2 AA/缩略图技术项留给 T-010 工程师
+- 交付: 更新后的 `godot-paper-doll/` 视觉层；before/after/剪影/8 向/动作/舞台/UI 物料；FPS 不回归；媒体发送
+- 约束: 只改视觉文件/资产；原创；不复制参考素材；保留 17 槽/8 向/4 动作/16 预设；不做 QA/独立评审
+- 指派: game-artist worker（dispatcher）
+- 状态: running
+- 产出: worker running
+
+## T-20261120-010 · 纸娃娃技术/性能/AA（Game Engineer）
+- 父任务: T-20261120-009；依赖: T-20261120-009（done + Git 已发布）
+- 类型: game-demo（技术）
+- 目标: 只做技术/性能/AA/缩略图烘焙/集成：2× SubViewport 超采样、Linear、mini 删细节、一次性烘焙、FPS；不重做美术方向
+- 交付: 更新后的 `godot-paper-doll/`；PAPERDOLL_SMOKE_OK/verify/FPS/截图；TECH/迭代记录；媒体
+- 约束: 不改美术风格/玩法；不改 QA/评审；原创
+- 指派: game-engineer worker
+- 状态: queued
+- depends_on: T-20261120-009
+- 产出: 待回填
+
+## T-20261120-011 · 纸娃娃 QA 独立验收（QA Lead）
+- 父任务: T-20261120-010；依赖: T-20261120-010（done + Git 已发布）
+- 类型: game-demo（QA）
+- 目标: 独立验收；按评审 §8 跑 smoke/截图/剪影/8 向/动作/GIF/指标；不改代码/美术；出 verdict
+- 交付: `docs/qa-review/paperdoll-qa.md` + 指标/截图；媒体
+- 约束: 只写 QA 报告；失败打回，不自己修；依赖 T-010
+- 指派: game-qa-lead worker
+- 状态: queued
+- depends_on: T-20261120-010
+- 产出: 待回填
+
+## T-20261120-012 · 纸娃娃独立美术复评（Art Director）
+- 父任务: T-20261120-011；依赖: T-20261120-011（done + Git 已发布）
+- 类型: game-demo（独立复评）
+- 目标: 由 `game-art-director`（非 game-artist 实现者）用同一 rubric 复评最新 build/QA 证据；给 APPROVE/CONCERNS/REJECT
+- 交付: `docs/art-review/paperdoll-art-review-round2.md` + 代表图；不改代码；FAIL 给下一轮整改 brief
+- 约束: 独立评审；不实现；依赖 T-011
+- 指派: game-art-director worker
+- 状态: queued
+- depends_on: T-20261120-011
+- 产出: 待回填
+
+## T-20261120-008 · 纸娃娃美术整改（P0+P1）
+- 来源: 飞书消息（“推进提升美术质量”，2026-11-20）
+- 父任务: T-20261120-007（美术评审 4.2/10，门槛 7.0）
+- 类型: game-demo（美术整改）
+- 目标: 按评审 brief 落地 P0 全部 + P1-2/P1-5（并尽量 P1-1/P1-3/P1-4），把 `godot-paper-doll` 从 4.2 提升到公开试玩 ≥7.0；不改玩法
+- 交付: 更新后的 `godot-paper-doll/`；before/after 1280×720 / 25% / 纯黑剪影 / 8 向罗盘 / 4×3 动作关键帧 / 6s GIF；FPS/对比度/墨占比；README/TECH/迭代记录；媒体发送
+- 约束: 原创美术/代码；不复制参考片素材；保留 17 槽/8 向/4 动作/16 预设；Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: stopped
+- 产出: 角色分工修正；engineer-only 美术任务停止，改由 T-20261120-009 Game Artist 执行
+
 ## T-20261120-007 · 纸娃娃美术评审 + 美术 agent 提示词库
 - 来源: 飞书反馈（2026-11-20，“这个效果有让美术agent审核评估吗…如果美术不太行就网上看看有没有可以复用的美术agent提示词”）
 - 父任务: T-20261120-006

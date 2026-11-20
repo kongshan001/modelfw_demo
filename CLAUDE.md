@@ -46,6 +46,23 @@ python3 tools/task_dispatcher.py status <id>
 - Git 发布：`python3 tools/git_publisher.py status` / `publish-all`；daemon 由 enqueue 自动拉起。
   远端：`origin`（https://github.com/kongshan001/modelfw_demo.git），当前分支 `feat/ai-slice`。
 
+### 视觉/游戏任务的角色分工（必须）
+
+一个大功能不能由一个 agent 同时做美术、程序、QA。默认拆成独立角色任务：
+
+| 角色 | agent | 职责 | 不做 |
+| --- | --- | --- | --- |
+| 美术总监 | `game-art-director` | brief、严格评审、独立复评、P0–P2 + 参数 | 不改代码/资产 |
+| 美术实现 | `game-artist` | 色板/线/材质/角色/UI/VFX/展示物料；视觉代码/资产 | 不做玩法/QA/独立评审 |
+| 程序 | `game-engineer` | 玩法/系统/渲染管线/性能/AA/导入/工具 | 不做美术方向/独立评审 |
+| QA | `game-qa-lead` | 独立验收、回归、证据、放行/打回 | 不改美术方向/实现 |
+| 策划 | `game-designer` | 机制/体验/规格（需要时） | 不做实现/美术评审 |
+
+- 一个任务一个角色；主 Agent 只编排，不兼做。
+- 默认顺序：Art Director brief（若无）→ **Game Artist** → **Game Engineer**（技术/性能/AA）→ **QA Lead** → **Art Director 独立复评**。
+- 同一项目并行时先声明文件所有权；视觉文件归 artist，玩法/性能文件归 engineer。
+- **禁止**让 game-engineer 兼做美术整改，或让 game-art-director 做实现；也不要把 QA 塞给实现者。
+
 ### 分类与默认 subagent
 
 | 类型 | 规划文件 | 默认 subagent |

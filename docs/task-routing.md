@@ -80,6 +80,21 @@ python3 tools/task_dispatcher.py status <id>
 
 > “Call Call”如果指 Claude Code：是的，真正能并行的是 Claude Code 的独立 headless/background 进程；cc-connect 只负责消息桥接。若你指的是另一个服务，请告诉我具体名称。
 
+## 1.3 视觉/游戏任务的角色流水线
+
+一个视觉/游戏功能默认拆成角色任务，**不能一个 agent 全包**：
+
+| 阶段 | agent | 产出 | 禁止 |
+| --- | --- | --- | --- |
+| 1. 美术 brief / 评审 | `game-art-director` | 评分、P0–P2、参数、验收 | 改代码/资产 |
+| 2. 美术实现 | `game-artist` | 色板/线/材质/角色/UI/VFX/展示 | 改玩法/做 QA/独立评审 |
+| 3. 程序/技术 | `game-engineer` | 玩法/渲染管线/性能/AA/导入 | 兼做美术方向 |
+| 4. QA | `game-qa-lead` | 独立验收、回归、证据、放行/打回 | 改视觉/实现 |
+| 5. 独立复评 | `game-art-director` | 同 rubric 复评；FAIL → 回到 2/3 | 做实现 |
+
+顺序默认 1→2→3→4→5；并行时先声明文件所有权（视觉文件归 artist，玩法/性能归 engineer）。
+主 Agent 只编排/派发；每个任务仍是一个独立 worker；`commit_paths`/媒体/自动 Git 规则不变。
+
 ## 2. 分类
 
 | 类型 | 规划文件 | 默认 worker / agent | 典型输入 |

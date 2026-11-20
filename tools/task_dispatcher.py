@@ -65,6 +65,21 @@ def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def dep_ready(dep_id: str) -> bool:
+    """A dependency is ready only after it is done AND Git-published."""
+    d = DONE / dep_id
+    if not (d / "status.json").exists():
+        return False
+    g = d / "git.json"
+    if not g.exists():
+        return False
+    try:
+        status = read_json(g).get("status")
+    except Exception:
+        return False
+    return status in ("published", "no_changes", "skipped")
+
+
 def alive(pid: int) -> bool:
     try:
         os.kill(pid, 0)
@@ -289,6 +304,9 @@ def daemon():
                     if count_running() >= MAX_WORKERS:
                         break
                     task = read_json(f)
+                    deps = task.get("depends_on") or []
+                    if deps and not all(dep_ready(str(d)) for d in deps):
+                        continue
                     task_id = task.get("id") or ("T-" + uuid.uuid4().hex[:8])
                     rdir = RUNNING / task_id
                     if rdir.exists():
