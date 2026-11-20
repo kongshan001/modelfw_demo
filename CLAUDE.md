@@ -11,7 +11,7 @@
    - 同类新任务 → 追加到同一规划文件；
    - 已有任务的 follow-up / 修正 → 续到原任务，不重复建单。
 4. **异步派发（关键）**：每个任务写成一个 JSON
-   （id/title/category/agent/prompt/plan_file/cwd/model/notify），
+   （id/title/category/agent/prompt/plan_file/cwd/model/notify/**commit_paths**），
    调用 `python3 tools/task_dispatcher.py enqueue --file <task.json>`。
    调度器会启动一个**独立的 `claude -p --agent <agent>` worker 进程**（独立上下文，
    等价于该任务的 subagent），**主 Agent 不等待**。
@@ -24,6 +24,9 @@
    **视觉类任务（游戏/3D/模型/界面/特效）必须附效果图、GIF 或视频**：
    worker 完成时用 `cc-connect send --image/--video <绝对路径>` 发 1–3 个代表性附件，
    再让 runner 发文本摘要；纯代码/调研任务如果生成了截图也应发送。
+   **自动提交/推送**：`tools/git_publisher.py` 会按 task JSON 的 `commit_paths`
+   把产出提交并 push 到 `origin` 当前分支（只 add 声明路径，不 force，不动无关工作区）。
+   `commit_paths` 至少包含项目目录/文档 + 对应 `docs/task-plans/*.md`。
 7. **不越界**：主 Agent 可以分类、写规划、做验收核对，但**不直接写代码/做美术/跑长任务**。
 8. **例外**：纯确认、感谢、状态查询等无实质工作的消息 → 简短回复，不派 worker；
    维护路由机制本身可直接处理。
@@ -40,6 +43,8 @@ python3 tools/task_dispatcher.py status <id>
 - worker 日志：对应任务目录 `worker.log`；
 - 主会话不再因为单个长任务阻塞；多条飞书消息可以连续入队、并行执行。
 - cc-connect 只负责桥接与 `cc-connect send`；真正的并行执行者是 Claude Code 的 headless worker。
+- Git 发布：`python3 tools/git_publisher.py status` / `publish-all`；daemon 由 enqueue 自动拉起。
+  远端：`origin`（https://github.com/kongshan001/modelfw_demo.git），当前分支 `feat/ai-slice`。
 
 ### 分类与默认 subagent
 

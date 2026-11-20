@@ -330,6 +330,13 @@ def enqueue(args):
     path = PENDING / (task["id"] + ".json")
     write_json(path, task)
     ensure_daemon()
+    try:
+        publisher = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "git_publisher.py")
+        subprocess.run([sys.executable, publisher, "ensure"], timeout=15,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
     print(task["id"])
 
 

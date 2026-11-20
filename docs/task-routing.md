@@ -58,6 +58,7 @@
   "agent": "game-engineer",
   "model": "deepseek-flash",
   "notify": true,
+  "commit_paths": ["godot-pixel-ocean/", "docs/task-plans/game-demos.md"],
   "prompt": "自包含的完整执行说明..."
 }
 ```
@@ -161,6 +162,13 @@ dispatcher 会以 `claude -p --agent <agent>` 启动，worker 的系统提示就
   `kill $(cat ~/.cc-connect/tasks/daemon.pid)`，下一次 enqueue 自动重启。
 - **结果投递**：worker 完成后由 runner 调用 `cc-connect send -p <project>`；单个活跃会话下可省略 `-s`。
 - **计划文件**：runner 用文件锁更新任务块的状态/产出；不要让 worker 直接改 plan 文件。
+- **自动 Git 发布**：每个 task JSON 必须给 `commit_paths`（项目目录/文档 + 对应规划文件）。
+  `tools/git_publisher.py` daemon 在任务 done 后串行执行：
+  `git add --ignore-errors -- <commit_paths>` → commit → `git push origin <current-branch>`。
+  只提交声明路径；不 force；不碰无关工作区。远端 `origin`，当前分支 `feat/ai-slice`。
+  状态：`python3 tools/git_publisher.py status`；手动补发：`publish-all`。
+- **多个 worker 并发**：git 操作用 `~/.cc-connect/tasks/git.lock` 串行；push 失败会写
+  `git.json` 并通知飞书，需人工处理冲突；不要自动 force push。
 - **follow-up**：如果原任务还在运行，建一个带 `parent`/上下文的新任务排队；避免两个 worker 同时改同一批文件。
 - **安全边界**：worker 使用 `bypassPermissions`，只应处理受信任的飞书消息；提示词中保留原创素材/版权/验收约束。
 
