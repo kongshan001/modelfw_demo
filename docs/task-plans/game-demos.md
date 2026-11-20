@@ -2,6 +2,17 @@
 
 ## 进行中
 
+## T-20261120-007 · 纸娃娃美术评审 + 美术 agent 提示词库
+- 来源: 飞书反馈（2026-11-20，“这个效果有让美术agent审核评估吗…如果美术不太行就网上看看有没有可以复用的美术agent提示词”）
+- 父任务: T-20261120-006
+- 类型: game-demo（美术评审）
+- 目标: 用 game-art-director 对 `godot-paper-doll` 做严格评审（P0–P2 + 参数建议）；调研可复用美术 agent 提示词，更新通用美术总监 prompt / 提示词库
+- 交付: `docs/art-review/paperdoll-art-review.md`、`docs/art-direction/art-agent-prompt-pack.md`、更新 `.claude/agents/game-art-director.md`；代表截图；不修改游戏代码
+- 约束: 只评审/提示词；引用网上来源与许可；不改 `godot-paper-doll` 代码；完成后发媒体并自动提交
+- 指派: game-art-director worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-007/result.md
+
 ## T-20261120-006 · 木头人纸娃娃角色系统（T-004 重试）
 - 来源: 飞书消息（“需要”重试 T-20261120-004，2026-11-20）
 - 父任务: T-20261120-004
