@@ -1,0 +1,29 @@
+; Engine configuration file.
+; Pixel Ocean — clean-room pixel water + raft study inspired by a reference video.
+; Original code / procedural textures only.
+
+config_version=5
+
+[application]
+
+config/name="Pixel Ocean · 像素海"
+config/description="A pixel-art ocean study: 3 Gerstner swells, sharp crests, pixel water pattern, foam, planar reflection, gold sparkle and a 5-point buoyant raft."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.02, 0.035, 0.06, 1)
