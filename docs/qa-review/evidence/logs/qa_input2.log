@@ -1,0 +1,8 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+QA_INPUT buttons=66 focusable_buttons=66 all_controls=247 lineup_cards=16
+QA_INPUT lineup_card_focus=["@PanelContainer@93 focus=0", "@PanelContainer@101 focus=0", "@PanelContainer@109 focus=0", "@PanelContainer@117 focus=0", "@PanelContainer@125 focus=0", "@PanelContainer@133 focus=0", "@PanelContainer@141 focus=0", "@PanelContainer@149 focus=0", "@PanelContainer@157 focus=0", "@PanelContainer@165 focus=0", "@PanelContainer@173 focus=0", "@PanelContainer@181 focus=0", "@PanelContainer@189 focus=0", "@PanelContainer@197 focus=0", "@PanelContainer@205 focus=0", "@PanelContainer@213 focus=0"]
+QA_INPUT focus_cycle=66 first=/root/Main/@MarginContainer@2/@VBoxContainer@3/@HBoxContainer@12/@Button@10 last=/root/Main/@MarginContainer@2/@VBoxContainer@3/@HBoxContainer@219/@Button@217
+QA_INPUT arrow_with_focus dir_changed=false focus_moved=true
+QA_INPUT FAIL: lineup cards are clickable but not keyboard-focusable
+QA_INPUT_FAILED failures=1

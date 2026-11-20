@@ -1,0 +1,146 @@
+{
+  "doll": {
+    "bbox": [
+      178,
+      336,
+      319,
+      688
+    ],
+    "opaque_px": 28041,
+    "ink_family_ratio": 0.07018313849100268,
+    "ink_family_ratio_opaque": 0.12545914910309902,
+    "ink_pixels": 3518,
+    "quantized_colors_24bin": 85,
+    "character_median_Lstar": 62.004251538399814,
+    "stage_median_Lstar": 93.9927931977329,
+    "delta_Lstar": 31.98854165933308
+  },
+  "lineup_silhouette": {
+    "pairs": 120,
+    "aligned_mean": 0.46993152290586954,
+    "aligned_p90": 0.5969849259869147,
+    "normalized_mean": 0.4121689629909638,
+    "normalized_p90": 0.5903583764838606,
+    "normalized_max": 0.7227443609022557,
+    "square_normalized_mean": 0.45161501985801983,
+    "square_normalized_p90": 0.5965465755751819
+  },
+  "direction_silhouette": {
+    "front_back_iou": 0.6948498574064754,
+    "front_back_iou_normalized": 0.5678901820352134,
+    "adjacent_iou_mean": 0.6460699642549467,
+    "adjacent_iou_max": 0.7426545086119554,
+    "adjacent_iou_normalized_mean": 0.5877227417403821,
+    "adjacent_iou_normalized_max": 0.7506339814032121,
+    "adjacent_iou_square_mean": 0.6697223294302772,
+    "adjacent_iou_square_max": 0.8953458472615068,
+    "front_back_iou_square": 0.5712713263621354,
+    "normalized_pairs": {
+      "0-1": 0.201,
+      "0-2": 0.204,
+      "0-3": 0.365,
+      "0-4": 0.568,
+      "0-5": 0.457,
+      "0-6": 0.539,
+      "0-7": 0.751,
+      "1-2": 0.655,
+      "1-3": 0.52,
+      "1-4": 0.379,
+      "1-5": 0.414,
+      "1-6": 0.208,
+      "1-7": 0.22,
+      "2-3": 0.547,
+      "2-4": 0.384,
+      "2-5": 0.44,
+      "2-6": 0.262,
+      "2-7": 0.233,
+      "3-4": 0.594,
+      "3-5": 0.614,
+      "3-6": 0.42,
+      "3-7": 0.414,
+      "4-5": 0.749,
+      "4-6": 0.466,
+      "4-7": 0.593,
+      "5-6": 0.521,
+      "5-7": 0.52,
+      "6-7": 0.685
+    }
+  },
+  "slash": {
+    "stage_median_hex": "#f5edde",
+    "pixel_counts_within_60": {
+      "#8f3030": 1139,
+      "#b23c33": 1035,
+      "#ffd27a": 26616
+    },
+    "contrast_vs_stage": {
+      "#8f3030": 6.85,
+      "#b23c33": 5.03,
+      "#ffd27a": 1.22
+    }
+  },
+  "ui_contrast": {
+    "white_on_coral_deep": 5.76,
+    "white_on_teal_deep": 5.01,
+    "white_on_plum_deep": 6.24,
+    "muted_on_panel": 6.01,
+    "muted_on_cream": 7.0,
+    "ink_on_paper": 10.31,
+    "coral_deep_on_panel": 5.34
+  },
+  "random_color_discipline": {
+    "samples": [
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 3,
+        "hat_skin_distance": 0.4156862497329712
+      },
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 4,
+        "hat_skin_distance": 0.800000011920929
+      },
+      {
+        "chromatic_hue_clusters": 3,
+        "high_sat_large_slots": 5,
+        "hat_skin_distance": 0.9568628072738647
+      },
+      {
+        "chromatic_hue_clusters": 3,
+        "high_sat_large_slots": 5,
+        "hat_skin_distance": 0.364705890417099
+      },
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 2,
+        "hat_skin_distance": 1.0784313678741455
+      },
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 3,
+        "hat_skin_distance": 0.800000011920929
+      },
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 2,
+        "hat_skin_distance": 0.7803921699523926
+      },
+      {
+        "chromatic_hue_clusters": 3,
+        "high_sat_large_slots": 5,
+        "hat_skin_distance": 0.7960783839225769
+      },
+      {
+        "chromatic_hue_clusters": 3,
+        "high_sat_large_slots": 5,
+        "hat_skin_distance": 0.6705882549285889
+      },
+      {
+        "chromatic_hue_clusters": 2,
+        "high_sat_large_slots": 5,
+        "hat_skin_distance": 0.6705882549285889
+      }
+    ],
+    "all_10_within_3_hues": true
+  }
+}

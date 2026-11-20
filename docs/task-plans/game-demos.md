@@ -42,9 +42,9 @@
 - 交付: `docs/qa-review/paperdoll-qa.md` + 指标/截图；媒体
 - 约束: 只写 QA 报告；失败打回，不自己修；依赖 T-010
 - 指派: game-qa-lead worker
-- 状态: queued
+- 状态: done
 - depends_on: T-20261120-010
-- 产出: 待回填
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-011/result.md
 
 ## T-20261120-012 · 纸娃娃独立美术复评（Art Director）
 - 父任务: T-20261120-011；依赖: T-20261120-011（done + Git 已发布）

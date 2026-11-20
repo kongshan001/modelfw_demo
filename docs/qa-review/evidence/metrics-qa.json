@@ -1,0 +1,213 @@
+{
+  "doll": {
+    "bbox": [
+      178,
+      336,
+      319,
+      688
+    ],
+    "bbox_area": 50126,
+    "opaque_px": 28041,
+    "ink_pixels": 3518,
+    "ink_ratio_bbox": 0.07018313849100268,
+    "ink_ratio_opaque": 0.12545914910309902,
+    "quantized_colors_24bin": 85,
+    "character_median_Lstar": 62.004251538399814,
+    "stage_median_Lstar": 93.9927931977329,
+    "delta_Lstar": 31.98854165933308,
+    "stage_median_hex": "#f5edde"
+  },
+  "lineup_silhouette": {
+    "pairs": 120,
+    "aligned_mean": 0.46993152290586954,
+    "aligned_p90": 0.5969849259869147,
+    "aligned_max": 0.7398091934084996,
+    "normalized_mean": 0.4121689629909638,
+    "normalized_p90": 0.5903583764838606,
+    "normalized_max": 0.7227443609022557
+  },
+  "direction_silhouette": {
+    "front_back_iou_aligned": 0.6948498574064754,
+    "front_back_iou_normalized": 0.5678901820352134,
+    "adjacent_iou_mean_aligned": 0.6460699642549467,
+    "adjacent_iou_max_aligned": 0.7426545086119554,
+    "adjacent_iou_mean_normalized": 0.5877227417403821,
+    "adjacent_iou_max_normalized": 0.7506339814032121,
+    "sil_bbox_sizes": [
+      [
+        94,
+        99,
+        176,
+        231
+      ],
+      [
+        75,
+        99,
+        139,
+        229
+      ],
+      [
+        85,
+        99,
+        135,
+        229
+      ],
+      [
+        81,
+        99,
+        148,
+        229
+      ],
+      [
+        88,
+        99,
+        168,
+        231
+      ],
+      [
+        91,
+        99,
+        158,
+        229
+      ],
+      [
+        104,
+        99,
+        154,
+        229
+      ],
+      [
+        100,
+        99,
+        164,
+        229
+      ]
+    ]
+  },
+  "slash": {
+    "#8f3030": {
+      "pixels_within_60": 1139,
+      "contrast_vs_stage": 6.85
+    },
+    "#b23c33": {
+      "pixels_within_60": 1035,
+      "contrast_vs_stage": 5.03
+    },
+    "#ffd27a": {
+      "pixels_within_60": 26616,
+      "contrast_vs_stage": 1.22
+    }
+  },
+  "ui_contrast": {
+    "white_fdf7_on_coral_deep_b23c33": 5.76,
+    "white_fdf7_on_teal_deep_2f7a6b": 5.01,
+    "white_fdf7_on_plum_deep_6c5490": 6.24,
+    "muted_5f5260_on_paper_f3e7d4": 6.01,
+    "muted_5f5260_on_cream_fff9ee": 7.0,
+    "ink_3a2f43_on_paper_f3e7d4": 10.31,
+    "coral_deep_b23c33_on_panel_fff3df": 5.34
+  },
+  "random_color_discipline": {
+    "samples": [
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 3,
+        "hat_head_l1": 0.4156862745098039
+      },
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 4,
+        "hat_head_l1": 0.7999999999999999
+      },
+      {
+        "hue_clusters_large_slots": 3,
+        "high_sat_large_slots": 5,
+        "hat_head_l1": 0.9568627450980391
+      },
+      {
+        "hue_clusters_large_slots": 3,
+        "high_sat_large_slots": 5,
+        "hat_head_l1": 0.36470588235294116
+      },
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 2,
+        "hat_head_l1": 1.0784313725490196
+      },
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 3,
+        "hat_head_l1": 0.7999999999999999
+      },
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 2,
+        "hat_head_l1": 0.780392156862745
+      },
+      {
+        "hue_clusters_large_slots": 3,
+        "high_sat_large_slots": 5,
+        "hat_head_l1": 0.7960784313725491
+      },
+      {
+        "hue_clusters_large_slots": 3,
+        "high_sat_large_slots": 5,
+        "hat_head_l1": 0.6705882352941175
+      },
+      {
+        "hue_clusters_large_slots": 2,
+        "high_sat_large_slots": 5,
+        "hat_head_l1": 0.6705882352941175
+      }
+    ],
+    "all_10_hue_clusters_le3": true,
+    "all_10_hue_clusters_le2": false,
+    "min_hat_head_l1": 0.36470588235294116
+  },
+  "screenshot_sizes": {
+    "01_studio": [
+      1280,
+      720
+    ],
+    "02_wardrobe": [
+      1280,
+      720
+    ],
+    "03_actions": [
+      1280,
+      720
+    ],
+    "04_directions": [
+      1280,
+      720
+    ],
+    "05_lineup": [
+      1280,
+      720
+    ],
+    "06_saved": [
+      1280,
+      720
+    ],
+    "07_layer": [
+      1280,
+      720
+    ],
+    "showcase/hero": [
+      1280,
+      720
+    ],
+    "showcase/compass": [
+      1280,
+      720
+    ],
+    "showcase/poster_16": [
+      1280,
+      720
+    ],
+    "showcase/hero_layers": [
+      1280,
+      720
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+2026-11-20 23:33:31.631 godot[14585:52923780] IMKClient Stall detected, *please Report* your user scenario attaching a spindump (or sysdiagnose) that captures the problem - (imkxpc_attributesForCharacterIndex:reply:) block performed very slowly (1.33 secs).
+PAPERDOLL_FPS samples=[29.0, 31.0, 31.0, 28.0, 26.0, 29.0, 29.0] steady_min=26.0 steady_avg=29.0 gpu=Intel(R) HD Graphics 6000
+PAPERDOLL_BAKE_SLOW card_median_ms=9.80 card_p90_ms=19.15 card_max_ms=31.82 overlay_p90_ms=26.10 overlay_max_ms=45.07 budget_ms=16.0
+PAPERDOLL_FPS_LOW min=26.0 avg=29.0
+EXIT=1

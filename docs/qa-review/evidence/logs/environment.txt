@@ -1,0 +1,16 @@
+date: 2026-11-20 23:38:08 CST
+host: macOS 12.7.6 (21H1320)
+model: MacBookAir7,2
+cpu: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+gpu: Chipset Model: Intel HD Graphics 6000
+godot: 4.6.stable.official.89cea1439
+ffmpeg: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+--- top CPU at report time ---
+30.4% /Applications/Lark.app/Contents/Frameworks/Lark
+21.9% /System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent
+20.8% /Applications/Lark.app/Contents/Frameworks/Lark
+12.4% /System/Library/Frameworks/CoreServices.framework/Frameworks/Metadata.framework/Versions/A/Support/mdworker_shared
+11.8% /System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer
+7.2% /Library/Apple/System/Library/CoreServices/XProtect.app/Contents/MacOS/XProtectRemediatorAdload
+4.8% /Applications/Lark.app/Contents/Frameworks/Lark
+2.7% /Applications/Lark.app/Contents/Frameworks/Lark
