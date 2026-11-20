@@ -60,6 +60,18 @@ func _initialize() -> void:
 	await _settle()
 	await _shot("04_directions")
 
+	# 07 层视：试衣镜里 17 层沿右下展开，选中帽子层高亮。
+	_scene.close_sheet()
+	_scene.load_lineup_entry(0)
+	_scene.set_selected_slot("hat")
+	_scene.toggle_layer_view()
+	_scene.set_direction(7)
+	_scene.set_action("idle")
+	_scene.set_timeline_clock(0.9, true)
+	await _settle()
+	await _shot("07_layer")
+	_scene.toggle_layer_view()
+
 	# 05 16 人阵容：整队随机后逐卡展示，试衣镜停在一个干净的朝右姿势。
 	_scene.close_sheet()
 	_scene.randomize_lineup()

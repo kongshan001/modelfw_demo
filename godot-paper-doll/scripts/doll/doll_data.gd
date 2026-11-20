@@ -204,15 +204,16 @@ const COLOR_SETS := {
 }
 
 # 面向约定：美术一律按“朝右”绘制，左侧方向通过节点水平镜像实现。
+# 评审 P0-4：yaw 正 0.0 / 斜 0.55（原 0.78）/ 侧 1.0，让正、斜、侧三档剪影真正分开。
 const DIRS := [
 	{"id": "down", "label": "↓", "name": "下", "yaw": 0.0, "back": false, "flip": false},
-	{"id": "down_left", "label": "↙", "name": "左下", "yaw": 0.78, "back": false, "flip": true},
+	{"id": "down_left", "label": "↙", "name": "左下", "yaw": 0.55, "back": false, "flip": true},
 	{"id": "left", "label": "←", "name": "左", "yaw": 1.0, "back": false, "flip": true},
-	{"id": "up_left", "label": "↖", "name": "左上", "yaw": 0.78, "back": true, "flip": true},
+	{"id": "up_left", "label": "↖", "name": "左上", "yaw": 0.55, "back": true, "flip": true},
 	{"id": "up", "label": "↑", "name": "上", "yaw": 0.0, "back": true, "flip": false},
-	{"id": "up_right", "label": "↗", "name": "右上", "yaw": 0.78, "back": true, "flip": false},
+	{"id": "up_right", "label": "↗", "name": "右上", "yaw": 0.55, "back": true, "flip": false},
 	{"id": "right", "label": "→", "name": "右", "yaw": 1.0, "back": false, "flip": false},
-	{"id": "down_right", "label": "↘", "name": "右下", "yaw": 0.78, "back": false, "flip": false},
+	{"id": "down_right", "label": "↘", "name": "右下", "yaw": 0.55, "back": false, "flip": false},
 ]
 
 const ACTIONS := [
@@ -259,6 +260,17 @@ static func dir_by_id(dir_id: String) -> int:
 	return 0
 
 
+static func showcase_time(index: int, action: String) -> float:
+	# 阵容卡/剪影展示用的定格相位：攻击取挥砍中段，行走取触地，待机按序号错开。
+	match action:
+		"attack":
+			return 0.52
+		"walk":
+			return 0.205
+		_:
+			return 0.31 * float(index)
+
+
 static func is_action(action_id: String) -> bool:
 	for action in ACTIONS:
 		if action["id"] == action_id:
@@ -284,7 +296,16 @@ static func combination_text() -> String:
 	var total := combination_count()
 	var exponent := int(floor(log(total) / log(10.0)))
 	var mantissa := total / pow(10.0, exponent)
-	return "≈ %.1f×10^%d 种外观" % [mantissa, exponent]
+	return "≈ %.1f×10%s 种外观" % [mantissa, _superscript(exponent)]
+
+
+static func _superscript(value: int) -> String:
+	const DIGITS := ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"]
+	var text := str(value)
+	var out := ""
+	for i in text.length():
+		out += DIGITS[int(text[i])]
+	return out
 
 
 static func default_outfit() -> Dictionary:
@@ -297,17 +318,104 @@ static func default_outfit() -> Dictionary:
 	return outfit
 
 
+# 评审 P1-4：先选 8 套 outfit scheme，再分配 primary/secondary/accent/neutral；
+# 面积 60/30/10，高饱和色 ≤2，禁止“帽子/披风/裤/鞋各一个随机高饱和色”。
+const OUTFIT_SCHEMES := [
+	{"primary": "#4fa58a", "secondary": "#45505e", "accent": "#f2b34c"}, # 苔藓
+	{"primary": "#e86a5c", "secondary": "#8a6fb0", "accent": "#f2b34c"}, # 余烬
+	{"primary": "#5a7fb8", "secondary": "#f3ead7", "accent": "#f2b34c"}, # 云朵
+	{"primary": "#e88fae", "secondary": "#4fa58a", "accent": "#f3ead7"}, # 铃兰
+	{"primary": "#f2b34c", "secondary": "#4fa58a", "accent": "#c95f5f"}, # 麦田
+	{"primary": "#8a6fb0", "secondary": "#5a7fb8", "accent": "#f2b34c"}, # 星夜
+	{"primary": "#c95f5f", "secondary": "#45505e", "accent": "#f2b34c"}, # 铁锈
+	{"primary": "#6fa8d8", "secondary": "#f3ead7", "accent": "#8a6fb0"}, # 霜糖
+]
+
+
 static func random_outfit(rng: RandomNumberGenerator) -> Dictionary:
+	var scheme: Dictionary = OUTFIT_SCHEMES[rng.randi_range(0, OUTFIT_SCHEMES.size() - 1)]
+	var primary := Color(scheme["primary"])
+	var secondary := Color(scheme["secondary"])
+	var accent := Color(scheme["accent"])
+	var flip := rng.randf() < 0.5
+	var major := secondary if flip else primary
+	var minor := primary if flip else secondary
 	var outfit := {}
 	for slot in SLOTS:
-		var variants: Array = slot["variants"]
-		var variant: Dictionary = variants[rng.randi_range(0, variants.size() - 1)]
-		var palette := palette_for(slot["id"])
-		outfit[slot["id"]] = {
-			"variant": variant["id"],
-			"color": palette[rng.randi_range(0, palette.size() - 1)],
-		}
+		var slot_id: String = slot["id"]
+		var palette := palette_for(slot_id)
+		var color: Color = palette[rng.randi_range(0, palette.size() - 1)]
+		var variant_id := _random_variant_id(slot, rng)
+		match slot_id:
+			"shirt":
+				color = major
+			"pants":
+				color = minor if rng.randf() < 0.68 else major
+			"cape":
+				color = minor
+			"hat":
+				color = major if rng.randf() < 0.5 else minor
+			"belt":
+				color = accent if rng.randf() < 0.72 else palette[0]
+			"accessory":
+				color = accent if rng.randf() < 0.68 else palette[1]
+			"backpack":
+				color = primary if rng.randf() < 0.35 else palette[0]
+			"weapon":
+				color = palette[rng.randi_range(0, mini(2, palette.size() - 1))]
+			"aura":
+				color = accent if rng.randf() < 0.6 else minor
+			"hair":
+				color = palette[rng.randi_range(0, 4)]
+			"eyes":
+				color = palette[rng.randi_range(0, 4)]
+			"body", "head":
+				color = palette[rng.randi_range(0, 2)]
+			"ear":
+				color = palette[rng.randi_range(0, 2)]
+			"shoes", "gloves":
+				color = palette[rng.randi_range(0, 3)]
+			"mask":
+				color = palette[0] if rng.randf() < 0.6 else palette[2]
+		outfit[slot_id] = {"variant": variant_id, "color": color}
 	return outfit
+
+
+static func _random_variant_id(slot: Dictionary, rng: RandomNumberGenerator) -> String:
+	var variants: Array = slot["variants"]
+	var slot_id: String = slot["id"]
+	# 剪影预算：随机器也要保证大多数角色有帽子/破形件与可见武器。
+	var none_chance := 0.0
+	match slot_id:
+		"hat":
+			none_chance = 0.15
+		"weapon":
+			none_chance = 0.20
+		"cape":
+			none_chance = 0.45
+		"backpack":
+			none_chance = 0.55
+		"aura":
+			none_chance = 0.55
+		"accessory":
+			none_chance = 0.50
+		"ear":
+			none_chance = 0.30
+		"mask":
+			none_chance = 0.70
+		"belt":
+			none_chance = 0.35
+		"gloves":
+			none_chance = 0.50
+	if none_chance > 0.0 and rng.randf() < none_chance:
+		return "none"
+	var candidates: Array = []
+	for variant in variants:
+		if str(variant["id"]) != "none":
+			candidates.append(variant["id"])
+	if candidates.is_empty():
+		return "none"
+	return String(candidates[rng.randi_range(0, candidates.size() - 1)])
 
 
 static func parse_color(value: Variant, fallback: Color) -> Color:

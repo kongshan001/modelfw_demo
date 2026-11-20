@@ -17,7 +17,6 @@ var name_label: Label
 var studio_info: Label
 var variant_header: Label
 var color_header: Label
-var z_label: Label
 var status_label: Label
 var fps_label: Label
 var combo_label: Label
@@ -41,6 +40,10 @@ var _overlay_thumbs: Array = []
 var _overlay_kind := ""
 var _save_path := SAVE_PATH
 var _preview_tag: Label
+var _layer_button: Button
+var _layer_view := false
+var _show_mode := false
+var _show_stage: Control
 
 
 func _ready() -> void:
@@ -127,12 +130,12 @@ func _build_header() -> Control:
 
 	var titles := VBoxContainer.new()
 	titles.add_theme_constant_override("separation", -3)
-	var title := AtelierTheme.make_label("纸偶工坊", 25, AtelierTheme.INK)
+	var title := AtelierTheme.make_label("纸偶工坊", 28, AtelierTheme.INK)
 	title.add_theme_color_override("font_shadow_color", Color(1, 0.99, 0.95, 0.8))
 	title.add_theme_constant_override("shadow_offset_y", 1)
 	titles.add_child(title)
 	titles.add_child(AtelierTheme.make_label(
-			"PAPERDOLL ATELIER · 17 SLOTS × 8 DIRECTIONS × 4 ACTIONS", 9, AtelierTheme.MUTED))
+			"PAPERDOLL ATELIER · 17 SLOTS × 8 DIRECTIONS × 4 ACTIONS", 10, AtelierTheme.MUTED))
 	header.add_child(titles)
 
 	var spacer := Control.new()
@@ -141,7 +144,7 @@ func _build_header() -> Control:
 
 	var combo_panel := PanelContainer.new()
 	combo_panel.add_theme_stylebox_override("panel", AtelierTheme.inner_style(10, Color("#fff3df")))
-	combo_label = AtelierTheme.make_label(DollData.combination_text(), 12, AtelierTheme.CORAL)
+	combo_label = AtelierTheme.make_label(DollData.combination_text(), 11, AtelierTheme.MUTED)
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	combo_panel.add_child(combo_label)
 	header.add_child(combo_panel)
@@ -178,13 +181,21 @@ func _build_studio_panel() -> Control:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(spacer)
-	name_label = AtelierTheme.make_label(_doll_name, 10, AtelierTheme.CORAL)
+	name_label = AtelierTheme.make_label(_doll_name, 11, AtelierTheme.CORAL_DEEP)
 	head.add_child(name_label)
+	var layer_toggle := Button.new()
+	layer_toggle.text = "层视"
+	layer_toggle.tooltip_text = "把 17 层沿右下展开，选中槽高亮（层视模式）"
+	layer_toggle.custom_minimum_size = Vector2(52, 22)
+	AtelierTheme.style_button(layer_toggle, 11)
+	layer_toggle.pressed.connect(toggle_layer_view)
+	head.add_child(layer_toggle)
+	_layer_button = layer_toggle
 	column.add_child(head)
 
 	var preview_panel := PanelContainer.new()
 	preview_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	preview_panel.custom_minimum_size = Vector2(0, 330)
+	preview_panel.custom_minimum_size = Vector2(0, 376)
 	preview_panel.clip_contents = true
 	preview_panel.add_theme_stylebox_override("panel", AtelierTheme.inner_style(12, Color("#f3e7d4")))
 	_preview = Control.new()
@@ -202,12 +213,12 @@ func _build_studio_panel() -> Control:
 	studio.set_display_scale(2.10)
 	studio.time_offset = 0.0
 
-	_preview_tag = AtelierTheme.make_label("纸面舞台 · 关节同步", 9, AtelierTheme.MUTED)
+	_preview_tag = AtelierTheme.make_label("纸面舞台 · 主光左上 · 轮廓光右", 11, AtelierTheme.MUTED)
 	_preview.add_child(_preview_tag)
-	studio_info = AtelierTheme.make_label("", 10, AtelierTheme.INK)
+	studio_info = AtelierTheme.make_label("", 11, AtelierTheme.INK)
 	_preview.add_child(studio_info)
 
-	column.add_child(AtelierTheme.make_label("方向 · 8", 9, AtelierTheme.MUTED))
+	column.add_child(AtelierTheme.make_label("方向 · 8", 11, AtelierTheme.MUTED))
 	var direction_grid := GridContainer.new()
 	direction_grid.columns = 3
 	direction_grid.add_theme_constant_override("h_separation", 4)
@@ -215,7 +226,7 @@ func _build_studio_panel() -> Control:
 	column.add_child(direction_grid)
 	for cell in [3, 4, 5, 2, -1, 6, 1, 0, 7]:
 		if cell == -1:
-			var center_tag := AtelierTheme.make_label("方向", 9, AtelierTheme.MUTED)
+			var center_tag := AtelierTheme.make_label("方向", 11, AtelierTheme.MUTED)
 			center_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			center_tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			direction_grid.add_child(center_tag)
@@ -223,10 +234,10 @@ func _build_studio_panel() -> Control:
 		var dir: Dictionary = DollData.DIRS[cell]
 		var button := Button.new()
 		button.text = "%s %s" % [dir["label"], dir["name"]]
-		button.custom_minimum_size = Vector2(0, 27)
+		button.custom_minimum_size = Vector2(0, 30)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.tooltip_text = "面向" + str(dir["name"])
-		AtelierTheme.style_button(button, 10)
+		AtelierTheme.style_button(button, 11)
 		button.pressed.connect(set_direction.bind(cell))
 		direction_grid.add_child(button)
 		dir_buttons[cell] = button
@@ -238,10 +249,10 @@ func _build_studio_panel() -> Control:
 		var act: Dictionary = DollData.ACTIONS[i]
 		var button := Button.new()
 		button.text = act["label"]
-		button.custom_minimum_size = Vector2(0, 30)
+		button.custom_minimum_size = Vector2(0, 32)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.tooltip_text = act["hint"]
-		AtelierTheme.style_button(button, 11)
+		AtelierTheme.style_button(button, 12)
 		button.pressed.connect(set_action.bind(act["id"]))
 		action_row.add_child(button)
 		action_buttons.append(button)
@@ -250,17 +261,17 @@ func _build_studio_panel() -> Control:
 	sheet_row.add_theme_constant_override("separation", 4)
 	column.add_child(sheet_row)
 	var dirs_button := Button.new()
-	dirs_button.text = "8 向对照"
-	dirs_button.custom_minimum_size = Vector2(0, 24)
+	dirs_button.text = "8 向罗盘"
+	dirs_button.custom_minimum_size = Vector2(0, 26)
 	dirs_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	AtelierTheme.style_button(dirs_button, 10)
+	AtelierTheme.style_button(dirs_button, 11)
 	dirs_button.pressed.connect(show_directions_sheet)
 	sheet_row.add_child(dirs_button)
 	var actions_button := Button.new()
-	actions_button.text = "动作对照"
-	actions_button.custom_minimum_size = Vector2(0, 24)
+	actions_button.text = "动作 · 3 关键帧"
+	actions_button.custom_minimum_size = Vector2(0, 26)
 	actions_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	AtelierTheme.style_button(actions_button, 10)
+	AtelierTheme.style_button(actions_button, 11)
 	actions_button.pressed.connect(show_actions_sheet)
 	sheet_row.add_child(actions_button)
 	return panel
@@ -282,8 +293,8 @@ func _build_wardrobe_panel() -> Control:
 	head.add_child(spacer)
 	var random_slot := Button.new()
 	random_slot.text = "本槽随机"
-	random_slot.custom_minimum_size = Vector2(72, 20)
-	AtelierTheme.style_button(random_slot, 9)
+	random_slot.custom_minimum_size = Vector2(76, 24)
+	AtelierTheme.style_button(random_slot, 11)
 	random_slot.pressed.connect(_randomize_slot)
 	head.add_child(random_slot)
 	column.add_child(head)
@@ -296,22 +307,20 @@ func _build_wardrobe_panel() -> Control:
 	for slot in DollData.SLOTS:
 		var button := Button.new()
 		button.text = str(slot["label"])
-		button.custom_minimum_size = Vector2(0, 29)
+		button.custom_minimum_size = Vector2(0, 32)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.tooltip_text = "选择 %s 槽位" % slot["label"]
-		AtelierTheme.style_button(button, 9)
+		AtelierTheme.style_button(button, 11)
 		button.pressed.connect(set_selected_slot.bind(str(slot["id"])))
 		slot_grid.add_child(button)
 		slot_buttons[slot["id"]] = button
 
 	var variant_head := HBoxContainer.new()
-	variant_header = AtelierTheme.make_label("变体", 11, AtelierTheme.INK)
+	variant_header = AtelierTheme.make_label("变体", 12, AtelierTheme.INK)
 	variant_head.add_child(variant_header)
 	var vspacer := Control.new()
 	vspacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	variant_head.add_child(vspacer)
-	z_label = AtelierTheme.make_label("", 9, AtelierTheme.MUTED)
-	variant_head.add_child(z_label)
 	column.add_child(variant_head)
 
 	_variant_grid = GridContainer.new()
@@ -320,7 +329,7 @@ func _build_wardrobe_panel() -> Control:
 	_variant_grid.add_theme_constant_override("v_separation", 4)
 	column.add_child(_variant_grid)
 
-	color_header = AtelierTheme.make_label("颜色", 11, AtelierTheme.INK)
+	color_header = AtelierTheme.make_label("颜色", 12, AtelierTheme.INK)
 	column.add_child(color_header)
 	_color_grid = GridContainer.new()
 	_color_grid.columns = 8
@@ -329,12 +338,13 @@ func _build_wardrobe_panel() -> Control:
 	column.add_child(_color_grid)
 
 	var note := AtelierTheme.make_label(
-			"每个槽位独立染色；方向与动作不改变槽位 z 序。", 9, AtelierTheme.MUTED)
+			"每个槽位独立染色；方向与动作不改变槽位层级。", 11, AtelierTheme.MUTED)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	note.custom_minimum_size = Vector2(0, 26)
+	note.custom_minimum_size = Vector2(0, 30)
 	column.add_child(note)
-	var tip := AtelierTheme.make_label("1-4 动作 · ←→ 方向 · Tab 槽位 · R 随机 · S/L 存读", 9, AtelierTheme.MUTED)
+	var tip := AtelierTheme.make_label("1-4 动作 · ←→ 方向 · Tab 焦点 · R 随机 · S/L 存读 · F11 舞台", 11, AtelierTheme.MUTED)
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tip.custom_minimum_size = Vector2(0, 30)
 	column.add_child(tip)
 	var tail := Control.new()
 	tail.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -353,11 +363,11 @@ func _build_lineup_panel() -> Control:
 
 	var head := HBoxContainer.new()
 	head.add_child(AtelierTheme.make_label("阵容 · 4×4", 14))
-	head.add_child(AtelierTheme.make_label("   点击载入 · ↻ 单抽", 9, AtelierTheme.MUTED))
+	head.add_child(AtelierTheme.make_label("   点击载入 · ↻ 单抽", 11, AtelierTheme.MUTED))
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(spacer)
-	head.add_child(AtelierTheme.make_label("16 位独立纸偶", 9, AtelierTheme.MUTED))
+	head.add_child(AtelierTheme.make_label("16 位独立纸偶", 11, AtelierTheme.MUTED))
 	column.add_child(head)
 
 	var grid := GridContainer.new()
@@ -380,25 +390,25 @@ func _build_lineup_panel() -> Control:
 
 func _build_footer() -> Control:
 	var footer := HBoxContainer.new()
-	footer.custom_minimum_size = Vector2(0, 22)
+	footer.custom_minimum_size = Vector2(0, 26)
 	footer.add_theme_constant_override("separation", 8)
-	status_label = AtelierTheme.make_label("", 9, AtelierTheme.MUTED)
+	status_label = AtelierTheme.make_label("", 11, AtelierTheme.MUTED)
 	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status_label.clip_text = true
 	footer.add_child(status_label)
 	var save_button := Button.new()
 	save_button.text = "保存 JSON"
-	save_button.custom_minimum_size = Vector2(86, 21)
-	AtelierTheme.style_button(save_button, 9)
+	save_button.custom_minimum_size = Vector2(90, 24)
+	AtelierTheme.style_button(save_button, 11)
 	save_button.pressed.connect(save_current)
 	footer.add_child(save_button)
 	var load_button := Button.new()
 	load_button.text = "读取 JSON"
-	load_button.custom_minimum_size = Vector2(86, 21)
-	AtelierTheme.style_button(load_button, 9)
+	load_button.custom_minimum_size = Vector2(90, 24)
+	AtelierTheme.style_button(load_button, 11)
 	load_button.pressed.connect(load_saved)
 	footer.add_child(load_button)
-	fps_label = AtelierTheme.make_label("FPS --", 9, AtelierTheme.TEAL)
+	fps_label = AtelierTheme.make_label("FPS --", 11, AtelierTheme.TEAL_DEEP)
 	fps_label.custom_minimum_size = Vector2(58, 0)
 	fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	footer.add_child(fps_label)
@@ -410,7 +420,7 @@ func _build_footer() -> Control:
 func _layout_studio() -> void:
 	if studio == null or _preview == null:
 		return
-	studio.position = Vector2(_preview.size.x * 0.5, _preview.size.y - 27.0)
+	studio.position = Vector2(_preview.size.x * 0.5, _preview.size.y - 18.0)
 	if _preview_tag != null:
 		_preview_tag.position = Vector2(10, 7)
 	if studio_info != null:
@@ -434,13 +444,15 @@ func _refresh_studio() -> void:
 	if studio == null:
 		return
 	studio.set_doll(_outfit, _direction, _action)
+	studio.set_explode(1.0 if _layer_view else 0.0)
+	studio.highlight_slot = _selected_slot if _layer_view else ""
 	_layout_studio()
 	var dir: Dictionary = DollData.DIRS[_direction]
 	name_label.text = _doll_name
-	studio_info.text = "%s %s · %s · 17 层" % [dir["label"], dir["name"], DollData.action_label(_action)]
-	var slot: Dictionary = DollData.slot_by_id(_selected_slot)
-	var entry: Dictionary = _outfit[_selected_slot]
-	z_label.text = "z %d" % _effective_z(_selected_slot)
+	var slot_name := str(DollData.slot_by_id(_selected_slot).get("label", _selected_slot))
+	studio_info.text = "层视 · 17 层 · 选中：%s" % slot_name if _layer_view else "%s %s · %s · 17 层" % [dir["label"], dir["name"], DollData.action_label(_action)]
+	if _layer_button != null:
+		AtelierTheme.style_toggle(_layer_button, _layer_view, AtelierTheme.TEAL_DEEP, 11)
 
 
 func _refresh_slot_styles() -> void:
@@ -450,7 +462,7 @@ func _refresh_slot_styles() -> void:
 		var entry: Dictionary = _outfit[slot_id]
 		var variant: Dictionary = DollData.variant_by_id(slot_id, str(entry["variant"]))
 		button.text = "%s · %s" % [slot["label"], variant.get("label", "?")]
-		AtelierTheme.style_toggle(button, slot_id == _selected_slot, AtelierTheme.CORAL, 9)
+		AtelierTheme.style_toggle(button, slot_id == _selected_slot, AtelierTheme.CORAL_DEEP, 11)
 
 
 func _rebuild_variant_buttons() -> void:
@@ -475,7 +487,7 @@ func _refresh_variant_styles() -> void:
 	var current := str(_outfit[_selected_slot]["variant"])
 	for i in variant_buttons.size():
 		var variant_id: String = slot["variants"][i]["id"]
-		AtelierTheme.style_toggle(variant_buttons[i], variant_id == current, AtelierTheme.TEAL, 10)
+		AtelierTheme.style_toggle(variant_buttons[i], variant_id == current, AtelierTheme.TEAL_DEEP, 11)
 
 
 func _refresh_color_grid() -> void:
@@ -489,9 +501,9 @@ func _refresh_color_grid() -> void:
 		var swatch: Button = Button.new()
 		var color: Color = palette[i]
 		swatch.text = "✓" if color.is_equal_approx(current) else ""
-		swatch.custom_minimum_size = Vector2(33, 27)
+		swatch.custom_minimum_size = Vector2(33, 30)
 		swatch.tooltip_text = "#" + color.to_html(false)
-		swatch.focus_mode = Control.FOCUS_NONE
+		swatch.focus_mode = Control.FOCUS_ALL
 		swatch.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		swatch.add_theme_font_override("font", AtelierTheme.font())
 		swatch.add_theme_font_size_override("font_size", 12)
@@ -499,6 +511,7 @@ func _refresh_color_grid() -> void:
 		swatch.add_theme_stylebox_override("normal", _swatch_style(color, color.is_equal_approx(current)))
 		swatch.add_theme_stylebox_override("hover", _swatch_style(color.lightened(0.10), color.is_equal_approx(current)))
 		swatch.add_theme_stylebox_override("pressed", _swatch_style(color.darkened(0.08), true))
+		swatch.add_theme_stylebox_override("focus", AtelierTheme.focus_style())
 		swatch.pressed.connect(_on_color_pressed.bind(i))
 		_color_grid.add_child(swatch)
 		color_buttons.append(swatch)
@@ -506,13 +519,13 @@ func _refresh_color_grid() -> void:
 
 func _refresh_direction_styles() -> void:
 	for i in dir_buttons.keys():
-		AtelierTheme.style_toggle(dir_buttons[i], int(i) == _direction, AtelierTheme.CORAL, 10)
+		AtelierTheme.style_toggle(dir_buttons[i], int(i) == _direction, AtelierTheme.CORAL_DEEP, 11)
 
 
 func _refresh_action_styles() -> void:
 	for i in action_buttons.size():
 		AtelierTheme.style_toggle(action_buttons[i], DollData.ACTIONS[i]["id"] == _action,
-				AtelierTheme.PLUM, 11)
+				AtelierTheme.PLUM_DEEP, 12)
 
 
 func _refresh_cards() -> void:
@@ -720,7 +733,7 @@ func _status(text: String, warn := false) -> void:
 	if status_label == null:
 		return
 	status_label.text = text
-	status_label.add_theme_color_override("font_color", AtelierTheme.CORAL if warn else AtelierTheme.MUTED)
+	status_label.add_theme_color_override("font_color", AtelierTheme.CORAL_DEEP if warn else AtelierTheme.MUTED)
 
 
 func _swatch_style(color: Color, selected: bool) -> StyleBoxFlat:
@@ -770,7 +783,7 @@ func _open_sheet(kind: String) -> void:
 	_overlay.add_child(center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(1180, 560) if kind == "directions" else Vector2(1120, 420)
+	panel.custom_minimum_size = Vector2(1110, 660) if kind == "directions" else Vector2(1180, 660)
 	panel.add_theme_stylebox_override("panel", AtelierTheme.panel_style(18, true, AtelierTheme.CREAM))
 	center.add_child(panel)
 	var column := VBoxContainer.new()
@@ -778,72 +791,152 @@ func _open_sheet(kind: String) -> void:
 	panel.add_child(column)
 
 	var head := HBoxContainer.new()
-	var title_text := "8 方向对照" if kind == "directions" else "4 动作对照"
-	var sub_text := "同一套关节 · 左向镜像 · 部件不错位" if kind == "directions" else "待机 / 行走 / 挥击 / 受击 · 武器随手"
+	var title_text := "8 方向罗盘" if kind == "directions" else "4 动作 · 3 关键帧"
+	var sub_text := "同一套关节 · 左向镜像 · 正/背/侧剪影分开" if kind == "directions" else "每动作 预备 / 冲击 / 跟随 三帧 · 不读文字也能区分"
 	head.add_child(AtelierTheme.make_label(title_text, 18))
-	head.add_child(AtelierTheme.make_label("   " + sub_text, 10, AtelierTheme.MUTED))
+	head.add_child(AtelierTheme.make_label("   " + sub_text, 11, AtelierTheme.MUTED))
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(spacer)
 	var close_button := Button.new()
 	close_button.text = "关闭"
-	close_button.custom_minimum_size = Vector2(84, 28)
-	AtelierTheme.style_button(close_button, 11)
+	close_button.custom_minimum_size = Vector2(88, 34)
+	AtelierTheme.style_button(close_button, 12)
 	close_button.pressed.connect(close_sheet)
 	head.add_child(close_button)
 	column.add_child(head)
 
 	var grid := GridContainer.new()
-	grid.columns = 4
+	grid.columns = 3 if kind == "directions" else 4
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 8)
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grid)
 
-	var count := DollData.DIRS.size() if kind == "directions" else DollData.ACTIONS.size()
-	var cell_size := Vector2(268, 226) if kind == "directions" else Vector2(268, 300)
-	for i in count:
-		var cell := PanelContainer.new()
-		cell.custom_minimum_size = cell_size
-		cell.clip_contents = true
-		cell.add_theme_stylebox_override("panel", AtelierTheme.inner_style(12, Color("#f8efdf")))
-		grid.add_child(cell)
-		var body := Control.new()
-		body.clip_contents = true
-		cell.add_child(body)
-		var stage := StageBackdrop.new()
-		stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		body.add_child(stage)
-		# 对照页是静态姿势，同样烘焙成纹理，打开时主界面仍保持流畅。
-		var thumb := DollThumbnail.new()
-		thumb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		body.add_child(thumb)
-		var offsets := {"idle": 0.8, "walk": 0.22, "attack": 0.34, "hit": 0.02}
-		var offset := 0.35 if kind == "directions" else float(offsets[DollData.ACTIONS[i]["id"]])
-		thumb.set_doll(_outfit, i if kind == "directions" else _direction,
-				"walk" if kind == "directions" else DollData.ACTIONS[i]["id"],
-				1.08 if kind == "directions" else 1.45, offset, 26.0, true)
-		_overlay_thumbs.append(thumb)
-		_overlay_dolls.append(thumb.doll)
-		var ribbon := ColorRect.new()
-		ribbon.color = Color(1.0, 0.98, 0.93, 0.66)
-		ribbon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		body.add_child(ribbon)
-		var caption := AtelierTheme.make_label("", 11, AtelierTheme.INK)
-		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		if kind == "directions":
-			caption.text = "%s  %s" % [DollData.DIRS[i]["label"], DollData.DIRS[i]["name"]]
-		else:
-			var act: Dictionary = DollData.ACTIONS[i]
-			caption.text = "%s · %s" % [act["label"], act["hint"]]
-		body.add_child(caption)
-		body.resized.connect(func() -> void:
-			ribbon.position = Vector2(0, body.size.y - 24.0)
-			ribbon.size = Vector2(body.size.x, 22.0)
-			caption.position = Vector2(0, body.size.y - 21.0)
-			caption.size = Vector2(body.size.x, 18)
-		)
+	if kind == "directions":
+		# 罗盘：3×3 环，中心“方向”；填写顺序 = 左上/上/右上/左/中心/右/左下/下/右下。
+		var thumbs_by_dir := {}
+		for cell_index in [3, 4, 5, 2, -1, 6, 1, 0, 7]:
+			if cell_index == -1:
+				var center_cell := PanelContainer.new()
+				center_cell.custom_minimum_size = Vector2(320, 190)
+				center_cell.add_theme_stylebox_override("panel", AtelierTheme.inner_style(12, Color("#fff3df")))
+				grid.add_child(center_cell)
+				var center_tag := AtelierTheme.make_label("方向\n罗盘", 16, AtelierTheme.MUTED)
+				center_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				center_tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+				center_cell.add_child(center_tag)
+				continue
+			var parts := _make_sheet_cell(grid, Vector2(320, 190))
+			var thumb: DollThumbnail = parts["thumb"]
+			thumb.doll.show_effects = false
+			thumb.set_doll(_outfit, cell_index, "walk", 0.80, 0.35, 24.0, true)
+			_overlay_thumbs.append(thumb)
+			thumbs_by_dir[cell_index] = thumb
+			(parts["caption"] as Label).text = "%s  %s" % [
+				DollData.DIRS[cell_index]["label"], DollData.DIRS[cell_index]["name"]]
+		for i in 8:
+			_overlay_dolls.append((thumbs_by_dir[i] as DollThumbnail).doll)
+	else:
+		# 4 动作（列）× 3 authored keys（行）；行 = 预备/冲击/跟随，读起来是四列剪影条。
+		var keys := {
+			"idle": [0.0, 1.05, 2.10],
+			"walk": [0.0, 0.287, 0.574],
+			"attack": [0.21, 0.47, 0.78],
+			"hit": [0.03, 0.20, 0.60],
+		}
+		var key_names := {
+			"idle": ["平静", "吸气", "呼气"],
+			"walk": ["触地", "经过", "抬起"],
+			"attack": ["预备", "冲击", "跟随"],
+			"hit": ["受击", "后仰", "回正"],
+		}
+		var primary_dolls: Array[PaperDollRenderer] = []
+		for k in 3:
+			for i in DollData.ACTIONS.size():
+				var action_id: String = DollData.ACTIONS[i]["id"]
+				var parts := _make_sheet_cell(grid, Vector2(280, 190))
+				var thumb: DollThumbnail = parts["thumb"]
+				var stamp: float = keys[action_id][k]
+				thumb.set_doll(_outfit, _direction, action_id, 0.80, stamp, 24.0, true)
+				_overlay_thumbs.append(thumb)
+				if k == 0:
+					primary_dolls.append(thumb.doll)
+				(parts["caption"] as Label).text = "%s · %s %.2fs" % [
+					DollData.action_label(action_id), key_names[action_id][k], stamp]
+		for doll in primary_dolls:
+			_overlay_dolls.append(doll)
 	_status("%s 对照 · 关闭后继续换装" % ("8 方向" if kind == "directions" else "4 动作"))
+
+
+func _make_sheet_cell(grid: GridContainer, cell_size: Vector2) -> Dictionary:
+	var cell := PanelContainer.new()
+	cell.custom_minimum_size = cell_size
+	cell.clip_contents = true
+	cell.add_theme_stylebox_override("panel", AtelierTheme.inner_style(12, Color("#f8efdf")))
+	grid.add_child(cell)
+	var body := Control.new()
+	body.clip_contents = true
+	cell.add_child(body)
+	var stage := StageBackdrop.new()
+	stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	body.add_child(stage)
+	# 对照页是静态姿势，同样烘焙成纹理，打开时主界面仍保持流畅。
+	var thumb := DollThumbnail.new()
+	thumb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	body.add_child(thumb)
+	var ribbon := ColorRect.new()
+	ribbon.color = Color(1.0, 0.98, 0.93, 0.72)
+	ribbon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.add_child(ribbon)
+	var caption := AtelierTheme.make_label("", 11, AtelierTheme.INK)
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.add_child(caption)
+	body.resized.connect(func() -> void:
+		ribbon.position = Vector2(0, body.size.y - 26.0)
+		ribbon.size = Vector2(body.size.x, 24.0)
+		caption.position = Vector2(0, body.size.y - 24.0)
+		caption.size = Vector2(body.size.x, 20)
+	)
+	return {"cell": cell, "body": body, "thumb": thumb, "caption": caption}
+
+
+# ------------------------------------------------------------------ 层视 / 舞台模式
+
+func toggle_layer_view() -> void:
+	_layer_view = not _layer_view
+	_refresh_studio()
+	_status("层视：17 层沿右下展开 · 选中槽高亮" if _layer_view else "层视关闭 · 回到整偶")
+
+
+func toggle_stage_mode() -> void:
+	if _show_mode:
+		_show_mode = false
+		if _show_stage != null:
+			_show_stage.queue_free()
+			_show_stage = null
+		_content.visible = true
+		return
+	_show_mode = true
+	_content.visible = false
+	_show_stage = Control.new()
+	_show_stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_show_stage)
+	var stage := StageBackdrop.new()
+	stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_show_stage.add_child(stage)
+	var hero := PaperDollRenderer.new()
+	hero.set_doll(_outfit, _direction, _action)
+	hero.set_display_scale(3.35)
+	_show_stage.add_child(hero)
+	_show_stage.resized.connect(func() -> void:
+		hero.position = Vector2(_show_stage.size.x * 0.5, _show_stage.size.y - 56.0)
+	)
+	hero.position = Vector2(size.x * 0.5, size.y - 56.0)
+	var hint := AtelierTheme.make_label("F11 / ESC 退出舞台模式", 11, AtelierTheme.MUTED)
+	hint.position = Vector2(18, 14)
+	_show_stage.add_child(hint)
+	_status("舞台模式 · 无 UI · F11 退出")
 
 
 func close_sheet() -> void:
@@ -927,6 +1020,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	var key: int = event.keycode
+	if key == KEY_F11:
+		if _overlay != null:
+			close_sheet()
+		toggle_stage_mode()
+		get_viewport().set_input_as_handled()
+		return
+	if _show_mode:
+		if key == KEY_ESCAPE or key == KEY_F11:
+			toggle_stage_mode()
+			get_viewport().set_input_as_handled()
+		return
 	if _overlay != null:
 		if key == KEY_ESCAPE:
 			close_sheet()
@@ -941,8 +1045,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			save_current()
 		KEY_L:
 			load_saved()
-		KEY_TAB:
-			_cycle_slot(1)
 		KEY_LEFT:
 			set_direction(posmod(_direction - 1, DollData.DIRS.size()))
 		KEY_RIGHT:
@@ -952,11 +1054,3 @@ func _unhandled_input(event: InputEvent) -> void:
 		_:
 			return
 	get_viewport().set_input_as_handled()
-
-
-func _cycle_slot(step: int) -> void:
-	var ids: Array[String] = []
-	for slot in DollData.SLOTS:
-		ids.append(slot["id"])
-	var index := ids.find(_selected_slot)
-	set_selected_slot(ids[posmod(index + step, ids.size())])

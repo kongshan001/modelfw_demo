@@ -127,10 +127,17 @@ func _initialize() -> void:
 	var walk_a: Vector2 = DollPose.compute(0.10, "walk", 6)["foot_r"]
 	var walk_b: Vector2 = DollPose.compute(0.30, "walk", 6)["foot_r"]
 	_check(walk_a.distance_to(walk_b) > 1.0, "walk has no stride")
+	# 评审 P0-4 后 attack 增加了 0.28–0.40 的蓄力停顿；采样点改为停顿末与挥砍中段。
 	var atk_a: Vector2 = DollPose.compute(0.30, "attack", 6)["hand_r"]
-	var atk_b: Vector2 = DollPose.compute(0.42, "attack", 6)["hand_r"]
+	var atk_b: Vector2 = DollPose.compute(0.52, "attack", 6)["hand_r"]
 	_check(atk_a.distance_to(atk_b) > 4.0, "attack arm does not travel")
-	_check(float(DollPose.compute(0.35, "attack", 6)["slash"]) > 0.2, "attack slash FX missing")
+	_check(float(DollPose.compute(0.52, "attack", 6)["slash"]) > 0.2, "attack slash FX missing")
+	# 3 个 authored keys：预备 / 冲击 / 跟随的姿势必须互不相同。
+	var k_a: Vector2 = DollPose.compute(0.21, "attack", 6)["hand_r"]
+	var k_b: Vector2 = DollPose.compute(0.47, "attack", 6)["hand_r"]
+	var k_c: Vector2 = DollPose.compute(0.78, "attack", 6)["hand_r"]
+	_check(k_a.distance_to(k_b) > 3.0 and k_b.distance_to(k_c) > 3.0,
+			"attack authored keys are not distinct")
 	_check(float(DollPose.compute(0.01, "hit", 6)["hit"]) > 0.5, "hit impulse missing")
 	var idle_a: float = DollPose.compute(0.0, "idle", 0)["hip"].y
 	var idle_b: float = DollPose.compute(0.75, "idle", 0)["hip"].y

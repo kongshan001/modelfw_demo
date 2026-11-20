@@ -8,14 +8,37 @@ Godot 4.6 / 2D / GL Compatibility / 1280×720 的原创纸偶换装与 4×4 阵�
 ## 能玩什么
 
 - **17 个独立槽位**：气场、披风、背饰、木偶身、下装、鞋履、上衣、腰带、头、耳朵、面具、眼睛、发型、帽子、手套、武器、挂饰。
-  - 共 **83 套变体**，每槽 **8 色独立 tint**，组合空间约 `9.0×10^26`。
+  - 共 **83 套变体**，每槽 **8 色独立 tint**，组合空间约 `9.0×10²⁶`。
   - 槽位拥有固定 z 序；背面朝向会翻转披风 / 背饰 / 武器的层级。
 - **8 方向**：下、左下、左、左上、上、右上、右、右下。美术固定朝右绘制，左侧由节点镜像。
 - **4 个动作**：待机、行走、挥击、受击。共享一套脊柱 / 双臂双骨链 / 双腿双骨链，换装与换向不脱节。
 - **换装 UI**：槽位选择、变体切换、色板染色、本槽随机、整只随机、实时试衣镜。
 - **16 个预设角色**：`presets/lineup_16.json` 载入为 4×4 阵容；点击卡片载入试衣镜，↻ 单抽该位。
 - **保存 / 读取**：把当前 17 槽组合、方向、动作写为 JSON（默认 `user://paperdoll_outfit.json`）。
-- **对照页**：8 方向对照、4 动作对照，均为烘焙静态快照。
+- **对照页**：8 方向罗盘、4 动作 × 3 关键帧，均为烘焙静态快照。
+- **层视**：试衣镜标题旁「层视」把 17 层沿右下展开，选中槽高亮，其余层 42% 透明。
+- **舞台模式**：`F11` 隐藏全部 UI，只保留纸面舞台 + 当前纸偶（配合 `docs/shots/showcase/` 出图）。
+
+## 美术语言（T-20261120-009）
+
+按 `docs/art-review/paperdoll-art-review.md` 的 P0/P1 重绘，所有参数落在代码中：
+
+- **线宽层级**：L0 外轮廓 1.15 local（@2.1× ≈ 2.4px）；L1 结构线 0.55×（≈1.3px）；
+  L2 细节 0.40 local（≈0.8px）；内层部件 outline 传 0 或 0.28–0.58×；缩略图只保留 L0（2.30 local @0.56×）。
+- **五档色阶**：teal / coral / mustard / blue / plum / wood / leather / metal / paper 的
+  deep–shade–base–light–hi 十组 ramp；木/布/皮/金/纸各有独立材质细节预算。
+- **舞台光**：`#f4ddc0 → #e4c7a5` 纵向渐变、左上暖光池、15% 太阳、10% 暗角、纸纤维；
+  主光左上 + 右侧 1px `#ffe0a8` 轮廓光 + 两层接触影/环境影。
+- **8 向**：yaw 0 / 0.55 / 1.0；肩宽 −36%、髋宽 −72%、头前探 5.2 local；
+  远/近臂错位；侧身 x 压缩 1.0 / 0.835 / 0.64；背面加兜帽、肩披、后发、刀鞘与 V 形披风。
+- **4 动作**：idle 1.4 local 呼吸 + 披风滞后；walk 0.82s / 8 keys / ±0.55 rad + 脚掌滚动；
+  attack 1.05s，0.28–0.40 蓄力停顿 + 0.40–0.52 挥砍 + 收势，三层斩击弧；
+  hit 1.10s，后脚退 6 local + 头 17° 甩动 + 披风滞后。
+- **色彩纪律**：8 套 outfit scheme（primary/secondary/accent/neutral），随机器先选 scheme；
+  60/30/10 面积，高饱和色 ≤2；16 预设逐个指定「靠什么被认出」的破形件。
+- **纸艺**：每层 1.5px 层影、4% 纸纤维、切边色、黄铜两脚钉；层视可检查 17 层叠压。
+- **UI**：中文最小 11px；激活态 `#b23c33 / #2f7a6b / #6c5490`（白字 ≥4.5:1）；
+  全控件 `FOCUS_ALL` + 2px 墨色焦点环；删除玩家视图里的 `z 40`，组合数改 `9.0×10²⁶`。
 
 ## 操作
 
@@ -24,10 +47,11 @@ Godot 4.6 / 2D / GL Compatibility / 1280×720 的原创纸偶换装与 4×4 阵�
 | 鼠标 | 点击槽位 / 变体 / 色块 / 方向 / 动作 / 阵容卡 |
 | `1`–`4` | 待机 / 行走 / 挥击 / 受击 |
 | `←` `→` | 上一个 / 下一个方向 |
-| `Tab` | 循环槽位 |
+| `Tab` / `Shift+Tab` | 在可交互控件间移动焦点（2px 墨色焦点环） |
 | `R` | 随机整只纸偶 |
 | `S` / `L` | 保存 / 读取当前组合 |
-| `Esc` | 关闭对照页；无弹层时退出 |
+| `F11` | 舞台模式（隐藏 UI） |
+| `Esc` | 关闭对照页 / 舞台模式；无弹层时退出 |
 
 ## 运行
 
@@ -46,13 +70,21 @@ godot --path godot-paper-doll --headless --quit-after 600
 # 2. 数据 / 方向 / 动作 / z 序 / 存档 / 烘焙缓存
 godot --path godot-paper-doll --headless -s tools/smoke_paperdoll.gd
 
-# 3. 真机 1280×720 截图（6 张，写入 docs/shots/）
+# 3. 真机 1280×720 截图（7 张，写入 docs/shots/）
 godot --path godot-paper-doll --resolution 1280x720 -s tools/screenshot_paperdoll.gd
 
 # 4. Intel 集显帧率（要求 ≥30）
 godot --path godot-paper-doll --resolution 1280x720 -s tools/perf_paperdoll.gd
 
-# 5. 一键验收
+# 5. 展示物料（hero / 罗盘 / 16 人海报 / 6s 帧序列）
+godot --path godot-paper-doll --resolution 1280x720 -s tools/showcase_paperdoll.gd
+bash godot-paper-doll/tools/record_showcase.sh
+
+# 6. 美术指标（真实 GPU 渲染 + Python 计算）
+godot --path godot-paper-doll --resolution 1280x720 -s tools/metric_rig.gd
+python3 godot-paper-doll/tools/measure_paperdoll.py
+
+# 7. 一键验收
 bash godot-paper-doll/tools/verify.sh
 ```
 
@@ -62,19 +94,27 @@ bash godot-paper-doll/tools/verify.sh
 PAPERDOLL_SMOKE_OK slots=17 variants=83 dirs=8 actions=4 presets=16 cards=16 baked_cards=16 ...
 PAPERDOLL_SHOTS_OK
 PAPERDOLL_FPS_OK min=...
+PAPERDOLL_SHOWCASE_OK
+PAPERDOLL_METRICS_OK
 PAPERDOLL_VERIFY_OK
 ```
 
 ## 媒体
 
-- 截图：`docs/shots/01_studio.png`、`02_wardrobe.png`、`03_actions.png`、`04_directions.png`、`05_lineup.png`、`06_saved.png`
-- 演示视频：`docs/paperdoll.mp4`（H.264，约 8.5 s）
-- 动图：`docs/paperdoll.gif`（同片段，便于聊天工具预览）
-- 重新录制：`bash tools/record_paperdoll.sh`
+- 工具截图：`docs/shots/01_studio.png` … `07_layer.png`
+- 展示物料（无 UI，固定 16 预设）：
+  - `docs/shots/showcase/hero.png`（hero，1280×720）
+  - `docs/shots/showcase/compass.png`（8 向罗盘）
+  - `docs/shots/showcase/poster_16.png`（16 人海报，约 168px 高）
+  - `docs/shots/showcase/hero_layers.png`（层视）
+  - `docs/shots/showcase/paperdoll_6s.gif`（640×360 / 30fps / 6s：idle→walk→attack→hit）
+- 美术验收图：`docs/art-review/after/`（before/after、4× 裁切、25% 缩略图、16 人剪影、8 向剪影罗盘、指标 JSON）
+- 旧演示视频：`docs/paperdoll.mp4` / `docs/paperdoll.gif`（T-006 片段）
 
 ## 性能
 
-Intel HD Graphics 6000、1280×720、GL Compatibility 实测 **35–55 FPS**（`PAPERDOLL_FPS_OK`）。
+Intel HD Graphics 6000、1280×720、GL Compatibility 实测 **31–48 FPS，avg 39.0，min 31**；`tools/verify.sh` 串联运行时 min 32.0 / avg 34.4
+（`PAPERDOLL_FPS_OK`，为新增兜帽/披肩/气场后的保守值；AA 2× 超采样尚未接入，见 T-010）。
 关键优化：
 
 1. 4×4 阵容与对照页使用 `DollThumbnail`：SubViewport 烘焙一次后关闭渲染；
@@ -96,8 +136,9 @@ scripts/doll/draw_kit.gd      程序化画笔与三角形批处理
 scripts/doll/paint_*.gd       木偶 / 布料 / 道具绘制
 scripts/ui/                   主题、试衣镜舞台、阵容卡、烘焙缩略图
 presets/lineup_16.json        16 个原创预设
-tools/                        smoke / screenshot / perf / record / verify
-docs/shots/                   真机截图
+tools/                        smoke / screenshot / perf / showcase / metric / verify
+docs/shots/                   真机截图 + showcase/ 展示物料
+docs/metrics/                 透明底渲染、16/8 向剪影、summary.json
 ```
 
 ## 版权

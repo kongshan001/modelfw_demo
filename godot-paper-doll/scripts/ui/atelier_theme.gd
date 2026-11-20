@@ -2,16 +2,21 @@ class_name AtelierTheme
 extends RefCounted
 
 # 纸偶工坊的统一视觉：奶油纸面、墨色描边、珊瑚/青绿/芥末三色强调。
+# 评审 P1-2：激活态全部换深色底（白字 ≥4.5:1）；中文最小 11px；
+# 所有可交互控件 FOCUS_ALL + 2px 墨色焦点环（含 2px 纸色偏移）。
 
 const INK := Color("#3a2f43")
 const CREAM := Color("#fff9ee")
 const PAPER := Color("#f3e7d4")
 const SOFT := Color("#f7efe2")
 const CORAL := Color("#e86a5c")
+const CORAL_DEEP := Color("#b23c33")   # 白字 5.76:1；奶油底 5.34:1
 const TEAL := Color("#3f9c8a")
+const TEAL_DEEP := Color("#2f7a6b")   # 白字 5.10:1
 const GOLD := Color("#f2b34c")
 const PLUM := Color("#8a6fb0")
-const MUTED := Color("#837586")
+const PLUM_DEEP := Color("#6c5490")   # 白字 6.35:1
+const MUTED := Color("#5f5260")       # on #f3e7d4 = 6.01:1
 const WHITE := Color("#fffdf7")
 
 static var _font: SystemFont = null
@@ -69,7 +74,7 @@ static func card_style(selected: bool) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = CREAM if not selected else Color("#fff3df")
 	box.set_border_width_all(3 if selected else 1)
-	box.border_color = CORAL if selected else Color(INK, 0.22)
+	box.border_color = CORAL_DEEP if selected else Color(INK, 0.22)
 	box.set_corner_radius_all(12)
 	box.content_margin_left = 5
 	box.content_margin_right = 5
@@ -94,8 +99,19 @@ static func accent_style(bg: Color, radius := 8) -> StyleBoxFlat:
 	return box
 
 
+static func focus_style() -> StyleBoxFlat:
+	# 2px 墨色焦点环 + 2px 纸色偏移（expand margins），键盘可读。
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0, 0, 0, 0)
+	box.set_border_width_all(2)
+	box.border_color = INK
+	box.set_corner_radius_all(10)
+	box.set_expand_margin_all(2.0)
+	return box
+
+
 static func style_button(button: Button, size := 11) -> void:
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_ALL
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.add_theme_font_override("font", font())
 	button.add_theme_font_size_override("font_size", size)
@@ -106,10 +122,10 @@ static func style_button(button: Button, size := 11) -> void:
 	button.add_theme_stylebox_override("normal", accent_style(SOFT))
 	button.add_theme_stylebox_override("hover", accent_style(Color("#ffe6c9")))
 	button.add_theme_stylebox_override("pressed", accent_style(Color("#f0c8a2")))
-	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	button.add_theme_stylebox_override("focus", focus_style())
 
 
-static func style_toggle(button: Button, active: bool, active_bg := CORAL, size := 11) -> void:
+static func style_toggle(button: Button, active: bool, active_bg := CORAL_DEEP, size := 11) -> void:
 	style_button(button, size)
 	var normal := accent_style(active_bg if active else SOFT)
 	var hover := accent_style((active_bg if active else SOFT).lightened(0.10))

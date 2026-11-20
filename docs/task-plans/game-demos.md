@@ -21,8 +21,8 @@
 - 交付: 更新后的 `godot-paper-doll/` 视觉层；before/after/剪影/8 向/动作/舞台/UI 物料；FPS 不回归；媒体发送
 - 约束: 只改视觉文件/资产；原创；不复制参考素材；保留 17 槽/8 向/4 动作/16 预设；不做 QA/独立评审
 - 指派: game-artist worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-009/result.md
 
 ## T-20261120-010 · 纸娃娃技术/性能/AA（Game Engineer）
 - 父任务: T-20261120-009；依赖: T-20261120-009 + T-20261120-013（done + Git 已发布）

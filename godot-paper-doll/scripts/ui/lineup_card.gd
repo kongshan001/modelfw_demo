@@ -48,7 +48,7 @@ func _ensure_built() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 2)
 	column.add_child(header)
-	_name_label = AtelierTheme.make_label("", 10)
+	_name_label = AtelierTheme.make_label("", 11)
 	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_label.clip_text = true
 	_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -56,7 +56,7 @@ func _ensure_built() -> void:
 	_dice = Button.new()
 	_dice.text = "↻"
 	_dice.tooltip_text = "只重掷这一位"
-	_dice.custom_minimum_size = Vector2(20, 16)
+	_dice.custom_minimum_size = Vector2(24, 22)
 	_dice.add_theme_font_size_override("font_size", 13)
 	AtelierTheme.style_button(_dice, 12)
 	_dice.pressed.connect(func() -> void: reroll_requested.emit(index))
@@ -72,6 +72,7 @@ func _ensure_built() -> void:
 	_thumb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_preview.add_child(_thumb)
 	doll = _thumb.doll
+	doll.show_effects = false
 
 
 func apply_entry(data: Dictionary) -> void:
@@ -85,7 +86,8 @@ func apply_entry(data: Dictionary) -> void:
 	if signature == _signature and doll.direction == dir and doll.action == action:
 		return
 	_signature = signature
-	_thumb.set_doll(data["outfit"], dir, action, 0.56, 0.31 * float(index), 2.0, true)
+	_thumb.set_doll(data["outfit"], dir, action, 0.56,
+			DollData.showcase_time(index, action), 2.0, true)
 
 
 func set_selected(value: bool) -> void:
@@ -121,4 +123,4 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 28.0, Color(0.25, 0.61, 0.54, 0.12))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if _selected:
-		draw_circle(Vector2(size.x - 12, 11), 3.6, AtelierTheme.CORAL)
+		draw_circle(Vector2(size.x - 12, 11), 3.6, AtelierTheme.CORAL_DEEP)
