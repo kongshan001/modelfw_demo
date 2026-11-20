@@ -2,6 +2,28 @@
 
 ## 进行中
 
+## T-20261120-006 · 木头人纸娃娃角色系统（T-004 重试）
+- 来源: 飞书消息（“需要”重试 T-20261120-004，2026-11-20）
+- 父任务: T-20261120-004
+- 类型: game-demo
+- 目标: 完成 17 槽位分层纸娃娃（8 方向 + idle/walk/attack/hit + 独立换色 + 16 预设 + 4×4 阵容 + 保存/加载），修复上次 API 中断留下的半成品
+- 交付: `godot-paper-doll/` 可玩组合器；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke
+- 约束: 原创木头人美术/UI/名字；不复制视频素材/品牌；1280×720 GL Compatibility；完成后发媒体并自动提交
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+- 产出: worker running
+
+## T-20261120-005 · 修正像素水面倒影/水线（T-002 follow-up）
+- 来源: 飞书反馈（2026-11-20；截图 `godot-pixel-ocean/docs/shots/01_sunset_wide.png`）
+- 父任务: T-20261120-002
+- 类型: game-demo
+- 目标: 修复“木筏像飞起来”的倒影问题：倒影平面/水线/接触泡沫/反射偏移对齐，木筏贴水而不是悬空
+- 交付: `godot-pixel-ocean/` 修复；before/after `01_sunset_wide`、`02_sunset_reflection` + GIF/MP4；TECH/迭代记录更新；smoke；媒体发送
+- 约束: 只改水面/倒影/水线表现，不改玩法；原创；1280×720 GL Compatibility，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-005/result.md
+
 ## T-20261120-004 · 木头人 17 槽位纸娃娃角色系统复刻
 - 来源: 飞书消息（B 站 BV1dbxc6aEyU《独立游戏 | 一个木头人，怎么变成16个角色》，2026-11-20）
 - 类型: game-demo

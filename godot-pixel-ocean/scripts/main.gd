@@ -3,7 +3,10 @@ extends Node
 # 主控：搭世界、昼夜调色、镜像相机倒影、参数入口和键盘操作。
 # 画面结构：1280×720 窗口 ← 2× 最近邻放大 ← 640×360 的 3D SubViewport。
 # 倒影：另一个 320×180 SubViewport 共享同一个 World3D，用镜像相机从水下拍，
-#       水面 shader 以 (1-u, v) 采样它。
+#       水面 shader 以 (1-u, v) 采样它。镜像平面不固定在 y=0，而是跟着
+#       木筏所在水面的平均高度（木筏吃水线）走：波浪把水面抬到 y≈+0.5 时，
+#       若仍按 y=0 镜像，倒影会被压到水线下方 2h，看起来像船悬空。
+#       镜像平面随木筏平滑起伏，远处天空反射的微小漂移可以忽略。
 
 const PIXEL_SIZE := Vector2i(640, 360)
 const REFLECTION_SIZE := Vector2i(320, 180)
@@ -42,6 +45,7 @@ var _ocean
 var _raft
 var _reflection_vp: SubViewport
 var _reflection_cam: Camera3D
+var _mirror_plane_y := WATER_LEVEL
 var _reflection_enabled := true
 var _ui_visible := true
 var _palette: Dictionary = {}
@@ -425,7 +429,15 @@ func _update_reflection_camera() -> void:
 	var pos: Vector3 = _camera.global_position
 	var forward: Vector3 = -xform.basis.z
 	var up: Vector3 = xform.basis.y
-	var mirrored_pos := Vector3(pos.x, 2.0 * WATER_LEVEL - pos.y, pos.z)
+
+	# 镜像平面 = 木筏吃水线（五点平均水位，已做平滑）。反射相机必须留在水下。
+	var plane_y: float = WATER_LEVEL
+	if _raft != null:
+		plane_y = _raft.get_waterline_y()
+	plane_y = minf(plane_y, pos.y - 0.35)
+	_mirror_plane_y = plane_y
+
+	var mirrored_pos := Vector3(pos.x, 2.0 * plane_y - pos.y, pos.z)
 	var mirrored_forward := Vector3(forward.x, -forward.y, forward.z)
 	var mirrored_up := Vector3(up.x, -up.y, up.z)
 	_reflection_cam.global_transform = Transform3D(Basis.IDENTITY, mirrored_pos).looking_at(
@@ -639,6 +651,10 @@ func get_reflection_viewport() -> SubViewport:
 
 func get_reflection_camera() -> Camera3D:
 	return _reflection_cam
+
+
+func get_mirror_plane_y() -> float:
+	return _mirror_plane_y
 
 
 func get_world_viewport() -> SubViewport:

@@ -2,17 +2,19 @@ extends Node3D
 
 # 木筏 + 小水手 + 猫。木筏不写死高度：每帧在水面取 5 个点（中心 + 四角），
 # 用平均高度定 y、用前后差定俯仰、左右差定横滚，做平滑跟随。
+# 根节点压到平均水位下方 DRAFT（吃水），让浮木真正没入水中；甲板抬高保留干舷。
+# get_waterline_y() 返回当前水线高度，倒影镜像平面跟着它走。
 # 所有模型和贴图都是本工程用代码生成的，无外部素材。
 
 const HALF_WIDTH := 1.15
 const HALF_DEPTH := 1.55
-const FLOAT_OFFSET := 0.10
+const DRAFT := 0.06  # 根节点低于平均水位的深度；浮木半径 0.17、中心 +0.06，水线过中线
 
 var ocean
 
-var _deck_y := 0.08
+var _deck_y := 0.20  # 甲板抬高：浮木吃水时甲板仍有干舷，浪尖不会漫过船面
 var _character: Node3D
-var _character_base_y := 0.16
+var _character_base_y := 0.28
 var _flag: MeshInstance3D
 var _lantern_light: OmniLight3D
 var _lantern_orb: MeshInstance3D
@@ -72,18 +74,18 @@ func _build_hull() -> void:
 				-1.40 + i * 0.35)
 		add_child(plank)
 
-	# 两根浮木
+	# 两根浮木：中心抬到甲板下沿，半径 0.17，吃水约一半
 	for sx in [-0.78, 0.78]:
 		var log_mesh := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()
-		cyl.top_radius = 0.14
-		cyl.bottom_radius = 0.14
+		cyl.top_radius = 0.17
+		cyl.bottom_radius = 0.17
 		cyl.height = 3.10
 		cyl.radial_segments = 8
 		cyl.rings = 1
 		log_mesh.mesh = cyl
 		log_mesh.material_override = _wood_dark_mat
-		log_mesh.position = Vector3(sx, 0.0, 0.0)
+		log_mesh.position = Vector3(sx, 0.06, 0.0)
 		log_mesh.rotation.x = PI * 0.5
 		add_child(log_mesh)
 
@@ -340,7 +342,7 @@ func update_buoyancy(delta: float) -> void:
 	var right := heights[4]
 
 	var average := (center + front + back + left + right) / 5.0
-	var target_y := average + FLOAT_OFFSET
+	var target_y := average - DRAFT
 	var target_pitch := atan2(front - back, HALF_DEPTH * 2.0)
 	var target_roll := atan2(right - left, HALF_WIDTH * 2.0)
 
@@ -370,6 +372,12 @@ func update_buoyancy(delta: float) -> void:
 	_mark_positions.append(Vector3(x - HALF_WIDTH, left + 0.04, z))
 	_mark_positions.append(Vector3(x + HALF_WIDTH, right + 0.04, z))
 	_update_marks()
+
+
+func get_waterline_y() -> float:
+	# 木筏所在水面的平均高度（= 根节点 + 吃水），倒影镜像平面用它，
+	# 保证倒影顶部贴在船体水线上，而不是按 y=0 镜像后悬在水面下方。
+	return global_position.y + DRAFT
 
 
 func set_night_factor(value: float) -> void:

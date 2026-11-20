@@ -124,6 +124,21 @@ func _initialize() -> void:
 			"reflection camera x not mirrored around water plane")
 	_check(ocean.layers == (1 << 1), "ocean layer wrong (should be excluded from reflection)")
 
+	# ── 贴水 / 镜像平面 ───────────────────────────────────────────────
+	# 木筏根节点低于平均水位（吃水），浮木底部必须没入当地水面
+	var local: Array[float] = ocean.sample_five(
+			raft.global_position.x, raft.global_position.z)
+	var local_avg := (local[0] + local[1] + local[2] + local[3] + local[4]) / 5.0
+	_check(raft.global_position.y < local_avg, "raft must sit below average water level (draft)")
+	# 浮木中心 +0.06、半径 0.17 → 底部在根节点下方 0.11
+	_check(raft.global_position.y - 0.11 < local[0], "hull logs must be below the local water surface")
+	# 倒影镜像平面跟随木筏水线，反射相机严格镜像于该平面
+	_check(absf(scene.get_mirror_plane_y() - raft.get_waterline_y()) < 0.02,
+			"mirror plane does not follow the raft waterline")
+	_check(absf(refl_cam.global_position.y - (2.0 * scene.get_mirror_plane_y()
+			- main_cam.global_position.y)) < 0.02,
+			"reflection camera not mirrored around the waterline plane")
+
 	scene.set_ui_visible(false)
 	var hud_root: Control = scene.get_node("HUD").get_node("HUDRoot")
 	_check(not hud_root.visible, "HUD did not hide")

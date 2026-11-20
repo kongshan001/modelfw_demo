@@ -90,10 +90,11 @@ godot --path . --resolution 1280x720 -s tools/probe_pixel_ocean.gd
 - `PIXEL_OCEAN_SMOKE_OK`；
 - `--quit-after 600` headless 启动无 `SCRIPT ERROR` / `ERROR:`；
 - 9 张 GPU 截图写入 `docs/shots/`（`PIXEL_OCEAN_SHOTS_OK`）；
-- 默认设置（640×360 内部分辨率 + 倒影开）平均 **92.2 FPS / 最低 58 FPS**；
-  关倒影平均 128.8 FPS；约 104,604 图元 / 88 draw calls；
+- 默认设置（640×360 内部分辨率 + 倒影开）平均 **111.4 FPS / 最低 95 FPS**；
+  关倒影平均 130.8 FPS；约 104,604 图元 / 88 draw calls；
 - `docs/pixel_ocean.mp4`（1280×720，9.0s，15fps）与 `docs/pixel_ocean.gif`
-  （800×450，9.0s，12fps，96 色）。
+  （960×540，9.0s，15fps，128 色）；
+- `docs/shots/00_before_after_reflection.png`：倒影悬空修复前后对比。
 
 ## 目录
 
@@ -115,7 +116,7 @@ godot-pixel-ocean/
 ├─ docs/
 │  ├─ TECH.md                    实现与数学细节
 │  ├─ 迭代记录.md                视觉迭代与修复过程
-│  ├─ shots/                     9 张 GPU 实拍
+│  ├─ shots/                     9 张 GPU 实拍 + before/after 对比
 │  ├─ pixel_ocean.mp4
 │  └─ pixel_ocean.gif
 └─ assets/CREDITS.md             原创声明与参考说明
@@ -124,6 +125,7 @@ godot-pixel-ocean/
 ## 已知限制
 
 - 平面倒影为 320×180 镜像相机近似，没有斜裁剪面；贴近水面的物体可能轻微漏出。
+  镜像平面取木筏水线，水面局部高度与它相差 Δh 时倒影仍有约 2Δh 的残余偏移。
 - 水面是 alpha 混合、不写深度，没有折射/水深吸收/水下雾；透明只混合海床颜色。
 - 无实时阴影、SSR、泛光；为 Intel 集显与像素风做的取舍。
 - 泡沫/碎金/云/星都是程序化像素近似，不追求物理正确。

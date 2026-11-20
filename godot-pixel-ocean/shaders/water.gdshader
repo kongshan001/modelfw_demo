@@ -152,7 +152,13 @@ void fragment() {
 	ruv += N.xz * 0.012;
 	ruv += vec2(sin(v_world.z * 0.8 + u_time * 0.9),
 			cos(v_world.x * 0.7 - u_time * 0.7)) * 0.002;
+	// 3 次纵向采样：倒影比实体更“软”，也压掉 320×180 倒影的方块感
 	vec3 refl = texture(u_reflection_tex, clamp(ruv, vec2(0.002), vec2(0.998))).rgb;
+	refl += texture(u_reflection_tex,
+			clamp(ruv + vec2(0.0, 0.0035), vec2(0.002), vec2(0.998))).rgb;
+	refl += texture(u_reflection_tex,
+			clamp(ruv - vec2(0.0, 0.0035), vec2(0.002), vec2(0.998))).rgb;
+	refl /= 3.0;
 	// 基础反射 + 掠射增强：低机位也能看到木筏/帆的倒影
 	float refl_amt = clamp(fres * 1.15 + 0.24, 0.0, 1.0) * u_reflection * u_reflection_on;
 	vec3 refl_tint = mix(vec3(1.0), u_sun_color.rgb, 0.22) * u_refl_tint;
@@ -179,16 +185,25 @@ void fragment() {
 			* 0.7 + hash12(floor(v_world.xz * 13.0 - u_time * 0.3)) * 0.3;
 	crest *= smoothstep(0.34, 0.64, crest_noise + v_crest * 0.18);
 
+	// 船体接触带：外侧一圈压暗（接触阴影）+ 贴水线的亮沫线，遮住船底接缝
 	vec2 rel = v_world.xz - u_raft_pos.xz;
 	float ang = atan(rel.y, rel.x);
-	vec2 q = abs(rel) - vec2(1.22, 1.62);
+	vec2 q = abs(rel) - vec2(1.13, 1.55);
 	float sd = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
-	sd += sin(ang * 9.0 + u_time * 1.1) * 0.05 + sin(ang * 17.0 - u_time * 0.7) * 0.02;
-	float ring = smoothstep(-0.01, 0.03, sd) * smoothstep(0.20, 0.06, sd);
+	sd += sin(ang * 9.0 + u_time * 1.1) * 0.035 + sin(ang * 17.0 - u_time * 0.7) * 0.016;
+	float contact = 1.0 - smoothstep(0.0, 0.32, sd);
+	col *= 1.0 - contact * 0.32;
+	float ring = smoothstep(-0.015, 0.015, sd) * smoothstep(0.12, 0.03, sd);
 	float ring_noise = smoothstep(0.25, 0.60,
 			hash12(floor(v_world.xz * 2.2 + u_time * 0.25)));
-	ring *= ring_noise * u_foam * 0.45;
-	float foam = clamp(crest + ring, 0.0, 1.0);
+	ring *= ring_noise * u_foam * 0.42;
+	float line_wobble = 0.5 + 0.5 * sin(ang * 13.0 + u_time * 1.4)
+			* sin(ang * 5.0 - u_time * 0.8);
+	float contact_line = 1.0 - smoothstep(0.0, 0.04, abs(sd - 0.012));
+	contact_line *= (0.55 + 0.45 * line_wobble) * u_foam * 0.34;
+	contact_line *= smoothstep(0.30, 0.62,
+			hash12(floor(v_world.xz * 5.5 + u_time * 0.35)));
+	float foam = clamp(crest + ring + contact_line, 0.0, 1.0);
 	vec3 foam_col = mix(u_foam_color.rgb, u_sun_color.rgb, backlit * 0.35);
 	foam_col = mix(foam_col, u_light_color.rgb, 0.15)
 			* (0.86 + 0.14 * hash12(floor(v_world.xz * 24.0 + u_time)));
