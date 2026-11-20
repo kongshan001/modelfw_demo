@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">纸偶工坊 · 核心循环与优先级（一页图）</title>
+  <desc id="desc">5 分钟首玩循环、3 个 P0、P1/P2 边界、验收三条。原创图表，供策划/美术/程序/QA 对齐。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a2f43"/>
+    </marker>
+    <marker id="arrow-coral" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2473c"/>
+    </marker>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#3a2f43" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .bg { fill: #f7eddc; }
+      .sheet { fill: #fff8ea; stroke: #3a2f43; stroke-width: 2; }
+      .ink { fill: #3a2f43; }
+      .muted { fill: #6b5b66; }
+      .node { fill: #fffdf7; stroke: #3a2f43; stroke-width: 1.8; }
+      .node-title { font-size: 20px; font-weight: 700; fill: #3a2f43; }
+      .node-sub { font-size: 14px; fill: #5c4f5a; }
+      .node-metric { font-size: 13px; font-weight: 600; fill: #3a2f43; }
+      .small { font-size: 12px; fill: #6b5b66; }
+      .h2 { font-size: 18px; font-weight: 700; fill: #3a2f43; }
+      .h3 { font-size: 15px; font-weight: 700; fill: #3a2f43; }
+      .bullet { font-size: 13px; fill: #4a3d47; }
+      .card { fill: #fffdf7; stroke: #d9c8b4; stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="980"/>
+  <rect class="sheet" x="16" y="16" width="1568" height="948" rx="18"/>
+
+  <!-- Header -->
+  <text x="60" y="68" class="ink" font-size="34" font-weight="700">纸偶工坊 · 核心循环与优先级</text>
+  <text x="60" y="96" class="muted" font-size="14">PAPERDOLL ATELIER · DESIGN LOOP v1.0 · T-20261120-013 · 2026-11-20</text>
+  <g text-anchor="end">
+    <text x="1540" y="62" class="ink" font-size="16" font-weight="700">产品体验目标 7.3 / 10</text>
+    <text x="1540" y="86" class="muted" font-size="12">美术门槛 7.0（T-007 评审，独立评分，不与本分混算）</text>
+    <text x="1540" y="106" class="muted" font-size="12">当前产品体验基线 4.6 · 美术基线 4.2 · FPS 35–55</text>
+  </g>
+  <line x1="60" y1="122" x2="1540" y2="122" stroke="#d9c8b4" stroke-width="1.5"/>
+
+  <!-- Loop title -->
+  <text x="60" y="164" class="h2">A · 5 分钟首玩闭环：先让它“动起来”，再让它“属于你”</text>
+
+  <!-- Node 1 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="60" y="190" width="280" height="130" rx="12"/>
+    <rect x="60" y="190" width="280" height="7" rx="3.5" fill="#f2b34c"/>
+    <circle cx="88" cy="222" r="15" fill="#f2b34c"/>
+    <text x="88" y="227" text-anchor="middle" font-size="15" font-weight="700" fill="#3a2f43">1</text>
+    <text x="114" y="228" class="node-title">进入 / 载入</text>
+    <text x="80" y="260" class="node-sub">招牌纸偶 · 待机 · 面向右下</text>
+    <text x="80" y="283" class="node-sub">一屏说清“这是什么、先点哪”</text>
+    <text x="80" y="306" class="node-metric">目标：10 秒内发生第一次点击</text>
+  </g>
+
+  <!-- Node 2 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="385" y="190" width="280" height="130" rx="12"/>
+    <rect x="385" y="190" width="280" height="7" rx="3.5" fill="#4fa58a"/>
+    <circle cx="413" cy="222" r="15" fill="#4fa58a"/>
+    <text x="413" y="227" text-anchor="middle" font-size="15" font-weight="700" fill="#fffdf7">2</text>
+    <text x="439" y="228" class="node-title">换一张纸</text>
+    <text x="405" y="260" class="node-sub">17 槽 · 款式 · 独立染色</text>
+    <text x="405" y="283" class="node-sub">层视证明“17 张纸叠起来”</text>
+    <text x="405" y="306" class="node-metric">目标：≤10 秒看到第一次变化</text>
+  </g>
+
+  <!-- Node 3 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="710" y="190" width="280" height="130" rx="12"/>
+    <rect x="710" y="190" width="280" height="7" rx="3.5" fill="#e86a5c"/>
+    <circle cx="738" cy="222" r="15" fill="#e86a5c"/>
+    <text x="738" y="227" text-anchor="middle" font-size="15" font-weight="700" fill="#fffdf7">3</text>
+    <text x="764" y="228" class="node-title">看它动</text>
+    <text x="730" y="260" class="node-sub">8 向罗盘 · 4 动作 · 3 关键帧</text>
+    <text x="730" y="283" class="node-sub">证明不是“同一人换颜色”</text>
+    <text x="730" y="306" class="node-metric">目标：60 秒内找到背面 / 挥击</text>
+  </g>
+
+  <!-- Node 4 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="710" y="470" width="280" height="130" rx="12"/>
+    <rect x="710" y="470" width="280" height="7" rx="3.5" fill="#8a6fb0"/>
+    <circle cx="738" cy="502" r="15" fill="#8a6fb0"/>
+    <text x="738" y="507" text-anchor="middle" font-size="15" font-weight="700" fill="#fffdf7">4</text>
+    <text x="764" y="508" class="node-title">和声随机</text>
+    <text x="730" y="540" class="node-sub">锁定 + 重掷 + 种子</text>
+    <text x="730" y="563" class="node-sub">先选 scheme，再分配 60/30/10</text>
+    <text x="730" y="586" class="node-metric">目标：10/10 通过色彩检查</text>
+  </g>
+
+  <!-- Node 5 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="385" y="470" width="280" height="130" rx="12"/>
+    <rect x="385" y="470" width="280" height="7" rx="3.5" fill="#5a7fb8"/>
+    <circle cx="413" cy="502" r="15" fill="#5a7fb8"/>
+    <text x="413" y="507" text-anchor="middle" font-size="15" font-weight="700" fill="#fffdf7">5</text>
+    <text x="439" y="508" class="node-title">命名 / 保存</text>
+    <text x="405" y="540" class="node-sub">3 个存档 · 我的 16 人阵容</text>
+    <text x="405" y="563" class="node-sub">名字 + 种子 + 更新时间</text>
+    <text x="405" y="586" class="node-metric">目标：重启后 3/3 能读回</text>
+  </g>
+
+  <!-- Node 6 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="60" y="470" width="280" height="130" rx="12"/>
+    <rect x="60" y="470" width="280" height="7" rx="3.5" fill="#c2473c"/>
+    <circle cx="88" cy="502" r="15" fill="#c2473c"/>
+    <text x="88" y="507" text-anchor="middle" font-size="15" font-weight="700" fill="#fffdf7">6</text>
+    <text x="114" y="508" class="node-title">角色卡 / 分享</text>
+    <text x="80" y="540" class="node-sub">PNG · 名字 · 3 特征 · 种子</text>
+    <text x="80" y="563" class="node-sub">舞台模式：无 UI，只留角色</text>
+    <text x="80" y="586" class="node-metric">目标：保存后 60 秒内发出去</text>
+  </g>
+
+  <!-- Arrows -->
+  <line x1="340" y1="255" x2="377" y2="255" stroke="#3a2f43" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="665" y1="255" x2="702" y2="255" stroke="#3a2f43" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="850" y1="320" x2="850" y2="462" stroke="#3a2f43" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="710" y1="535" x2="673" y2="535" stroke="#3a2f43" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="385" y1="535" x2="348" y2="535" stroke="#3a2f43" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="200" y1="470" x2="200" y2="328" stroke="#c2473c" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arrow-coral)"/>
+  <text x="214" y="394" font-size="13" font-weight="600" fill="#c2473c">再来一个 / 新种子 / 新预设（P1）</text>
+
+  <!-- Center card -->
+  <rect class="card" x="385" y="345" width="280" height="100" rx="12"/>
+  <text x="525" y="373" text-anchor="middle" font-size="17" font-weight="700" fill="#3a2f43">5 分钟首玩</text>
+  <text x="525" y="397" text-anchor="middle" font-size="12.5" fill="#5c4f5a">为什么好玩：表达 · 惊喜 · 活着 · 拥有</text>
+  <text x="525" y="419" text-anchor="middle" font-size="12.5" fill="#5c4f5a">为什么回来：收藏 · 每日种子 · 新预设</text>
+  <text x="525" y="437" text-anchor="middle" font-size="11" fill="#8a7b86">（回访是 P1，不作为本轮 demo 门槛）</text>
+
+  <!-- Right panel -->
+  <g>
+    <rect class="card" x="1040" y="160" width="500" height="440" rx="14"/>
+    <text x="1064" y="194" class="h2">B · 这一轮只证明三件事</text>
+
+    <rect x="1064" y="214" width="452" height="82" rx="10" fill="#fdeeea" stroke="#e86a5c" stroke-width="1.2"/>
+    <text x="1082" y="240" font-size="15" font-weight="700" fill="#a63830">P0-1 首玩路径</text>
+    <text x="1082" y="263" class="bullet">10 秒知道点哪；3 分钟做出第一个角色；</text>
+    <text x="1082" y="283" class="bullet">三个“随机”入口不再混淆。</text>
+
+    <rect x="1064" y="308" width="452" height="82" rx="10" fill="#fdeeea" stroke="#e86a5c" stroke-width="1.2"/>
+    <text x="1082" y="334" font-size="15" font-weight="700" fill="#a63830">P0-2 角色卡分享</text>
+    <text x="1082" y="357" class="bullet">命名 + 3 存档 + 1080×1350 PNG + 种子；</text>
+    <text x="1082" y="377" class="bullet">60 秒内把“我的纸偶”发出去。</text>
+
+    <rect x="1064" y="402" width="452" height="82" rx="10" fill="#fdeeea" stroke="#e86a5c" stroke-width="1.2"/>
+    <text x="1082" y="428" font-size="15" font-weight="700" fill="#a63830">P0-3 阵容收藏 + 随机可信</text>
+    <text x="1082" y="451" class="bullet">把当前写入 4×4；锁定槽位再重掷；</text>
+    <text x="1082" y="471" class="bullet">本槽随机也遵守当前配色 scheme。</text>
+
+    <line x1="1064" y1="504" x2="1516" y2="504" stroke="#d9c8b4" stroke-width="1.2"/>
+    <text x="1064" y="530" class="h3">验收三条（3 名未见过项目的测试者）</text>
+    <text x="1064" y="554" class="bullet">① 3/3 在 10 秒内发生第一次换装点击；</text>
+    <text x="1064" y="576" class="bullet">② 3/3 在 180 秒内做出一个可命名的角色；</text>
+    <text x="1064" y="598" class="bullet">③ 3/3 能保存、重启读回，并导出角色卡。</text>
+  </g>
+
+  <!-- Bottom priority -->
+  <text x="60" y="668" class="h2">C · 优先级：先让新玩家玩懂，再让满意的人带走，最后才做回访</text>
+
+  <g>
+    <rect class="card" x="60" y="690" width="480" height="240" rx="12"/>
+    <rect x="60" y="690" width="480" height="44" rx="12" fill="#e86a5c"/>
+    <rect x="60" y="718" width="480" height="16" fill="#e86a5c"/>
+    <text x="82" y="720" font-size="18" font-weight="700" fill="#fffdf7">P0 · 本轮必须（≤3 项）</text>
+    <text x="82" y="762" class="bullet">1. 首玩路径：分组 / 文案 / 3 步引导 / 默认值</text>
+    <text x="82" y="788" class="bullet">2. 角色卡：命名 / 3 存档 / PNG / 种子 / 3 特征</text>
+    <text x="82" y="814" class="bullet">3. 阵容：当前写入 / 存档 / 锁定 / 和声随机</text>
+    <text x="82" y="850" class="small">玩家会看到：不再像“编辑器后台”，而像“我的纸偶工坊”。</text>
+    <text x="82" y="878" class="small">成本：P0-1 低 / P0-2 中高 / P0-3 中；风险：P0-2 依赖美术卡框与导出性能。</text>
+    <text x="82" y="906" class="small">顺序：P0-1 → P0-2 → P0-3；只能做一项时，先做 P0-1。</text>
+  </g>
+
+  <g>
+    <rect class="card" x="560" y="690" width="480" height="240" rx="12"/>
+    <rect x="560" y="690" width="480" height="44" rx="12" fill="#4fa58a"/>
+    <rect x="560" y="718" width="480" height="16" fill="#4fa58a"/>
+    <text x="582" y="720" font-size="18" font-weight="700" fill="#fffdf7">P1 · 下一轮（回访与打磨）</text>
+    <text x="582" y="762" class="bullet">收藏 / 最近 8 个 / 阵容完成度</text>
+    <text x="582" y="788" class="bullet">每日种子挑战（同一 seed + 主题限制）</text>
+    <text x="582" y="814" class="bullet">分享码 / 4 动作小条 / 舞台背景 / 音效</text>
+    <text x="582" y="840" class="bullet">触屏布局 / 英日中 / 撤销 / 更多动作</text>
+    <text x="582" y="878" class="small">前提：P0 的 3–5 分钟首玩与分享闭环先过。</text>
+    <text x="582" y="906" class="small">回访不是本轮 demo 的成功门槛；不要用“留存”承诺外放。</text>
+  </g>
+
+  <g>
+    <rect class="card" x="1060" y="690" width="480" height="240" rx="12"/>
+    <rect x="1060" y="690" width="480" height="44" rx="12" fill="#8a7b86"/>
+    <rect x="1060" y="718" width="480" height="16" fill="#8a7b86"/>
+    <text x="1082" y="720" font-size="18" font-weight="700" fill="#fffdf7">P2 / 明确不做（本轮）</text>
+    <text x="1082" y="762" class="bullet">在线画廊 / 账号 / 云同步 / 排行 / 审核</text>
+    <text x="1082" y="788" class="bullet">抽卡 / 付费 / 广告 / 稀有度经济</text>
+    <text x="1082" y="814" class="bullet">战斗 / 关卡 / 数值 / 成长 / 联机</text>
+    <text x="1082" y="840" class="bullet">3D / 多人 / 生成式 AI 成品资产</text>
+    <text x="1082" y="866" class="bullet">16×17×8 全量手工外包（成本爆炸）</text>
+    <text x="1082" y="902" class="small">原因：先把“5 分钟玩具 + 角色卡”验证成立，再谈社区与经济。</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="60" y1="940" x2="1540" y2="940" stroke="#d9c8b4" stroke-width="1.2"/>
+  <text x="60" y="958" class="small">证据：T-007《纸偶工坊美术评审》4.2/10；T-006 实机 35–55 FPS；当前 build 截图 01–07 与 showcase/*；本图不替代美术 brief、QA 报告或程序实现。</text>
+  <text x="1540" y="958" text-anchor="end" class="small">原创图表 · 可打印/截图 · 2026-11-20</text>
+</svg>

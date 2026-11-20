@@ -10,8 +10,8 @@
 - 交付: `docs/design/paperdoll-design-spec.md` + 一页流程/优先级图；媒体
 - 约束: 不写代码/不画资产/不做 QA/不做独立美术评审；读参考视频、评审、当前 build
 - 指派: game-designer worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-013/result.md
 
 ## T-20261120-009 · 纸娃娃美术实现（Game Artist）
 - 来源: 飞书消息（角色分工：美术参与开发，2026-11-20）
