@@ -51,12 +51,39 @@
   基本被躯干吃掉，近侧手臂在身体前；背向由披风槽补兜帽/肩披/双臂/刀鞘。
 - 动作曲线：
   - `idle`：呼吸 1.4 local + 摆臂 ±0.05 rad；披风/帽尖 `secondary` 滞后 0.3s；
-  - `walk`：0.82s / 8 keys（contact/down/pass/up ×2），±0.55 rad，bob 2.4 local；
-    脚掌 `_foot_roll`：−15° 脚跟 → 全掌 → +22° 脚尖 → 摆动抬起；
+  - `walk`（T-20261121-001 重做）：0.82s / 8 keys（contact/down/pass/up ×2），原地踏步 gait；
+    双腿改为 2 骨 IK（THIGH 25 / SHIN 22），支撑相（p 0–0.58）脚目标 x 固定在 plant，
+    摆动相（p 0.58–1.0）抬起 12 local（正/背面 5.5）+ 前探 7 local（正/背面 2）；
+    hip bob 2.6±0.9 local、hip sway ±0.9 local、手臂 ±0.52 rad；
+    脚掌 `_walk_foot_pitch`：−15° 脚跟 → 0° 全掌（p 0.10–0.36）→ +22° 脚尖（p 0.58），
+    踝点按鞋底最低点补偿（`WALK_SOLE_DROP 5.4`、`WALK_FOOT_PIVOT 8.5`），不再叠加 shin 角度；
+    披风/发 `secondary` 3.4 local、滞后 2 帧 @30fps（0.82s 内 0.51 rad，披风 sway ≈ ±4.8 local）。
   - `attack`：1.05s；0–0.28 蓄力（arm_r 0.14→−2.30）、0.28–0.40 蓄力停顿、
     0.40–0.52 挥砍（→1.55）、0.62–0.98 收势；`slash` 在 0.40–0.64 之间；
   - `hit`：1.10s 指数衰减；后脚退 6 local、头 −0.30 rad、披风滞后 −5.2。
 - 所有槽位仅读取同一份 pose 字典，因此换装、换向、换动作时部件天然对齐。
+
+### 3.1 walk 锁脚与脚掌滚动
+
+旧版 walk 只在 hip/knee 上叠角度，支撑脚随步幅向后扫：QA 实测 dir6 45.26px、dir0 5.42px
+（阈值 2px @2.1×）。T-20261121-001 按评审 R2-P0-2 的“原地踏步 gait”分支重写：
+
+| 参数 | 值 | 作用 |
+| --- | --- | --- |
+| `WALK_PERIOD` | 0.82s | 保留原 8 keys 周期（每 key 0.1025s） |
+| `WALK_STANCE` | 0.58 | 支撑相占比；脚目标 x 在支撑相严格固定 |
+| `WALK_GROUND` | −3.0 local | 踝点基准；鞋底最低点与站立一致 |
+| `WALK_HEEL` / `WALK_TOE` | −0.2618 / +0.384 rad | −15° 脚跟 / +22° 脚尖 |
+| `WALK_FOOT_PIVOT` | 8.5 local | 鞋掌前后半径，用于踝点抬高的滚动补偿 |
+| `WALK_SOLE_DROP` | 5.4 local | 靴中心偏移 0.5 + 半高 4.9，用来把鞋底最低点压回同一地面 |
+| 支撑相摆动 | x 0.00 local | 锁脚目标；髋部只做 bob/sway，IK 反解膝/踝 |
+| 摆动相 | 抬 12 / 前探 7 local（yaw=1） | 膝盖前弯、脚离地；正面/背面降为 5.5 / 2，避免侧向过夸张 |
+
+- 正面/背面（yaw<0.20）：左右膝分别向外对称让位，读作原地踏步，避免同向侧踢；
+  3/4 与侧面：两膝都朝美术朝向（+x）弯曲，避免反关节。
+- 脚掌俯仰只做矢状面，不叠加 shin 角度，因此脚踝不会外翻/扭曲；支撑相中段全掌贴地。
+- `tools/qa_motion_probe.gd` 0/6 向 = 0.00px；`tools/artist_walk_probe.gd` 8 向 = 0.00px，
+  膝内角最大 151.3°（无过伸），脚掌区间 [−15.0°, +22.0°]，左右曲线误差 0.0000 local。
 
 ## 4. 绘制管线
 
@@ -202,6 +229,9 @@ PAPERDOLL_BAKE_OK card_median_ms=7.99 card_p90_ms=10.40 card_max_ms=12.04
 | 工具 | 作用 | 成功标记 |
 | --- | --- | --- |
 | `tools/smoke_paperdoll.gd` | 17 槽 / 83 变体 / 8 向 / 4 动作 / 色板 / z 序 / 16 预设 / 随机 / JSON 往返 / 烘焙缓存 | `PAPERDOLL_SMOKE_OK` |
+| `tools/qa_motion_probe.gd` | QA 口径 walk 支撑脚漂移（dir 0/6，≤2px @2.1×） | `QA_MOTION_OK` |
+| `tools/artist_walk_probe.gd` | 美术自检：8 向漂移 / 膝过伸 / 脚掌区间 / 左右曲线一致 | `ARTIST_WALK_OK dirs=8` |
+| `tools/walk_rig.gd` | 侧向/正面 walk 逐帧（640×360 @30fps）+ 1280×720 8 keys 接触帧 | `WALK_RIG_OK` |
 | `tools/screenshot_paperdoll.gd` | 真机 1280×720 的 7 张截图（含层视） | `PAPERDOLL_SHOTS_OK` |
 | `tools/showcase_paperdoll.gd` | hero / 8 向罗盘 / 16 人海报 / 6s 帧序列 | `PAPERDOLL_SHOWCASE_OK` |
 | `tools/record_showcase.sh` | 180 帧 → 640×360 / 30fps / 6s GIF | `PAPERDOLL_SHOWCASE_GIF_OK` |

@@ -31,7 +31,9 @@ Godot 4.6 / 2D / GL Compatibility / 1280×720 的原创纸偶换装与 4×4 阵�
   主光左上 + 右侧 1px `#ffe0a8` 轮廓光 + 两层接触影/环境影。
 - **8 向**：yaw 0 / 0.55 / 1.0；肩宽 −36%、髋宽 −72%、头前探 5.2 local；
   远/近臂错位；侧身 x 压缩 1.0 / 0.835 / 0.64；背面加兜帽、肩披、后发、刀鞘与 V 形披风。
-- **4 动作**：idle 1.4 local 呼吸 + 披风滞后；walk 0.82s / 8 keys / ±0.55 rad + 脚掌滚动；
+- **4 动作**：idle 1.4 local 呼吸 + 披风滞后；walk 0.82s / 8 keys，2 骨 IK 锁脚
+  （支撑相脚 x 漂移 0.00px @2.1×；摆动相抬 12 local / 前探 7 local，正面 5.5 / 2），
+  脚掌 −15° 脚跟 → 全掌 → +22° 脚尖、踝点按鞋底滚动补偿，披风/发滞后 2 帧；
   attack 1.05s，0.28–0.40 蓄力停顿 + 0.40–0.52 挥砍 + 收势，三层斩击弧；
   hit 1.10s，后脚退 6 local + 头 17° 甩动 + 披风滞后。
 - **色彩纪律**：8 套 outfit scheme（primary/secondary/accent/neutral），随机器先选 scheme；
@@ -98,7 +100,15 @@ bash godot-paper-doll/tools/record_showcase.sh
 godot --path godot-paper-doll --resolution 1280x720 -s tools/metric_rig.gd
 python3 godot-paper-doll/tools/measure_paperdoll.py
 
-# 7. 一键验收
+# 7. walk 锁脚 / 脚姿（QA 0/6 向 + 美术 8 向 / 膝过伸 / 脚掌区间 / 左右一致）
+godot --path godot-paper-doll --headless -s tools/qa_motion_probe.gd
+godot --path godot-paper-doll --headless -s tools/artist_walk_probe.gd
+
+# 8. 侧向 walk 2s 逐帧 + 8 keys 接触表（640×360 @30fps；GIF 用 ffmpeg 合成）
+godot --path godot-paper-doll --resolution 1280x720 -s tools/walk_rig.gd -- \
+  --out=res://docs/shots/walk/side_frames --dir=6 --seconds=2 --scale=2.05
+
+# 9. 一键验收
 bash godot-paper-doll/tools/verify.sh
 ```
 
@@ -111,6 +121,8 @@ PAPERDOLL_BAKE_OK card_median_ms=... card_p90_ms=... overlay_p90_ms=... budget_m
 PAPERDOLL_FPS_OK min=...
 PAPERDOLL_SHOWCASE_OK
 PAPERDOLL_METRICS_OK
+QA_MOTION_OK
+ARTIST_WALK_OK dirs=8
 PAPERDOLL_VERIFY_OK
 ```
 
@@ -123,6 +135,12 @@ PAPERDOLL_VERIFY_OK
   - `docs/shots/showcase/poster_16.png`（16 人海报，约 168px 高）
   - `docs/shots/showcase/hero_layers.png`（层视）
   - `docs/shots/showcase/paperdoll_6s.gif`（640×360 / 30fps / 6s：idle→walk→attack→hit）
+- walk 修复证据（T-20261121-001）：
+  - `docs/shots/walk/walk_side_2s_after.gif`（侧向 walk 2s，640×360 / 30fps / 60 帧）
+  - `docs/shots/walk/walk_side_2s_before.gif`（同机位修复前）
+  - `docs/shots/walk/walk_before_after.png`（4 相位全身 before/after）
+  - `docs/shots/walk/walk_feet_before_after.png`（4× 脚部 before/after，脚踝扭曲对比）
+  - `docs/shots/walk/walk_contact_strip.png`（8 keys 脚部接触表，4× 放大）
 - 美术验收图：`docs/art-review/after/`（before/after、4× 裁切、25% 缩略图、16 人剪影、8 向剪影罗盘、指标 JSON）
 - 缩略图 AA 证据：`docs/shots/aa/01_card_aa_compare_4x.png`（T-009 vs T-010，4× 裁切）
 - 旧演示视频：`docs/paperdoll.mp4` / `docs/paperdoll.gif`（T-006 片段）

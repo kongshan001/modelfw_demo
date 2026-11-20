@@ -2,6 +2,39 @@
 
 ## 进行中
 
+## T-20261121-001 · 纸娃娃走路脚姿/滑步修复（Game Artist）
+- 来源: 飞书反馈（2026-11-21，“走路的脚的那个姿势特别奇怪”）
+- 父任务: T-20261120-012（独立复评 REJECT，R2-P0-2 walk 45.26px）
+- 类型: game-demo（动画/美术实现）
+- 目标: 修复 walk 支撑脚滑步与脚踝/脚掌姿势；`qa_motion_probe` 8 向 ≤2px；侧向 walk 可见不滑；不改玩法/其他 P0
+- 交付: 更新 `godot-paper-doll/`；侧向 walk 截图/GIF + 探针输出；README/TECH/迭代记录；媒体
+- 约束: 只改动画/视觉相关代码；保留 17 槽/8 向/4 动作/16 预设；原创；不做 QA/独立复评
+- 指派: game-artist worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-001/result.md
+
+## T-20261121-002 · 走路脚姿 QA 复验（QA Lead）
+- 父任务: T-20261121-001；依赖: T-20261121-001（done + Git 已发布）
+- 类型: game-demo（QA）
+- 目标: 独立复验 walk 8 向支撑脚 ≤2px、脚姿可读、无回归；不改代码
+- 交付: `docs/qa-review/paperdoll-walk-qa.md` + `walk_contact_strip`/侧向 GIF；媒体
+- 约束: 只写 QA 证据；失败打回
+- 指派: game-qa-lead worker
+- 状态: queued
+- depends_on: T-20261121-001
+- 产出: 待回填
+
+## T-20261121-003 · 走路动画独立复评（Art Director）
+- 父任务: T-20261121-002；依赖: T-20261121-002（done + Git 已发布）
+- 类型: game-demo（独立复评）
+- 目标: `game-art-director` 独立看侧向 walk/脚姿/接触；verdict；不改代码
+- 交付: `docs/art-review/paperdoll-walk-review.md` + 代表图；FAIL 给下一轮 brief
+- 约束: 独立评审；不实现
+- 指派: game-art-director worker
+- 状态: queued
+- depends_on: T-20261121-002
+- 产出: 待回填
+
 ## T-20261120-013 · 纸娃娃策划设计方案（Game Designer）
 - 来源: 飞书反馈（“缺了个策划提设计方案”，2026-11-20）
 - 父任务: T-20261120-006
