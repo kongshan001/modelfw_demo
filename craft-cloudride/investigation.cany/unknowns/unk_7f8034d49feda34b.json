@@ -1,0 +1,14 @@
+{
+  "id": "unk_7f8034d49feda34b",
+  "revision": 2,
+  "question": "Does the original use a real planar reflection (mirror camera + render target) or a mirrored clone of the cyclist? The stills can't distinguish the two.",
+  "severity": "low",
+  "domain": "rendering",
+  "status": "resolved",
+  "probes": [
+    "none from stills — REQUEST.md already states the preference: real planar reflection preferred, mirrored clone acceptable fallback"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "Implemented the request's preferred technique: a real planar reflection — the camera mirrored across the sea plane renders the scene (sea and veil hidden) into a half-resolution render target with tone mapping disabled, and the sea shader samples it through a texture-projection matrix with ripple distortion and a soft blur, veiled by a translucent procedural cloud layer. Verified in the final screenshot: the sea column averages track the mirrored sky column averages at all sampled x positions."
+}

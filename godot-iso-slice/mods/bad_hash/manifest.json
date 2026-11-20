@@ -1,0 +1,25 @@
+{
+  "author": "mod-poc",
+  "bounds": {
+    "max": [
+      0.45,
+      1.3,
+      0.389711
+    ],
+    "min": [
+      -0.45,
+      0.0,
+      -0.389711
+    ]
+  },
+  "file": "crystal_lamp.glb",
+  "footprint": 0.9,
+  "format": "glb",
+  "id": "bad_hash",
+  "license": "CC0",
+  "max_tris": 200,
+  "name": "坏哈希 mod",
+  "pivot": "base-center",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "version": 1
+}

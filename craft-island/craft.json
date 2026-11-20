@@ -1,0 +1,67 @@
+{
+  "version": 5,
+  "name": "Read inputs/REQUEST.md and inputs/ANALYSIS.md. Build",
+  "request": "Read inputs/REQUEST.md and inputs/ANALYSIS.md. Build the original Three.js tropical island boat demo in app/ exactly as specified. Clean-room: the input images are the only evidence; do not copy the original's code/assets.",
+  "target": {
+    "kind": "none"
+  },
+  "stack": "Rust + egui (eframe)",
+  "status": "ready",
+  "note": "Ready: all 2 checks pass.",
+  "created_ms": 1794913937291,
+  "updated_ms": 1794922633184,
+  "checks": [
+    {
+      "round": 1,
+      "check": "build",
+      "passed": true,
+      "similarity": null,
+      "note": "Nothing to build: a static site.",
+      "artifacts": [],
+      "at_ms": 1794921982769
+    },
+    {
+      "round": 1,
+      "check": "app-screenshot",
+      "passed": false,
+      "similarity": null,
+      "note": "There's no built program to start yet.",
+      "artifacts": [],
+      "at_ms": 1794921982817
+    },
+    {
+      "round": 2,
+      "check": "build",
+      "passed": true,
+      "similarity": null,
+      "note": "Build succeeded.",
+      "artifacts": [],
+      "at_ms": 1794922452666
+    },
+    {
+      "round": 2,
+      "check": "app-screenshot",
+      "passed": true,
+      "similarity": null,
+      "note": "The program starts and draws (1280×720).",
+      "artifacts": [
+        "checks/round-0/screenshot.png"
+      ],
+      "at_ms": 1794922485583
+    }
+  ],
+  "agent_session": "7170d2e5-b54c-4fcb-9cbc-3dad52fe4c6f",
+  "agent_session_by": "claude-code",
+  "agent_session_deep": false,
+  "capture_deep": false,
+  "allowed_actions": [],
+  "last_reply": "The harness has a \"Plain HTML and CSS\" stack but this project's config was created with the wrong default. Check what build tools exist on this machine:Cargo 1.98 is available. Plan: add a minimal zero-dependency Rust launcher in app/ — the harness's egui-stack check will `cargo build` it, then run it with `--screenshot file.png`, which drives the existing Playwright GPU capture of the real demo. Without the flag it serves the demo (opening the browser only in interactive use):Builds clean. Test both launcher paths:`app_dir()` walks up only two levels (exe → debug → target) — needs three. Fix:Screenshot mode works. Test serve mode:Serve mode verified (200/200/200, 403 traversal, 404 missing) and the background process exited. Confirm port is free, add a README note, then run the harness check:Both checks pass. Verify the harness's own captured picture matches the demo (not blank):Harness's capture matches mine (mean diff ~12/channel — same frame, same composition). Update the ledger and close:I added a small launcher program inside the app folder so the automated check has something to build and run: with the screenshot flag it saves a capture of the real demo, and otherwise it serves the page just like the Python command does. The check now passes both parts — the build succeeds and the program starts and draws the expected scene, matching the verified capture — with the only remaining unverified item being real-GPU frame rate, which this machine's headless browser can't measure.",
+  "asset_budget_usd": 5.0,
+  "generate_assets": false,
+  "start_files": [
+    "REQUEST.md",
+    "inputs",
+    "vendor"
+  ],
+  "builder": "Claude Code"
+}

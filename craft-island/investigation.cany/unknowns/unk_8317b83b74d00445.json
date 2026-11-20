@@ -1,0 +1,14 @@
+{
+  "id": "unk_8317b83b74d00445",
+  "revision": 2,
+  "question": "Does cover.jpg contain overlaid title/subtitle text (white pixel runs found at y~300-600 and y~930-1030), contaminating composition statistics?",
+  "severity": "low",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [
+    "The two video frames (no overlays) serve as the clean composition evidence"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "No overlay text: a row-by-row scan of cover.jpg (1920x1080) for pure-white runs (RGB>235, >=30px) in the suspect bands y 290-620 and y 920-1040 found zero runs. The lighter bands are scene haze/foam, not title text, so cover composition statistics are usable."
+}

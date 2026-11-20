@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Tropical Isle — clean-room Three.js demo</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0d4a58; }
+  #scene { display: block; width: 100%; height: 100%; }
+  #hud {
+    position: fixed; left: 18px; top: 16px; z-index: 10;
+    font: 13px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 1px 3px rgba(10,40,50,0.55);
+    pointer-events: none;
+    transition: opacity 2.5s ease;
+  }
+  #hud h1 { margin: 0 0 4px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; }
+  #hud p { margin: 0; opacity: 0.85; }
+  #hud.faded { opacity: 0; }
+  #badge {
+    position: fixed; right: 14px; bottom: 12px; z-index: 10;
+    display: none;
+    font: 12px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #ffe9c2; background: rgba(30,50,60,0.72);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 6px; padding: 4px 9px;
+  }
+  #fatal {
+    position: fixed; inset: 0; z-index: 20; display: none;
+    align-items: center; justify-content: center; text-align: center;
+    background: #10343e;
+    font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #e8f4f6; padding: 24px;
+  }
+  #fatal .card { max-width: 460px; }
+  #fatal h2 { font-size: 18px; margin: 0 0 10px; }
+  #fatal p { margin: 0; opacity: 0.85; }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="hud">
+  <h1>Tropical Isle</h1>
+  <p>WASD or arrows — drive &nbsp;·&nbsp; drag — look around &nbsp;·&nbsp; wheel — zoom<br>
+  After a short pause, the boat sails itself.</p>
+</div>
+<div id="badge">Simple water mode (float render targets unavailable)</div>
+<div id="fatal">
+  <div class="card">
+    <h2 id="fatal-title">WebGL is not available</h2>
+    <p id="fatal-text">This demo needs a browser with WebGL&nbsp;2 and hardware acceleration.</p>
+  </div>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+Verification log — Blender asset (T-20261119-008)
+Date: 2026-11-19
+Blender: 3.4.1 EEVEE Legacy
+
+== build ==
+/Applications/Blender.app/Contents/MacOS/Blender -b -P scripts/build_ultimate.py
+ULT_BUILD_OK ... tris=56335 verts=28615 bones=41
+actions=Idle,Run,Charge,Cast,Hit,Victory
+
+== GLB export ==
+/Applications/Blender.app/Contents/MacOS/Blender -b -P scripts/export_glb_ultimate.py
+GLB_ULT_OK ... bytes=3167332 tris=56072 joints=29 animations=6
+names=Cast,Charge,Hit,Idle,Run,Victory
+durations=[1.208, 1.333, 0.542, 2.0, 0.667, 2.0]
+attrs=COLOR_0,JOINTS_0,NORMAL,POSITION,TEXCOORD_0,WEIGHTS_0
+materials=15 images=5
+
+== 1080p stills ==
+/Applications/Blender.app/Contents/MacOS/Blender -b -P scripts/render_stills.py
+STILL_OK docs/poster_front.png
+STILL_OK docs/poster_charge.png
+STILL_OK docs/poster_cast.png
+
+== checks ==
+wukong_ultimate.glb md5 == godot-wukong-ultimate/assets/models/wukong_ultimate.glb
+(poster sizes 1920x1080)

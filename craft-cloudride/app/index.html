@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%234f95de'/%3E%3Ccircle cx='8' cy='9' r='4' fill='%23ffffff'/%3E%3C/svg%3E">
+<title>ENDLESS DRIFT — a cloud ride</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #4f95de; }
+  body { font-family: -apple-system, "Helvetica Neue", "Segoe UI", Roboto, sans-serif; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+  #scene.dragging { cursor: grabbing; }
+  .ui { position: fixed; z-index: 2; pointer-events: none; color: #ffffff; text-shadow: 0 1px 10px rgba(55, 105, 175, 0.55); }
+  #title { top: 26px; left: 30px; font-size: 15px; font-weight: 500; letter-spacing: 0.55em; opacity: 0.92; }
+  #hint { bottom: 22px; left: 30px; font-size: 11px; letter-spacing: 0.14em; opacity: 0.6; }
+  #fallback { display: none; position: fixed; inset: 0; z-index: 3; align-items: center; justify-content: center; text-align: center; background: linear-gradient(#4f95de, #b8d6f0); color: #ffffff; font-size: 16px; line-height: 1.8; padding: 40px; }
+  #fallback.show { display: flex; }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="ui" id="title">ENDLESS DRIFT</div>
+<div class="ui" id="hint">DRAG — ORBIT&ensp;&middot;&ensp;WHEEL — ZOOM&ensp;&middot;&ensp;SPACE — PAUSE</div>
+<div id="fallback">
+  <p>This demo needs WebGL 2, which this browser or device does not provide.<br>
+  Please try a current version of Chrome, Edge, Firefox or Safari.</p>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

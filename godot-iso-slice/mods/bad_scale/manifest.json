@@ -1,0 +1,25 @@
+{
+  "author": "mod-poc",
+  "bounds": {
+    "max": [
+      0.2,
+      0.6,
+      0.2
+    ],
+    "min": [
+      -0.2,
+      0.0,
+      -0.2
+    ]
+  },
+  "file": "crystal_lamp.glb",
+  "footprint": 0.4,
+  "format": "glb",
+  "id": "bad_scale",
+  "license": "CC0",
+  "max_tris": 200,
+  "name": "坏尺寸 mod",
+  "pivot": "base-center",
+  "sha256": "2f5f8d37436e31654125e7b95090fd68f095fdb5bc72246e1aa3f5ae78ee5b29",
+  "version": 1
+}

@@ -1,0 +1,45 @@
+{
+  "assets": {
+    "1": {
+      "bytes": 65536,
+      "file": "sigil_1.png",
+      "seed": 1,
+      "sha256_rgba": "91c1edb3590b9655f38900d0e80c6a2b71f5235ce1a7a38d227aa874d7352a7e"
+    },
+    "2": {
+      "bytes": 65536,
+      "file": "sigil_2.png",
+      "seed": 2,
+      "sha256_rgba": "11043f53a88b4794c4dbf6a5594d7183ff64b64857c9b95d31bc13d56cec0e7b"
+    },
+    "3": {
+      "bytes": 65536,
+      "file": "sigil_3.png",
+      "seed": 3,
+      "sha256_rgba": "3cdb0d101310e3ee00e1c5410421c3afc399c9620859278083be6b8412f9b991"
+    },
+    "42": {
+      "bytes": 65536,
+      "file": "sigil_42.png",
+      "seed": 42,
+      "sha256_rgba": "73218dcab91f5901229fbcf825565c860325dcec742c6ab3399b46bda7d88bf5"
+    },
+    "7": {
+      "bytes": 65536,
+      "file": "sigil_7.png",
+      "seed": 7,
+      "sha256_rgba": "083619a0c2d7081707ea89a49ec46fcb440f41f8d59d969b4e270725887ed18d"
+    }
+  },
+  "baked_seed": 7,
+  "rule": "sigil_v1",
+  "rules_version": 1,
+  "seeds": [
+    1,
+    2,
+    3,
+    7,
+    42
+  ],
+  "size": 128
+}

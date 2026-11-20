@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#071018">
+  <title>Volumetric Shore — Water Pro × Three.js study</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="scene" aria-label="Volumetric ocean and cloud real-time scene"></canvas>
+
+  <div class="vignette"></div>
+
+  <div id="ui">
+    <header class="title-block">
+      <div class="eyebrow">REAL-TIME OCEAN STUDY · WEBGL 2</div>
+      <h1>VOLUMETRIC<br><em>SHORE</em></h1>
+      <p class="sub">Gerstner water · raymarched cumulus · procedural island</p>
+    </header>
+
+    <div class="readout" aria-live="polite">
+      <div><span id="fps">--</span><small>FPS</small></div>
+      <div><span id="quality">MEDIUM</span><small>CLOUDS</small></div>
+      <div><span id="resolution">—</span><small>SKY RT</small></div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <span class="label">LIGHT</span>
+        <div class="buttons">
+          <button data-preset="day">DAY</button>
+          <button data-preset="sunset" class="active">SUNSET</button>
+          <button data-preset="dusk">DUSK</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="label">QUALITY</span>
+        <div class="buttons">
+          <button data-quality="low">LOW</button>
+          <button data-quality="medium" class="active">MED</button>
+          <button data-quality="high">HIGH</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">拖拽旋转 · 滚轮缩放 · 1 / 2 / 3 光照 · Q 云层质量 · H 隐藏界面</div>
+  </div>
+
+  <div id="loading">
+    <div class="loader-line"></div>
+    <p id="loading-text">生成体积云噪声</p>
+    <span>CLEAN-ROOM STUDY · NO TEXTURES, NO NETWORK</span>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "id": "unk_5e51f9053959a0dc",
+  "revision": 2,
+  "question": "What are the original animation speeds (pedal cadence, wheel spin, cloud drift, bob)? Stills carry no timing information.",
+  "severity": "low",
+  "domain": "motion",
+  "status": "resolved",
+  "probes": [
+    "none possible from stills — REQUEST.md only says wheels spin, legs pedal, bobbing, clouds drift slowly"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "Stills carry no timing information, so calm dreamy values were chosen per REQUEST.md's motion description: pedal cadence 6.4 rad/s (~61 rpm), wheel spin matched to the forward ride speed, gentle body bob 0.035 units at 12.9 rad/s, slow cloud drift with wrap-around, and all ride time freezes while paused."
+}

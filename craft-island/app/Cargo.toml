@@ -1,0 +1,12 @@
+[package]
+name = "tropical-isle"
+version = "0.1.0"
+edition = "2021"
+
+# Launcher-only crate: the demo itself is a static browser page with no build
+# step (see README). This binary serves the folder and can save a screenshot
+# of the running demo when invoked with --screenshot <file.png>, which is how
+# the project's automated check pictures the build. No dependencies.
+[[bin]]
+name = "tropical-isle"
+path = "src/main.rs"

@@ -1,0 +1,14 @@
+{
+  "id": "unk_db0e9cd7e8c97812",
+  "revision": 2,
+  "question": "Exact boat geometry/decoration beyond ANALYSIS.md's description (hull shape, cabin proportions, mast details, buoy placement)?",
+  "severity": "medium",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [
+    "Higher-resolution reference frames would settle it; only 480x270 frames exist and the boat occupies ~50px"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "The frames (480x270) show the boat only as a distant speck — a single dark-red roof pixel at (203,139) in frame 02 and nothing distinguishable in frame 03 — so exact proportions cannot be recovered from the evidence. The rebuild uses a plausible stylized fishing boat per ANALYSIS.md (lofted hull, deck, cabin with red roof and dark windows, mast, trailing buoys, deck cargo) and its red roof/hull/wake match the reference composition (boat lower-center) in the capture."
+}

@@ -1,0 +1,27 @@
+; 齐天大圣 · 极意 — playable arena showcase.
+; Godot 4.6 / GL Compatibility / 1280x720. Original assets and code.
+
+config_version=5
+
+[application]
+
+config/name="齐天大圣 · 极意 — 极意试炼场"
+config/description="An original silver-maned Wukong: charge, release a ki wave, break the stone sentinel."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.012, 0.018, 0.035, 1)
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+scaling_3d/scale=0.9

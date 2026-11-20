@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "rule": "sigil_v1",
+  "size": 128,
+  "baked_seed": 7,
+  "seeds": [1, 2, 3, 7, 42],
+  "diamond": {
+    "rx": 54,
+    "ry": 56,
+    "frame": 360
+  },
+  "runes": {
+    "offsets": [
+      [-24, -20],
+      [0, -32],
+      [24, -20],
+      [-24, 20],
+      [0, 32],
+      [24, 20]
+    ],
+    "half_w": 2,
+    "half_h": 5,
+    "jitter": 7,
+    "min_edge": 700,
+    "min_center": 1200
+  },
+  "eye": {
+    "pupil": 420,
+    "iris": 700,
+    "rim": 860,
+    "ring": 1030
+  },
+  "details": {
+    "vignette": 10500,
+    "dither_hi_mod": 255,
+    "dither_dark_mod": 511,
+    "dither_dark_eq": 9,
+    "chip_mod": 255
+  },
+  "palette": {
+    "void": [10, 11, 16],
+    "stone_dark": [38, 42, 56],
+    "stone": [58, 64, 84],
+    "stone_hi": [82, 90, 116],
+    "gold": [212, 170, 92],
+    "gold_hi": [246, 216, 146],
+    "ember": [206, 92, 54],
+    "ember_hi": [244, 150, 84]
+  }
+}

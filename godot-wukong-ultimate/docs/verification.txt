@@ -1,0 +1,42 @@
+Verification log — T-20261119-008
+Date: 2026-11-19
+Host: macOS, Intel HD Graphics 6000
+Godot: 4.6.stable.official.89cea1439
+Blender: 3.4.1 (EEVEE Legacy)
+
+== headless 600 frames ==
+command: godot --headless --path . --quit-after 600
+exit: 0
+script_errors: 0
+output: WUKONG_ULT_READY bones=29 clips=["Cast","Charge","Hit","Idle","Run","Victory"] sentinel_hp=240
+
+== tools/verify.sh ==
+command: bash tools/verify.sh
+exit: 0
+WUKONG_ULT_READY bones=29 clips=["Cast", "Charge", "Hit", "Idle", "Run", "Victory"] sentinel_hp=240
+SMOKE_COMBAT hp=120 hits=2 combo=2
+SMOKE_PULSE player_hp=86 clip=Hit trauma=0.64
+ULT_VICTORY time=5.35 hits=3 max_combo=3
+SMOKE_VICTORY victory=true max_combo=3
+ULT_RESET OK
+WUKONG_ULT_SMOKE_OK
+WUKONG_ULT_VERIFY_OK
+
+== real-window FPS (vsync disabled) ==
+command: godot --path . --resolution 1280x720 -s tools/probe_fps.gd
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+WUKONG_ULT_FPS avg=39.2 min=11.0 samples=24
+WUKONG_ULT_FPS_OK
+Notes: multiple runs gave avg 39-43 / min 11-22; the min is a short hit-burst low in the scripted stress loop; sustained ~40.
+
+== real-GPU screenshots ==
+command: godot --path . --resolution 1280x720 -s tools/screenshot_ultimate.gd
+SHOT 01_hero / 02_charge / 07_beam / 03_impact / 04_gameplay / 05_victory / 06_before_after
+WUKONG_ULT_SHOTS_OK
+
+== GIF / MP4 ==
+command: godot --path . --resolution 1280x720 -s tools/capture_ultimate_gif.gd
+WUKONG_ULT_GIF_OK frames=160 fps=20
+docs/wukong_ultimate.mp4: 8.000 s, 1280x720, 1,717,916 bytes
+docs/wukong_ultimate.gif: 8.0 s (12 fps sampled), 720 wide, 4,987,102 bytes
+Capture uses adaptive Engine.time_scale to keep ~1/20 s game time per frame.

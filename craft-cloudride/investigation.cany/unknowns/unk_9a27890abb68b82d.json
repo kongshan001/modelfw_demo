@@ -1,0 +1,15 @@
+{
+  "id": "unk_9a27890abb68b82d",
+  "revision": 2,
+  "question": "What are the cyclist's exact proportions and bike geometry? The rider is only ~40px tall in the 480x270 frames, partially veiled by clouds.",
+  "severity": "medium",
+  "domain": "scene",
+  "status": "resolved",
+  "probes": [
+    "1px-resolution pixel maps of the rider region in frame1 (done): jacket ~8px wide at x0.77w y0.42h, dark bike/legs below; helmet blends into white cloud",
+    "ANALYSIS palette: jacket #e2622a, trousers #26303c, helmet #ececec, bike #1b1d21, skin #d9a07a, backpack #6d7d5a"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "Exact proportions can't be recovered (rider ~40px tall, veiled by clouds) so the cyclist was rebuilt as a stylized low-poly figure from the visible evidence: orange jacket at ~0.77w/0.42h ~8px wide, palette from ANALYSIS.md (jacket #e2622a, trousers #26303c, white helmet, dark bike), rider on the horizon line riding right. Final render places the rider at 0.47-0.50w / 0.38-0.41h with jacket pixels (215,97,39) and trousers (32,48,70) matching the reference palette."
+}

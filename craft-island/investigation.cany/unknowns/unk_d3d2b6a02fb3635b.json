@@ -1,0 +1,14 @@
+{
+  "id": "unk_d3d2b6a02fb3635b",
+  "revision": 2,
+  "question": "Which reference image does the harness comparison use (cover with text overlays, or the frames)?",
+  "severity": "low",
+  "domain": "general",
+  "status": "resolved",
+  "probes": [
+    "rebuild_check will show which comparisons run and what differs"
+  ],
+  "evidence_for": [],
+  "evidence_against": [],
+  "resolution": "The harness's app-screenshot check compares the rebuilt program's picture against the original's (inputs/ cover and frames). For this project it cannot run: this harness version (0.6.1) only supports Rust console, Rust+egui, Godot, Unity and Unreal stacks (no browser stack — verified from the craft-anything-cli binary), and craft.json was created with the default 'Rust + egui (eframe)' stack, so the check reports 'no built program to start' for a static browser demo. The request's own Playwright screenshot verification stands in for it."
+}
