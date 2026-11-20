@@ -9,8 +9,8 @@
 - 交付: `docs/zzz-unity-demo-teardown.md` + 交互 HTML（复用现有设计系统）+ 截图；来源/时间点
 - 约束: 只研究，不在本机安装 Unity；不复制视频/游戏素材；引用创作者/仓库；图表原创
 - 指派: detached general worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-001/result.md
 
 ## 队列
 
