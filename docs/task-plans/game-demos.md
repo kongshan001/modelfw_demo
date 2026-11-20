@@ -10,8 +10,8 @@
 - 交付: `godot-paper-doll/` 可玩组合器；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke
 - 约束: 原创木头人美术/UI/名字；不复制视频素材/品牌；1280×720 GL Compatibility；完成后发媒体并自动提交
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-006/result.md
 
 ## T-20261120-005 · 修正像素水面倒影/水线（T-002 follow-up）
 - 来源: 飞书反馈（2026-11-20；截图 `godot-pixel-ocean/docs/shots/01_sunset_wide.png`）

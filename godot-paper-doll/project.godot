@@ -1,0 +1,28 @@
+; Engine configuration file.
+; 纸偶工坊 — 17-module paper-doll composer (clean-room, procedural art only).
+
+config_version=5
+
+[application]
+
+config/name="纸偶工坊 · Paper Doll Atelier"
+config/description="A modular paper-doll study: 17 slots, 8 directions, 4 actions, per-slot tint and a 4x4 lineup."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.96, 0.93, 0.87, 1)
