@@ -86,13 +86,14 @@ python3 tools/task_dispatcher.py status <id>
 
 | 阶段 | agent | 产出 | 禁止 |
 | --- | --- | --- | --- |
+| 0. 策划设计 | `game-designer` | 目标玩家、核心循环、MVP/优先级、UX/内容规格、验收口径 | 写代码/画资产/做 QA |
 | 1. 美术 brief / 评审 | `game-art-director` | 评分、P0–P2、参数、验收 | 改代码/资产 |
 | 2. 美术实现 | `game-artist` | 色板/线/材质/角色/UI/VFX/展示 | 改玩法/做 QA/独立评审 |
 | 3. 程序/技术 | `game-engineer` | 玩法/渲染管线/性能/AA/导入 | 兼做美术方向 |
 | 4. QA | `game-qa-lead` | 独立验收、回归、证据、放行/打回 | 改视觉/实现 |
 | 5. 独立复评 | `game-art-director` | 同 rubric 复评；FAIL → 回到 2/3 | 做实现 |
 
-顺序默认 1→2→3→4→5；并行时先声明文件所有权（视觉文件归 artist，玩法/性能归 engineer）。
+顺序默认 **0→1→2→3→4→5**；策划先给设计方案，再进入美术/程序；并行时先声明文件所有权（视觉文件归 artist，玩法/性能归 engineer）。
 主 Agent 只编排/派发；每个任务仍是一个独立 worker；`commit_paths`/媒体/自动 Git 规则不变。
 
 ## 2. 分类

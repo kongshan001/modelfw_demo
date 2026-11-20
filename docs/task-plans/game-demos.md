@@ -2,6 +2,17 @@
 
 ## 进行中
 
+## T-20261120-013 · 纸娃娃策划设计方案（Game Designer）
+- 来源: 飞书反馈（“缺了个策划提设计方案”，2026-11-20）
+- 父任务: T-20261120-006
+- 类型: game-demo（策划）
+- 目标: 先定义目标玩家/核心循环/MVP/优先级/UX 内容/验收口径，给美术/程序/QA 同一份设计依据
+- 交付: `docs/design/paperdoll-design-spec.md` + 一页流程/优先级图；媒体
+- 约束: 不写代码/不画资产/不做 QA/不做独立美术评审；读参考视频、评审、当前 build
+- 指派: game-designer worker（dispatcher）
+- 状态: running
+- 产出: worker running
+
 ## T-20261120-009 · 纸娃娃美术实现（Game Artist）
 - 来源: 飞书消息（角色分工：美术参与开发，2026-11-20）
 - 父任务: T-20261120-007（美术 brief）/ T-20261120-006（项目）
@@ -14,14 +25,14 @@
 - 产出: worker running
 
 ## T-20261120-010 · 纸娃娃技术/性能/AA（Game Engineer）
-- 父任务: T-20261120-009；依赖: T-20261120-009（done + Git 已发布）
+- 父任务: T-20261120-009；依赖: T-20261120-009 + T-20261120-013（done + Git 已发布）
 - 类型: game-demo（技术）
 - 目标: 只做技术/性能/AA/缩略图烘焙/集成：2× SubViewport 超采样、Linear、mini 删细节、一次性烘焙、FPS；不重做美术方向
 - 交付: 更新后的 `godot-paper-doll/`；PAPERDOLL_SMOKE_OK/verify/FPS/截图；TECH/迭代记录；媒体
 - 约束: 不改美术风格/玩法；不改 QA/评审；原创
 - 指派: game-engineer worker
 - 状态: queued
-- depends_on: T-20261120-009
+- depends_on: T-20261120-009, T-20261120-013
 - 产出: 待回填
 
 ## T-20261120-011 · 纸娃娃 QA 独立验收（QA Lead）

@@ -59,7 +59,8 @@ python3 tools/task_dispatcher.py status <id>
 | 策划 | `game-designer` | 机制/体验/规格（需要时） | 不做实现/美术评审 |
 
 - 一个任务一个角色；主 Agent 只编排，不兼做。
-- 默认顺序：Art Director brief（若无）→ **Game Artist** → **Game Engineer**（技术/性能/AA）→ **QA Lead** → **Art Director 独立复评**。
+- 默认顺序：**Game Designer 设计方案** → Art Director brief（若无）→ **Game Artist** → **Game Engineer**（技术/性能/AA）→ **QA Lead** → **Art Director 独立复评**。
+- 策划负责“做什么、给谁玩、核心循环、MVP/优先级、验收口径”，不写代码、不画资产、不做 QA/独立评审。
 - 同一项目并行时先声明文件所有权；视觉文件归 artist，玩法/性能文件归 engineer。
 - **禁止**让 game-engineer 兼做美术整改，或让 game-art-director 做实现；也不要把 QA 塞给实现者。
 
