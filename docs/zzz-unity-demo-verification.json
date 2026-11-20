@@ -1,0 +1,104 @@
+{
+  "url": "http://127.0.0.1:8765/docs/zzz-unity-demo-teardown-%E4%BA%A4%E4%BA%92%E7%89%88.html",
+  "startedAt": "2026-11-20T04:55:43.722Z",
+  "checks": {
+    "title": "把绝区零的手感拆成帧 — Unity 战斗 Demo 技术拆解",
+    "theme": "dark",
+    "sections": 13,
+    "visibleSections": 13,
+    "countText": "显示 13/13 段",
+    "navLinks": 13,
+    "horizontalOverflow": false,
+    "bodyOverflow": false,
+    "externalResourceTags": [],
+    "svgCount": 3,
+    "search64": {
+      "count": "显示 3/13 段",
+      "visible": [
+        "s0",
+        "s2",
+        "s4"
+      ]
+    },
+    "filterCombat": {
+      "count": "显示 8/13 段",
+      "visible": [
+        "s0",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s12"
+      ]
+    },
+    "themeToggle": {
+      "before": "dark",
+      "after": "light",
+      "button": "主题：亮"
+    },
+    "themeBack": "dark",
+    "framing": {
+      "readout": "Combat · 8.2m / ScreenY 0.67",
+      "transform": "scale(0.72)"
+    },
+    "navAnchors": [
+      {
+        "id": "s4",
+        "h2Top": 118,
+        "toolbarBottom": 109,
+        "covered": false
+      },
+      {
+        "id": "s6",
+        "h2Top": 118,
+        "toolbarBottom": 109,
+        "covered": false
+      },
+      {
+        "id": "s11",
+        "h2Top": 118,
+        "toolbarBottom": 109,
+        "covered": false
+      }
+    ],
+    "lightTheme": "light",
+    "mobile": {
+      "theme": "dark",
+      "overflow": false,
+      "bodyOverflow": false,
+      "sections": 13,
+      "navScrollable": true,
+      "stageWidth": 351
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "screenshots": [
+    {
+      "file": "docs/shots/zzz-unity-demo.png",
+      "theme": "dark",
+      "fullPage": true
+    },
+    {
+      "file": "docs/shots/zzz-unity-demo-hero.png",
+      "theme": "dark",
+      "fullPage": false
+    },
+    {
+      "file": "docs/shots/zzz-unity-demo-light.png",
+      "theme": "light",
+      "fullPage": true
+    },
+    {
+      "file": "docs/shots/zzz-unity-demo-mobile.png",
+      "theme": "dark",
+      "fullPage": true
+    }
+  ],
+  "finishedAt": "2026-11-20T04:56:15.239Z",
+  "pass": true
+}

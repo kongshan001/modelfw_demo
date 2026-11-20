@@ -9,8 +9,8 @@
 - 交付: `godot-paper-doll/` Godot 4.6 2D 角色组合器（槽位/变体/颜色/方向/动作/随机/16 预设/阵容展示）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke
 - 约束: 原创木头人美术/UI/名字；不复制视频素材/创作者游戏品牌；1280×720 GL Compatibility；完成后必须发媒体
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
-- 产出: worker running
+- 状态: failed
+- 产出: /Users/ks_128/.cc-connect/tasks/failed/T-20261120-004/result.md
 
 ## T-20261120-003 · 像素木筏钓鱼/收集/扩建复刻
 - 来源: 飞书消息（B 站 BV19yWi6HEEK《玩家是对开发者最好的奖励！》，2026-11-20；同一作者“大肥鱼的开发日记”）
