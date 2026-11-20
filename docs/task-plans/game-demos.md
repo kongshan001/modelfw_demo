@@ -53,9 +53,9 @@
 - 交付: `docs/art-review/paperdoll-art-review-round2.md` + 代表图；不改代码；FAIL 给下一轮整改 brief
 - 约束: 独立评审；不实现；依赖 T-011
 - 指派: game-art-director worker
-- 状态: queued
+- 状态: done
 - depends_on: T-20261120-011
-- 产出: 待回填
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-012/result.md
 
 ## T-20261120-008 · 纸娃娃美术整改（P0+P1）
 - 来源: 飞书消息（“推进提升美术质量”，2026-11-20）
