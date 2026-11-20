@@ -54,15 +54,23 @@ static var _batch_offset := Vector2.ZERO
 static var _batch_alpha := 1.0
 static var _batch_xscale := 1.0
 static var _silhouette := false
+# mini 缩略图：几何预算收紧（不补圆头、圆段数减半），线宽/细节裁剪由 PaintUtil 负责。
+static var _mini := false
+# 色板只由 primary 决定；缓存后每只纸偶的 17 次取色不再重复构建 ramp。
+static var _palette_cache: Dictionary = {}
 
 
 static func make_palette(primary: Color) -> Dictionary:
+	var key := primary.to_html(false)
+	var cached: Dictionary = _palette_cache.get(key, {})
+	if not cached.is_empty():
+		return cached
 	var ramp := ramp_for(primary)
 	var wood := material("wood")
 	var leather := material("leather")
 	var metal := material("metal")
 	var paper := material("paper")
-	return {
+	var pal := {
 		"primary": ramp["base"],
 		"base": ramp["base"],
 		"shade": ramp["shade"],
@@ -82,6 +90,8 @@ static func make_palette(primary: Color) -> Dictionary:
 		"rim": RIM_WARM,
 		"rim_cool": RIM_COOL,
 	}
+	_palette_cache[key] = pal
+	return pal
 
 
 static func ramp_for(primary: Color) -> Dictionary:
@@ -149,6 +159,11 @@ static func begin_batch(ci: CanvasItem) -> void:
 	_batch_alpha = 1.0
 	_batch_xscale = 1.0
 	_silhouette = false
+	_mini = false
+
+
+static func set_mini(value: bool) -> void:
+	_mini = value
 
 
 static func set_offset(offset: Vector2) -> void:
@@ -232,7 +247,7 @@ static func _fill(points: PackedVector2Array, color: Color, convex := false) -> 
 static func _disc(center: Vector2, radius: float, color: Color, segments := 0) -> void:
 	if radius <= 0.01:
 		return
-	var n := segments if segments > 0 else clampi(int(radius * 2.0), 10, 28)
+	var n := segments if segments > 0 else clampi(int(radius * 2.0), 10, 18 if _mini else 28)
 	var prev := center + Vector2(radius, 0)
 	for i in range(1, n + 1):
 		var a := TAU * float(i) / float(n)
@@ -246,7 +261,7 @@ static func _ring(center: Vector2, radius: float, width: float, color: Color, se
 		return
 	var outer := radius + width * 0.5
 	var inner := maxf(radius - width * 0.5, 0.05)
-	var n := segments if segments > 0 else clampi(int(outer * 2.0), 12, 30)
+	var n := segments if segments > 0 else clampi(int(outer * 2.0), 12, 20 if _mini else 30)
 	var prev_o := center + Vector2(outer, 0)
 	var prev_i := center + Vector2(inner, 0)
 	for i in range(1, n + 1):
@@ -274,7 +289,8 @@ static func _stroke(points: PackedVector2Array, color: Color, width: float, clos
 		var normal := Vector2(-d.y, d.x).normalized() * half
 		_quad(a + normal, b + normal, b - normal, a - normal, color)
 	# 只在明显折角处补圆头；平滑曲线（胶囊/圆角矩形）跳过以压低顶点数。
-	if half >= 0.55:
+	# mini 缩略图在 2× 超采样后再缩小，折角圆头 <1px，直接省略。
+	if half >= 0.55 and not _mini:
 		var last := n if closed else n - 1
 		for i in range(1, last):
 			var prev := points[i - 1]
@@ -385,7 +401,7 @@ static func capsule(ci: CanvasItem, a: Vector2, b: Vector2, width: float, fill: 
 
 static func arc(ci: CanvasItem, center: Vector2, radius: float, from: float, to: float, color: Color, width := 1.15) -> void:
 	var span := to - from
-	var steps := clampi(int(absf(span) * radius * 0.4), 6, 32)
+	var steps := clampi(int(absf(span) * radius * 0.4), 6, 18 if _mini else 32)
 	var points := PackedVector2Array()
 	for i in range(steps + 1):
 		var a := from + span * float(i) / float(steps)

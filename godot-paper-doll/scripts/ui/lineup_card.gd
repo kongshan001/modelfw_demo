@@ -87,7 +87,7 @@ func apply_entry(data: Dictionary) -> void:
 		return
 	_signature = signature
 	_thumb.set_doll(data["outfit"], dir, action, 0.56,
-			DollData.showcase_time(index, action), 2.0, true)
+			DollData.showcase_time(index, action), 4.0, true)
 
 
 func set_selected(value: bool) -> void:

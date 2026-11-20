@@ -1002,6 +1002,10 @@ func get_overlay_dolls() -> Array:
 	return _overlay_dolls
 
 
+func get_overlay_thumbs() -> Array:
+	return _overlay_thumbs
+
+
 func get_preset_count() -> int:
 	return _lineup.size()
 

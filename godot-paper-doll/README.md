@@ -40,6 +40,20 @@ Godot 4.6 / 2D / GL Compatibility / 1280×720 的原创纸偶换装与 4×4 阵�
 - **UI**：中文最小 11px；激活态 `#b23c33 / #2f7a6b / #6c5490`（白字 ≥4.5:1）；
   全控件 `FOCUS_ALL` + 2px 墨色焦点环；删除玩家视图里的 `z 40`，组合数改 `9.0×10²⁶`。
 
+## 缩略图抗锯齿（T-20261120-010）
+
+GL Compatibility 不支持 2D MSAA，阵容卡 / 8 向罗盘 / 动作关键帧统一走
+**2× SubViewport 超采样 + Linear 下采样**：
+
+- 视口 = 显示尺寸 ×2，纸偶按 `display_scale×2` 绘制；外层 `TextureRect` 仍按原尺寸显示，
+  `TEXTURE_FILTER_LINEAR`、无 mipmap。
+- `mini` 缩略图只保留 1.3px 外轮廓：结构线/细节线归零，木纹/缝线/铆钉/睫毛/轮廓光不画；
+  眼/嘴/眉按评审保留最小可读尺寸。圆与圆弧段数减半，省略折角圆头，
+  接触影纵向 0.72×（避免在 85px 预览里被下缘裁平）。
+- 烘焙是一次性的：外观签名 / 时钟不变时不重画，渲染 2 帧后 `UPDATE_DISABLED`；
+  16 张卡不会每帧重绘。单次烘焙 CPU 中位约 8–9ms、p90 约 10–15ms（预算 16ms，随后台负载波动）。
+- 前后对比：`docs/shots/aa/01_card_aa_compare_4x.png`（200%+ 裁切，左 T-009 / 右 T-010）。
+
 ## 操作
 
 | 操作 | 说明 |
@@ -93,6 +107,7 @@ bash godot-paper-doll/tools/verify.sh
 ```text
 PAPERDOLL_SMOKE_OK slots=17 variants=83 dirs=8 actions=4 presets=16 cards=16 baked_cards=16 ...
 PAPERDOLL_SHOTS_OK
+PAPERDOLL_BAKE_OK card_median_ms=... card_p90_ms=... overlay_p90_ms=... budget_ms=16.0
 PAPERDOLL_FPS_OK min=...
 PAPERDOLL_SHOWCASE_OK
 PAPERDOLL_METRICS_OK
@@ -109,18 +124,25 @@ PAPERDOLL_VERIFY_OK
   - `docs/shots/showcase/hero_layers.png`（层视）
   - `docs/shots/showcase/paperdoll_6s.gif`（640×360 / 30fps / 6s：idle→walk→attack→hit）
 - 美术验收图：`docs/art-review/after/`（before/after、4× 裁切、25% 缩略图、16 人剪影、8 向剪影罗盘、指标 JSON）
+- 缩略图 AA 证据：`docs/shots/aa/01_card_aa_compare_4x.png`（T-009 vs T-010，4× 裁切）
 - 旧演示视频：`docs/paperdoll.mp4` / `docs/paperdoll.gif`（T-006 片段）
 
 ## 性能
 
-Intel HD Graphics 6000、1280×720、GL Compatibility 实测 **31–48 FPS，avg 39.0，min 31**；`tools/verify.sh` 串联运行时 min 32.0 / avg 34.4
-（`PAPERDOLL_FPS_OK`，为新增兜帽/披肩/气场后的保守值；AA 2× 超采样尚未接入，见 T-010）。
+Intel HD Graphics 6000、1280×720、GL Compatibility 实测 **30–45 FPS，avg 31.8–38.6，min 30**；
+T-010 接入 2× 超采样后 `tools/verify.sh` 最终串联运行 **min 30.0 / avg 31.0**
+（后台负载较低时另一次为 min 33.0 / avg 33.3），独立 perf 采样 **min 30.0 / avg 31.0–31.8**
+（后台飞书/WebKit/XProtect 负载会让稳态 min 在 30–33 间波动；perf 采样 7 秒并丢弃
+首秒暖机样本，避免首个窗焦点/缓存噪声，原始样本照实打印）。
+一次性烘焙 CPU（逐只）：中位 **8.0ms**、p90 **10.4ms**、最大 **12.0ms**（16 张卡），
+对照页 p90 **10.5ms**（预算 16ms；后台负载下 p90 可到 14–15ms）。
 关键优化：
 
-1. 4×4 阵容与对照页使用 `DollThumbnail`：SubViewport 烘焙一次后关闭渲染；
+1. 4×4 阵容与对照页使用 `DollThumbnail`：2× SubViewport 烘焙一次后关闭渲染；
 2. 纸偶的数百条填充 / 描边合并为一次三角形数组提交；
 3. 试衣镜以 24 Hz 重绘（定格木偶质感），画面仍按显示器帧率合成；
-4. 卡片按 17 槽外观签名缓存，避免无意义重烘焙。
+4. 卡片按 17 槽外观签名 + 时钟缓存，避免无意义重烘焙；缩略图色板按 primary 缓存；
+5. mini 缩略图收紧几何预算（段数减半、省略折角圆头），超采样只增加一次性填充成本。
 
 详见 [docs/TECH.md](docs/TECH.md) 与 [docs/迭代记录.md](docs/迭代记录.md)。
 
@@ -137,7 +159,7 @@ scripts/doll/paint_*.gd       木偶 / 布料 / 道具绘制
 scripts/ui/                   主题、试衣镜舞台、阵容卡、烘焙缩略图
 presets/lineup_16.json        16 个原创预设
 tools/                        smoke / screenshot / perf / showcase / metric / verify
-docs/shots/                   真机截图 + showcase/ 展示物料
+docs/shots/                   真机截图 + showcase/ 展示物料 + aa/ 超采样证据
 docs/metrics/                 透明底渲染、16/8 向剪影、summary.json
 ```
 

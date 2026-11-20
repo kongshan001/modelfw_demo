@@ -31,9 +31,9 @@
 - 交付: 更新后的 `godot-paper-doll/`；PAPERDOLL_SMOKE_OK/verify/FPS/截图；TECH/迭代记录；媒体
 - 约束: 不改美术风格/玩法；不改 QA/评审；原创
 - 指派: game-engineer worker
-- 状态: queued
+- 状态: done
 - depends_on: T-20261120-009, T-20261120-013
-- 产出: 待回填
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261120-010/result.md
 
 ## T-20261120-011 · 纸娃娃 QA 独立验收（QA Lead）
 - 父任务: T-20261120-010；依赖: T-20261120-010（done + Git 已发布）

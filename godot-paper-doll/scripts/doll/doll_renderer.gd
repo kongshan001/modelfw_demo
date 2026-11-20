@@ -12,6 +12,8 @@ var time_offset := 0.0
 var animate := true
 var mini := false
 var show_shadow := true
+# 缩略图的接触影略压扁，避免在 85px 高的卡片预览里被下缘裁平。
+var shadow_scale_y := 1.0
 var show_effects := true
 var silhouette := false
 var explode := 0.0
@@ -22,6 +24,8 @@ var redraw_hz := 24.0
 var _base_scale := 1.0
 var _flip := false
 var _redraw_accum := 0.0
+# 烘焙成本观测（T-010）：_draw 的 CPU 耗时。
+var last_draw_usec := 0
 
 
 func _ready() -> void:
@@ -115,15 +119,17 @@ func _apply_transform() -> void:
 
 
 func _draw() -> void:
+	var draw_started := Time.get_ticks_usec()
 	var dir: Dictionary = DollData.DIRS[clampi(direction, 0, 7)]
 	var local_time := anim_time + time_offset
 	var pose := DollPose.compute(local_time, action, direction)
 	var blink := action != "hit" and fposmod(local_time + 1.4, 4.3) < 0.10
 	if show_shadow and not silhouette and explode <= 0.01:
 		# 环境影 223×34 + 接触影 168×32（1280 口径），整体下移 2px。
-		DrawKit.contact_shadow(self, Vector2(0, 0), 1.0)
+		DrawKit.contact_shadow(self, Vector2(0, 0), shadow_scale_y)
 
 	DrawKit.begin_batch(self)
+	DrawKit.set_mini(mini)
 	DrawKit.set_silhouette(silhouette)
 	# 侧身 x 压缩：正 1.0 / 斜 0.835 / 侧 0.70，让相邻方向剪影分开。
 	var yaw_scale := 1.0 - 0.38 * float(dir["yaw"])
@@ -180,6 +186,7 @@ func _draw() -> void:
 		_draw_effects(pose, outfit)
 	DrawKit.set_silhouette(false)
 	DrawKit.end_batch()
+	last_draw_usec = Time.get_ticks_usec() - draw_started
 
 
 func _draw_effects(pose: Dictionary, outfit_now: Dictionary) -> void:

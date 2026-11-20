@@ -48,6 +48,17 @@ func _initialize() -> void:
 	_check(DollData.ACTIONS.size() == 4, "expected 4 actions")
 	_check(DollData.combination_count() > 1.0e15, "combination space too small")
 
+	# ── 缩略图 mini 细节预算（T-010 / 评审 P0-2）────────────────────────
+	var mini_ctx := {"mini": true, "yaw": 0.0, "silhouette": false}
+	var studio_ctx := {"mini": false, "yaw": 0.0, "silhouette": false}
+	_check(absf(PaintUtil.ow(mini_ctx) - DrawKit.OUTER_MINI) < 0.001, "mini outer width changed")
+	_check(PaintUtil.ol(mini_ctx, "struct") == 0.0, "mini inner ink must be culled")
+	_check(PaintUtil.detail_w(mini_ctx) == 0.0, "mini detail width must be 0")
+	_check(PaintUtil.ol(studio_ctx, "struct") > 0.0, "studio structure line missing")
+	_check(PaintUtil.detail_w(studio_ctx) > 0.0, "studio detail line missing")
+	var mini_px := DrawKit.OUTER_MINI * 0.56
+	_check(mini_px >= 1.2 and mini_px <= 1.6, "mini outline %.2fpx outside 1.2–1.6px" % mini_px)
+
 	# ── UI 骨架 ─────────────────────────────────────────────────────────
 	_check(scene.slot_buttons.size() == 17, "slot buttons %d != 17" % scene.slot_buttons.size())
 	_check(scene.dir_buttons.size() == 8, "direction buttons %d != 8" % scene.dir_buttons.size())
@@ -274,11 +285,30 @@ func _initialize() -> void:
 	# ── 烘焙缓存：阵容卡只渲染一次，避免 16 个 SubViewport 持续重绘 ─────
 	await create_timer(0.2).timeout
 	var baked := 0
+	var supersampled := 0
+	var linear := 0
 	for card in scene.cards:
 		if card._thumb.is_baked():
 			baked += 1
+		if card._thumb.is_supersampled():
+			supersampled += 1
+		if card._thumb.uses_linear_filter():
+			linear += 1
+		_check(card._thumb.doll.mini, "card thumbnail should use mini painter")
 	_check(baked == scene.cards.size(), "only %d/%d card thumbnails baked" % [baked, scene.cards.size()])
 	_check(baked == 16, "expected 16 baked lineup cards")
+	_check(supersampled == 16, "only %d/16 card thumbnails supersampled" % supersampled)
+	_check(linear == 16, "only %d/16 card thumbnails use Linear filter" % linear)
+
+	# 签名/时钟不变时不重烘焙；改变时才重烘焙。
+	var probe: DollThumbnail = scene.cards[0]._thumb
+	var bake_before := probe.bake_count
+	scene.cards[0].apply_entry(scene.cards[0].entry)
+	probe.set_clock(0.0)
+	_check(probe.bake_count == bake_before, "unchanged thumbnail re-baked")
+	probe.set_clock(0.41)
+	_check(probe.bake_count == bake_before + 1, "changed clock did not trigger bake")
+	_check(probe.last_draw_usec >= 0, "draw timing not recorded")
 
 	# ── 输出 ────────────────────────────────────────────────────────────
 	if _fails.is_empty():

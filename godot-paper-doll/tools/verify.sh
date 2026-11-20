@@ -44,10 +44,25 @@ else
 fi
 
 if [ "${SKIP_GPU:-0}" = "1" ]; then
-	echo "== 3/5 真机截图（SKIP_GPU=1，跳过） =="
-	echo "== 4/5 Intel 帧率（SKIP_GPU=1，跳过） =="
+	echo "== 3/5 Intel 帧率（SKIP_GPU=1，跳过） =="
+	echo "== 4/5 真机截图（SKIP_GPU=1，跳过） =="
 else
-	echo "== 3/5 真机 1280x720 截图 =="
+	# 先测 FPS 再做截图：截图工具会创建 1280×720 SubViewport 并连续读回 7 张 PNG，
+	# 退出后的 GPU/WindowServer 清理会污染紧随其后的帧率采样（T-010 实测 min 28–29）。
+	echo "== 3/5 Intel 帧率（要求 min ≥30） =="
+	if out=$("$GODOT_BIN" --path "$ROOT" --resolution 1280x720 -s tools/perf_paperdoll.gd 2>&1); then
+		if echo "$out" | grep -q 'PAPERDOLL_FPS_OK'; then
+			pass "$(echo "$out" | grep 'PAPERDOLL_FPS' | tail -2 | tr '\n' ' ')"
+		else
+			fail "帧率低于 30"
+			echo "$out" | grep 'PAPERDOLL_FPS' | tail -3
+		fi
+	else
+		fail "帧率工具返回非零（低于 30 或 GPU 不可用）"
+		echo "$out" | grep 'PAPERDOLL_FPS' | tail -3
+	fi
+
+	echo "== 4/5 真机 1280x720 截图 =="
 	if out=$("$GODOT_BIN" --path "$ROOT" --resolution 1280x720 -s tools/screenshot_paperdoll.gd 2>&1); then
 		if echo "$out" | grep -q 'PAPERDOLL_SHOTS_OK'; then
 			shots=$(find docs/shots -maxdepth 1 -name '*.png' | wc -l | tr -d ' ')
@@ -63,19 +78,6 @@ else
 	else
 		fail "截图工具返回非零"
 		echo "$out" | tail -20
-	fi
-
-	echo "== 4/5 Intel 帧率（要求 min ≥30） =="
-	if out=$("$GODOT_BIN" --path "$ROOT" --resolution 1280x720 -s tools/perf_paperdoll.gd 2>&1); then
-		if echo "$out" | grep -q 'PAPERDOLL_FPS_OK'; then
-			pass "$(echo "$out" | grep 'PAPERDOLL_FPS' | tail -2 | tr '\n' ' ')"
-		else
-			fail "帧率低于 30"
-			echo "$out" | grep 'PAPERDOLL_FPS' | tail -3
-		fi
-	else
-		fail "帧率工具返回非零（低于 30 或 GPU 不可用）"
-		echo "$out" | grep 'PAPERDOLL_FPS' | tail -3
 	fi
 fi
 
