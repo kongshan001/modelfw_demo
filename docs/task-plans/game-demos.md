@@ -31,9 +31,9 @@
 - 交付: `docs/art-review/paperdoll-walk-review.md` + 代表图；FAIL 给下一轮 brief
 - 约束: 独立评审；不实现
 - 指派: game-art-director worker
-- 状态: queued
+- 状态: done
 - depends_on: T-20261121-002
-- 产出: 待回填
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-003/result.md
 
 ## T-20261120-013 · 纸娃娃策划设计方案（Game Designer）
 - 来源: 飞书反馈（“缺了个策划提设计方案”，2026-11-20）

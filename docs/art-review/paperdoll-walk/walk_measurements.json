@@ -1,0 +1,56 @@
+{
+  "task": "T-20261121-003",
+  "build": "18537e7",
+  "character_height_px_100": 318,
+  "side_gif": "docs/qa-review/evidence/walk/walk_side_2s_qa.gif (640x360, 60f, 2.000s, 30fps)",
+  "stance_plateaus_px": {
+    "A": [
+      307,
+      324
+    ],
+    "B": [
+      316,
+      334
+    ],
+    "drift_within_stance_px": 0.0,
+    "step_plant_delta_px": 9.5,
+    "step_percent_height": 3.0
+  },
+  "swing_lift_px": 22,
+  "swing_lift_percent_height": 6.9,
+  "lift_over_step": 2.2,
+  "head_bob_px": 4,
+  "body_sway_px_side": 4.4,
+  "body_sway_px_front": 6.3,
+  "foot_pitch_deg": [
+    -15.0,
+    0.0,
+    22.0
+  ],
+  "knee_interior_max_deg": 151.3,
+  "endpoint_sole_float_px_100": 1,
+  "front_swing_boot_tilt_deg": 18.9,
+  "sword_blade_angle_deg": [
+    90.0,
+    57.5
+  ],
+  "sword_tip_travel_px": 91,
+  "sword_tip_percent_height": 28.6,
+  "sword_tip_travel_px_25pct": 23,
+  "leg_delta_px_25pct": 2.4,
+  "loop_seam_diff_char_area": 11.4,
+  "adjacent_median_diff": 4.3,
+  "f1_to_f26_diff": 1.8,
+  "boot_value_Lstar": {
+    "near": 30.8,
+    "far": 23.0
+  },
+  "mirror": {
+    "mirror_err_local": 0.0,
+    "mask_iou": 1.0,
+    "visual_evidence": "walk_mirror_lr_qa.png unusable (mostly black)"
+  },
+  "score_walk": 6.2,
+  "verdict_walk_fix": "REJECT (walk art, public gate; technical R2-P0-2 PASS)",
+  "verdict_build": "REJECT (pre-existing BUG-01/02/04/10, unchanged)"
+}
