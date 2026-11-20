@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>从随机噪声到可玩地牢 — Rogue 程序化关卡视频拆解</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1410'/%3E%3Cpath d='M6 7h8v8H6zM18 7h8v8h-8zM6 17h8v8H6zM18 17h8v8h-8z' fill='%235FD8C9' opacity='.85'/%3E%3Cpath d='M6 17h8v8H6z' fill='%23F2B35C'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --ok:#5FD88A;
+  --grid:rgba(150,200,170,.05);
+  --wall:#07100C; --cell-floor:#C9D8A8; --cell-floor-2:#AFC98D;
+  --cell-room:#5FD8C9; --cell-corr:#F2B35C;
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --ok:#1B7A4A;
+  --grid:rgba(23,38,30,.05);
+  --wall:#DDE6D2; --cell-floor:#476B39; --cell-floor-2:#5D8248;
+  --cell-room:#0E7A70; --cell-corr:#A66B1E;
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1120px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(46px,7vw,90px) clamp(20px,5vw,56px) 26px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.4vw,58px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:76ch;margin:0 0 20px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+nav.toc a.off{display:none}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 80px}
+section{margin:0 0 clamp(46px,6vw,80px);scroll-margin-top:96px}
+section.off{display:none}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);position:sticky;top:45px;z-index:40;backdrop-filter:blur(12px)}
+#search{flex:1;min-width:180px;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:9px 12px;outline:none}
+#search:focus{border-color:var(--teal)}
+.chip{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:.2s}
+.chip:hover{color:var(--ink);border-color:var(--line-strong)}
+.chip.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+#count{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card .tag,.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px}
+pre b{color:var(--gold);font-weight:600}
+pre .c{color:var(--ink-faint)}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.idxgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin:8px 0 18px}
+a.idx{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 15px;transition:.2s;box-shadow:var(--shadow)}
+a.idx:hover{border-color:var(--teal);transform:translateY(-1px)}
+a.idx.off{display:none}
+a.idx .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em}
+a.idx .t{font-family:var(--serif);font-size:17px;font-weight:700;margin:2px 0 3px}
+a.idx .d{font-size:13px;color:var(--ink-soft)}
+a.idx .s{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:6px}
+.shot{width:100%;border-radius:12px;border:1px solid var(--line);display:block;margin:8px 0 4px;background:var(--card)}
+.cap{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:0 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.demo{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;box-shadow:var(--shadow);margin:14px 0 18px}
+.demo-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.demo-head .t{font-family:var(--serif);font-size:19px;font-weight:700;margin:0}
+.demo-head .d{font-size:13px;color:var(--ink-soft);margin:2px 0 0}
+.demo canvas,.demo svg{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:var(--card-2)}
+.demo canvas{image-rendering:pixelated}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 8px}
+.controls label{font-family:var(--mono);font-size:12px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.controls input[type=number]{width:92px;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;outline:none}
+.controls input[type=range]{width:130px;accent-color:var(--teal)}
+.controls select{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:7px 8px;outline:none}
+.controls output{font-family:var(--mono);font-size:12px;color:var(--teal);min-width:38px}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{color:var(--paper);filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.metrics{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 2px}
+.metric{font-family:var(--mono);font-size:11px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:var(--paper-2)}
+.metric b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:8px 0 2px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--teal);margin-right:5px;vertical-align:middle}
+.sw.gold{background:var(--gold)} .sw.warn{background:var(--warn)} .sw.line{background:var(--line-strong)}
+.svg-label{font-family:var(--mono);font-size:11px;fill:var(--ink-soft)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:12px 0 18px}
+.flow .step{flex:1 1 150px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 14px;box-shadow:var(--shadow)}
+.flow .step .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em}
+.flow .step .t{font-family:var(--serif);font-size:16px;font-weight:700;margin:2px 0 3px}
+.flow .step .d{font-size:13px;color:var(--ink-soft)}
+.flow .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-family:var(--mono);font-size:18px;flex:0 0 18px}
+.curve{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin:8px 0 4px}
+.bowls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.bowl{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px;text-align:center}
+.bowl svg{width:100%;height:auto;display:block}
+.bowl .l{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:4px}
+.inline-note{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.kbd{font-family:var(--mono);font-size:11px;color:var(--ink-faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+footer a{color:var(--teal);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+@media screen and (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .toolbar{position:static}
+  .bowls{grid-template-columns:1fr}
+  .fab{right:8px;bottom:8px}
+  .fab button{padding:6px 9px;font-size:11px}
+  .sec-note{margin-left:0;width:100%}
+}
+@media print{.toolbar,.fab,nav.toc,.progress{display:none}section.off{display:block!important}.demo canvas,.demo svg{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span> 2026-11 · VIDEO TEARDOWN · BV14Un16fEvz · 7:31</div>
+  <h1>从随机噪声到<span class="u">可玩地牢</span><br>拆解四种<span class="g">程序化关卡</span>算法</h1>
+  <p class="sub">逐段拆 B 站视频《Rogue类游戏是如何自动生成关卡的？》：<b>元胞自动机 4-5 规则、Spelunky 式黄金路径与房间模板、BSP、醉汉漫步</b>。再补上视频没讲、但落地必须的 <b>连通性验证、种子复现、难度曲线</b>。所有图表均为原创 SVG/Canvas，不使用视频截图或素材。</p>
+  <div class="stat-row">
+    <span class="stat"><b>4</b> 个实际讲解的算法</span>
+    <span class="stat"><b>1</b> 条核心原则</span>
+    <span class="stat"><b>4</b> 个可交互演示</span>
+    <span class="stat"><b>21</b> 个种子连通验证</span>
+    <span class="stat"><b>0</b> 外部依赖</span>
+    <span class="stat">时间点以 B 站版为准 ±2s</span>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0" class="active">总览</a>
+  <a href="#s1">时间轴</a>
+  <a href="#s2">CA 4-5</a>
+  <a href="#s3">房间 / 模板</a>
+  <a href="#s4">BSP</a>
+  <a href="#s5">醉汉漫步</a>
+  <a href="#s6">工具箱</a>
+  <a href="#s7">验证 / 难度</a>
+  <a href="#s8">Godot 清单</a>
+  <a href="#s9">燕麦粥</a>
+  <a href="#s10">来源</a>
+</div></nav>
+
+<main>
+
+<div class="toolbar" id="toolbar">
+  <input id="search" type="search" placeholder="搜索：BSP / 4-5 / 黄金路径 / BFS / 种子 / 难度 …  （/ 聚焦，Esc 清除）" aria-label="搜索">
+  <button class="chip active" data-track="all">全部</button>
+  <button class="chip" data-track="algo">算法</button>
+  <button class="chip" data-track="impl">实现</button>
+  <button class="chip" data-track="design">设计</button>
+  <button class="chip" data-track="source">来源</button>
+  <span id="count"></span>
+</div>
+
+<section id="s0" data-track="core">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">视频讲了什么 / 没讲什么</span></div>
+  <p class="lead">这不是一份“程序化生成大全”。视频实际只深入讲了 <b>四个算法</b>，并用一个设计理念收尾。最重要的不是某个公式，而是顺序：<b>先保证可玩路径与连通性，再随机装饰。</b></p>
+  <div class="idxgrid">
+    <a class="idx" href="#s2" data-track="algo"><div class="n">01</div><div class="t">元胞自动机 4-5 规则</div><div class="d">45% 随机填充 → 数 8 邻域 → 迭代出洞穴；阈值一改，拓扑就变。</div><div class="s">视频 0:43–2:48</div></a>
+    <a class="idx" href="#s3" data-track="algo"><div class="n">02</div><div class="t">房间 + 走廊 + 模板</div><div class="d">Spelunky 的 4×4 黄金路径；Gungeon 的手工房间池。</div><div class="s">视频 2:49–4:38</div></a>
+    <a class="idx" href="#s4" data-track="algo"><div class="n">03</div><div class="t">BSP 二叉空间分割</div><div class="d">大矩形递归切半 → 叶节点放房间 → 走廊连接。</div><div class="s">视频 4:39–5:28</div></a>
+    <a class="idx" href="#s5" data-track="algo"><div class="n">04</div><div class="t">醉汉漫步</div><div class="d">挖掘者随机跌撞，边走边挖出有机隧道。</div><div class="s">视频 5:29–5:41</div></a>
+    <a class="idx" href="#s7" data-track="impl"><div class="n">05</div><div class="t">验证 · 种子 · 难度</div><div class="d">BFS 连通、种子回放、按深度预算，而不是随机撒怪。</div><div class="s">本文扩展（视频未讲）</div></a>
+    <a class="idx" href="#s8" data-track="impl"><div class="n">06</div><div class="t">Godot 落地清单</div><div class="d">最小实现顺序、TileMapLayer、RandomNumberGenerator、黄金种子。</div><div class="s">4.6 代码骨架</div></a>
+    <a class="idx" href="#s9" data-track="design"><div class="n">07</div><div class="t">Procedural Oatmeal</div><div class="d">一千碗技术上不同的燕麦粥，体验仍然是燕麦粥。</div><div class="s">视频 6:25–7:07</div></a>
+    <a class="idx" href="#s10" data-track="source"><div class="n">08</div><div class="t">来源与时间点</div><div class="d">B 站版 / 原片 / 人物 / 采集方法与边界。</div><div class="s">可核对</div></a>
+  </div>
+  <div class="warnbox"><b>边界声明：</b>视频没有讲锁钥 / 图结构生成；WFC 只在 Caves of Qud 一句带过；视频也没有讲连通性验证和难度曲线。下面凡属于这类内容，都明确标为 <b>“落地扩展”</b>，不冒充视频原话。</div>
+  <div class="cards">
+    <div class="card ok"><h4>视频的答案</h4><div class="t">随机只是原料</div><p>CA 负责洞穴，房间模板负责手工感，BSP 负责结构，醉汉漫步负责有机隧道。真正的“可玩”来自约束与后处理。</p></div>
+    <div class="card"><h4>最值钱的一句</h4><div class="t">先路径，后装饰</div><p>Spelunky 先刻一条保证存在的路径，再填模板。洞穴类算法也一样：先保证连通，再撒敌人和宝藏。</p></div>
+    <div class="card warn"><h4>最值钱的警告</h4><div class="t">变化 ≠ 体验</div><p>程序化燕麦粥：技术上无限变体，体验上没有区别。堆系统不等于好玩。</p></div>
+  </div>
+</section>
+
+<section id="s1" data-track="core">
+  <div class="sec-head"><span class="sec-num">01</span><h2>视频时间轴：实际讲了什么</h2><span class="sec-note">B 站版 · 逐段抽帧 + 硬字幕交叉核对</span></div>
+  <p class="lead">下表中的内容都来自视频画面/硬字幕，不是根据标题猜的。时间点以 B 站版为准；原片章节整体早约 5–22 秒。</p>
+  <div class="tablewrap"><table>
+    <tr><th>时间</th><th>段落</th><th>视频实际出现的内容</th></tr>
+    <tr><td>0:00–0:42</td><td>开场</td><td>程序化洞穴不是美术摆的；片头用 <code>SEED: 2137</code> 演示同种子两次生成完全相同的地图（0:27–0:36）。</td></tr>
+    <tr><td>0:43–2:48</td><td>元胞自动机</td><td>45% 墙 / 55% 地板（1:00）；数 8 邻域；墙 ≥4 保持、地板 ≥5 变墙（1:12–1:24）；迭代出洞穴（1:30–1:42）；“4-5 规则”（1:48）；单一阈值 4 → 碎洞 → 走廊连接（2:00–2:21）；Brogue 实机（2:36–2:48）。</td></tr>
+    <tr><td>2:49–4:38</td><td>房间 / 模板</td><td>Spelunky：4×4 网格、入口顶 / 出口底（3:12–3:20），只左/右/下的黄金路径（3:20–3:38），路径确定后才填模板（3:39–3:45）；“先保证路径，再随机装饰”（3:45–3:57）；Gungeon 手工房间按战斗/陷阱/隐藏/Boss 分类（3:57–4:29）。</td></tr>
+    <tr><td>4:39–5:28</td><td>BSP</td><td>大矩形代表整层；随机横/竖切半，递归到房间大小（4:42–5:00）；叶节点放房间（5:00–5:08）；相邻房间连走廊（5:08–5:12）；视频总结：不重叠、整洁易连接（5:12–5:22）。</td></tr>
+    <tr><td>5:29–5:41</td><td>醉汉漫步</td><td>挖掘者在网格上随机跌撞，边走边挖出蜿蜒的有机隧道；名字就是 Drunkard's Walk。</td></tr>
+    <tr><td>5:42–6:11</td><td>更复杂的例子</td><td>Dwarf Fortress 模拟地质/文明/历史（5:42–5:53）；Caves of Qud 用 WFC 等算法生成地图，并生成历史、冲突、传记、派系恩怨（5:54–6:11）。</td></tr>
+    <tr><td>6:12–6:24</td><td>工具箱</td><td>程序化生成不是“一个秘密算法”；每个开发者按想要的手感选工具。</td></tr>
+    <tr><td>6:25–7:07</td><td>Procedural Oatmeal</td><td>Kate Compton 的“程序化燕麦粥”：一千碗技术上不同的燕麦粥，体验仍是燕麦粥；关键在少量聪明的选择 + 开发者的手。</td></tr>
+    <tr><td>7:08–7:31</td><td>结尾</td><td>订阅、系列视频、下期预告。</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="card ok"><h4>确认是视频内容</h4><p>CA / 4-5 规则 / Brogue；Spelunky 4×4 / 黄金路径 / 模板 / Gungeon 房间分类；BSP 切分、房间、走廊、不重叠；醉汉漫步；WFC 仅在 Caves of Qud 被点名；Procedural Oatmeal。</p></div>
+    <div class="card warn"><h4>视频没有的内容</h4><p>连通性 BFS、种子流拆分、难度预算、锁钥/图结构、模板连接口元数据、WFC 原理、具体引擎实现。这些是本文扩展，均会标注。</p></div>
+  </div>
+  <p class="cap">采集：yt-dlp 拉流；B 站无 CC 字幕；ffmpeg 全程 1/3s + 关键段 1s 抽帧；原片自动字幕交叉核对。详见 <a href="#s10">来源</a>。</p>
+</section>
+
+<section id="s2" data-track="algo">
+  <div class="sec-head"><span class="sec-num">02</span><h2>元胞自动机：4-5 规则</h2><span class="sec-note">视频 0:43–2:48 · Brogue 同族</span></div>
+  <p class="lead">一句话：<b>随机撒墙，数邻居，迭代到洞穴出现。</b>墙格子周围墙 ≥4 就保留，地板格子周围墙 ≥5 才变成墙。这个不对称的 4/5 阈值，是它能产出连通洞穴而不是纯噪声的关键之一。</p>
+  <div class="demo">
+    <div class="demo-head">
+      <div><span class="tag gold">LIVE · 4-5 RULE</span><p class="t">拖动参数，直接看拓扑变化</p><p class="d">60×30 网格；越界按墙处理；同种子可复现。默认参数复刻视频的 45% / 4-5 / 5 次迭代。</p></div>
+      <div class="metrics" id="caMetrics"></div>
+    </div>
+    <canvas id="caCanvas" width="900" height="450" aria-label="元胞自动机生成的可交互洞穴地图"></canvas>
+    <div class="controls">
+      <label>种子 <input id="caSeed" type="number" value="2137" min="0" max="999999" step="1"></label>
+      <label>墙比例 <input id="caWall" type="range" min="35" max="55" value="45"><output id="caWallOut">45%</output></label>
+      <label>迭代 <input id="caIter" type="range" min="0" max="8" value="5"><output id="caIterOut">5</output></label>
+      <label>规则
+        <select id="caMode">
+          <option value="45" selected>4-5 规则（视频）</option>
+          <option value="44">单一阈值 4（会碎）</option>
+        </select>
+      </label>
+      <button class="btn primary" id="caBtn" type="button">重生成</button>
+      <button class="btn" id="caRepair" type="button">修复连通</button>
+    </div>
+    <div class="legend"><span><span class="sw gold"></span>起点 / 终点</span><span><span class="sw" style="background:var(--cell-floor)"></span>地板</span><span><span class="sw" style="background:var(--wall);border:1px solid var(--line-strong)"></span>墙</span><span class="inline-note">同一 seed 的生成结果固定</span></div>
+    <p class="cap" id="caNote">默认 4-5 规则通常能形成连通洞穴；切到“单一阈值 4”会看到视频 2:00–2:21 的碎洞现象，点“修复连通”用走廊连接。</p>
+  </div>
+  <div class="cards">
+    <div class="card"><h4>初始化</h4><div class="t">45% 墙 / 55% 地板</div><p>视频的起点。低于 40% 容易过大空地，高于 50% 容易碎洞；45–48% 是常用区间。</p></div>
+    <div class="card"><h4>更新</h4><div class="t">8 邻域，同时更新</div><p>墙 ≥4 保留；地板 ≥5 才变墙。必须用旧网格计算、写入新网格，否则顺序会影响结果。</p></div>
+    <div class="card"><h4>终止</h4><div class="t">形态稳定，不是固定次数</div><p>视频演示了 1 次几乎不变、多次后洞穴出现；4–6 次是经验起点，最终看形态。</p></div>
+    <div class="card warn"><h4>阈值实验</h4><div class="t">4/4 → 碎洞</div><p>视频把规则换成单一阈值 4，得到散落小块，再用走廊连接。阈值直接决定拓扑。</p></div>
+  </div>
+<pre><span class="copy">复制</span><b>// 与视频画面一致的伪代码</b>
+<b>for</b> y <b>in</b> height:
+  <b>for</b> x <b>in</b> width:
+    n = count_wall_neighbors_8(grid, x, y)   <span class="c">// 越界按墙</span>
+    <b>if</b> grid[y][x] == WALL:
+      next[y][x] = (n &gt;= 4) ? WALL : FLOOR
+    <b>else</b>:
+      next[y][x] = (n &gt;= 5) ? WALL : FLOOR
+grid = next
+<span class="c">// 重复到形态稳定；再做 BFS 连通验证/修复</span></pre>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>视频 / 建议</th><th>调参直觉</th></tr>
+    <tr><td>初始墙比例</td><td>45%</td><td>低 → 大空地；高 → 碎洞/封闭。先固定 45% 再动阈值。</td></tr>
+    <tr><td>墙保留阈值</td><td>4</td><td>越小墙越顽固，洞穴越封闭、越碎。</td></tr>
+    <tr><td>地板变墙阈值</td><td>5</td><td>越保守，地板越不容易被吞；4/5 的不对称是“4-5 规则”的名字来源。</td></tr>
+    <tr><td>迭代次数</td><td>4–6 次</td><td>1–2 次噪声还在；太多会过度平滑，洞穴变大变圆。</td></tr>
+    <tr><td>邻域 / 边界</td><td>8 邻域 / 越界算墙</td><td>换 4 邻域会更方正；边界算地板会吃掉地图边缘。</td></tr>
+  </table></div>
+  <details class="fold"><summary>常见坑与适合的玩法</summary><div class="body">
+    <ul class="clean">
+      <li><b>只迭代一次</b>：看起来没效果；重复到稳定。</li>
+      <li><b>生成与寻路邻域不一致</b>：8 邻域生成、4 邻域寻路，会“看起来连着但走不过去”。</li>
+      <li><b>不清理小碎洞</b>：1–7 格的地板像噪点；可以填回墙或连接。</li>
+      <li><b>不做 BFS</b>：4-5 规则通常不错，但不保证 100% 连通。</li>
+      <li><b>适合</b>：洞穴探索、生存、Brogue 式传统 Roguelike。<b>不适合</b>：需要严格房间/门/锁结构的战术关卡。</li>
+    </ul>
+  </div></details>
+</section>
+
+<section id="s3" data-track="algo">
+  <div class="sec-head"><span class="sec-num">03</span><h2>房间 + 走廊 + 模板：手工感是怎么来的</h2><span class="sec-note">视频 2:49–4:38 · Spelunky / Gungeon</span></div>
+  <p class="lead">视频的答案不是“更复杂的噪声”，而是 <b>换一种生成顺序</b>：先铺 4×4 房间槽位，入口在顶、出口在底；只允许左/右/下走出一条保证存在的黄金路径；<b>路径确定之后</b>才从模板库填房间。模板提供“像人设计”的房间，随机只负责选哪个、怎么转、里面撒什么。</p>
+  <div class="demo">
+    <div class="demo-head">
+      <div><span class="tag">LIVE · GOLDEN PATH</span><p class="t">先路径，后房间，最后装饰</p><p class="d">4×4 槽位；入口顶行，出口底行；只左/右/下。切步骤看生成顺序。</p></div>
+      <div class="metrics" id="pathMetrics"></div>
+    </div>
+    <svg id="pathSvg" viewBox="0 0 480 500" role="img" aria-label="Spelunky 式黄金路径与房间模板示意图"></svg>
+    <div class="controls">
+      <label>种子 <input id="pathSeed" type="number" value="2137" min="0" max="999999" step="1"></label>
+      <button class="btn primary" id="pathBtn" type="button">重新生成</button>
+      <button class="btn active" data-path-step="1" type="button">1 路径</button>
+      <button class="btn" data-path-step="2" type="button">2 房间</button>
+      <button class="btn" data-path-step="3" type="button">3 装饰</button>
+    </div>
+    <div class="legend"><span><span class="sw gold"></span>黄金路径</span><span><span class="sw"></span>房间</span><span><span class="sw warn"></span>模板装饰</span><span class="inline-note">出口始终在底行：路径保证可达</span></div>
+    <p class="cap">示意图只表达生成顺序，不是 Spelunky 的真实美术/模板；房间连接口和装饰是本文落地扩展。</p>
+  </div>
+  <div class="grid2">
+    <div class="card"><h4>Spelunky</h4><div class="t">4×4 + 黄金路径</div><p>入口顶、出口底；路径只左/右/下，保证从入口走到出口。路径存在后才填房间模板，模板再按连接方向选门。</p></div>
+    <div class="card"><h4>Enter the Gungeon</h4><div class="t">手工房间池</div><p>每个房间手工设计 + 少量随机，按战斗/陷阱/隐藏/Boss 分类；生成器只决定这一局选哪些、放楼层哪里。</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>建议起点</th><th>直觉</th></tr>
+    <tr><td>房间网格</td><td>4×4（视频）</td><td>4×4–6×6 适合单层；太大路径长、内容空。</td></tr>
+    <tr><td>黄金路径</td><td>每行 1–3 个房间，只左/右/下</td><td>允许“上”会绕回/死循环；主路径要唯一、清晰。</td></tr>
+    <tr><td>模板池</td><td>12–30 个 / 类型</td><td>太少重复，太多质量难控；按类型和深度分组。</td></tr>
+    <tr><td>连接口</td><td>N/E/S/W 元数据</td><td>模板必须声明门位；不匹配就旋转或换模板。</td></tr>
+    <tr><td>支线概率</td><td>20–40%</td><td>支线要能回到主路径或形成环；不能是死胡同陷阱。</td></tr>
+    <tr><td>模板内随机</td><td>0–3 障碍 + 1–2 组敌人</td><td>保持手工感；绝不能堵住唯一门/通道。</td></tr>
+  </table></div>
+  <div class="warnbox"><b>常见坑：</b>门位不匹配出死胡同；装饰堵住唯一通道；路径太直像电梯；先填房间再找路导致出口被堵；同一模板连续出现；Boss 房旁边直接接高难战斗房。</div>
+  <div class="okbox"><b>核心原则（视频 3:45–3:57）：</b>先保证路径，再随机装饰。把“可达性”从随机里拿出来，交给构造。</div>
+</section>
+
+<section id="s4" data-track="algo">
+  <div class="sec-head"><span class="sec-num">04</span><h2>BSP：把矩形切成一层楼</h2><span class="sec-note">视频 4:39–5:28</span></div>
+  <p class="lead">BSP 的名字吓人，做法很简单：<b>拿一个大矩形，随机横切/竖切，递归切到房间大小；每个叶节点放一个房间；再用走廊连接。</b>视频总结它自动保证两件事：房间不重叠、布局整洁易连接。</p>
+  <div class="demo">
+    <div class="demo-head">
+      <div><span class="tag">LIVE · BSP</span><p class="t">切分线 / 房间 / 走廊分开看</p><p class="d">64×32 格；最小叶节点 8 格；最近邻生成树连接，保证连通。</p></div>
+      <div class="metrics" id="bspMetrics"></div>
+    </div>
+    <svg id="bspSvg" viewBox="0 0 640 320" role="img" aria-label="BSP 切分、房间与走廊示意图"></svg>
+    <div class="controls">
+      <label>种子 <input id="bspSeed" type="number" value="2137" min="0" max="999999" step="1"></label>
+      <button class="btn primary" id="bspBtn" type="button">重生成</button>
+      <label><input id="bspSplits" type="checkbox" checked> 切分线</label>
+      <label><input id="bspRooms" type="checkbox" checked> 房间</label>
+      <label><input id="bspCorr" type="checkbox" checked> 走廊</label>
+    </div>
+    <div class="legend"><span><span class="sw warn"></span>切分线</span><span><span class="sw"></span>房间</span><span><span class="sw gold"></span>走廊 / 起终点</span></div>
+    <p class="cap">BSP 保证“房间不重叠”；全图连通仍需要连接策略 + BFS 验证（这是本文扩展，视频没有展开）。</p>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>建议起点</th><th>直觉</th></tr>
+    <tr><td>最小叶节点</td><td>8–12 格</td><td>太小切出细条；太大房间少、重复感强。</td></tr>
+    <tr><td>最大深度</td><td>4–6</td><td>控制房间数量；越深房间越多。</td></tr>
+    <tr><td>切分比例</td><td>0.35–0.65</td><td>避免极薄长条；太居中则布局太规整。</td></tr>
+    <tr><td>房间内边距 / 最小尺寸</td><td>1–2 格 / 3×3</td><td>留墙，避免房间贴边；小于 3×3 基本不可玩。</td></tr>
+    <tr><td>连接方式</td><td>最近邻生成树 / BSP 兄弟</td><td>最近邻简单且连通；兄弟连接更有层次感。</td></tr>
+    <tr><td>走廊宽度</td><td>1–2 格</td><td>1 格紧凑，2 格更适合战斗/寻路。</td></tr>
+  </table></div>
+  <details class="fold"><summary>常见坑与适合的玩法</summary><div class="body">
+    <ul class="clean">
+      <li>切出 1 格宽长条：用最小叶节点和切分比例限制。</li>
+      <li>只连 BSP 兄弟，漏掉跨子树连接：BFS 会发现多个连通块。</li>
+      <li>走廊直穿房间中心，破坏房间形状：在房间边缘开门或沿墙走。</li>
+      <li>每局都像同一张图：加入随机切分、尺寸变化、非矩形房间。</li>
+      <li><b>适合</b>：结构化地牢、战术/回合制 Roguelike。<b>不适合</b>：追求有机洞穴的游戏。</li>
+    </ul>
+  </div></details>
+</section>
+
+<section id="s5" data-track="algo">
+  <div class="sec-head"><span class="sec-num">05</span><h2>醉汉漫步：最便宜的有机隧道</h2><span class="sec-note">视频 5:29–5:41</span></div>
+  <p class="lead">一个挖掘者在网格上随机选方向、走一步、挖一步。走久了就形成蜿蜒、不规则、像天然洞穴的隧道。视频只给了概念和两段可视化；终止条件、刷子大小、多个挖掘者都是落地扩展。</p>
+  <div class="demo">
+    <div class="demo-head">
+      <div><span class="tag">LIVE · DRUNKARD'S WALK</span><p class="t">看挖掘者把地图“走”出来</p><p class="d">3×3 刷子；目标 40% 地板；结束后用 BFS 最远点对选起点/终点。</p></div>
+      <div class="metrics" id="dwMetrics"></div>
+    </div>
+    <canvas id="dwCanvas" width="900" height="450" aria-label="醉汉漫步生成洞穴的动画"></canvas>
+    <div class="controls">
+      <label>种子 <input id="dwSeed" type="number" value="2137" min="0" max="999999" step="1"></label>
+      <label>目标地板 <input id="dwTarget" type="range" min="25" max="55" value="40"><output id="dwTargetOut">40%</output></label>
+      <button class="btn primary" id="dwPlay" type="button">播放</button>
+      <button class="btn" id="dwFinish" type="button">一键完成</button>
+      <button class="btn" id="dwReset" type="button">重生成</button>
+    </div>
+    <div class="legend"><span><span class="sw gold"></span>挖掘者 / 起终点</span><span><span class="sw" style="background:var(--cell-floor)"></span>已挖开</span><span><span class="sw" style="background:var(--wall);border:1px solid var(--line-strong)"></span>墙</span></div>
+    <p class="cap">注意：Dwarf Fortress / Caves of Qud 是视频后面举的“更复杂系统”例子，视频并没有说它们使用醉汉漫步。</p>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>建议起点</th><th>直觉</th></tr>
+    <tr><td>目标地板比例</td><td>35–45%</td><td>太低洞穴太小；太高变成大空洞。</td></tr>
+    <tr><td>最大步数</td><td>1000–3000</td><td>防止死循环；按目标比例提前停。</td></tr>
+    <tr><td>刷子大小</td><td>1×1 / 3×3</td><td>1×1 隧道细，3×3 更像洞穴；3×3 更容易连通。</td></tr>
+    <tr><td>边界偏置</td><td>靠近边缘向中心</td><td>否则挖掘者贴边挖，形状难看。</td></tr>
+    <tr><td>多挖掘者</td><td>2–4 个 + 连接</td><td>增加洞室，但各挖各的会形成孤岛；必须 BFS + 连走廊。</td></tr>
+  </table></div>
+  <div class="warnbox"><b>常见坑：</b>多挖掘者形成多个孤岛；没有目标比例导致在小区域打转；贴边/贴角；1 格隧道太挤；每局形状相似。</div>
+</section>
+
+<section id="s6" data-track="algo">
+  <div class="sec-head"><span class="sec-num">06</span><h2>视频只点名、没有展开的东西</h2><span class="sec-note">防幻觉边界</span></div>
+  <p class="lead">视频 5:54–6:11 提到 Caves of Qud 用 <b>WFC</b> 等复杂算法生成地图，也在结尾 7:00 让一批算法标签一闪而过。它们都没有被讲解。下面只标注“是什么/何时考虑”，不写成教程。</p>
+  <div class="cards">
+    <div class="card"><h4>只提到名字</h4><div class="t">WFC</div><p>Caves of Qud 的例子里出现；视频没有讲约束传播、熵、回溯。适合需要“局部规则拼接、整体风格统一”的瓦片地图。</p><span class="tag warn">未展开</span></div>
+    <div class="card"><h4>只作为例子</h4><div class="t">Dwarf Fortress</div><p>模拟地质、文明、数千年历史；重点是“程序化不止地图”，不是某个地形算法。</p><span class="tag warn">未展开</span></div>
+    <div class="card"><h4>结尾一闪而过</h4><div class="t">更大的工具箱</div><p>Poisson Disk、Delaunay、L-System、Perlin Noise、Marching Squares/Cubes、WFC、Simplex Noise；视频没有逐一讲解。</p><span class="tag warn">未展开</span></div>
+  </div>
+  <div class="warnbox"><b>特别提醒：</b>视频全片没有讲锁钥 / 图结构 / 任务依赖。Gungeon 的小地图是房间图的可视化，但视频没有展开锁钥算法。若要做 Isaac/Gungeon 式关卡，那属于“地形 + 关卡图 + 节奏”的另一层，详见 <a href="#s7">验证 / 难度</a> 的扩展说明。</div>
+  <div class="tablewrap"><table>
+    <tr><th>算法</th><th>视频时间</th><th>拓扑</th><th>视频给出的保证</th><th>最适合</th><th>主要风险</th></tr>
+    <tr><td>CA 4-5</td><td>0:43–2:48</td><td>有机洞穴</td><td>迭代后形成洞穴（非严格保证）</td><td>洞穴探索 / Brogue</td><td>连通性、小碎洞</td></tr>
+    <tr><td>黄金路径 + 模板</td><td>2:49–4:38</td><td>房间图</td><td>入口→出口路径由构造保证</td><td>平台跳跃 / 房间制</td><td>门位不匹配、模板重复</td></tr>
+    <tr><td>BSP</td><td>4:39–5:28</td><td>矩形房间</td><td>房间不重叠、易连接</td><td>结构化地牢 / 战术</td><td>连通策略、切出细条</td></tr>
+    <tr><td>醉汉漫步</td><td>5:29–5:41</td><td>有机隧道</td><td>无（概念演示）</td><td>洞穴 / 快速原型</td><td>孤岛、贴边、形状重复</td></tr>
+  </table></div>
+</section>
+
+<section id="s7" data-track="impl">
+  <div class="sec-head"><span class="sec-num">07</span><h2>把“随机”变成“可玩”：验证、种子、难度</h2><span class="sec-note">本文扩展 · 视频未讲</span></div>
+  <p class="lead">视频停在“算法能生成地图”。真实项目还要多走三步：<b>验证可玩性、锁定可复现性、控制难度曲线</b>。这三件事与算法无关，是产品底线。</p>
+  <div class="flow">
+    <div class="step"><div class="n">01</div><div class="t">生成</div><div class="d">CA / 路径 / BSP / 醉汉漫步，所有随机走注入 RNG。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">02</div><div class="t">BFS 验证</div><div class="d">连通块、起点→出口、可交互物可达、路径长度。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">03</div><div class="t">修复 / 重试</div><div class="d">填小碎块、连走廊、换种子；设置重试上限。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">04</div><div class="t">装饰 / 预算</div><div class="d">模板、敌人、宝藏、锁钥；按深度预算，不随机撒。</div></div>
+  </div>
+  <h3>7.1 连通性检查清单</h3>
+  <div class="tablewrap"><table>
+    <tr><th>检查</th><th>做法</th><th>不通过怎么办</th></tr>
+    <tr><td>连通块数量</td><td>4 邻域 flood fill 所有地板</td><td>填小碎块 / 连走廊 / 换种子</td></tr>
+    <tr><td>起点→出口</td><td>从起点 BFS，看终点是否在距离表里</td><td>强制把出口放到最大连通块</td></tr>
+    <tr><td>可交互物可达</td><td>钥匙、宝箱、Boss 门逐个 BFS</td><td>移动道具或补走廊</td></tr>
+    <tr><td>路径长度</td><td>起点→出口最短距离</td><td>太短加支线；太长加捷径</td></tr>
+    <tr><td>战斗空间</td><td>检查走廊宽度 / 房间面积</td><td>拓宽走廊或限制大型敌人</td></tr>
+  </table></div>
+<pre><span class="copy">复制</span><b>// BFS 连通验证（4 邻域，地板=0）</b>
+seen = {start}
+queue = [start]
+<b>while</b> queue:
+  x, y = queue.pop(0)
+  <b>for</b> dx, dy <b>in</b> [(1,0),(-1,0),(0,1),(0,-1)]:
+    nx, ny = x+dx, y+dy
+    <b>if</b> in_bounds(nx, ny) <b>and</b> grid[ny][nx] == FLOOR <b>and</b> (nx,ny) <b>not in</b> seen:
+      seen.add((nx,ny)); queue.append((nx,ny))
+assert exit in seen          <span class="c">// 出口可达</span>
+assert len(floor_components(grid)) == 1  <span class="c">// 只有一个连通块</span></pre>
+  <h3>7.2 种子与可复现性</h3>
+  <div class="grid2">
+    <div class="card ok"><h4>视频片头</h4><div class="t">SEED: 2137</div><p>同一 seed 两次生成 100% 相同的地图（0:27–0:36）。机制本身属于前作，本片只做演示。</p></div>
+    <div class="card"><h4>落地策略</h4><div class="t">随机流拆分</div><p>布局、敌人、掉落、装饰各用独立 RNG；否则多放一个敌人就会让整张地图变样。</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>规则</th><th>原因</th></tr>
+    <tr><td>禁止全局随机 / 未播种 RNG</td><td>同 seed 无法复现，QA 无法回放。</td></tr>
+    <tr><td>记录 seed + 算法版本 + 参数</td><td>存档、回放、bug 复现都靠它。</td></tr>
+    <tr><td>独立 RNG 流</td><td>布局变化不应影响敌人/掉落；反之亦然。</td></tr>
+    <tr><td>黄金种子测试</td><td>固定 seed 列表，断言地图 hash / 连通性 / 距离不漂移。</td></tr>
+    <tr><td>跨引擎锁版本</td><td>浮点、取整、哈希顺序可能不同；用整数 RNG + 黄金样本。</td></tr>
+  </table></div>
+  <h3>7.3 难度曲线：按预算，不按随机</h3>
+  <p>视频没有讲难度曲线。落地时建议给每个深度一个 <b>预算区间</b>，并用“安全房/商店”形成呼吸节奏；路径越长，补给越多。</p>
+  <svg class="curve" viewBox="0 0 720 260" role="img" aria-label="按深度递增的敌人预算与房间数量曲线">
+    <g stroke="var(--line)" stroke-width="1">
+      <line x1="60" y1="210" x2="690" y2="210"/><line x1="60" y1="210" x2="60" y2="30"/>
+      <line x1="60" y1="165" x2="690" y2="165" stroke-dasharray="3 6"/><line x1="60" y1="120" x2="690" y2="120" stroke-dasharray="3 6"/>
+      <line x1="60" y1="75" x2="690" y2="75" stroke-dasharray="3 6"/>
+    </g>
+    <g class="svg-label">
+      <text x="18" y="214">0</text><text x="18" y="169">8</text><text x="18" y="124">16</text><text x="18" y="79">24</text>
+      <text x="64" y="232">D1</text><text x="198" y="232">D2</text><text x="332" y="232">D3</text><text x="466" y="232">D4</text><text x="600" y="232">D5</text>
+      <text x="610" y="252">深度</text><text x="18" y="24">预算</text>
+    </g>
+    <polyline points="90,188 224,171 358,151 492,128 626,100" fill="none" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+    <polyline points="90,180 224,166 358,152 492,140 626,124" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 5"/>
+    <g fill="var(--gold)">
+      <circle cx="90" cy="188" r="4"/><circle cx="224" cy="171" r="4"/><circle cx="358" cy="151" r="4"/><circle cx="492" cy="128" r="4"/><circle cx="626" cy="100" r="4"/>
+    </g>
+    <g fill="var(--teal)">
+      <circle cx="90" cy="180" r="4"/><circle cx="224" cy="166" r="4"/><circle cx="358" cy="152" r="4"/><circle cx="492" cy="140" r="4"/><circle cx="626" cy="124" r="4"/>
+    </g>
+    <g class="svg-label">
+      <text x="90" y="176" fill="var(--gold)">4–6</text><text x="224" y="159" fill="var(--gold)">6–9</text><text x="358" y="139" fill="var(--gold)">9–13</text><text x="492" y="116" fill="var(--gold)">12–17</text><text x="626" y="88" fill="var(--gold)">16–22</text>
+      <text x="90" y="168" fill="var(--teal)">6–8</text><text x="224" y="154" fill="var(--teal)">7–9</text><text x="358" y="140" fill="var(--teal)">8–10</text><text x="492" y="128" fill="var(--teal)">8–12</text><text x="626" y="112" fill="var(--teal)">9–12</text>
+    </g>
+    <g class="svg-label" font-size="12">
+      <text x="560" y="36" fill="var(--gold)">敌人预算</text>
+      <text x="560" y="54" fill="var(--teal)">房间数</text>
+    </g>
+  </svg>
+  <div class="tablewrap"><table>
+    <tr><th>深度</th><th>敌人预算</th><th>模板权重</th><th>特殊房</th></tr>
+    <tr><td>D1</td><td>4–6</td><td>基础战斗 80% / 陷阱 10% / 商店 10%</td><td>教学房、第一把钥匙</td></tr>
+    <tr><td>D2</td><td>6–9</td><td>基础 65% / 陷阱 20% / 隐藏 15%</td><td>商店、精英</td></tr>
+    <tr><td>D3</td><td>9–13</td><td>基础 50% / 陷阱 25% / 隐藏 25%</td><td>锁钥门、分支路线</td></tr>
+    <tr><td>D4</td><td>12–17</td><td>基础 40% / 陷阱 30% / 隐藏 30%</td><td>精英、Boss 前安全房</td></tr>
+    <tr><td>D5</td><td>16–22</td><td>基础 30% / 陷阱 35% / 隐藏 35%</td><td>Boss、奖励房</td></tr>
+  </table></div>
+  <div class="warnbox"><b>锁钥 / 图结构（视频完全没讲）：</b>先生成房间连通图，再选生成树作主路径；钥匙放在锁的祖先区域；用 BFS/拓扑排序验证“拿到钥匙后锁后区域可达”。不要把地形算法当成关卡节奏算法。</div>
+</section>
+
+<section id="s8" data-track="impl">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Godot 落地清单：最小实现顺序</h2><span class="sec-note">Godot 4.6 · 代码骨架</span></div>
+  <p class="lead">不要一上来做 WFC。先把一种拓扑跑通，再加验证与装饰。下面的顺序可以让每一步都有可验收的结果。</p>
+  <div class="tablewrap"><table>
+    <tr><th>阶段</th><th>做什么</th><th>验收</th></tr>
+    <tr><td>1</td><td>网格 + 瓦片枚举 + 种子 RNG 封装</td><td>同 seed 两次生成一致</td></tr>
+    <tr><td>2</td><td>先实现一种拓扑：CA 洞穴（最快出效果）或黄金路径（最像手工关）</td><td>看到一张可走地图</td></tr>
+    <tr><td>3</td><td>BFS 验证 + 连通修复 + 起点/出口</td><td>所有可玩种子 100% 连通</td></tr>
+    <tr><td>4</td><td>房间模板 / 装饰 / 敌人；模板声明连接口与不可占用格</td><td>装饰不堵路</td></tr>
+    <tr><td>5</td><td>难度预算、房间类型权重、特殊房</td><td>3 层难度曲线可复现</td></tr>
+    <tr><td>6</td><td>调试叠层：连通块着色、路径、房间编号、seed 显示</td><td>出问题能定位</td></tr>
+    <tr><td>7</td><td>再考虑 BSP / 醉汉漫步 / 多算法组合</td><td>每种都有黄金种子测试</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="card"><h4>地图</h4><div class="t">TileMapLayer</div><p>Godot 4.3+ 用 <code>TileMapLayer.set_cell(coords, source_id, atlas_coords, alternative_tile)</code>；墙/地板/门/装饰分图层。</p></div>
+    <div class="card"><h4>随机</h4><div class="t">RandomNumberGenerator</div><p><code>var rng := RandomNumberGenerator.new(); rng.seed = level_seed</code>；不要用全局 <code>randi()</code>。</p></div>
+    <div class="card"><h4>验证</h4><div class="t">BFS / AStarGrid2D</div><p>连通性用简单 BFS 最直接；寻路/巡逻可用 <code>AStarGrid2D</code>；两者邻域规则必须一致。</p></div>
+    <div class="card"><h4>模板</h4><div class="t">PackedScene / Resource</div><p>每个模板导出 <code>connectors: Array[String]</code>（N/E/S/W）、<code>blocked_cells</code>、<code>room_type</code>、<code>weight</code>。</p></div>
+  </div>
+<pre><span class="copy">复制</span><b># 最小 CA（GDScript 伪代码）</b>
+const WALL := 1
+const FLOOR := 0
+@export var level_seed: int = 2137
+@export var width := 60
+@export var height := 30
+
+func generate() -&gt; Array:
+    var rng := RandomNumberGenerator.new()
+    rng.seed = level_seed
+    var grid := []
+    for y in height:
+        var row := []
+        for x in width:
+            row.append(WALL if rng.randf() &lt; 0.45 else FLOOR)
+        grid.append(row)
+
+    for iteration in 5:
+        var next := grid.duplicate(true)
+        for y in range(1, height - 1):
+            for x in range(1, width - 1):
+                var n := count_wall_neighbors_8(grid, x, y)
+                if grid[y][x] == WALL:
+                    next[y][x] = WALL if n &gt;= 4 else FLOOR
+                else:
+                    next[y][x] = WALL if n &gt;= 5 else FLOOR
+        grid = next
+    return grid</pre>
+<pre><span class="copy">复制</span><b># 最小 BFS 验证（GDScript 伪代码）</b>
+func reachable(grid: Array, start: Vector2i) -&gt; Dictionary:
+    var seen := {start: true}
+    var queue: Array[Vector2i] = [start]
+    while not queue.is_empty():
+        var p: Vector2i = queue.pop_front()
+        for d in [Vector2i.RIGHT, Vector2i.LEFT, Vector2i.DOWN, Vector2i.UP]:
+            var q: Vector2i = p + d
+            if q.x &lt; 0 or q.y &lt; 0 or q.x &gt;= width or q.y &gt;= height:
+                continue
+            if grid[q.y][q.x] == FLOOR and not seen.has(q):
+                seen[q] = true
+                queue.append(q)
+    return seen
+
+func validate(grid: Array, start: Vector2i, exit: Vector2i) -&gt; bool:
+    var seen := reachable(grid, start)
+    return seen.has(exit) and floor_components(grid).size() == 1</pre>
+  <div class="okbox"><b>验收建议：</b><code>godot --headless -s tests/test_dungeon.gd</code>；固定 seed 列表，断言连通、出口可达、房间不重叠、同 seed hash 一致。改算法后先跑黄金种子，再看截图。</div>
+  <p class="cap">可运行的最小 Python 版本：<a href="procedural-generation-demos/generators.py">generators.py</a> · <a href="procedural-generation-demos/verify.py">verify.py</a>。完整讲义：<a href="procedural-generation-teardown.md">procedural-generation-teardown.md</a>。</p>
+</section>
+
+<section id="s9" data-track="design">
+  <div class="sec-head"><span class="sec-num">09</span><h2>Procedural Oatmeal：变化不等于体验</h2><span class="sec-note">视频 6:25–7:07 · Kate Compton</span></div>
+  <p class="lead">视频最后把话题从算法拉到设计：你可以用数学生成 <b>一千碗技术上各不相同</b> 的燕麦粥，但吃起来的体验仍然只是燕麦粥。<b>纸面上的多样性，如果体验上没有区别，就没有意义。</b></p>
+  <div class="bowls">
+    <div class="bowl"><svg viewBox="0 0 220 130" role="img" aria-label="抽象的燕麦粥碗 A"><path d="M25 55 Q110 150 195 55" fill="none" stroke="var(--line-strong)" stroke-width="3"/><path d="M25 55 Q110 62 195 55" fill="var(--paper-2)" stroke="var(--line-strong)" stroke-width="2"/><g fill="var(--gold)"><circle cx="65" cy="63" r="3"/><circle cx="82" cy="70" r="2.5"/><circle cx="101" cy="60" r="3"/><circle cx="120" cy="68" r="2"/><circle cx="139" cy="62" r="2.5"/><circle cx="155" cy="70" r="2"/></g><g fill="var(--teal)"><circle cx="73" cy="76" r="2"/><circle cx="110" cy="76" r="2.5"/><circle cx="146" cy="78" r="2"/></g></svg><div class="l">变体 A · 不同分布</div></div>
+    <div class="bowl"><svg viewBox="0 0 220 130" role="img" aria-label="抽象的燕麦粥碗 B"><path d="M25 55 Q110 150 195 55" fill="none" stroke="var(--line-strong)" stroke-width="3"/><path d="M25 55 Q110 62 195 55" fill="var(--paper-2)" stroke="var(--line-strong)" stroke-width="2"/><g fill="var(--gold)"><circle cx="58" cy="66" r="2"/><circle cx="77" cy="62" r="3"/><circle cx="96" cy="74" r="2.5"/><circle cx="118" cy="64" r="2"/><circle cx="137" cy="72" r="3"/><circle cx="160" cy="66" r="2"/></g><g fill="var(--teal)"><circle cx="86" cy="80" r="2.5"/><circle cx="128" cy="80" r="2"/><circle cx="150" cy="60" r="2"/></g></svg><div class="l">变体 B · 不同种子</div></div>
+    <div class="bowl"><svg viewBox="0 0 220 130" role="img" aria-label="抽象的燕麦粥碗 C"><path d="M25 55 Q110 150 195 55" fill="none" stroke="var(--line-strong)" stroke-width="3"/><path d="M25 55 Q110 62 195 55" fill="var(--paper-2)" stroke="var(--line-strong)" stroke-width="2"/><g fill="var(--gold)"><circle cx="60" cy="72" r="3"/><circle cx="88" cy="64" r="2"/><circle cx="108" cy="72" r="2.5"/><circle cx="127" cy="62" r="3"/><circle cx="147" cy="68" r="2"/><circle cx="165" cy="74" r="2.5"/></g><g fill="var(--teal)"><circle cx="79" cy="80" r="2"/><circle cx="118" cy="80" r="2.5"/><circle cx="155" cy="60" r="2"/></g></svg><div class="l">变体 C · 不同参数</div></div>
+  </div>
+  <div class="metrics"><span class="metric">技术上 <b>3/3</b> 不同</span><span class="metric">体验上 <b>同一种</b> 燕麦粥</span><span class="metric">差异是否可感知：<b>否</b></span></div>
+  <div class="cards" style="margin-top:12px">
+    <div class="card"><h4>为什么是个陷阱</h4><div class="t">变化只是必要不充分</div><p>随机种子、不同参数、不同布局，只能证明“不一样”；玩家感知不到差异，就等于没有内容。</p></div>
+    <div class="card ok"><h4>怎么做更好</h4><div class="t">少量聪明选择</div><p>手工锚点（Boss 房、地标、剧情）、节奏（安全房/高压房）、可读性（一眼看懂往哪走）、预算（难度曲线）。</p></div>
+    <div class="card"><h4>视频的落点</h4><div class="t">开发者的手</div><p>不是堆更多系统，而是选对框架、做对约束，让生成结果值得探索（7:00–7:07）。</p></div>
+  </div>
+  <div class="okbox"><b>检查单：</b>去掉 seed 后，玩家能描述这一局的不同吗？如果不能，先加“可感知的差异”，再加算法复杂度。</div>
+</section>
+
+<section id="s10" data-track="source">
+  <div class="sec-head"><span class="sec-num">10</span><h2>来源、方法与边界</h2><span class="sec-note">可核对 · 不复制素材</span></div>
+  <div class="tablewrap"><table>
+    <tr><th>来源</th><th>用途</th><th>备注</th></tr>
+    <tr><td><a href="https://www.bilibili.com/video/BV14Un16fEvz">B 站 BV14Un16fEvz</a></td><td>主对象；本文时间点</td><td>赛博门外憨 · 7:31 · 2026-10-23</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=4iBibkgpGeQ">Rogue's Den 原片</a></td><td>英文硬字幕 / 原片自动字幕交叉核对</td><td>How Do Roguelikes Actually Generate Their Levels? · 7:34</td></tr>
+    <tr><td>Brogue / Spelunky / Enter the Gungeon / Dwarf Fortress / Caves of Qud</td><td>视频中的案例</td><td>只做技术引用，不复制游戏素材</td></tr>
+    <tr><td>Derek Yu（Spelunky 作者）/ Dave Crooks（Gungeon 联合创始人）/ Kate Compton</td><td>视频提到的人物与观点</td><td>观点转述，不复制原文</td></tr>
+  </table></div>
+  <h3>采集与核对</h3>
+  <ul class="clean">
+    <li><code>yt-dlp 2026.08.19</code> 拉取 720p 视频与元数据；B 站 <code>x/player/v2</code> 的 <code>subtitle.subtitles = []</code>，没有 CC 字幕。</li>
+    <li>ffmpeg 全程 1/3s 抽帧，关键段 1s 抽帧；用画面硬字幕 + 原片自动字幕交叉核对。</li>
+    <li>时间点以 B 站版为准，±2s；原片章节因剪辑整体早约 5–20s（例如原片 BSP 4:17，B 站版 4:39）。</li>
+    <li>视频画面/音频/字幕原文未复制；HTML 图表为原创 SVG/Canvas；demo 为独立重写。</li>
+  </ul>
+  <div class="warnbox"><b>不确定性：</b>B 站版没有提供可下载字幕，本文依赖硬字幕与英文自动字幕；若需要逐字稿，应人工校对。视频没有讲的内容（连通性、种子策略、难度曲线、锁钥）已在正文标注为扩展。</div>
+  <div class="grid2">
+    <div class="card ok"><h4>确认讲了</h4><p>CA 4-5、阈值 4 实验、Brogue；Spelunky 4×4 / 黄金路径 / 模板、Gungeon 房间分类；BSP；醉汉漫步；WFC 仅点名；Procedural Oatmeal。</p></div>
+    <div class="card warn"><h4>没讲 / 只点名</h4><p>WFC 原理、锁钥/图结构、BFS 验证、难度曲线、种子流拆分、模板连接口元数据、具体引擎实现。</p></div>
+  </div>
+  <p class="cap">配套 Markdown：<a href="procedural-generation-teardown.md">docs/procedural-generation-teardown.md</a> · demo：<a href="procedural-generation-demos/verify.py">verify.py</a></p>
+</section>
+
+</main>
+
+<footer>
+  <p>从随机噪声到可玩地牢 · 2026-11 · 基于 B 站 BV14Un16fEvz 的技术拆解 · 同目录 Markdown 含完整参数表与 Godot 代码。</p>
+  <p>所有演示图均为原创；视频仅用于算法研究，未随页面分发原素材。</p>
+</footer>
+
+</div>
+
+<div class="fab">
+  <button id="themeBtn" type="button">主题：暗</button>
+  <button id="topBtn" type="button">顶部</button>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const root = document.documentElement;
+  const $ = (sel, scope) => (scope || document).querySelector(sel);
+  const $$ = (sel, scope) => Array.from((scope || document).querySelectorAll(sel));
+  const cssVar = (name) => getComputedStyle(root).getPropertyValue(name).trim();
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const redrawFns = [];
+
+  // -------------------------------------------------------------------------
+  // Deterministic RNG: same sequence in Python demos and JS demos
+
+  class XorShift32 {
+    constructor(seed) {
+      this.state = ((seed >>> 0) || 0x9E3779B9) >>> 0;
+    }
+    next() {
+      let x = this.state;
+      x = (x ^ (x << 13)) >>> 0;
+      x = (x ^ (x >>> 17)) >>> 0;
+      x = (x ^ (x << 5)) >>> 0;
+      this.state = x >>> 0;
+      return this.state;
+    }
+    randint(lo, hi) {
+      return lo + this.next() % (hi - lo + 1);
+    }
+    chance(percent) {
+      return this.next() % 100 < percent;
+    }
+    choice(arr) {
+      return arr[this.next() % arr.length];
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Grid utilities
+
+  const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+  function countFloor(grid) {
+    let n = 0;
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[0].length; x++) {
+        if (grid[y][x] === 0) n++;
+      }
+    }
+    return n;
+  }
+
+  function floorComponents(grid) {
+    const h = grid.length, w = grid[0].length;
+    const seen = Array.from({length: h}, () => Array(w).fill(false));
+    const comps = [];
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (grid[y][x] !== 0 || seen[y][x]) continue;
+        const comp = [];
+        const queue = [[x, y]];
+        seen[y][x] = true;
+        for (let i = 0; i < queue.length; i++) {
+          const cx = queue[i][0], cy = queue[i][1];
+          comp.push([cx, cy]);
+          for (const d of DIRS) {
+            const nx = cx + d[0], ny = cy + d[1];
+            if (nx >= 0 && ny >= 0 && nx < w && ny < h && !seen[ny][nx] && grid[ny][nx] === 0) {
+              seen[ny][nx] = true;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+        comps.push(comp);
+      }
+    }
+    comps.sort((a, b) => b.length - a.length);
+    return comps;
+  }
+
+  function bfsDistances(grid, start) {
+    const h = grid.length, w = grid[0].length;
+    const dist = Array.from({length: h}, () => Array(w).fill(-1));
+    if (!start || grid[start[1]][start[0]] !== 0) return dist;
+    const queue = [start];
+    dist[start[1]][start[0]] = 0;
+    for (let i = 0; i < queue.length; i++) {
+      const x = queue[i][0], y = queue[i][1];
+      for (const d of DIRS) {
+        const nx = x + d[0], ny = y + d[1];
+        if (nx >= 0 && ny >= 0 && nx < w && ny < h && dist[ny][nx] < 0 && grid[ny][nx] === 0) {
+          dist[ny][nx] = dist[y][x] + 1;
+          queue.push([nx, ny]);
+        }
+      }
+    }
+    return dist;
+  }
+
+  function farthestPair(grid) {
+    const comps = floorComponents(grid);
+    if (!comps.length) return null;
+    const seed = comps[0][0];
+    const d1 = bfsDistances(grid, seed);
+    let a = seed, best = -1;
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[0].length; x++) {
+        if (d1[y][x] > best) { best = d1[y][x]; a = [x, y]; }
+      }
+    }
+    const d2 = bfsDistances(grid, a);
+    let b = a; best = -1;
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[0].length; x++) {
+        if (d2[y][x] > best) { best = d2[y][x]; b = [x, y]; }
+      }
+    }
+    return {start: a, exit: b, distance: best};
+  }
+
+  function carveL(grid, a, b, rng) {
+    const before = countFloor(grid);
+    const ax = a[0], ay = a[1], bx = b[0], by = b[1];
+    if (rng.chance(50)) {
+      for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) grid[ay][x] = 0;
+      for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) grid[y][bx] = 0;
+    } else {
+      for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) grid[y][ax] = 0;
+      for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) grid[by][x] = 0;
+    }
+    return countFloor(grid) - before;
+  }
+
+  function connectComponents(grid, rng) {
+    let comps = floorComponents(grid);
+    let links = 0;
+    while (comps.length > 1) {
+      const main = comps[0];
+      const comp = comps[1];
+      let best = Infinity, bp = null;
+      for (const b of comp) {
+        for (const a of main) {
+          const d = Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+          if (d < best) { best = d; bp = [a, b]; }
+        }
+      }
+      if (!bp) break;
+      carveL(grid, bp[0], bp[1], rng);
+      links++;
+      comps = floorComponents(grid);
+    }
+    return links;
+  }
+
+  // -------------------------------------------------------------------------
+  // Canvas helpers
+
+  function drawCellGrid(canvas, grid, options) {
+    const opts = options || {};
+    const w = grid[0].length, h = grid.length, cell = 15;
+    canvas.width = w * cell;
+    canvas.height = h * cell;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = cssVar('--wall');
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const floorColor = cssVar('--cell-floor');
+    const floorColor2 = cssVar('--cell-floor-2');
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (grid[y][x] === 0) {
+          ctx.fillStyle = ((x * 7 + y * 11) % 17 === 0) ? floorColor2 : floorColor;
+          ctx.fillRect(x * cell, y * cell, cell, cell);
+        }
+      }
+    }
+    if (opts.start && opts.exit) {
+      drawMarker(ctx, opts.start, cell, cssVar('--gold'), 'S');
+      drawMarker(ctx, opts.exit, cell, cssVar('--gold'), 'E');
+    }
+    if (opts.walker) {
+      const wx = opts.walker[0], wy = opts.walker[1];
+      ctx.fillStyle = cssVar('--gold');
+      ctx.beginPath();
+      ctx.arc(wx * cell + cell / 2, wy * cell + cell / 2, Math.max(3, cell * 0.38), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawMarker(ctx, p, cell, color, label) {
+    const cx = p[0] * cell + cell / 2;
+    const cy = p[1] * cell + cell / 2;
+    const radius = Math.max(6, cell * 0.5);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = cssVar('--paper');
+    ctx.font = 'bold ' + Math.max(9, Math.floor(cell * 0.7)) + 'px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, cx, cy + 0.5);
+  }
+
+  // -------------------------------------------------------------------------
+  // CA demo
+
+  const caCanvas = $('#caCanvas');
+  const caState = { seed: 2137, wall: 45, iter: 5, mode: '45', grid: null, repairs: 0 };
+
+  function generateCAGrid(seed, wallPercent, iterations, mode) {
+    const W = 60, H = 30;
+    const rng = new XorShift32(seed);
+    let grid = Array.from({length: H}, () => Array(W).fill(1));
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        grid[y][x] = rng.chance(wallPercent) ? 1 : 0;
+      }
+    }
+    const keep = 4;
+    const become = mode === '44' ? 4 : 5;
+    for (let it = 0; it < iterations; it++) {
+      const next = grid.map(row => row.slice());
+      for (let y = 1; y < H - 1; y++) {
+        for (let x = 1; x < W - 1; x++) {
+          let n = 0;
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              const xx = x + dx, yy = y + dy;
+              if (xx < 0 || yy < 0 || xx >= W || yy >= H || grid[yy][xx] === 1) n++;
+            }
+          }
+          next[y][x] = grid[y][x] === 1 ? (n >= keep ? 1 : 0) : (n >= become ? 1 : 0);
+        }
+      }
+      grid = next;
+    }
+    return grid;
+  }
+
+  function renderCA() {
+    if (!caState.grid) return;
+    const comps = floorComponents(caState.grid);
+    const total = caState.grid.length * caState.grid[0].length;
+    const floor = countFloor(caState.grid);
+    const largest = comps.length ? comps[0].length : 0;
+    const fp = farthestPair(caState.grid);
+    drawCellGrid(caCanvas, caState.grid, fp ? {start: fp.start, exit: fp.exit} : {});
+    const compsText = comps.length === 1 ? '<b>1</b>' : '<b>' + comps.length + '</b>';
+    $('#caMetrics').innerHTML =
+      '<span class="metric">地板 <b>' + (floor / total * 100).toFixed(1) + '%</b></span>' +
+      '<span class="metric">连通块 ' + compsText + '</span>' +
+      '<span class="metric">最大连通区 <b>' + (floor ? (largest / floor * 100).toFixed(0) : 0) + '%</b></span>' +
+      (caState.repairs ? '<span class="metric">已修复 <b>' + caState.repairs + '</b> 条走廊</span>' : '');
+    $('#caRepair').disabled = comps.length <= 1;
+    $('#caRepair').textContent = comps.length <= 1 ? '已连通' : '修复连通';
+  }
+
+  function regenerateCA() {
+    caState.seed = parseInt($('#caSeed').value, 10) || 0;
+    caState.wall = parseInt($('#caWall').value, 10);
+    caState.iter = parseInt($('#caIter').value, 10);
+    caState.mode = $('#caMode').value;
+    caState.repairs = 0;
+    caState.grid = generateCAGrid(caState.seed, caState.wall, caState.iter, caState.mode);
+    renderCA();
+    const note = caState.mode === '44'
+      ? '单一阈值 4：现在是散落的洞室。点“修复连通”看视频 2:00–2:21 的下一步。'
+      : '4-5 规则：默认参数通常形成连通洞穴；如果出现多个连通块，点“修复连通”。';
+    $('#caNote').textContent = note;
+  }
+
+  function repairCA() {
+    if (!caState.grid) return;
+    const rng = new XorShift32(caState.seed ^ 0x9E3779B9);
+    caState.repairs = connectComponents(caState.grid, rng);
+    renderCA();
+    $('#caNote').textContent = '已用 ' + caState.repairs + ' 条 L 形走廊连接最近洞室；再跑一次 BFS 仍是唯一连通块。';
+  }
+
+  if (caCanvas) {
+    $('#caWall').addEventListener('input', () => { $('#caWallOut').textContent = $('#caWall').value + '%'; });
+    $('#caIter').addEventListener('input', () => { $('#caIterOut').textContent = $('#caIter').value; });
+    $('#caBtn').addEventListener('click', regenerateCA);
+    $('#caMode').addEventListener('change', regenerateCA);
+    $('#caRepair').addEventListener('click', repairCA);
+    $('#caSeed').addEventListener('change', regenerateCA);
+    $('#caWall').addEventListener('change', regenerateCA);
+    $('#caIter').addEventListener('change', regenerateCA);
+    regenerateCA();
+    redrawFns.push(renderCA);
+  }
+
+  // -------------------------------------------------------------------------
+  // Golden path demo
+
+  const pathSvg = $('#pathSvg');
+  const pathState = { seed: 2137, step: 3, path: [], templates: [] };
+
+  function generatePath(seed) {
+    const rng = new XorShift32(seed);
+    const rooms = 4;
+    let col = rng.randint(0, rooms - 1);
+    let row = 0;
+    const path = [[0, col]];
+    while (row < rooms - 1) {
+      if (rng.chance(65)) {
+        const target = clamp(col + rng.randint(-3, 3), 0, rooms - 1);
+        const step = target > col ? 1 : -1;
+        while (col !== target) {
+          col += step;
+          path.push([row, col]);
+        }
+      }
+      row++;
+      path.push([row, col]);
+    }
+    const templates = path.map(() => rng.choice(['open', 'pillars', 'corners', 'sparse']));
+    return {path, templates};
+  }
+
+  function pathCellRect(r, c) {
+    return {x: 40 + c * 100, y: 40 + r * 100, w: 100, h: 100};
+  }
+
+  function renderPath() {
+    if (!pathSvg) return;
+    const {path, templates} = pathState;
+    const centers = path.map(p => {
+      const rect = pathCellRect(p[0], p[1]);
+      return [rect.x + 50, rect.y + 50];
+    });
+    const pathSet = new Set(path.map(p => p[0] + ',' + p[1]));
+    let s = '';
+    s += '<defs><marker id="pathArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--gold)"/></marker></defs>';
+    s += '<rect x="0" y="0" width="480" height="480" fill="var(--card-2)"/>';
+    // grid
+    for (let i = 0; i <= 4; i++) {
+      const p = 40 + i * 100;
+      s += '<line x1="' + p + '" y1="40" x2="' + p + '" y2="440" stroke="var(--line)" stroke-width="1"/>';
+      s += '<line x1="40" y1="' + p + '" x2="440" y2="' + p + '" stroke="var(--line)" stroke-width="1"/>';
+    }
+    // path cells
+    path.forEach(p => {
+      const r = pathCellRect(p[0], p[1]);
+      s += '<rect x="' + r.x + '" y="' + r.y + '" width="' + r.w + '" height="' + r.h + '" fill="var(--gold-dim)" stroke="var(--gold)" stroke-opacity=".55"/>';
+    });
+    // arrows
+    for (let i = 0; i < centers.length - 1; i++) {
+      s += '<line x1="' + centers[i][0] + '" y1="' + centers[i][1] + '" x2="' + centers[i + 1][0] + '" y2="' + centers[i + 1][1] + '" stroke="var(--gold)" stroke-width="2.5" marker-end="url(#pathArrow)" opacity=".9"/>';
+    }
+    // entrance / exit
+    const start = centers[0], end = centers[centers.length - 1];
+    s += '<line x1="' + start[0] + '" y1="20" x2="' + start[0] + '" y2="40" stroke="var(--gold)" stroke-width="2"/>';
+    s += '<circle cx="' + start[0] + '" cy="18" r="6" fill="var(--gold)"/>';
+    s += '<text x="' + start[0] + '" y="10" text-anchor="middle" class="svg-label">入口</text>';
+    s += '<line x1="' + end[0] + '" y1="440" x2="' + end[0] + '" y2="462" stroke="var(--gold)" stroke-width="2"/>';
+    s += '<circle cx="' + end[0] + '" cy="464" r="6" fill="var(--gold)"/>';
+    s += '<text x="' + end[0] + '" y="488" text-anchor="middle" class="svg-label">出口</text>';
+    // step 2: rooms + ports + corridors
+    if (pathState.step >= 2) {
+      for (let i = 0; i < centers.length - 1; i++) {
+        s += '<line x1="' + centers[i][0] + '" y1="' + centers[i][1] + '" x2="' + centers[i + 1][0] + '" y2="' + centers[i + 1][1] + '" stroke="var(--teal)" stroke-width="7" stroke-opacity=".22"/>';
+      }
+      path.forEach(p => {
+        const rect = pathCellRect(p[0], p[1]);
+        const rx = rect.x + 18, ry = rect.y + 18;
+        s += '<rect x="' + rx + '" y="' + ry + '" width="64" height="64" rx="5" fill="var(--teal-dim)" stroke="var(--teal)" stroke-width="2"/>';
+      });
+      path.forEach((p, i) => {
+        const dirs = [];
+        if (i > 0) {
+          const q = path[i - 1];
+          dirs.push([q[1] - p[1], q[0] - p[0]]); // colDelta, rowDelta
+        }
+        if (i < path.length - 1) {
+          const q = path[i + 1];
+          dirs.push([q[1] - p[1], q[0] - p[0]]);
+        }
+        const rect = pathCellRect(p[0], p[1]);
+        const cx = rect.x + 50, cy = rect.y + 50;
+        dirs.forEach(d => {
+          let px = cx, py = cy;
+          if (d[0] === 1) { px = rect.x + 82; py = cy; }
+          if (d[0] === -1) { px = rect.x + 18; py = cy; }
+          if (d[1] === 1) { px = cx; py = rect.y + 82; }
+          if (d[1] === -1) { px = cx; py = rect.y + 18; }
+          s += '<circle cx="' + px + '" cy="' + py + '" r="4" fill="var(--teal)"/>';
+        });
+      });
+    }
+    // step 3: template decorations
+    if (pathState.step >= 3) {
+      path.forEach((p, i) => {
+        const rect = pathCellRect(p[0], p[1]);
+        const kind = templates[i];
+        const points = [];
+        if (kind === 'pillars' || kind === 'corners') {
+          points.push([rect.x + 26, rect.y + 26], [rect.x + 74, rect.y + 74]);
+        }
+        if (kind === 'pillars') {
+          points.push([rect.x + 74, rect.y + 26], [rect.x + 26, rect.y + 74]);
+        }
+        if (kind === 'sparse') points.push([rect.x + 26, rect.y + 74]);
+        points.forEach(pt => {
+          s += '<rect x="' + (pt[0] - 4) + '" y="' + (pt[1] - 4) + '" width="8" height="8" fill="var(--warn)" opacity=".85"/>';
+        });
+      });
+    }
+    pathSvg.innerHTML = s;
+    const kinds = templates.join(' / ');
+    $('#pathMetrics').innerHTML =
+      '<span class="metric">路径 <b>' + path.length + '</b> 格</span>' +
+      '<span class="metric">入口→出口 <b>可达</b></span>' +
+      '<span class="metric">模板 <b>' + kinds + '</b></span>';
+    $$('#s3 [data-path-step]').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.pathStep, 10) === pathState.step);
+    });
+  }
+
+  function regeneratePath() {
+    pathState.seed = parseInt($('#pathSeed').value, 10) || 0;
+    const g = generatePath(pathState.seed);
+    pathState.path = g.path;
+    pathState.templates = g.templates;
+    renderPath();
+  }
+
+  if (pathSvg) {
+    $$('#s3 [data-path-step]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pathState.step = parseInt(btn.dataset.pathStep, 10);
+        renderPath();
+      });
+    });
+    $('#pathBtn').addEventListener('click', regeneratePath);
+    $('#pathSeed').addEventListener('change', regeneratePath);
+    regeneratePath();
+    redrawFns.push(renderPath);
+  }
+
+  // -------------------------------------------------------------------------
+  // BSP demo
+
+  const bspSvg = $('#bspSvg');
+  const bspState = { seed: 2137, showSplits: true, showRooms: true, showCorridors: true };
+
+  function generateBSP(seed) {
+    const W = 64, H = 32, minLeaf = 8, maxDepth = 5;
+    const rng = new XorShift32(seed);
+    const splits = [], leaves = [];
+    function split(x, y, w, h, depth) {
+      const canH = w >= minLeaf * 2;
+      const canV = h >= minLeaf * 2;
+      if (depth >= maxDepth || (!canH && !canV)) {
+        leaves.push({x, y, w, h});
+        return;
+      }
+      let verticalCut;
+      if (canH && canV) {
+        if (w > h * 1.25) verticalCut = true;
+        else if (h > w * 1.25) verticalCut = false;
+        else verticalCut = rng.chance(50);
+      } else {
+        verticalCut = canH;
+      }
+      if (verticalCut) {
+        const cut = rng.randint(minLeaf, w - minLeaf);
+        splits.push({x1: x + cut, y1: y, x2: x + cut, y2: y + h});
+        split(x, y, cut, h, depth + 1);
+        split(x + cut, y, w - cut, h, depth + 1);
+      } else {
+        const cut = rng.randint(minLeaf, h - minLeaf);
+        splits.push({x1: x, y1: y + cut, x2: x + w, y2: y + cut});
+        split(x, y, w, cut, depth + 1);
+        split(x, y + cut, w, h - cut, depth + 1);
+      }
+    }
+    split(1, 1, W - 2, H - 2, 0);
+
+    const grid = Array.from({length: H}, () => Array(W).fill(1));
+    const rooms = [];
+    for (const leaf of leaves) {
+      if (leaf.w < 4 || leaf.h < 4) continue;
+      const rw = rng.randint(3, Math.max(3, leaf.w - 2));
+      const rh = rng.randint(3, Math.max(3, leaf.h - 2));
+      const rx = rng.randint(leaf.x, leaf.x + leaf.w - rw);
+      const ry = rng.randint(leaf.y, leaf.y + leaf.h - rh);
+      rooms.push({x: rx, y: ry, w: rw, h: rh});
+      for (let yy = ry; yy < ry + rh; yy++) {
+        for (let xx = rx; xx < rx + rw; xx++) grid[yy][xx] = 0;
+      }
+    }
+    const centers = rooms.map(r => [r.x + Math.floor(r.w / 2), r.y + Math.floor(r.h / 2)]);
+    const corridors = new Set();
+    for (let i = 1; i < centers.length; i++) {
+      let best = Infinity, bj = 0;
+      for (let j = 0; j < i; j++) {
+        const d = Math.abs(centers[i][0] - centers[j][0]) + Math.abs(centers[i][1] - centers[j][1]);
+        if (d < best) { best = d; bj = j; }
+      }
+      const a = centers[bj], b = centers[i];
+      const ax = a[0], ay = a[1], bx = b[0], by = b[1];
+      const cells = [];
+      if (rng.chance(50)) {
+        for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) cells.push([x, ay]);
+        for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) cells.push([bx, y]);
+      } else {
+        for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) cells.push([ax, y]);
+        for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) cells.push([x, by]);
+      }
+      cells.forEach(c => {
+        grid[c[1]][c[0]] = 0;
+        corridors.add(c[0] + ',' + c[1]);
+      });
+    }
+    const fp = farthestPair(grid);
+    return {splits, rooms, corridors, grid, start: fp ? fp.start : null, exit: fp ? fp.exit : null, comps: floorComponents(grid).length};
+  }
+
+  function renderBSP() {
+    if (!bspSvg) return;
+    const g = generateBSP(bspState.seed);
+    const scale = 10;
+    let s = '<rect x="0" y="0" width="640" height="320" fill="var(--card-2)"/>';
+    // background grid
+    for (let x = 0; x <= 64; x += 8) {
+      s += '<line x1="' + (x * scale) + '" y1="0" x2="' + (x * scale) + '" y2="320" stroke="var(--line)" stroke-width="1"/>';
+    }
+    for (let y = 0; y <= 32; y += 8) {
+      s += '<line x1="0" y1="' + (y * scale) + '" x2="640" y2="' + (y * scale) + '" stroke="var(--line)" stroke-width="1"/>';
+    }
+    if (bspState.showSplits) {
+      g.splits.forEach(l => {
+        s += '<line x1="' + (l.x1 * scale) + '" y1="' + (l.y1 * scale) + '" x2="' + (l.x2 * scale) + '" y2="' + (l.y2 * scale) + '" stroke="var(--warn)" stroke-width="2" opacity=".8"/>';
+      });
+    }
+    if (bspState.showRooms) {
+      g.rooms.forEach(r => {
+        s += '<rect x="' + (r.x * scale) + '" y="' + (r.y * scale) + '" width="' + (r.w * scale) + '" height="' + (r.h * scale) + '" fill="var(--teal-dim)" stroke="var(--teal)" stroke-width="1.6"/>';
+      });
+    }
+    if (bspState.showCorridors) {
+      g.corridors.forEach(key => {
+        const parts = key.split(',');
+        s += '<rect x="' + (parseInt(parts[0], 10) * scale) + '" y="' + (parseInt(parts[1], 10) * scale) + '" width="' + scale + '" height="' + scale + '" fill="var(--gold)" opacity=".55"/>';
+      });
+    }
+    if (g.start && g.exit) {
+      const sx = g.start[0] * scale + scale / 2, sy = g.start[1] * scale + scale / 2;
+      const ex = g.exit[0] * scale + scale / 2, ey = g.exit[1] * scale + scale / 2;
+      s += '<circle cx="' + sx + '" cy="' + sy + '" r="6" fill="var(--gold)" stroke="var(--paper)" stroke-width="1.5"/>';
+      s += '<text x="' + sx + '" y="' + (sy + 3) + '" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--paper)">S</text>';
+      s += '<circle cx="' + ex + '" cy="' + ey + '" r="6" fill="var(--gold)" stroke="var(--paper)" stroke-width="1.5"/>';
+      s += '<text x="' + ex + '" y="' + (ey + 3) + '" text-anchor="middle" font-family="monospace" font-size="8" fill="var(--paper)">E</text>';
+    }
+    bspSvg.innerHTML = s;
+    $('#bspMetrics').innerHTML =
+      '<span class="metric">房间 <b>' + g.rooms.length + '</b></span>' +
+      '<span class="metric">走廊覆盖 <b>' + g.corridors.size + '</b> 格</span>' +
+      '<span class="metric">连通块 <b>' + g.comps + '</b></span>' +
+      '<span class="metric">重叠 <b>0</b></span>';
+  }
+
+  function regenerateBSP() {
+    bspState.seed = parseInt($('#bspSeed').value, 10) || 0;
+    renderBSP();
+  }
+
+  if (bspSvg) {
+    $('#bspBtn').addEventListener('click', regenerateBSP);
+    $('#bspSeed').addEventListener('change', regenerateBSP);
+    $('#bspSplits').addEventListener('change', e => { bspState.showSplits = e.target.checked; renderBSP(); });
+    $('#bspRooms').addEventListener('change', e => { bspState.showRooms = e.target.checked; renderBSP(); });
+    $('#bspCorr').addEventListener('change', e => { bspState.showCorridors = e.target.checked; renderBSP(); });
+    renderBSP();
+    redrawFns.push(renderBSP);
+  }
+
+  // -------------------------------------------------------------------------
+  // Drunkard's walk demo
+
+  const dwCanvas = $('#dwCanvas');
+  const dwState = { seed: 2137, target: 40, grid: null, x: 30, y: 15, carved: 0, steps: 0, done: false, timer: null, rng: null, start: null, exit: null };
+
+  function dwReset() {
+    if (dwState.timer) { clearInterval(dwState.timer); dwState.timer = null; }
+    dwState.seed = parseInt($('#dwSeed').value, 10) || 0;
+    dwState.target = parseInt($('#dwTarget').value, 10);
+    dwState.rng = new XorShift32(dwState.seed);
+    dwState.grid = Array.from({length: 30}, () => Array(60).fill(1));
+    dwState.x = 30;
+    dwState.y = 15;
+    dwState.carved = 0;
+    dwState.steps = 0;
+    dwState.done = false;
+    dwState.start = [30, 15];
+    dwState.exit = null;
+    dwState.carved += dwStamp(30, 15);
+    dwDraw();
+    $('#dwPlay').textContent = '播放';
+    $('#dwPlay').classList.remove('active');
+  }
+
+  function dwStamp(cx, cy) {
+    let added = 0;
+    for (let yy = cy - 1; yy <= cy + 1; yy++) {
+      for (let xx = cx - 1; xx <= cx + 1; xx++) {
+        if (xx >= 0 && yy >= 0 && xx < 60 && yy < 30 && dwState.grid[yy][xx] === 1) {
+          dwState.grid[yy][xx] = 0;
+          added++;
+        }
+      }
+    }
+    return added;
+  }
+
+  function dwTick() {
+    if (!dwState.grid || dwState.done) { if (dwState.timer) { clearInterval(dwState.timer); dwState.timer = null; } return; }
+    const target = Math.floor(60 * 30 * dwState.target / 100);
+    for (let k = 0; k < 25 && !dwState.done; k++) {
+      let choices = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      if (dwState.x < 4) choices = [[1, 0], [1, 0], [0, 1], [0, -1]];
+      else if (dwState.x > 55) choices = [[-1, 0], [-1, 0], [0, 1], [0, -1]];
+      if (dwState.y < 4) choices = [[0, 1], [0, 1], [1, 0], [-1, 0]];
+      else if (dwState.y > 25) choices = [[0, -1], [0, -1], [1, 0], [-1, 0]];
+      const d = dwState.rng.choice(choices);
+      dwState.x = clamp(dwState.x + d[0], 1, 58);
+      dwState.y = clamp(dwState.y + d[1], 1, 28);
+      dwState.carved += dwStamp(dwState.x, dwState.y);
+      dwState.steps++;
+      if (dwState.carved >= target || dwState.steps >= 3000) dwState.done = true;
+    }
+    if (dwState.done) {
+      if (dwState.timer) { clearInterval(dwState.timer); dwState.timer = null; }
+      const fp = farthestPair(dwState.grid);
+      if (fp) { dwState.start = fp.start; dwState.exit = fp.exit; }
+      $('#dwPlay').textContent = '播放';
+      $('#dwPlay').classList.remove('active');
+    }
+    dwDraw();
+  }
+
+  function dwDraw() {
+    if (!dwState.grid) return;
+    drawCellGrid(dwCanvas, dwState.grid, {
+      start: dwState.done ? dwState.start : null,
+      exit: dwState.done ? dwState.exit : null,
+      walker: dwState.done ? null : [dwState.x, dwState.y]
+    });
+    const total = 60 * 30;
+    const comps = dwState.done ? floorComponents(dwState.grid).length : null;
+    $('#dwMetrics').innerHTML =
+      '<span class="metric">步数 <b>' + dwState.steps + '</b></span>' +
+      '<span class="metric">地板 <b>' + (dwState.carved / total * 100).toFixed(1) + '%</b></span>' +
+      (comps === null ? '<span class="metric">连通块 <b>生成中</b></span>' : '<span class="metric">连通块 <b>' + comps + '</b></span>');
+  }
+
+  function dwPlay() {
+    if (!dwState.grid) return;
+    if (dwState.done) { dwReset(); }
+    if (dwState.timer) {
+      clearInterval(dwState.timer);
+      dwState.timer = null;
+      $('#dwPlay').textContent = '继续';
+      $('#dwPlay').classList.remove('active');
+      return;
+    }
+    $('#dwPlay').textContent = '暂停';
+    $('#dwPlay').classList.add('active');
+    dwState.timer = setInterval(dwTick, 40);
+  }
+
+  function dwFinish() {
+    if (!dwState.grid) return;
+    if (dwState.timer) { clearInterval(dwState.timer); dwState.timer = null; }
+    let guard = 0;
+    while (!dwState.done && guard < 4000) { dwTick(); guard++; }
+    dwDraw();
+  }
+
+  if (dwCanvas) {
+    $('#dwTarget').addEventListener('input', () => { $('#dwTargetOut').textContent = $('#dwTarget').value + '%'; });
+    $('#dwTarget').addEventListener('change', dwReset);
+    $('#dwSeed').addEventListener('change', dwReset);
+    $('#dwPlay').addEventListener('click', dwPlay);
+    $('#dwFinish').addEventListener('click', dwFinish);
+    $('#dwReset').addEventListener('click', dwReset);
+    dwReset();
+    redrawFns.push(dwDraw);
+  }
+
+  // -------------------------------------------------------------------------
+  // Theme
+
+  const themeBtn = $('#themeBtn');
+  const savedTheme = localStorage.getItem('procgen-teardown-theme');
+  if (savedTheme) root.dataset.theme = savedTheme;
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) root.dataset.theme = 'light';
+  function syncTheme() {
+    if (!themeBtn) return;
+    themeBtn.textContent = '主题：' + (root.dataset.theme === 'dark' ? '暗' : '亮');
+  }
+  syncTheme();
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('procgen-teardown-theme', root.dataset.theme);
+      syncTheme();
+      redrawFns.forEach(fn => fn());
+    });
+  }
+
+  const topBtn = $('#topBtn');
+  if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+
+  // -------------------------------------------------------------------------
+  // Progress + search/filter + nav
+
+  const progress = $('#progress');
+  function onScroll() {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive: true});
+  onScroll();
+
+  const sections = $$('main > section');
+  const idxCards = $$('a.idx');
+  const tocLinks = $$('nav.toc a');
+  let activeTrack = 'all';
+  let searchEl = $('#search');
+  let countEl = $('#count');
+
+  function applyFilter() {
+    const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    let shown = 0;
+    sections.forEach(sec => {
+      const tracks = (sec.dataset.track || 'core').split(/\s+/);
+      const trackOk = activeTrack === 'all' || tracks.includes(activeTrack) || tracks.includes('core');
+      const textOk = !q || sec.innerText.toLowerCase().includes(q);
+      const show = trackOk && textOk;
+      sec.classList.toggle('off', !show);
+      if (show) shown++;
+    });
+    idxCards.forEach(card => {
+      const tracks = (card.dataset.track || '').split(/\s+/);
+      const trackOk = activeTrack === 'all' || tracks.includes(activeTrack);
+      const textOk = !q || card.innerText.toLowerCase().includes(q);
+      card.classList.toggle('off', !(trackOk && textOk));
+    });
+    tocLinks.forEach(link => {
+      const id = link.getAttribute('href').slice(1);
+      const sec = document.getElementById(id);
+      link.classList.toggle('off', !!(sec && sec.classList.contains('off')));
+    });
+    if (countEl) countEl.textContent = '显示 ' + shown + '/' + sections.length + ' 段';
+  }
+
+  const chips = $$('.chip');
+  chips.forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTrack = btn.dataset.track;
+      chips.forEach(b => b.classList.toggle('active', b === btn));
+      applyFilter();
+    });
+  });
+  if (searchEl) {
+    searchEl.addEventListener('input', applyFilter);
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement !== searchEl) {
+        e.preventDefault();
+        searchEl.focus();
+      } else if (e.key === 'Escape' && document.activeElement === searchEl) {
+        searchEl.value = '';
+        searchEl.blur();
+        applyFilter();
+      }
+    });
+  }
+
+  const toolbar = $('#toolbar');
+  const toolbarHeight = () => toolbar ? toolbar.offsetHeight + 52 : 96;
+  sections.forEach(sec => { sec.style.scrollMarginTop = toolbarHeight() + 'px'; });
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      });
+    }, {rootMargin: '-25% 0px -60% 0px', threshold: 0});
+    sections.forEach(sec => observer.observe(sec));
+  }
+
+  applyFilter();
+
+  // Copy buttons
+  $$('pre').forEach(pre => {
+    const btn = pre.querySelector('.copy');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText.replace(/^复制\s*/, '');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '已复制';
+      } catch (err) {
+        btn.textContent = '复制失败';
+      }
+      setTimeout(() => { btn.textContent = '复制'; }, 1200);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>ApkStart 拆解 — 双击 APK 装成 Windows 应用的技术真相</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1410'/%3E%3Cpath d='M8 22V10l8 6 8-6v12' fill='none' stroke='%235FD8C9' stroke-width='2.4' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='9' r='3.2' fill='%23F2B35C'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --ok:#5FD88A;
+  --crit:#FF6B5A; --crit-dim:rgba(255,107,90,.12);
+  --grid:rgba(150,200,170,.05);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --ok:#1B7A4A;
+  --crit:#A32B1E; --crit-dim:rgba(163,43,30,.09);
+  --grid:rgba(23,38,30,.05);
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1120px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(46px,7vw,90px) clamp(20px,5vw,56px) 26px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.4vw,58px);line-height:1.12;margin:.3em 0 .18em;overflow-wrap:anywhere}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:78ch;margin:0 0 20px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;margin:24px 0 0}
+.verdict .v{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 15px;box-shadow:var(--shadow)}
+.verdict .v h4{margin:0 0 4px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ink-faint);text-transform:uppercase}
+.verdict .v p{margin:0;font-size:13.5px;color:var(--ink-soft)}
+.verdict .v p b{color:var(--ink)}
+.verdict .v.good{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.verdict .v.bad{border-color:color-mix(in srgb,var(--crit) 35%,var(--line))}
+.verdict .v.warn{border-color:color-mix(in srgb,var(--warn) 38%,var(--line))}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+nav.toc a.off{display:none}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 80px}
+section{margin:0 0 clamp(46px,6vw,80px);scroll-margin-top:64px}
+section.off{display:none}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700;overflow-wrap:anywhere}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--sans)}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);position:sticky;top:46px;z-index:40;backdrop-filter:blur(12px)}
+#search{flex:1 1 220px;min-width:0;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:9px 12px;outline:none}
+#search:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-dim)}
+.chip{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:.2s}
+.chip:hover{color:var(--ink);border-color:var(--line-strong)}
+.chip.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.theme-chip{display:none}
+#count{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow);min-width:0}
+.card h4{margin:0 0 6px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.card .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.card.crit{border-color:color-mix(in srgb,var(--crit) 35%,var(--line))}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 16px;overflow-x:auto;margin:10px 0 16px;max-width:100%}
+pre b{color:var(--gold);font-weight:600}
+pre .c{color:var(--ink-faint)}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.critbox{border-left:3px solid var(--crit);background:var(--crit-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2>*{min-width:0}
+.shot{width:100%;border-radius:12px;border:1px solid var(--line);display:block;margin:8px 0 4px;background:var(--card)}
+.cap{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:0 0 14px}
+.kbd{font-family:var(--mono);font-size:11px;color:var(--ink-faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;border-radius:999px;padding:2px 8px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper-2);white-space:nowrap}
+.badge.hi{color:var(--crit);border-color:var(--crit-dim);background:var(--crit-dim)}
+.badge.mid{color:var(--warn);border-color:var(--gold-dim);background:var(--gold-dim)}
+.badge.lo{color:var(--ok);border-color:var(--teal-dim);background:var(--teal-dim)}
+.badge.todo{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+/* architecture / flow diagrams */
+.layers{display:flex;flex-direction:column;gap:0;margin:16px 0 20px}
+.layer{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:stretch;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.layer + .layer{margin-top:26px;position:relative}
+.layer + .layer::before{content:"↓";position:absolute;top:-26px;left:32px;color:var(--teal);font-family:var(--mono);font-size:16px;line-height:26px;text-align:center;width:20px}
+.layer .ln{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold);display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);padding-right:12px}
+.layer .ln b{font-family:var(--serif);font-size:20px;color:var(--ink);letter-spacing:0}
+.layer h4{margin:0 0 3px;font-family:var(--sans);font-size:14.5px;color:var(--ink)}
+.layer p{margin:0;font-size:13px;color:var(--ink-soft)}
+.layer .mono{font-family:var(--mono);font-size:11px;color:var(--teal);overflow-wrap:anywhere}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:18px;margin:16px 0 20px}
+.step{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:14px 15px;box-shadow:var(--shadow);min-width:0}
+.step .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--gold)}
+.step .t{font-family:var(--serif);font-size:16px;font-weight:700;margin:2px 0 4px}
+.step p{margin:0;font-size:13px;color:var(--ink-soft)}
+.step code{font-size:11.5px}
+.step::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);color:var(--teal);font-family:var(--mono);font-size:16px}
+.step:last-child::after{display:none}
+/* storage ledger: one series, direct labels */
+.ledger{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;margin:14px 0 18px;box-shadow:var(--shadow)}
+.ledger h4{margin:0 0 3px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase}
+.ledger .sub{font-size:12.5px;color:var(--ink-faint);margin:0 0 12px}
+.bar-row{display:grid;grid-template-columns:minmax(92px,150px) 1fr minmax(78px,auto);gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.bar-row:first-of-type{border-top:none}
+.bar-label{font-size:12.5px;color:var(--ink-soft)}
+.bar-label b{display:block;color:var(--ink);font-weight:600;font-size:13px}
+.bar-track{height:14px;background:var(--paper-2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;background:var(--teal);border-radius:999px;min-width:4px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar-fill.gold{background:var(--gold)}
+.bar-val{font-family:var(--mono);font-size:12px;color:var(--ink);text-align:right;white-space:nowrap}
+.ledger .note{font-size:11.5px;color:var(--ink-faint);margin:10px 0 0;line-height:1.5}
+/* risk map: status + shape + text label, not color alone */
+.riskmap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 18px}
+.q{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 13px;min-height:150px;min-width:0}
+.q h5{margin:0 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase}
+.q .item{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;color:var(--ink-soft);margin:5px 0;line-height:1.45}
+.q .item b{color:var(--ink);font-weight:600}
+.sev{flex:0 0 auto;font-family:var(--mono);font-size:10px;border-radius:4px;padding:0 5px;margin-top:1px;border:1px solid var(--line);white-space:nowrap}
+.sev.c{color:var(--crit);border-color:var(--crit-dim);background:var(--crit-dim)}
+.sev.h{color:var(--warn);border-color:var(--gold-dim);background:var(--gold-dim)}
+.sev.m{color:var(--teal);border-color:var(--teal-dim);background:var(--teal-dim)}
+.maplabel{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin:2px 2px 5px;flex-wrap:wrap}
+/* video timeline */
+.timeline{display:flex;gap:0;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 14px;margin:12px 0 18px;scrollbar-width:thin}
+.tl{flex:1 0 120px;position:relative;padding:0 10px;border-left:1px solid var(--line)}
+.tl:first-child{border-left:none}
+.tl .t{font-family:var(--mono);font-size:11px;color:var(--gold);white-space:nowrap}
+.tl .d{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin-top:2px}
+/* sources and misc */
+.src-list{font-size:13.5px;color:var(--ink-soft);padding-left:1.1em}
+.src-list li{margin:.35em 0;overflow-wrap:anywhere}
+.src-list a,footer a,p a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim);overflow-wrap:anywhere}
+.src-list a:hover,footer a:hover,p a:hover{border-bottom-color:var(--teal)}
+.checklist{list-style:none;padding:0;margin:8px 0 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:6px}
+.checklist li{font-size:13.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--card)}
+.checklist li::before{content:"☐ ";color:var(--teal);font-family:var(--mono)}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+@media screen and (max-width:760px){
+  .grid2,.riskmap{grid-template-columns:1fr}
+  .theme-chip{display:inline-flex;align-items:center}
+  .fab{display:none}
+  .toolbar{position:static}
+  .sec-note{margin-left:0;width:100%}
+  .layer{grid-template-columns:48px 1fr;gap:10px}
+  .step::after{content:"↓";right:auto;left:18px;top:auto;bottom:-20px;transform:none}
+  .step:last-child::after{display:none}
+  .bar-row{grid-template-columns:minmax(80px,1fr) 1.4fr;grid-template-areas:"label track" "label val";gap:4px 10px}
+  .bar-label{grid-area:label}.bar-track{grid-area:track}.bar-val{grid-area:val;text-align:left}
+}
+@media print{.toolbar,.fab,nav.toc,.progress{display:none}.step::after{display:none}section.off{display:block!important}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span> VIDEO TEARDOWN · BV1XcsK6AEFs · 2026-11-19 · 66s</div>
+  <h1>双击 APK，装成<span class="u"> Windows 应用</span><br><span class="g">ApkStart</span> 的技术真相</h1>
+  <p class="sub">B 站视频里的项目已锁定为 <b>RoutineMiku/apkstart</b>。它不是一个“APK 转 EXE 编译器”，
+    而是 <b>Electron 壳 + 隐藏的 Android Emulator（QEMU）+ adb + Win32 窗口伪装</b>。
+    本文把「视频说了什么」「代码怎么实现」「哪里会翻车」分开讲清楚。</p>
+  <div class="stat-row">
+    <span class="stat"><b>100%</b> 项目识别置信度</span>
+    <span class="stat"><b>MIT</b> 自身代码许可</span>
+    <span class="stat"><b>8,127</b> stars · 2026-11-19</span>
+    <span class="stat"><b>v0.6.2</b> 最新版</span>
+    <span class="stat"><b>1.39 GB</b> 完整安装包</span>
+    <span class="stat"><b>17.66 GB</b> 视频实测占用</span>
+    <span class="stat">不是 WSA · 不是容器</span>
+  </div>
+  <div class="verdict">
+    <div class="v good"><h4>它是什么</h4><p>一个把 Android 运行时部署产品化的 <b>Windows 安卓应用运行器</b>；双击 APK 即可安装，独立窗口运行，自带桌面图标。</p></div>
+    <div class="v warn"><h4>它不是什么</h4><p>不是把 APK 编译成原生 EXE，不是 WSA 换皮，不是“零模拟器”。底下是一台 <b>Android 14 x86_64 虚拟机</b>。</p></div>
+    <div class="v bad"><h4>最大风险</h4><p><b>未知 APK + 自动全权限 + 共享目录 + 宿主网络 NAT + 无独立哈希的自动更新。</b>不要用于银行、2FA、受管设备。</p></div>
+    <div class="v"><h4>一句话建议</h4><p>有 VT-x/SVM、16GB 内存、愿意折腾，可以拿可信 APK 试；<b>先按“不可信虚拟机”对待</b>，别按“原生软件”对待。</p></div>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0" class="active">结论</a>
+  <a href="#s1">识别</a>
+  <a href="#s2">架构</a>
+  <a href="#s3">双击链路</a>
+  <a href="#s4">运行要求</a>
+  <a href="#s5">兼容性</a>
+  <a href="#s6">安全</a>
+  <a href="#s7">替代方案</a>
+  <a href="#s8">复现</a>
+  <a href="#s9">来源</a>
+</div></nav>
+
+<main>
+
+<section id="s0" data-topic="core" data-core="1">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">先看这 6 条，再看细节</span></div>
+  <p class="lead">视频标题说“Windows 变成半台安卓机”，这句话在体验上成立，在架构上要翻译成：
+    <b>一台隐藏的 Android 14 虚拟机 + 一层把模拟器窗口伪装成 Windows 窗口的壳。</b></p>
+  <div class="cards">
+    <div class="card ok"><h4>识别</h4><div class="t">RoutineMiku/apkstart</div><p>视频简介直接给出仓库链接；画面里的 About、MIT、v0.5.0、6.1k stars、540 forks、贡献者 RoutineMiku 全部吻合。识别置信度 100%。</p><span class="tag">可复核</span></div>
+    <div class="card"><h4>机制</h4><div class="t">文件关联 + adb + 窗口代理</div><p>HKCU 注册 `.apk` → 命令行解析 → 手写 ZIP/AXML/ARSC 解析 → 启动或复用模拟器 → `adb install -r -t -g` → 生成 `.lnk` → `--launch` → `am start`。</p><span class="tag">不是 WSA</span></div>
+    <div class="card warn"><h4>运行要求</h4><div class="t">虚拟化 + 大磁盘</div><p>Win10/11 x64、CPU VT-x/SVM、WHPX 或 AEHD；安装包 1.39GB，视频实测磁盘占用 17.66GB。没有加速也能跑，但开机要几分钟。</p><span class="tag">不是“绿色小工具”</span></div>
+    <div class="card crit"><h4>安全</h4><div class="t">自动全权限</div><p>`adb install -g` 自动授予运行时权限；启动时还把存储、悬浮窗、安装未知应用、修改设置等 appops 设为 allow。权限门禁基本被拿掉。</p><span class="tag">高风险用法</span></div>
+    <div class="card crit"><h4>供应链</h4><div class="t">未签名 + 无独立哈希</div><p>NSIS 未见代码签名；更新/运行时下载未传独立 sha256；候选源含公共 GitHub 反代；自动更新会下载并执行安装包/覆盖文件。</p><span class="tag">受管环境慎用</span></div>
+    <div class="card"><h4>适合谁</h4><div class="t">玩家 / 开发者 / 折腾党</div><p>跑工具、阅读、短视频类可信 APK；不适合大型 3D 游戏、反模拟器应用、银行/2FA、受管企业设备。项目 2026-10-29 才建仓，仍在日更。</p><span class="tag">早期项目</span></div>
+  </div>
+  <div class="critbox"><b>视频没展开的三件事：</b>① “无需模拟器”只是没有模拟器界面，底下仍是 Google Android Emulator（QEMU）；② 安装时默认自动授予全部运行时权限；③ 自动更新与运行时下载是独立的供应链边界，视频里的夸克网盘包不是官方渠道。</div>
+</section>
+
+<section id="s1" data-topic="identify mechanism">
+  <div class="sec-head"><span class="sec-num">01</span><h2>视频识别与项目档案</h2><span class="sec-note">100% 置信度 · 仓库快照 0dc0485</span></div>
+  <p class="lead">识别依据不是“标题猜”，而是三条独立证据交叉：<b>视频简介的 GitHub 链接</b>、<b>画面中的 GitHub About 文案</b>、<b>仓库 API 的元数据</b>。</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>项</th><th>视频录制时（2026-11-19）</th><th>本文快照（同日稍晚）</th></tr>
+    <tr><td>仓库</td><td colspan="2"><code>RoutineMiku/apkstart</code> · <a href="https://github.com/RoutineMiku/apkstart">github.com/RoutineMiku/apkstart</a></td></tr>
+    <tr><td>About</td><td colspan="2">Windows 上的安卓应用运行器：双击 APK 即装，应用以独立窗口与桌面图标运行，自持 QEMU 运行时</td></tr>
+    <tr><td>许可证</td><td colspan="2"><b>MIT</b>（仅 ApkStart 自身代码；运行时组件另有许可）</td></tr>
+    <tr><td>版本</td><td><b>v0.5.0</b>（Releases 页标 Latest）</td><td><b>v0.6.2</b>（0dc0485，2026-11-19 11:25 +0800）</td></tr>
+    <tr><td>Stars / Forks</td><td><b>6.1k</b> / <b>540</b>（画面）</td><td><b>8,127</b> / <b>779</b>（GitHub API）</td></tr>
+    <tr><td>Open issues</td><td>—（视频未展示）</td><td><b>94</b></td></tr>
+    <tr><td>建仓时间</td><td colspan="2"><b>2026-10-29</b> —— 视频录制时项目只有约 3 周大</td></tr>
+    <tr><td>技术栈</td><td colspan="2">Electron 33 / Node 20+ / 原生 HTML-CSS-JS；运行时 <code>@napi-rs/lzma</code>（解 xz）</td></tr>
+    <tr><td>分发</td><td colspan="2">GitHub Releases；Gitee 镜像 <code>daily-miku/apkstart</code>；README 另有 MSIX/商店打包路径</td></tr>
+    <tr><td>安装包</td><td>Setup 1,382.2MB / runtime 1,362.6MB / portable 96.5MB</td><td>Setup 1,385.0MB / runtime 1,366.5MB / portable 97.3MB</td></tr>
+    <tr><td>商店状态</td><td colspan="2"><span class="badge todo">待核实</span> 仓库有 <code>store-listing.md</code> 和 Partner Center 身份配置；文档说“能不能真上架只取决于有没有 Partner Center 账号”。公开商店页未核实，视频未提。</td></tr>
+  </table></div>
+
+  <h3>1.1 视频时间线：它到底讲了什么</h3>
+  <div class="timeline" aria-label="视频时间线">
+    <div class="tl"><div class="t">0:02</div><div class="d">标题卡：“无需模拟器”、GitHub 6.1k stars、双击 APK。</div></div>
+    <div class="tl"><div class="t">0:08</div><div class="d">GitHub About：“自持 QEMU 运行时”，标签含 electron / qemu / wsa。</div></div>
+    <div class="tl"><div class="t">0:15</div><div class="d">Releases：v0.5.0 Latest、25 个版本、38 分钟前更新。</div></div>
+    <div class="tl"><div class="t">0:20</div><div class="d">README：更新链路、安装包形态、便携版覆盖更新。</div></div>
+    <div class="tl"><div class="t">0:30</div><div class="d">设置：Android 14、3.0GB 内存/4 核、<b>磁盘 17.66GB</b>。</div></div>
+    <div class="tl"><div class="t">0:39</div><div class="d">拖入“超准天气预报 1.3.0.apk” → 安装 → 桌面图标。</div></div>
+    <div class="tl"><div class="t">0:44</div><div class="d">双击图标 → 独立窗口打开天气应用；右键清数据/卸载。</div></div>
+    <div class="tl"><div class="t">1:04</div><div class="d">片尾回到 GitHub，强调“开源免费、开发者持续维护”。</div></div>
+  </div>
+  <p class="cap">视频只展示运行时/设置状态，未展开解释 WSA、ADB、Hyper-V/WHPX/AEHD、权限自动授予、运行时许可证与安全风险；这些由仓库/官方文档补充。</p>
+
+  <div class="okbox"><b>识别结论：</b>不是同名仿品，也不是“WSA 套壳”。视频画面中的 About 文案、许可证、版本、star/fork、贡献者与 <code>RoutineMiku/apkstart</code> 逐项一致；视频简介也直接给出该仓库链接。</div>
+</section>
+
+<section id="s2" data-topic="mechanism identify">
+  <div class="sec-head"><span class="sec-num">02</span><h2>架构：五层，最后一层是虚拟机</h2><span class="sec-note">Electron 壳 → 编排 → 解析 → 设备控制 → QEMU</span></div>
+  <p class="lead">把项目拆开看，它其实很简单：<b>壳层负责“像原生软件”，运行时负责“真的是 Android”</b>。真正的工作量在两者之间的胶水层。</p>
+
+  <div class="layers" aria-label="ApkStart 五层架构">
+    <div class="layer"><div class="ln"><b>01</b>壳层</div><div><h4>Electron 主进程 + 原生 HTML/CSS/JS UI</h4><p>托盘、主窗口、设置、安装向导、单实例、命令行分发；<span class="mono">src/main.js · src/ui</span></p></div></div>
+    <div class="layer"><div class="ln"><b>02</b>编排</div><div><h4>安装流水线</h4><p>解析 APK → 确保运行时 → adb 安装 → 图标/快捷方式 → 启动；<span class="mono">src/core/installer.js</span></p></div></div>
+    <div class="layer"><div class="ln"><b>03</b>解析</div><div><h4>离线 APK 解析（不依赖 aapt2/Android SDK）</h4><p>手写 ZIP、AXML、resources.arsc、PNG/ICO；得到包名、应用名、图标、启动 Activity、ABI、横竖屏；<span class="mono">src/core/{zip,axml,arsc,apk}.js</span></p></div></div>
+    <div class="layer"><div class="ln"><b>04</b>设备</div><div><h4>adb + 共享目录 + Win32 窗口代理</h4><p>adb 专用端口 5044；文件双向同步；改模拟器窗口标题/图标/位置，必要时 SetParent 嵌入；<span class="mono">src/core/{adb,sharer,appwin}.js · win/agent.ps1</span></p></div></div>
+    <div class="layer"><div class="ln"><b>05</b>运行时</div><div><h4>Google Android Emulator（QEMU 全系统虚拟化）</h4><p>Android 14 API 34 Google Play x86_64 镜像 + platform-tools + WHPX/AEHD，失败回退 TCG；<span class="mono">运行时目录 %APPDATA%\apkstart\runtime</span></p></div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h4>它复用了什么</h4><div class="t">AOSP / QEMU / adb</div><p>Android 内核、ART、GPU 转译、系统镜像都是 Google 的成熟工程；项目把工程量集中在“原生应用级体验”和部署自动化上。README 自己也说“不是从零实现的 hypervisor”。</p></div>
+    <div class="card warn"><h4>它没有做什么</h4><div class="t">不是容器，也不是原生转译</div><p>所有应用共享一台完整 Android 虚拟机；Linux 内核、zygote、system_server 必须整包引导。做不到 WSA/容器那种“只为某个 App 加载服务”。</p></div>
+  </div>
+
+  <h3>2.1 “无需模拟器”的准确翻译</h3>
+  <div class="tablewrap"><table>
+    <tr><th>宣传语</th><th>实际含义</th></tr>
+    <tr><td>“无需模拟器”</td><td>不需要你打开模拟器主界面；底下仍是 Google Android Emulator（QEMU）</td></tr>
+    <tr><td>“每个应用一个独立窗口”</td><td>每个应用对应一个被改标题/图标/尺寸的模拟器窗口，不是 Windows 原生进程</td></tr>
+    <tr><td>“像原生软件一样”</td><td>安装、图标、窗口、任务栏体验像原生；运行时、驱动、Hyper-V 依赖仍是虚拟机那一套</td></tr>
+    <tr><td>“极轻量”</td><td>壳层便携包 97MB；完整运行时 1.37GB；视频机器实际占用 <b>17.66GB</b></td></tr>
+    <tr><td>“双击即装”</td><td>首次仍需完成运行时部署（下载/解压/开机），之后才接近“即装”</td></tr>
+  </table></div>
+</section>
+
+<section id="s3" data-topic="mechanism identify">
+  <div class="sec-head"><span class="sec-num">03</span><h2>双击 APK 的完整链路</h2><span class="sec-note">文件关联 → 解析 → install → shortcut → launch</span></div>
+  <p class="lead">“双击”不是魔法：安装时注册了 <b>HKCU 的 .apk 文件关联</b>，双击只是把路径交给 ApkStart.exe。</p>
+
+  <div class="flow">
+    <div class="step"><div class="n">STEP 01</div><div class="t">文件关联</div><p>写 <code>HKCU\Software\Classes\.apk</code>，命令为 <code>"ApkStart.exe" "%1"</code>。只写当前用户，免管理员；卸载时还原原关联。</p></div>
+    <div class="step"><div class="n">STEP 02</div><div class="t">离线解析</div><p>手写 ZIP → AndroidManifest(AXML) → resources.arsc；得到包名、版本、应用名、图标、启动 Activity、ABI、横竖屏。</p></div>
+    <div class="step"><div class="n">STEP 03</div><div class="t">准备运行时</div><p>没开机就拉起 Android 14 模拟器；ARM-only 应用自动切到带 ndk_translation 的兼容镜像。</p></div>
+    <div class="step"><div class="n">STEP 04</div><div class="t">adb 安装</div><p><code>adb install -r -t -g --bypass-low-target-sdk-block</code>；失败逐级降级。`-g` 会授予全部运行时权限。</p></div>
+    <div class="step"><div class="n">STEP 05</div><div class="t">图标与快捷方式</div><p>APK 内图标 → 多尺寸 ICO → 桌面 + 开始菜单 `.lnk`，参数是 <code>--launch &lt;包名&gt;</code>。</p></div>
+    <div class="step"><div class="n">STEP 06</div><div class="t">启动与代理窗口</div><p>解析真正的 LAUNCHER 入口 → <code>am start</code> → Win32 改标题/图标/尺寸 → 你看到一个“应用窗口”。</p></div>
+  </div>
+
+  <h3>3.1 文件关联的实际注册表形状</h3>
+<pre><span class="copy">复制</span>HKCU\Software\Classes\.apk
+    (默认) = ApkStart.apk
+
+HKCU\Software\Classes\ApkStart.apk\shell\open\command
+    (默认) = "C:\...\ApkStart.exe" "%1"</pre>
+  <p class="cap">源码：<a href="https://github.com/RoutineMiku/apkstart/blob/0dc0485ed33e53047ad93d2cdcd985cc80d60c93/src/core/assoc.js#L67">src/core/assoc.js#L67</a> · 只写 HKCU，不动 HKLM。</p>
+
+  <h3>3.2 安装参数：便利背后的权限代价</h3>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>作用</th><th>安全含义</th></tr>
+    <tr><td><code>-r</code></td><td>覆盖安装、保留数据</td><td>同签名可升级；换签名仍失败</td></tr>
+    <tr><td><code>-t</code></td><td>允许 test-only 包</td><td>放宽安装限制，测试包也能装</td></tr>
+    <tr><td><code>-g</code></td><td><b>授予所有运行时权限</b></td><td>应用不再弹相机/麦克风/定位/存储授权框</td></tr>
+    <tr><td><code>--bypass-low-target-sdk-block</code></td><td>允许 targetSdk 很老的包</td><td>老应用可能缺少现代安全缓解</td></tr>
+  </table></div>
+  <div class="warnbox"><b>启动时还有第二层：</b>读取 <code>dumpsys package</code> 的 runtime permissions，对未授予项批量 <code>pm grant</code>；并把 <code>MANAGE_EXTERNAL_STORAGE</code>、<code>SYSTEM_ALERT_WINDOW</code>、<code>REQUEST_INSTALL_PACKAGES</code>、<code>WRITE_SETTINGS</code> 直接设为 allow。源码：<a href="https://github.com/RoutineMiku/apkstart/blob/0dc0485ed33e53047ad93d2cdcd985cc80d60c93/src/core/adb.js#L873">adb.js#L873</a>。</div>
+
+  <h3>3.3 启动链路</h3>
+<pre><span class="copy">复制</span>桌面 &lt;应用名&gt;.lnk
+  → ApkStart.exe --launch &lt;包名&gt;
+  → 单实例/托盘进程接管；运行时没开则自动拉起
+  → 按系统解析到的 LAUNCHER 入口 am start
+  → 存活观察 18 秒；闪退则重试 / 重置数据 / 补权限
+  → 窗口代理把模拟器窗口改成“应用窗口”</pre>
+
+  <h3>3.4 数据与文件边界</h3>
+  <div class="tablewrap"><table>
+    <tr><th>位置</th><th>内容</th><th>注意</th></tr>
+    <tr><td><code>%APPDATA%\apkstart\runtime</code></td><td>轻量版下载的 adb/emulator</td><td>完整版随安装目录</td></tr>
+    <tr><td><code>%APPDATA%\apkstart\system-images</code></td><td>展开后的 Android 14 镜像</td><td>首次解压约 20 秒</td></tr>
+    <tr><td><code>%APPDATA%\apkstart\avd</code></td><td>AVD、已装应用、快照</td><td>快照可达数 GB</td></tr>
+    <tr><td><code>%APPDATA%\apkstart\apks</code></td><td>APK 备份</td><td>用于重装/恢复</td></tr>
+    <tr><td><code>%USERPROFILE%\ApkStartShared</code></td><td>与 <code>/sdcard/ApkStartShared</code> 双向同步</td><td><b>所有能访问 /sdcard 的应用共享（安装时默认全权限）；不要放敏感文件</b></td></tr>
+  </table></div>
+  <div class="critbox"><b>共享目录不是沙箱。</b>它是一个秒级双向同步的“投递箱”；能访问 `/sdcard` 的应用都能读写。放进去的文件，等于对所有已安装 Android 应用可见。</div>
+
+  <h3>3.5 所有应用共用一台 Android</h3>
+  <p>打开新应用时，项目可能 <code>force-stop</code> 其他用户应用，以控制内存/网络；这不是“每个应用一台虚拟机”。所以：后台常驻、多开、推送保活等手机上的习惯，在这里不一定成立。</p>
+</section>
+
+<section id="s4" data-topic="requirements mechanism">
+  <div class="sec-head"><span class="sec-num">04</span><h2>运行要求与真实成本</h2><span class="sec-note">Win10/11 x64 · VT · WHPX/AEHD · 17.66GB</span></div>
+  <p class="lead">视频只给了“Android 14 / 3.0GB 内存 / 4 核 / 硬件加速”的状态条，没讲这些数字从哪来、对宿主意味着什么。</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>项</th><th>要求 / 实测</th><th>来源</th></tr>
+    <tr><td>Windows</td><td><b>Windows 10/11 x64</b>；MSIX 清单最低 10.0.19041.0</td><td>README 徽章 + electron-builder.yml</td></tr>
+    <tr><td>CPU</td><td>Intel VT-x + EPT + Unrestricted Guest，或 AMD SVM；BIOS/UEFI 开启</td><td>Android Emulator 官方文档</td></tr>
+    <tr><td>加速</td><td><b>WHPX</b>（Windows 虚拟机监控程序平台）或 <b>AEHD</b>（Google 驱动）；都没有则 TCG 软件模拟</td><td>README / 用户手册</td></tr>
+    <tr><td>内存</td><td>宿主 8GB 起步、16GB 更稳；Android 侧自动 2–8GB（不超过宿主一半）；视频实测 3.0GB</td><td>preflight.js + 视频 0:30</td></tr>
+    <tr><td>磁盘</td><td>安装包 1.39GB；展开 + AVD + 快照 + 数据会显著增长；<b>视频实测 17.66GB</b>；建议预留 25–30GB</td><td>Releases + 视频 0:30</td></tr>
+    <tr><td>管理员</td><td>安装本身不需要；开 WHPX / 装 AEHD 需要一次管理员</td><td>README / 用户手册</td></tr>
+    <tr><td>网络</td><td>QEMU 用户态 NAT，不创建虚拟网卡；出口复用主机物理网卡</td><td>README / emulator.js</td></tr>
+    <tr><td>嵌套虚拟化</td><td>未承诺；在虚拟机里再跑，取决于宿主是否开启嵌套虚拟化</td><td><span class="badge todo">待核实</span></td></tr>
+  </table></div>
+
+  <div class="ledger" aria-label="存储账本：安装包与实测占用对比">
+    <h4>存储账本</h4>
+    <p class="sub">同一台机器上的“下载体积”和“最终占用”不是一回事；单位 GB，线性比例。</p>
+    <div class="bar-row">
+      <div class="bar-label"><b>完整安装包</b>Setup.exe</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.9%"></div></div>
+      <div class="bar-val">1.39 GB</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><b>运行时包</b>runtime.zip</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.7%"></div></div>
+      <div class="bar-val">1.37 GB</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><b>视频实测占用</b>运行+数据+缓存</div>
+      <div class="bar-track"><div class="bar-fill gold" style="width:100%"></div></div>
+      <div class="bar-val">17.66 GB</div>
+    </div>
+    <p class="note">来源：GitHub Release 资产大小（v0.6.2）与视频 0:30 设置页“磁盘总占用 17.66 GB · 可回收 1.35 GB”。不同机器、快照策略、已装应用数量会显著改变最终占用；这是“同一台机器”的实测，不是承诺值。</p>
+  </div>
+
+  <h3>4.1 WHPX vs AEHD</h3>
+  <div class="tablewrap"><table>
+    <tr><th>方式</th><th>是什么</th><th>重启</th><th>与 Hyper-V/WSL2 共存</th><th>备注</th></tr>
+    <tr><td><b>WHPX</b></td><td>Windows 自带“Windows 虚拟机监控程序平台”</td><td>开启后要</td><td>可以</td><td>推荐；别和 WSL2 的 <code>VirtualMachinePlatform</code> 搞混</td></tr>
+    <tr><td><b>AEHD</b></td><td>Google 内核驱动</td><td>不用</td><td>通常要求关闭 Hyper-V/VBS 类功能</td><td>Google 计划 <b>2026-12-31 sunset</b>，之后迁移到 WHPX</td></tr>
+    <tr><td>TCG</td><td>纯软件模拟</td><td>不用</td><td>不涉及</td><td>能跑但开机几分钟、掉帧，只适合应急</td></tr>
+  </table></div>
+
+  <h3>4.2 性能预期</h3>
+  <div class="tablewrap"><table>
+    <tr><th>场景</th><th>时间</th></tr>
+    <tr><td>首次冷启动</td><td>约 23–48 秒</td></tr>
+    <tr><td>命中 quickboot 快照</td><td>约 10 秒</td></tr>
+    <tr><td>横竖屏切换导致运行时重启</td><td>约 40–50 秒</td></tr>
+    <tr><td>第二个应用（运行时已常驻）</td><td>接近瞬时（一次 <code>am start</code>）</td></tr>
+    <tr><td>空闲预热</td><td>默认开启，常驻约 1GB 内存，可关</td></tr>
+  </table></div>
+  <p class="cap">数据来源：作者用户手册 v0.6.2；视频没有给出启动耗时。另：Windows 10 已于 2025-10-14 结束常规支持，能跑不等于仍有安全更新。</p>
+
+  <details class="fold"><summary>常见失败原因速查（展开）</summary><div class="body">
+    <div class="tablewrap"><table>
+      <tr><th>症状</th><th>最可能原因</th><th>处理</th></tr>
+      <tr><td>提示“未启用硬件加速”，开机几分钟</td><td>WHPX/AEHD 都没生效，回退 TCG</td><td>开 HypervisorPlatform 并重启，或装 AEHD；确认 BIOS VT 已开</td></tr>
+      <tr><td>开了虚拟化还是不行</td><td>只开 VirtualMachinePlatform，或 Hyper-V/VBS 与 AEHD 冲突</td><td>改用 WHPX；检查 HypervisorPresent</td></tr>
+      <tr><td>双击图标没反应/一直转圈</td><td>冷启动 23–48 秒；连点导致实例竞争</td><td>点一次，等待；看 <code>%APPDATA%\apkstart\logs</code></td></tr>
+      <tr><td><code>INSTALL_FAILED_NO_MATCHING_ABIS</code></td><td>ARM-only 应用，翻译层未就位</td><td>让 ApkStart 自动切 Android 14 兼容镜像；或手动下载后重启运行时</td></tr>
+      <tr><td><code>INSTALL_FAILED_INSUFFICIENT_STORAGE</code></td><td>数据盘/宿主磁盘不足</td><td>清理磁盘；把数据目录改到大盘；关快照/调小数据分区</td></tr>
+      <tr><td><code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code></td><td>新旧 APK 签名不一致</td><td>先卸载旧版再装</td></tr>
+      <tr><td>adb unauthorized</td><td>首次 adb 授权没人点</td><td>在模拟器窗口点“允许 USB 调试”；不要删 adbkey</td></tr>
+      <tr><td>应用闪退</td><td>ARM 翻译层/反模拟器/API 不兼容</td><td>看诊断报告；换 Android 14 镜像；反模拟器应用无解</td></tr>
+      <tr><td>桌面图标空白</td><td>早期版本 IconLocation 错误/快捷方式路径失效</td><td>设置 → 系统集成 → 重建快捷方式</td></tr>
+    </table></div>
+  </div></details>
+</section>
+
+<section id="s5" data-topic="requirements">
+  <div class="sec-head"><span class="sec-num">05</span><h2>兼容性：能跑什么，跑不了什么</h2><span class="sec-note">x86 直接跑 · ARM 靠 ndk_translation</span></div>
+  <p class="lead">Android 14 Play x86_64 镜像 + ARM 翻译层，覆盖了大多数国产应用；但“模拟器”三个字决定了它的天花板。</p>
+
+  <div class="cards">
+    <div class="card ok"><h4>通常可跑</h4><div class="t">工具 / 阅读 / 短视频 / 天气</div><p>x86_64 原生 APK 直接跑；ARM-only APK 靠镜像内置的 <code>ndk_translation</code>；支持 <code>.apks</code>/<code>.xapk</code> 拆分包。视频演示的是天气类应用。</p><span class="tag">作者称红果短剧可跑</span></div>
+    <div class="card warn"><h4>可能受限</h4><div class="t">大型 3D / 高帧率游戏</div><p>QEMU + GPU 转译 + 窗口代理，性能与输入延迟都不如原生；大型 3D 游戏不是它的强项，作者也这么写。</p><span class="tag">别指望电竞</span></div>
+    <div class="card crit"><h4>很可能跑不了</h4><div class="t">银行 / 支付 / 2FA / DRM</div><p>反模拟器、Play Integrity/SafetyNet、硬件密钥、真实传感器/基带校验；可能直接拒绝运行或功能残缺。</p><span class="tag">不要用于敏感账号</span></div>
+    <div class="card"><h4>共享运行时</h4><div class="t">多开 / 后台常驻 ≠ 手机</div><p>所有应用共用一台 Android；打开新应用可能停掉旧的。推送保活、后台多任务与手机行为不同。</p><span class="tag">一个 VM</span></div>
+  </div>
+
+  <div class="tablewrap"><table>
+    <tr><th>维度</th><th>支持情况</th><th>说明</th></tr>
+    <tr><td>x86 / x86_64 APK</td><td><span class="badge lo">直接支持</span></td><td>镜像就是 x86_64</td></tr>
+    <tr><td>ARM-only APK</td><td><span class="badge lo">翻译支持</span></td><td>Android 14 镜像内置新版 <code>ndk_translation</code>；旧 API 30 镜像可能触发 SIGABRT</td></tr>
+    <tr><td>.apks / .xapk</td><td><span class="badge lo">支持</span></td><td>自动解分片，走 <code>install-multiple</code></td></tr>
+    <tr><td>GMS / Google Play 镜像</td><td><span class="badge todo">待核实</span></td><td>镜像是 Google Play x86_64，作者称 GMS 可跑；视频未演示 Play 商店登录/完整 GMS</td></tr>
+    <tr><td>Android 15+ / 更高 API</td><td><span class="badge hi">不支持</span></td><td>当前镜像 Android 14（API 34）</td></tr>
+    <tr><td>真实传感器 / NFC / SIM / 基带</td><td><span class="badge hi">不可用</span></td><td>模拟器无法提供真实硬件</td></tr>
+    <tr><td>反模拟器应用</td><td><span class="badge hi">可能拒绝</span></td><td>银行、部分游戏、部分流媒体</td></tr>
+  </table></div>
+
+  <div class="warnbox"><b>视频只演示了一个天气应用。</b>这不代表“所有 APK 都能跑”。项目 README 也明确写了“大型 3D 游戏不是强项”“个别应用自带更深的反模拟检测仍可能受限”。</div>
+</section>
+
+<section id="s6" data-topic="risk">
+  <div class="sec-head"><span class="sec-num">06</span><h2>安全、隐私与合规</h2><span class="sec-note">按“不可信虚拟机”对待</span></div>
+  <p class="lead">项目是 MIT 开源、代码可审计；但“运行未知 APK”这件事本身，加上自动权限和自动更新，把风险放大了。</p>
+
+  <div class="riskmap" aria-label="风险矩阵：横轴可能性，纵轴影响">
+    <div class="q"><h5>高影响 · 高可能</h5>
+      <div class="item"><span class="sev c">▲ 严重</span><span><b>未知 APK + 自动全权限</b>：相机/麦克风/定位/存储/悬浮窗/装包全部放行。</span></div>
+      <div class="item"><span class="sev h">◆ 高</span><span><b>共享目录</b>：能访问 <code>/sdcard</code> 的应用可读写 <code>ApkStartShared</code>。</span></div>
+    </div>
+    <div class="q"><h5>高影响 · 中可能</h5>
+      <div class="item"><span class="sev h">◆ 高</span><span><b>更新/运行时供应链</b>：未签名、无独立哈希、公共反代、自动执行。</span></div>
+      <div class="item"><span class="sev h">◆ 高</span><span><b>宿主网络边界</b>：guest 可经 NAT 访问外网/宿主 loopback/LAN。</span></div>
+    </div>
+    <div class="q"><h5>中影响 · 中可能</h5>
+      <div class="item"><span class="sev m">● 中</span><span><b>运行时许可证</b>：MIT 不覆盖 Google Emulator/Play 镜像/QEMU。</span></div>
+      <div class="item"><span class="sev m">● 中</span><span><b>驱动/提权</b>：WHPX/AEHD 需要管理员；AEHD 2026-12-31 sunset。</span></div>
+    </div>
+    <div class="q"><h5>中低影响 · 中低可能</h5>
+      <div class="item"><span class="sev m">● 中</span><span><b>项目年龄</b>：3 周、94 open issues、日更，无长期支持。</span></div>
+      <div class="item"><span class="sev m">● 中</span><span><b>数据落盘</b>：APK/应用数据/快照在 <code>%APPDATA%</code>，是否加密看 Windows。</span></div>
+    </div>
+  </div>
+  <p class="cap">形状 + 文字标签共同编码，不依赖颜色；这是概念性风险排序，不是精确概率模型。</p>
+
+  <h3>6.1 权限自动授予：便利与风险的交换</h3>
+  <pre><span class="copy">复制</span><span class="c"># 安装（源码 adb.js#L460）</span>
+adb install -r -t -g --bypass-low-target-sdk-block &lt;file&gt;
+
+<span class="c"># 启动时（源码 adb.js#L873）</span>
+pm grant &lt;pkg&gt; &lt;permission&gt; ...
+cmd appops set &lt;pkg&gt; MANAGE_EXTERNAL_STORAGE allow
+cmd appops set &lt;pkg&gt; SYSTEM_ALERT_WINDOW allow
+cmd appops set &lt;pkg&gt; REQUEST_INSTALL_PACKAGES allow
+cmd appops set &lt;pkg&gt; WRITE_SETTINGS allow</pre>
+  <div class="critbox"><b>这意味着：</b>应用不再弹 Android 的权限授权框。对体验是加分，对安全是减分。恶意 APK 在 guest 内几乎拿到它能申请的一切；再叠加共享目录和 NAT 网络，影响面不止“一个沙箱应用”。</div>
+  <div class="okbox"><b>别误解：</b>Android 的 PackageManager 仍会校验 APK 签名与格式，这能证明“包完整/同签名”，<b>不能证明无恶意</b>；项目本身不做恶意软件信誉扫描。签名校验不是安全背书。</div>
+
+  <h3>6.2 网络：不创建虚拟网卡 ≠ 隔离</h3>
+  <p>QEMU 用户态 NAT 让 guest 拿到 <code>10.0.2.x</code>，出口复用主机网卡；guest 可以访问互联网，也可能访问宿主 loopback（<code>10.0.2.2</code>）和宿主可达的 LAN 服务。项目不做应用级网络隔离或内容审查。若需要强隔离，应把 ApkStart 放进单独的 Windows 虚拟机/独立网络。</p>
+
+  <h3>6.3 供应链：更新链路的具体风险点</h3>
+  <div class="cards">
+    <div class="card crit"><h4>未签名</h4><div class="t">NSIS 无代码签名</div><p><code>electron-builder.yml</code> 没有证书配置；项目文档也写“用户自己承担 SmartScreen”。SmartScreen 警告不是误报，应认真对待。</p></div>
+    <div class="card crit"><h4>无独立哈希</h4><div class="t">下载层支持，调用未传</div><p><code>download.js</code> 有 <code>expectSha256</code> 能力，但 updater/provision 的调用没有传；完整性依赖 HTTPS 与源站。</p></div>
+    <div class="card warn"><h4>公共反代</h4><div class="t">ghfast.top / gh-proxy.com</div><p>候选源包含公共 GitHub 加速前缀；代理能终止 TLS、替换内容。默认 <code>autoMirror</code> 会启用。</p></div>
+    <div class="card warn"><h4>自动替换</h4><div class="t">下载 → 执行/覆盖</div><p>安装版静默跑 Setup；便携版解压覆盖程序目录；替换由 PowerShell 完成。上游账号或镜像被攻破 = 自动执行代码。</p></div>
+  </div>
+  <div class="warnbox"><b>视频里的夸克网盘包不是官方发布。</b>复现只用 GitHub/Gitee 官方 Releases；自己算 SHA-256 并存档；受管环境关闭自动更新。</div>
+
+  <h3>6.4 许可证：MIT 只覆盖 ApkStart 自己</h3>
+  <div class="tablewrap"><table>
+    <tr><th>组件</th><th>许可</th><th>再分发注意</th></tr>
+    <tr><td>ApkStart 代码</td><td>MIT</td><td>保留版权/许可声明</td></tr>
+    <tr><td>Google Android Emulator</td><td>Google 条款</td><td>完整包内置运行时；再分发前核对条款</td></tr>
+    <tr><td>Android 14 Play 系统镜像</td><td>Google 条款</td><td>不是 MIT；不是“随便打包分发”</td></tr>
+    <tr><td>QEMU / 其他开源组件</td><td>GPLv2 等</td><td>再分发二进制时通常需要提供相应源代码/许可信息</td></tr>
+    <tr><td>你安装的 APK</td><td>该应用自己的许可</td><td>部分应用禁止模拟器/非授权设备，绕过可能违约</td></tr>
+  </table></div>
+  <div class="warnbox"><b>一处需要核对的矛盾：</b>README 许可证段说“发行包只含 ApkStart 自身代码与 Electron 运行时，不分发系统镜像、QEMU 二进制或 Google 组件”；但完整安装包约 1.39GB，README 前文又写“内置全部运行时”。企业再分发前应做法律核对，不要默认 MIT 覆盖一切。</div>
+
+  <h3>6.5 隐私：作者声明与本机现实</h3>
+  <p>作者隐私政策（<code>docs/privacy.md</code>）声明：无账号、无设备标识、无位置、无统计/埋点/崩溃上报/广告 SDK、无自有服务器。这是作者声明，本文未做抓包审计。注意：</p>
+  <ul class="clean">
+    <li>Android 应用自身的联网/追踪不受 ApkStart 控制；</li>
+    <li>共享目录、APK 备份、应用数据、快照都在本机目录；是否加密取决于 Windows/BitLocker；</li>
+    <li>诊断报告可能含机型、驱动版本、内存等，导出前检查内容。</li>
+  </ul>
+
+  <h3>6.6 加固清单</h3>
+  <ul class="checklist">
+    <li>只装可信 APK；装前用 Defender 扫描</li>
+    <li>装后进安卓系统设置收回不必要权限</li>
+    <li>共享目录不放密码库/私钥/证件</li>
+    <li>不在其中登录网银/支付/2FA/公司账号</li>
+    <li>高风险应用放独立 Windows 账户或独立虚拟机</li>
+    <li>受管设备关闭自动更新，锁定版本并复核哈希</li>
+    <li>不把 adb 5044 暴露到局域网</li>
+    <li>定期清理快照/旧镜像，监控磁盘</li>
+  </ul>
+</section>
+
+<section id="s7" data-topic="choice">
+  <div class="sec-head"><span class="sec-num">07</span><h2>替代方案</h2><span class="sec-note">WSA 已 EOL · 官方模拟器最可控</span></div>
+  <p class="lead">如果你只是要“在 Windows 上跑一两个 Android 应用”，先想清楚要的是<b>体验</b>、<b>稳定</b>还是<b>可支持</b>。</p>
+  <div class="tablewrap"><table>
+    <tr><th>方案</th><th>形态/许可</th><th>任意 APK</th><th>独立窗口</th><th>主要风险/限制</th><th>适合谁</th></tr>
+    <tr><td><b>ApkStart</b></td><td>MIT + Google 运行时</td><td>是（受 ABI/API/反模拟器限制）</td><td>是（改写的模拟器窗口）</td><td>自动全权限、供应链、年轻项目、磁盘占用大</td><td>玩家/开发者/折腾党</td></tr>
+    <tr><td><b>WSA + 侧载</b></td><td>微软官方，已停更</td><td>是（历史方案）</td><td>部分工具支持</td><td><b>2025-03-05 已 EOL</b>，无安全更新，新安装困难</td><td>不建议新部署</td></tr>
+    <tr><td><b>Android Studio Emulator</b></td><td>Google 官方，免费</td><td>是</td><td>模拟器窗口（可多开）</td><td>面向开发、配置重、无原生图标/窗口包装；但最可控、官方支持</td><td>开发者/测试</td></tr>
+    <tr><td><b>Google Play Games on PC</b></td><td>Google 官方，免费</td><td>否（精选游戏目录）</td><td>是</td><td>仅游戏、地区/目录受限</td><td>目录内游戏玩家</td></tr>
+    <tr><td><b>BlueStacks / MuMu / LDPlayer</b></td><td>闭源免费（含广告/推广）</td><td>是</td><td>是</td><td>广告/捆绑、隐私、资源占用、游戏向</td><td>游戏玩家</td></tr>
+    <tr><td><b>Genymotion</b></td><td>商业/云</td><td>是</td><td>模拟器窗口</td><td>收费、面向企业/开发</td><td>企业测试</td></tr>
+    <tr><td><b>Waydroid</b></td><td>开源，Linux 容器</td><td>是</td><td>是</td><td><b>Linux only</b>；需要内核模块</td><td>Linux 用户</td></tr>
+    <tr><td><b>云手机</b></td><td>商业云服务</td><td>是</td><td>视服务</td><td>数据离开本机、延迟、订阅、隐私</td><td>远程/多开</td></tr>
+    <tr><td><b>Phone Link</b></td><td>微软</td><td>否</td><td>手机投屏</td><td>不是在本机跑 Android</td><td>投屏/通知</td></tr>
+  </table></div>
+
+  <div class="okbox"><b>选型一句话：</b>要体验、愿意折腾 → ApkStart；要稳定可支持 → Android Studio Emulator/商业方案；要玩游戏 → 官方 Play Games PC 或成熟商业模拟器；WSA 不要再用于新部署。</div>
+</section>
+
+<section id="s8" data-topic="repro">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Windows 复现步骤（只写文档）</h2><span class="sec-note">非受管机器 · 可信 APK · 官方 Release</span></div>
+  <div class="warnbox"><b>本文未在本机安装任何 Windows/Android 工具。</b>以下步骤仅供 Windows 用户在合规、可信的前提下参考；受管设备请先走 IT 安全评审，不要绕过 SmartScreen/EDR/组织策略。</div>
+
+  <h3>8.1 只读体检</h3>
+  <pre><span class="copy">复制</span><span class="c"># PowerShell（只读）</span>
+Get-ComputerInfo | Select-Object OsName, OsVersion, OsArchitecture
+Get-CimInstance Win32_Processor |
+  Select-Object Name, VirtualizationFirmwareEnabled, VMMonitorModeExtensions
+Get-CimInstance Win32_ComputerSystem | Select-Object TotalPhysicalMemory, HypervisorPresent
+Get-PSDrive C | Select-Object Used, Free</pre>
+  <ul class="clean">
+    <li>必须是 64-bit Windows 10/11；VT-x/SVM 在 BIOS/UEFI 已开启。</li>
+    <li>C 盘至少预留 25–30GB（视频实测 17.66GB；不同快照/应用数量会变）。</li>
+    <li>8GB 内存能跑但紧；16GB 更稳。</li>
+  </ul>
+
+  <h3>8.2 获取官方安装包</h3>
+  <div class="tablewrap"><table>
+    <tr><th>来源</th><th>链接</th><th>说明</th></tr>
+    <tr><td>GitHub Releases</td><td><a href="https://github.com/RoutineMiku/apkstart/releases">github.com/RoutineMiku/apkstart/releases</a></td><td>首选；只认官方账号</td></tr>
+    <tr><td>Gitee Releases</td><td><a href="https://gitee.com/daily-miku/apkstart/releases">gitee.com/daily-miku/apkstart/releases</a></td><td>国内镜像；README 指定</td></tr>
+    <tr><td>视频简介夸克网盘</td><td><b>不要使用</b></td><td>非官方渠道，无法验证是否二次打包</td></tr>
+  </table></div>
+  <pre><span class="copy">复制</span><span class="c"># 下载后自己记录哈希（官方截至 v0.6.2 未发布 .sha256）</span>
+Get-FileHash .\ApkStart-0.6.2-Setup.exe -Algorithm SHA256</pre>
+
+  <h3>8.3 安装与运行时</h3>
+  <ol class="clean">
+    <li>以普通用户运行 Setup（安装本身不需要管理员）；若 SmartScreen 提示未知发布者，先核对来源与哈希，受管设备不要绕过策略。</li>
+    <li>选择安装目录（可放非系统盘，减轻 C 盘压力）。</li>
+    <li>首次启动部署运行时：轻量版下载 adb + Android Emulator + Android 14 镜像（约 1.37GB）；完整版直接展开。</li>
+    <li>若提示“未启用硬件加速”：设置 → 诊断与修复 → 本机体检 → 修复；或管理员 PowerShell 开 WHPX 后重启：
+      <pre><span class="copy">复制</span>dism /online /enable-feature /featurename:HypervisorPlatform /all /norestart</pre>
+      不要只开 <code>VirtualMachinePlatform</code>（那是 WSL2 用的）。
+    </li>
+    <li>等待 Android 14 首次开机（约 23–48 秒；无加速更久）。不要连点图标。</li>
+  </ol>
+
+  <h3>8.4 开启双击安装并装第一个 APK</h3>
+  <ol class="clean">
+    <li>ApkStart → 设置 → 系统集成 → <b>关联 .apk 文件</b>（只写 HKCU，免管理员）。</li>
+    <li>双击一个可信的小工具 APK（或拖进窗口）。</li>
+    <li>首次可能弹“允许 USB 调试？”——按提示允许；这是 adb 授权，不是应用权限。不要删 <code>%USERPROFILE%\.android\adbkey</code>。</li>
+    <li>桌面出现图标后双击启动；F11 全屏/窗口，Ctrl+Alt+R 旋转。</li>
+  </ol>
+
+  <h3>8.5 装完立刻加固</h3>
+  <ul class="checklist">
+    <li>进“安卓系统设置”收回相机/麦克风/定位/存储/悬浮窗</li>
+    <li>共享目录只放“愿意给所有能访问 /sdcard 的应用看”的文件</li>
+    <li>不登录网银/支付/2FA/公司账号</li>
+    <li>高风险应用放独立 Windows 账户或独立虚拟机</li>
+    <li>受管环境关闭自动更新，锁定版本并复核哈希</li>
+    <li>不把 5044 adb 端口暴露到局域网</li>
+  </ul>
+
+  <h3>8.6 卸载与清理</h3>
+  <ol class="clean">
+    <li>应用内右键 → 卸载 Android 应用；</li>
+    <li>设置 → 系统集成 → 取消 <code>.apk</code> 关联；</li>
+    <li>Windows 设置 → 应用 → 卸载 ApkStart；</li>
+    <li>按需删除 <code>%APPDATA%\apkstart</code> 与 <code>%USERPROFILE%\ApkStartShared</code>（会丢失所有 Android 应用数据，不可恢复）；</li>
+    <li>若装过 AEHD，按 Google 官方说明卸载；WHPX 是 Windows 功能，可在“启用或关闭 Windows 功能”里关闭。</li>
+  </ol>
+
+  <div class="okbox"><b>验收标准：</b>64-bit Win10/11 + VT + ≥25GB 空闲；安装包来自官方 Release 且记录了 SHA-256；运行时显示 Android 14 就绪；`.apk` 关联可用；双击图标能开独立窗口；已收回不必要权限；共享目录无敏感文件；卸载后关联恢复。</div>
+</section>
+
+<section id="s9" data-topic="core" data-core="1">
+  <div class="sec-head"><span class="sec-num">09</span><h2>来源、置信度与待核实</h2><span class="sec-note">一手来源优先</span></div>
+  <div class="grid2">
+    <div class="card"><h4>一手来源</h4><div class="t">视频 + 仓库 + 源码</div>
+      <ul class="src-list">
+        <li>视频：<a href="https://www.bilibili.com/video/BV1XcsK6AEFs">BV1XcsK6AEFs</a>（UP 主“资源汇社区”，2026-11-19，66.4s；简介直接给出 GitHub 链接）</li>
+        <li>仓库：<a href="https://github.com/RoutineMiku/apkstart">RoutineMiku/apkstart</a>（快照 <code>0dc0485</code>，v0.6.2）</li>
+        <li>Releases：<a href="https://github.com/RoutineMiku/apkstart/releases">版本与资产大小</a></li>
+        <li>Gitee 镜像：<a href="https://gitee.com/daily-miku/apkstart/releases">daily-miku/apkstart</a></li>
+        <li>仓库文档：<code>docs/USER-MANUAL.md</code>、<code>docs/ARCHITECTURE.md</code>、<code>docs/privacy.md</code>、<code>docs/preflight.md</code></li>
+      </ul>
+    </div>
+    <div class="card"><h4>外部官方来源</h4><div class="t">WSA / Emulator / AEHD</div>
+      <ul class="src-list">
+        <li>Microsoft WSA 支持终止：<a href="https://learn.microsoft.com/en-us/previous-versions/windows/android/wsa/release-notes">2025-03-05 EOL</a></li>
+        <li>Android Developers：<a href="https://developer.android.com/studio/run/emulator-acceleration">Emulator 硬件加速（WHPX/AEHD）</a></li>
+        <li>Google AEHD 仓库：计划 <a href="https://github.com/google/android-emulator-hypervisor-driver">2026-12-31 sunset</a></li>
+        <li>Google Play Games on PC：<a href="https://support.google.com/googleplay/answer/11358071">支持要求与目录限制</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>9.1 置信度</h3>
+  <div class="tablewrap"><table>
+    <tr><th>结论</th><th>置信度</th><th>依据</th></tr>
+    <tr><td>项目是 RoutineMiku/apkstart</td><td><b>100%</b></td><td>视频简介链接 + 画面 About/许可证/版本/贡献者 + 仓库 API 全部吻合</td></tr>
+    <tr><td>底层是 Google Android Emulator + QEMU</td><td><b>高</b></td><td>README 自述 + 源码 + 运行时参数 + About 文案</td></tr>
+    <tr><td>不是 WSA</td><td><b>高</b></td><td>README 明确不依赖/不接管 WSA；源码无 WSA 调用</td></tr>
+    <tr><td>自动授予全部运行时权限</td><td><b>高</b></td><td>源码 <code>adb install -g</code> + <code>pm grant</code> + appops</td></tr>
+    <tr><td>更新/运行时时无独立哈希校验</td><td><b>高</b></td><td>源码调用未传 <code>expectSha256</code>；Releases 无 .sha256 资产</td></tr>
+    <tr><td>商店公开上架</td><td><span class="badge todo">待核实</span></td><td>仓库有打包/提交材料，但未见公开商品页；视频未提</td></tr>
+    <tr><td>GMS/Play 商店完整体验</td><td><span class="badge todo">待核实</span></td><td>作者称 GMS 可跑；视频未演示 Play 登录</td></tr>
+    <tr><td>完整包运行时再分发合规</td><td><span class="badge todo">待核实</span></td><td>README 许可证段与“完整包内置运行时”表述矛盾，需法务核对</td></tr>
+  </table></div>
+
+  <div class="warnbox"><b>不要从本文复制“视频没说的内容”当视频结论。</b>视频只演示了安装、窗口、右键菜单和一个天气应用；WSA/ADB/权限/安全/许可证都是仓库或本文分析补充的。本文对不确定项已标“待核实”。</div>
+</section>
+
+</main>
+
+<footer>
+  <p>ApkStart 拆解 · 2026-11-19 · 配套 Markdown：<a href="apk-on-windows-teardown.md">docs/apk-on-windows-teardown.md</a>（含完整来源与源码行号）</p>
+  <p>本文为独立技术拆解，不代表项目作者；未分发视频画面/音频/文案原文。所有图表为原创 HTML/CSS，自包含、无 CDN。</p>
+</footer>
+
+<div class="fab">
+  <button id="themeBtn" type="button">主题：暗</button>
+</div>
+
+</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('apk-teardown-theme');
+  if (saved) root.dataset.theme = saved;
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) root.dataset.theme = 'light';
+  let themeChip = null;
+  function syncTheme(){
+    const label = '主题：' + (root.dataset.theme === 'dark' ? '暗' : '亮');
+    themeBtn.textContent = label;
+    if (themeChip) themeChip.textContent = label;
+  }
+  function toggleTheme(){
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('apk-teardown-theme', root.dataset.theme);
+    syncTheme();
+  }
+  syncTheme();
+  themeBtn.addEventListener('click', toggleTheme);
+
+  const progress = document.getElementById('progress');
+  function onScroll(){
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const sections = Array.from(document.querySelectorAll('main > section'));
+  const tocLinks = Array.from(document.querySelectorAll('nav.toc a'));
+  let active = 'all';
+  let searchEl = null;
+  let countEl = null;
+
+  function apply(){
+    const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    let shown = 0;
+    sections.forEach(sec => {
+      const topics = (sec.dataset.topic || '').split(/\s+/);
+      const isCore = sec.dataset.core === '1';
+      const topicOk = active === 'all' || isCore || topics.includes(active);
+      const textOk = !q || sec.innerText.toLowerCase().includes(q);
+      const show = topicOk && textOk;
+      sec.classList.toggle('off', !show);
+      if (show) shown++;
+    });
+    tocLinks.forEach(link => {
+      const id = link.getAttribute('href').slice(1);
+      const sec = document.getElementById(id);
+      link.classList.toggle('off', !!(sec && sec.classList.contains('off')));
+    });
+    if (countEl) countEl.textContent = '显示 ' + shown + '/' + sections.length + ' 段';
+  }
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'toolbar';
+  toolbar.innerHTML =
+    '<input id="search" type="search" placeholder="搜索：APK / QEMU / 权限 / 17.66 / WHPX / 哈希 / 复现 …  （/ 聚焦，Esc 清除）" aria-label="搜索">' +
+    '<button class="chip active" data-topic="all">全部</button>' +
+    '<button class="chip" data-topic="identify">识别</button>' +
+    '<button class="chip" data-topic="mechanism">机制</button>' +
+    '<button class="chip" data-topic="requirements">要求</button>' +
+    '<button class="chip" data-topic="risk">风险</button>' +
+    '<button class="chip" data-topic="choice">选型</button>' +
+    '<button class="chip" data-topic="repro">复现</button>' +
+    '<button class="chip theme-chip" id="themeChip" type="button" aria-label="切换主题">主题</button>' +
+    '<span id="count"></span>';
+  const main = document.querySelector('main');
+  main.insertBefore(toolbar, main.firstElementChild);
+  searchEl = document.getElementById('search');
+  countEl = document.getElementById('count');
+  themeChip = document.getElementById('themeChip');
+  if (themeChip) themeChip.addEventListener('click', toggleTheme);
+  syncTheme();
+  Array.from(toolbar.querySelectorAll('.chip')).forEach(btn => {
+    btn.addEventListener('click', () => {
+      active = btn.dataset.topic;
+      Array.from(toolbar.querySelectorAll('.chip')).forEach(b => b.classList.toggle('active', b === btn));
+      apply();
+    });
+  });
+  searchEl.addEventListener('input', apply);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchEl) {
+      e.preventDefault(); searchEl.focus();
+    } else if (e.key === 'Escape' && document.activeElement === searchEl) {
+      searchEl.value = ''; searchEl.blur(); apply();
+    }
+  });
+
+  const toolbarHeight = () => toolbar.offsetHeight + 52;
+  sections.forEach(sec => { sec.style.scrollMarginTop = toolbarHeight() + 'px'; });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+      tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    });
+  }, { rootMargin: '-25% 0px -60% 0px', threshold: 0 });
+  sections.forEach(sec => observer.observe(sec));
+
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = pre.querySelector('.copy');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText.replace(/^复制\s*/, '');
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } catch (err) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand('copy');
+          ta.remove();
+        } catch (_) { ok = false; }
+      }
+      btn.textContent = ok ? '已复制' : '复制失败';
+      setTimeout(() => { btn.textContent = '复制'; }, 1200);
+    });
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>技术方案总览 — 等距、水体、雪天、WebGL 复刻与跨引擎移植</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1410'/%3E%3Cpath d='M6 24 16 6l10 18z' fill='%235FD8C9'/%3E%3Ccircle cx='22' cy='9' r='4' fill='%23F2B35C'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --ok:#5FD88A;
+  --grid:rgba(150,200,170,.05);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --ok:#1B7A4A;
+  --grid:rgba(23,38,30,.05);
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1120px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(46px,7vw,90px) clamp(20px,5vw,56px) 26px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.4vw,58px);line-height:1.1;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:74ch;margin:0 0 20px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+.gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:26px 0 0}
+.gallery a{display:block;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card);aspect-ratio:16/9}
+.gallery img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05);transition:transform .35s}
+.gallery a:hover img{transform:scale(1.05)}
+@media screen and (max-width:760px){.gallery{grid-template-columns:repeat(2,1fr)}.gallery a:last-child{display:none}}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+nav.toc a.off{display:none}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 80px}
+section{margin:0 0 clamp(46px,6vw,80px);scroll-margin-top:64px}
+section.off{display:none}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 22px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);position:sticky;top:46px;z-index:40;backdrop-filter:blur(12px)}
+#search{flex:1;min-width:180px;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:9px 12px;outline:none}
+#search:focus{border-color:var(--teal)}
+.chip{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:.2s}
+.chip:hover{color:var(--ink);border-color:var(--line-strong)}
+.chip.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+#count{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin-left:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px 16px;overflow-x:auto;margin:10px 0 16px}
+pre b{color:var(--gold);font-weight:600}
+pre .c{color:var(--ink-faint)}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.idxgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:8px 0 18px}
+a.idx{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 15px;transition:.2s;box-shadow:var(--shadow)}
+a.idx:hover{border-color:var(--teal);transform:translateY(-1px)}
+a.idx.off{display:none}
+a.idx .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em}
+a.idx .t{font-family:var(--serif);font-size:17px;font-weight:700;margin:2px 0 3px}
+a.idx .d{font-size:13px;color:var(--ink-soft)}
+a.idx .s{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:6px}
+.shot{width:100%;border-radius:12px;border:1px solid var(--line);display:block;margin:8px 0 4px;background:var(--card)}
+.cap{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:0 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media screen and (max-width:760px){.grid2{grid-template-columns:1fr}.toolbar{position:static}}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+footer a{color:var(--teal);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+.kbd{font-family:var(--mono);font-size:11px;color:var(--ink-faint);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+#s9 table td:first-child{white-space:nowrap}
+@media print{.toolbar,.fab,nav.toc,.progress{display:none}section.off{display:block!important}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span> 2026-11 · DEV LOG SUMMARY · 6 DEMOS / 3 RESEARCH / 1 PORT MAP</div>
+  <h1>从等距地牢到<span class="u">云海骑行</span><br>技术方案总览</h1>
+  <p class="sub">这轮做过的 <b>2D 等距、程序化资产管线、GLB Mod、通透像素水、雪天、Three.js 海岛/云海</b>，
+    按“目标 → 方案 → 参数 → 坑 → 验收”整理，并给出 <b>Godot / Unity / Unreal / Three.js 的跨引擎映射与移植契约</b>。结论先行：<b>能复用的不是代码，而是这几套模式、数据协议和验收协议。</b></p>
+  <div class="stat-row">
+    <span class="stat"><b>6</b> 可运行 Demo</span>
+    <span class="stat"><b>3</b> 技术栈</span>
+    <span class="stat"><b>9</b> 套可复用模式</span>
+    <span class="stat"><b>12</b> 项跨引擎映射</span>
+    <span class="stat"><b>3</b> 语言 golden</span>
+    <span class="stat"><b>1</b> 净室 AI 工作流</span>
+    <span class="stat">源码 + 文档 + GIF 全在仓库</span>
+  </div>
+  <div class="gallery">
+    <a href="#s1"><img loading="lazy" src="../godot-iso-slice/docs/shots/01_start.png" alt="等距地牢"></a>
+    <a href="#s4"><img loading="lazy" src="../godot-sea-water/docs/shots/01_day.png" alt="通透水体"></a>
+    <a href="#s5"><img loading="lazy" src="../godot-snowfall/docs/shots/01_night.png" alt="雪天"></a>
+    <a href="#s6"><img loading="lazy" src="../craft-island/app/docs/screenshot.png" alt="Three.js 海岛"></a>
+    <a href="#s6"><img loading="lazy" src="../craft-cloudride/app/docs/screenshot.png" alt="云海骑行"></a>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0" class="active">总览</a>
+  <a href="#s1">等距 2D</a>
+  <a href="#s2">资产管线</a>
+  <a href="#s3">GLB Mod</a>
+  <a href="#s4">通透水体</a>
+  <a href="#s5">2D 雪天</a>
+  <a href="#s6">Three.js</a>
+  <a href="#s7">Saltline</a>
+  <a href="#s8">复用清单</a>
+  <a href="#s9">跨引擎</a>
+  <a href="#s10">命令</a>
+  <a href="#s11">来源</a>
+</div></nav>
+
+<main>
+
+<section id="s0" data-stack="core">
+  <div class="sec-head"><span class="sec-num">00</span><h2>总览</h2><span class="sec-note">9 个交付物</span></div>
+  <div class="idxgrid">
+    <a class="idx" href="#s1" data-stack="godot"><div class="n">01</div><div class="t">2D 等距地牢</div><div class="d">128×64 等距 TileSet、Y-Sort、脚底锚点、2D 烛光</div><div class="s">godot-iso-slice · Godot 4.6</div></a>
+    <a class="idx" href="#s2" data-stack="pipeline"><div class="n">02</div><div class="t">规则→离线资产→运行时</div><div class="d">rules.json 双端执行、manifest、逐像素一致、缓存导入</div><div class="s">godot-iso-slice · Python + GDScript</div></a>
+    <a class="idx" href="#s3" data-stack="pipeline"><div class="n">03</div><div class="t">GLB Mod 运行时导入</div><div class="d">hash/tris/bounds/pivot 校验后 GLTFDocument 实例化</div><div class="s">godot-iso-slice · Godot 4.6</div></a>
+    <a class="idx" href="#s4" data-stack="godot"><div class="n">04</div><div class="t">通透像素水体</div><div class="d">mask/折射底/水色/泡沫/焦散 + 涟漪 + 水线 + 昼夜</div><div class="s">godot-sea-water · Godot 4.6</div></a>
+    <a class="idx" href="#s5" data-stack="godot"><div class="n">05</div><div class="t">2D 雪天</div><div class="d">8×3 粒子图集、积雪蒙版、雪帽、脚印、夜灯</div><div class="s">godot-snowfall · Godot 4.6</div></a>
+    <a class="idx" href="#s6" data-stack="three"><div class="n">06</div><div class="t">Three.js 海岛</div><div class="d">GPU 高度场 + 尾迹 + 泡沫 + shader 云</div><div class="s">craft-island · Craft Anything</div></a>
+    <a class="idx" href="#s6" data-stack="three"><div class="n">07</div><div class="t">Three.js 云海骑行</div><div class="d">平面反射 RTT + 程序化 IK 骑手 + 低模云</div><div class="s">craft-cloudride · Craft Anything</div></a>
+    <a class="idx" href="#s7" data-stack="research"><div class="n">08</div><div class="t">Saltline 1.42MB FPS</div><div class="d">程序化规则拆解 + 离线烘焙/运行时导入结论</div><div class="s">docs/saltline-teardown.md</div></a>
+    <a class="idx" href="#s6" data-stack="research"><div class="n">09</div><div class="t">Craft Anything / REA</div><div class="d">净室 AI 复刻工作流 + 工具限制</div><div class="s">Craft Anything v0.6.1</div></a>
+  </div>
+  <div class="warnbox"><b>一句话：</b>这轮最值钱的不是任何一个效果，而是“分层渲染 + 脚底锚点 + 规则/manifest + 真实 GPU 验收”四件套；它们能迁移到下一款游戏。</div>
+</section>
+
+<section id="s1" data-stack="godot">
+  <div class="sec-head"><span class="sec-num">01</span><h2>2D 等距：脚底锚点决定一切</h2><span class="sec-note">godot-iso-slice</span></div>
+  <p class="lead">等距不是 3D：它是一张 <b>2:1 菱形网格</b> + 每帧按 Y 排序 + 把碰撞和排序锚点都放在脚底。</p>
+  <div class="cards">
+    <div class="card"><h4>TileSet</h4><div class="t">形状 + 排列</div><p><code>tile_shape=Isometric</code> + <code>tile_layout=DiamondDown</code>；逻辑 128×64，图集单元 128×160；<code>texture_origin=(0,48)</code>。</p><span class="tag">漏一个就散架</span></div>
+    <div class="card"><h4>Y-Sort</h4><div class="t">树结构 &gt; 属性</div><p>玩家必须和墙层是兄弟；<code>World</code> 打开 y_sort，墙层 <code>y_sort_origin=32</code>。z_index 会压制 Y-Sort。</p><span class="tag">阴影别设 -1</span></div>
+    <div class="card"><h4>移动</h4><div class="t">先除 2 再归一化</div><p><code>Vector2(x, y*0.5).normalized()*speed</code>；8 扇区 <code>(angle+22.5)/45</code> + <code>posmod</code>。</p><span class="tag">顺序反了斜向变慢</span></div>
+    <div class="card"><h4>脚底</h4><div class="t">一个决定治三个病</div><p>图集脚底画在单元中心 → 精灵 <code>(0,0)</code> → 胶囊 <code>y=-11</code>；飘/穿墙/遮挡错乱同源。</p><span class="tag">先修锚点</span></div>
+    <div class="card"><h4>烛光</h4><div class="t">2D 光照 + 遮挡</div><p>CanvasModulate + 6×PointLight2D（PCF5）+ TileSet occlusion layer + 火星粒子。</p><span class="tag">GL Compatibility 实测可用</span></div>
+  </div>
+  <details class="fold"><summary>踩坑与修复</summary><div class="body">
+    <ul class="clean">
+      <li>忘设 <code>tile_shape/layout</code>：菱形之间出现空洞。</li>
+      <li><code>texture_origin</code> 符号相反：墙整体下移、角色悬空。</li>
+      <li>等距“正后方”是 <code>(-1,-1)</code>，不是 <code>-y</code>；遮挡验收站位别用错。</li>
+      <li>3D 灯光在 Intel + GL Compatibility 不工作 → Mod 场景统一 unshaded + 顶点色。</li>
+    </ul>
+  </div></details>
+  <div class="tablewrap"><table>
+    <tr><th>参数</th><th>值</th></tr>
+    <tr><td>tile</td><td>128×64；atlas cell 128×160；texture_origin (0,48)</td></tr>
+    <tr><td>玩家</td><td>50 行；速度 190；胶囊 r9/h22 @ y=-11；8 扇区 +22.5°</td></tr>
+    <tr><td>场景</td><td>14×14；196 地面 / 36 墙；6 盏灯；F1–F4 教学开关</td></tr>
+  </table></div>
+  <p class="cap">详细：<a href="../godot-iso-slice/docs/TECH.md">godot-iso-slice/docs/TECH.md</a></p>
+</section>
+
+<section id="s2" data-stack="pipeline">
+  <div class="sec-head"><span class="sec-num">02</span><h2>规则 → 离线资产 → 运行时导入</h2><span class="sec-note">rules.json / manifest / sha256</span></div>
+  <p class="lead">同一份 <b>rules.json</b> 由 Python 离线烘焙和 GDScript 运行时各执行一次；同 seed 逐字节一致，运行时产物写盘再导入，形成缓存闭环。</p>
+<pre><span class="copy">复制</span><b>rules.json</b>
+   ├── tools/bake_pipeline.py
+   │      └─ PNG + manifest.json（rules_version / seed / sha256_rgba）
+   └── src/sigil_rules.gd
+          └─ Image（同 seed 逐字节相同）→ user:// → Image.load_from_file</pre>
+  <div class="cards">
+    <div class="card ok"><h4>确定性</h4><div class="t">整数-only</div><p>32 位哈希 + 显式 <code>&amp; 0xFFFFFFFF</code>；不用 float / 噪声库，跨语言不分叉。</p></div>
+    <div class="card"><h4>证明</h4><div class="t">5 seeds 全同</div><p>Python 与 GDScript 哈希一致；界面显示 <code>MATCH · 0 px diff</code>，并做缓存回环。</p></div>
+    <div class="card warn"><h4>色彩空间</h4><div class="t">导入 ≠ 原始像素</div><p>Godot 导入会做 sRGB/格式转换；逐像素证明必须读原始 PNG；显示可用导入纹理。</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>路线</th><th>适合</th><th>做法</th></tr>
+    <tr><td>A 构建期烘焙</td><td>正式内容</td><td>CI/headless → manifest → 运行时加载</td></tr>
+    <tr><td>B 运行时烘焙+缓存</td><td>UGC / 无限变体</td><td>设备端生成 → IndexedDB/OPFS 或 <code>user://</code></td></tr>
+    <tr><td>C 运行时导入外部资产</td><td>Mod / UGC</td><td>manifest + PNG/GLB/OGG，校验后热加载</td></tr>
+  </table></div>
+  <p class="cap">详细：<a href="../godot-iso-slice/docs/PIPELINE.md">godot-iso-slice/docs/PIPELINE.md</a> · 验收 <code>PIPELINE_OK seeds=5</code></p>
+</section>
+
+<section id="s3" data-stack="pipeline">
+  <div class="sec-head"><span class="sec-num">03</span><h2>GLB Mod 运行时导入</h2><span class="sec-note">manifest → 校验 → GLTFDocument</span></div>
+  <p class="lead">从 <code>user://mods</code> 扫描 manifest，先校验再实例化；坏资产只显示原因，不进场景。</p>
+<pre><span class="copy">复制</span>res://mods → user://mods → scan manifest
+  → sha256 → GLTFDocument.append_from_file → generate_scene
+  → measure tris / meshes / bounds
+  → validate bounds / footprint / pivot / max_tris
+  → instantiate (unshaded + vertex colors)</pre>
+  <div class="tablewrap"><table>
+    <tr><th>校验</th><th>目的</th></tr>
+    <tr><td>必填字段 + 文件存在</td><td>id / file / sha256 / bounds / footprint / pivot / max_tris</td></tr>
+    <tr><td>sha256</td><td>内容完整性（<b>不是</b>作者签名）</td></tr>
+    <tr><td>tris ≤ max_tris</td><td>防超重资产拖垮帧率/内存</td></tr>
+    <tr><td>bounds/footprint ≤ 声明（±0.02）</td><td>防尺寸/占位造假</td></tr>
+    <tr><td>|min.y| ≤ 0.02</td><td>脚底/底座锚点，防飘/陷地</td></tr>
+  </table></div>
+  <div class="warnbox"><b>坑：</b>bounds 必须合并所有 mesh；第一版只取最后一个 mesh，合法资产被自己的校验拒掉。sha 只能证明“文件没变”，不能证明“谁做的”。</div>
+  <p class="cap">详细：<a href="../godot-iso-slice/docs/MODS.md">godot-iso-slice/docs/MODS.md</a> · 验收 <code>MOD_CHECK_OK</code></p>
+</section>
+
+<section id="s4" data-stack="godot">
+  <div class="sec-head"><span class="sec-num">04</span><h2>通透像素水体</h2><span class="sec-note">godot-sea-water</span></div>
+  <img class="shot" src="../godot-sea-water/docs/shots/01_day.png" alt="通透水体" loading="lazy">
+  <p class="lead">关键不是“水 shader 很复杂”，而是<b>分层</b>：只有水底参与折射/焦散，岸上物体和角色画在水面之上。</p>
+<pre><span class="copy">复制</span>Bottom（沙/石/珊瑚/海草）   ← 只有它“在水里”
+Water（ColorRect + hint_screen_texture）
+Props（岸、台阶、岩石、棕榈） ← 画在水面之上，不折射
+Player（自带水线 shader）</pre>
+  <div class="tablewrap"><table>
+    <tr><th>层</th><th>实现</th></tr>
+    <tr><td>1 mask</td><td>640×360 池塘多边形；mask 外 <code>discard</code></td></tr>
+    <tr><td>2 折射底</td><td>屏幕纹理 + 像素级 UV（<code>floor(uv*res)/res</code>）</td></tr>
+    <tr><td>3 水色</td><td>深度图混合浅/深 + alpha 0.30–0.66</td></tr>
+    <tr><td>4 泡沫</td><td>深度 &lt; 0.16 的岸线 + 可平铺噪声 + 涟漪</td></tr>
+    <tr><td>5 焦散</td><td>64×64 Voronoi（9 站点）40px 平铺、滚动</td></tr>
+    <tr><td>额外</td><td>8 槽事件涟漪、角色水线、0–24 昼夜/反光</td></tr>
+  </table></div>
+  <details class="fold"><summary>踩坑与修复</summary><div class="body">
+    <ul class="clean">
+      <li>fragment 里不能 <code>return</code> → if/else 单出口。</li>
+      <li><b>AtlasTexture 的 shader UV 是整张图集</b>，不是单帧 0..1；水线要传帧 origin/size。</li>
+      <li>改程序化 PNG 后必须 <code>--editor --quit</code> 重新导入。</li>
+      <li>深度量化 16 级 → 竖直色带；焦散线粗/红边 → 满屏噪点；低频阈值 → 迷彩块。</li>
+    </ul>
+  </div></details>
+  <p class="cap">详细：<a href="../godot-sea-water/docs/TECH.md">godot-sea-water/docs/TECH.md</a> · 验收 <code>SEA_SMOKE_OK</code></p>
+</section>
+
+<section id="s5" data-stack="godot">
+  <div class="sec-head"><span class="sec-num">05</span><h2>2D 雪天</h2><span class="sec-note">godot-snowfall</span></div>
+  <img class="shot" src="../godot-snowfall/docs/shots/01_night.png" alt="雪夜墓园" loading="lazy">
+  <p class="lead">视频的两条主线：<b>雪粒子</b>（8×3 图集 + GPUParticles2D）与<b>地面积雪</b>（噪声蒙版 + 覆盖度）；另补雪帽、脚印、夜灯。</p>
+  <div class="cards">
+    <div class="card"><h4>粒子</h4><div class="t">8×3 图集</div><p>CanvasItemMaterial 粒子动画 + 程序材质；前后两层 170/55；风 = <code>gravity.x</code>。</p></div>
+    <div class="card"><h4>积雪</h4><div class="t">蒙版 + 阈值</div><p>320×180 双频 fBm、偏白分布；coverage 滑杆；冷色边缘；F5 看蒙版。</p></div>
+    <div class="card"><h4>雪帽</h4><div class="t">向上边缘</div><p>从精灵 alpha 的“上沿”自动生成雪帽；每件道具独立阈值，逐渐盖上去。</p></div>
+    <div class="card"><h4>脚印</h4><div class="t">12s 渐隐</div><p>左右交替、Footprints z=-1；coverage&gt;0.10 才留；F4/R。</p></div>
+    <div class="card warn"><h4>夜灯</h4><div class="t">unshaded 不吃点光</div><p>地面雪 shader 是 unshaded；光池靠加色 glow，树/角色才被 PointLight2D 照亮。</p></div>
+  </div>
+<pre><span class="copy">复制</span><span class="c">// 4.6 的 CanvasItemMaterial 没有 particles_anim_speed</span>
+cm.particles_animation = true
+cm.particles_anim_h_frames = 8
+cm.particles_anim_v_frames = 3
+<span class="c">// cm.particles_anim_speed = 1.4  ← 会报错，删掉</span></pre>
+  <p class="cap">详细：<a href="../godot-snowfall/docs/TECH.md">godot-snowfall/docs/TECH.md</a> · 验收 <code>SNOW_SMOKE_OK</code></p>
+</section>
+
+<section id="s6" data-stack="three">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Three.js WebGL：Craft Anything 净室复刻</h2><span class="sec-note">craft-island / craft-cloudride</span></div>
+  <p class="lead">用 <b>Craft Anything</b>（Apache-2.0）做“研究 → 构建 → 检查 → 就绪”：REA 看程序内部，Craft Anything 只按可见证据重建，构建方是本机 Claude Code。</p>
+  <div class="grid2">
+    <div class="card"><h4>craft-island</h4><div class="t">Water Pro 海岛</div><p>Three.js r180；GPU 高度场 + 船尾迹 + 泡沫 + shader 云 + 追尾相机。修复：RT 未初始化、wake 每帧叠加、泡沫阈值、云、船体/棕榈/相机。</p><img class="shot" src="../craft-island/app/docs/screenshot.png" alt="海岛" loading="lazy"></div>
+    <div class="card"><h4>craft-cloudride</h4><div class="t">云海骑行</div><p>真平面反射（镜像相机 + 半分辨率 RTT）、程序化骑手 IK、低模云；8.6s 视频。坑：倒影被重复压暗、光照过暗。</p><img class="shot" src="../craft-cloudride/app/docs/screenshot.png" alt="云海骑行" loading="lazy"></div>
+  </div>
+  <div class="warnbox"><b>工具限制：</b>Craft Anything v0.6.1 的 app-screenshot 只支持有“可启动程序”的栈；纯静态站点要自己补 Playwright 真实 GPU 截图/视频。软件 WebGL 会掩盖 RT/累积/光照问题。</div>
+  <p class="cap">详细：<a href="../craft-island/README.md">craft-island</a> · <a href="../craft-cloudride/README.md">craft-cloudride</a></p>
+</section>
+
+<section id="s7" data-stack="research">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Saltline：1.42MB FPS 与离线化结论</h2><span class="sec-note">Three.js · 调研</span></div>
+  <p class="lead">1,423,569 B / 6,193 行；Three.js r180 + 游戏代码（约 47.7%）；零图片/模型/音频文件。</p>
+  <div class="tablewrap"><table>
+    <tr><th>内容</th><th>能否离线烘</th><th>说明</th></tr>
+    <tr><td>几何/武器/船/吊车</td><td>✅</td><td>参数化 builder → GLB</td></tr>
+    <tr><td>关卡/标签/噪声 LUT/音频</td><td>✅</td><td>JSON/PNG/WAV/OGG</td></tr>
+    <tr><td>天空/环境</td><td>🟡 部分</td><td>HDRI/时间片；会丢闪电/云动画</td></tr>
+    <tr><td>world-space 材质</td><td>🟡 部分</td><td>UV 烘焙，细节损失</td></tr>
+    <tr><td>雨/粒子/动态光照/混音</td><td>❌</td><td>保留运行时</td></tr>
+  </table></div>
+  <div class="okbox"><b>推荐：</b>构建期烘 base + 运行时同一套规则（seeded）+ manifest + 运行时导入；下载体积与运行成本二选一，不要既要 1.4MB 又要零 CPU。</div>
+  <p class="cap">详细：<a href="saltline-teardown.md">docs/saltline-teardown.md</a></p>
+</section>
+
+<section id="s8" data-stack="core">
+  <div class="sec-head"><span class="sec-num">08</span><h2>横向复用清单</h2><span class="sec-note">9 个模式 + 7 个坑</span></div>
+  <div class="tablewrap"><table>
+    <tr><th>模式</th><th>适用</th><th>关键点</th></tr>
+    <tr><td>脚底锚点</td><td>任何 2D 俯视/等距</td><td>图集脚底=节点原点；碰撞/阴影/Y-Sort 共用</td></tr>
+    <tr><td>分层渲染</td><td>2D 水面/倒影/遮挡</td><td>水底 → 水 shader → 岸上物体；只折射该折射的</td></tr>
+    <tr><td>像素 snap</td><td>像素风 shader</td><td><code>floor(uv*res)/res</code>；nearest；避免半像素</td></tr>
+    <tr><td>Mask + 深度</td><td>水/雪/雾</td><td>噪声蒙版 + 阈值 + 边缘阴影；深度驱动颜色/水线</td></tr>
+    <tr><td>规则双端</td><td>程序化资产</td><td>整数-only；manifest + hash；缓存含版本</td></tr>
+    <tr><td>运行时导入</td><td>Mod/UGC</td><td>manifest 校验后再实例化；sha 不是签名</td></tr>
+    <tr><td>Atlas UV</td><td>AnimatedSprite2D + shader</td><td>帧局部 UV = (UV-origin)/size</td></tr>
+    <tr><td>真实 GPU 验收</td><td>所有 shader/粒子</td><td>软件 WebGL 会掩盖 RT/累积/光照问题</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="card warn"><h4>坑速查</h4>
+      <p>shader 编译失败 → fragment 里是否 <code>return</code>；飘/穿墙/遮挡 → 锚点是否在脚底；改素材不生效 → 重新导入；色块 → mask 频率/深度量化；灯照不亮 → unshaded；倒影很暗 → 重复曝光；粒子层全挂 → 材质属性是否存在。</p>
+    </div>
+    <div class="card ok"><h4>验收协议</h4>
+      <p>① 无头 smoke 断言结构/参数/移动；② 真实 GPU 截图覆盖日/夜/开关；③ GIF/MP4 验收动态；④ README + TECH + 迭代记录 + CREDITS。</p>
+    </div>
+  </div>
+</section>
+
+<section id="s9" data-stack="port">
+  <div class="sec-head"><span class="sec-num">09</span><h2>跨引擎可移植性</h2><span class="sec-note">Godot · Unity · Unreal · Three.js</span></div>
+  <p class="lead">把“这套效果怎么做”从“Godot 里这段代码”里剥离出来。结论：<b>数据与算法可移植，shader 和编辑器绑定要重写，验收协议完全可移植。</b></p>
+  <h3>9.1 四层拆分：什么能带走</h3>
+  <div class="cards">
+    <div class="card ok"><h4>A 数据 / 协议</h4><div class="t">100% 带走</div><p><code>rules.json</code>、manifest、深度图、图集布局、JSON 参数；源文件不进引擎格式，PNG/GLB/OGG/JSON 是唯一事实源。</p></div>
+    <div class="card"><h4>B 算法 / 数学</h4><div class="t">高</div><p>等距变换、Y 排序规则、两骨 IK、平面反射矩阵、确定性哈希；按目标语言重写，测试用例跟着走。</p></div>
+    <div class="card"><h4>C Shader / 粒子</h4><div class="t">中</div><p>水/雪/焦散、屏幕纹理、图集动画；数学照搬，语法与渲染管线按引擎重写。</p></div>
+    <div class="card warn"><h4>D 编辑器 / 工具</h4><div class="t">低</div><p>TileSet 编辑器、导入管线、场景格式；不追求移植，按目标引擎重建。</p></div>
+  </div>
+  <div class="okbox"><b>本项目已做对：</b>三个 Godot Demo 的美术全部由 <code>tools/gen_art.py</code> 程序化生成 PNG，等距资产用 <code>bake_pipeline.py</code> 烘 PNG + manifest——<b>引擎场景只负责“组装”，不是事实源</b>。换引擎时 A 层原样带走，B 层翻译，C 层重写，D 层重建。</div>
+
+  <h3>9.2 移植契约（先定死，再动代码）</h3>
+  <div class="tablewrap"><table>
+    <tr><th>契约</th><th>规定</th><th>原因</th></tr>
+    <tr><td>2D 坐标</td><td>Y 向下、原点左上；等距 2:1（128×64）</td><td>2D 引擎一致；3D 是 Y 向上，转换只在一处做</td></tr>
+    <tr><td>单位</td><td>1 tile = 128 逻辑像素；像素世界 640×360 @2×；3D 1 unit = 1 m</td><td>避免尺寸靠猜</td></tr>
+    <tr><td>锚点</td><td>角色原点=脚底；GLB pivot=脚底中心；图集脚底=单元中心</td><td>碰撞/排序/阴影共用同一约定</td></tr>
+    <tr><td>深度</td><td>0..1 连续（0 岸/浅 → 1 深），存 8 位 PNG；禁止 16 级量化</td><td>色带/跳变问题与引擎无关</td></tr>
+    <tr><td>图集</td><td>8×3=24 帧、行优先；帧局部 UV = <code>(UV-origin)/size</code></td><td>Atlas UV 是所有引擎的共同坑</td></tr>
+    <tr><td>时间</td><td>全部按秒（dt）；涟漪/脚印 = 起始时间 + 生命周期</td><td>帧率无关，可跨引擎复现</td></tr>
+    <tr><td>确定性</td><td>整数-only 哈希（xorshift + <code>0xFFFFFFFF</code>）；同 seed 逐字节一致</td><td>Python/C#/GDScript/JS 都能复现</td></tr>
+    <tr><td>着色器</td><td>UV 左上原点；sRGB/线性在导入层解决；内核只产 RGBA8</td><td>避免同一贴图不同引擎不同色</td></tr>
+    <tr><td>资源描述</td><td>manifest 只含通用字段：version/seed/sha256/bytes/bounds/footprint/pivot/max_tris</td><td>任何引擎都能读</td></tr>
+    <tr><td>验收</td><td>数据契约用无头测试；视觉用真实 GPU 截图</td><td>与引擎无关的质量门</td></tr>
+  </table></div>
+
+  <h3>9.3 概念映射表</h3>
+  <div class="tablewrap"><table style="min-width:880px">
+    <tr><th>概念</th><th>Godot 4.6</th><th>Unity 6 (URP)</th><th>Unreal 5</th><th>Three.js</th></tr>
+    <tr><td>等距瓦片</td><td><code>TileMapLayer</code>（Isometric / DiamondDown）</td><td>Tilemap + Isometric Grid</td><td>Paper2D/TileMap 或自绘网格</td><td>InstancedMesh + 变换矩阵</td></tr>
+    <tr><td>Y 排序</td><td><code>y_sort_enabled</code> + <code>y_sort_origin</code></td><td>Transparency Sort Mode = Custom Axis (0,1,0)</td><td>2D 排序轴 / Translucency Sort Priority</td><td>手动排序 / <code>renderOrder</code></td></tr>
+    <tr><td>脚底锚点</td><td>节点原点 + <code>texture_origin</code></td><td>Sprite Pivot (0.5, 0)</td><td>PaperSprite Pivot</td><td><code>geometry.translate(0,-h/2,0)</code></td></tr>
+    <tr><td>2D 光照</td><td>PointLight2D + CanvasModulate</td><td>Light2D + ShadowCaster2D</td><td>无内建 2D 光照（3D 灯/自建）</td><td>自建 shader / 光照贴图</td></tr>
+    <tr><td>屏幕纹理</td><td><code>hint_screen_texture</code> + <code>SCREEN_UV</code></td><td><code>_CameraOpaqueTexture</code>（URP 开 Opaque Texture）</td><td>SceneColor / SceneTexture 节点</td><td>WebGLRenderTarget 或 <code>gl_FragCoord</code></td></tr>
+    <tr><td>像素 snap</td><td><code>floor(uv*res)/res</code></td><td>同（HLSL）</td><td>同（HLSL）</td><td>同（GLSL）</td></tr>
+    <tr><td>粒子图集动画</td><td>GPUParticles2D + CanvasItemMaterial</td><td>ParticleSystem Texture Sheet Animation</td><td>Niagara Sprite Renderer SubUV</td><td>InstancedBufferGeometry + SubUV shader</td></tr>
+    <tr><td>噪声明暗蒙版</td><td>自建 shader + <code>coverage</code> uniform</td><td>Shader Graph 同公式</td><td>Material 参数集</td><td>ShaderMaterial 同公式</td></tr>
+    <tr><td>平面反射</td><td>SubViewport 镜像相机</td><td>HDRP Planar Reflection Probe；URP 自建</td><td>Planar Reflection 组件</td><td>镜像相机 + RTT（或 Reflector）</td></tr>
+    <tr><td>运行时 glTF</td><td>GLTFDocument</td><td>glTFast</td><td>glTFRuntime 等插件</td><td>GLTFLoader</td></tr>
+    <tr><td>无头测试</td><td><code>--headless -s smoke.gd</code></td><td><code>-batchmode -nographics -runTests</code></td><td><code>-nullrhi -unattended</code> + 自动化</td><td>Node + Playwright</td></tr>
+    <tr><td>截图</td><td><code>viewport.get_texture().get_image()</code></td><td><code>ScreenCapture.CaptureScreenshot</code></td><td><code>HighResShot</code> / 自动化截图</td><td>Playwright + 真实 GPU</td></tr>
+  </table></div>
+  <p class="cap">跨语言确定性：GDScript <code>int &amp; 0xFFFFFFFF</code> · C# <code>uint</code> · JS <code>Math.imul + &gt;&gt;&gt; 0</code>——三方 32 位溢出语义必须逐位一致。</p>
+
+  <h3>9.4 各方案移植评级</h3>
+  <div class="tablewrap"><table>
+    <tr><th>方案</th><th>A/B 层（带走）</th><th>C/D 层（重写）</th><th>工作量</th><th>风险</th></tr>
+    <tr><td>等距 2D</td><td>坐标/扇区/锚点/排序规则</td><td>TileMap、Y-Sort、2D 灯</td><td>低–中</td><td>各引擎排序轴语义不同</td></tr>
+    <tr><td>规则资产管线</td><td><code>rules.json</code>、整数哈希、manifest</td><td>文件 API、导入缓存</td><td>低</td><td>导入期色彩空间</td></tr>
+    <tr><td>GLB Mod</td><td>校验表、bounds/pivot 契约</td><td>运行时 glTF 加载器</td><td>中</td><td>各加载器坐标系/缩放</td></tr>
+    <tr><td>通透水体</td><td>五层拆分、深度图、涟漪模型</td><td>屏幕纹理、shader 语法</td><td>中</td><td>URP/UE 取屏方式不同；WebGL Y 翻转</td></tr>
+    <tr><td>2D 雪天</td><td>蒙版/雪帽/脚印算法</td><td>粒子图集（Niagara 自带 SubUV 最省事）</td><td>中</td><td>unshaded 地面吃不到点光</td></tr>
+    <tr><td>Three.js 海岛/云海</td><td>平面反射矩阵、高度场参数</td><td>用引擎内建水/反射系统替换</td><td>中–高</td><td>内建方案效果不同</td></tr>
+    <tr><td>Saltline 离线化</td><td>方法论与结论</td><td>—</td><td>低</td><td>无</td></tr>
+  </table></div>
+
+  <h3>9.5 移植验收清单</h3>
+  <div class="okbox">① 数据契约无头测试 → ② 同 seed 黄金样张逐字节/逐像素一致 → ③ 同相机/分辨率/参数截图，结构不缺（mask/泡沫/水线/脚印）→ ④ 1280×720 集显 &ge;30fps → ⑤ 输入映射与手感一致 → ⑥ 文档记录绑定层差异。</div>
+  <h3>9.6 不要做的事</h3>
+  <div class="warnbox"><b>不要：</b>把引擎场景/材质（<code>.tres</code>/<code>.prefab</code>/<code>.uasset</code>）当事实源；依赖 z_index/渲染顺序的偶然行为；用浮点噪声库做确定性内容；用软件 WebGL 验收 shader；把引擎私有 shader 写法当成方案本身。</div>
+
+  <h3>9.7 代码落地：portable-core + 适配层</h3>
+  <p>B 层不再只是文档约定：<code>portable-core/</code> 用同一组算法三语言实现，golden 向量锁死；引擎侧只留薄适配层。</p>
+<pre><span class="copy">复制</span>portable-core/
+├── spec/functions.md        <span class="c">// 语言无关契约</span>
+├── spec/golden.json         <span class="c">// 15 iso + 9 hash 向量</span>
+├── impl/python|gdscript|js/ <span class="c">// 三份等价实现</span>
+├── tools/gen_golden.py
+├── tests/                   <span class="c">// Python / JS 断言</span>
+├── sync.py                  <span class="c">// --check 检漂移</span>
+└── verify.sh                <span class="c">// 三语言 + Godot</span></pre>
+  <div class="tablewrap"><table>
+    <tr><th>函数</th><th>契约</th><th>已接入</th></tr>
+    <tr><td><code>screen_motion(x,y)</code></td><td>等距 2:1 → <code>[x, y*0.5]</code></td><td>IsoMath.screen_motion</td></tr>
+    <tr><td><code>dir_index(x,y)</code></td><td>8 扇区：0=右 2=下 4=左 6=上</td><td>IsoMath.dir_index</td></tr>
+    <tr><td><code>hash32(x,y,seed)</code></td><td>整数-only uint32</td><td>SigilRules.hash32 + bake_pipeline.py（两端 import core）</td></tr>
+  </table></div>
+  <div class="okbox"><b>验证：</b><code>bash portable-core/verify.sh</code> → PORTABLE_PY_OK / PORTABLE_JS_OK / PORTABLE_GD_OK / PORTABLE_ALL_OK；<code>godot-iso-slice/tools/verify.sh</code> 追加 PORTABLE_SYNC_OK 与 PORTABLE_GD_OK。</div>
+  <div class="warnbox"><b>精度边界：</b>GDScript 核心返回 <code>Array</code>（float64），避免 <code>Vector2</code>（float32）破坏 golden 逐值一致；适配层再转 Vector2，手感不变。shader/粒子与 GLTF/导入仍留在 C/D 层，不进 core。</div>
+  <p class="cap">详细：<a href="../portable-core/README.md">portable-core/README.md</a> · <a href="../portable-core/spec/functions.md">spec/functions.md</a></p>
+</section>
+
+<section id="s10" data-stack="core">
+  <div class="sec-head"><span class="sec-num">10</span><h2>运行与验证命令</h2><span class="sec-note">copy → run</span></div>
+  <div class="tablewrap"><table>
+    <tr><th>项目</th><th>运行</th><th>验收</th></tr>
+    <tr><td>portable-core</td><td>—（库）</td><td><code>bash portable-core/verify.sh</code> → <code>PORTABLE_ALL_OK</code></td></tr>
+    <tr><td>iso-slice</td><td><code>godot --path godot-iso-slice</code></td><td><code>bash godot-iso-slice/tools/verify.sh</code></td></tr>
+    <tr><td>sea-water</td><td><code>godot --path godot-sea-water</code></td><td><code>bash godot-sea-water/tools/verify.sh</code></td></tr>
+    <tr><td>snowfall</td><td><code>godot --path godot-snowfall</code></td><td><code>bash godot-snowfall/tools/verify.sh</code></td></tr>
+    <tr><td>craft-island</td><td><code>cd craft-island/app &amp;&amp; python3 -m http.server 8801</code></td><td><code>node docs/shot.mjs</code></td></tr>
+    <tr><td>craft-cloudride</td><td><code>cd craft-cloudride/app &amp;&amp; python3 -m http.server 8801</code></td><td><code>node tools/screenshot.cjs</code></td></tr>
+  </table></div>
+  <p class="cap">提示：Godot 改过程序化 PNG 后先跑 <code>--editor --quit</code>；WebGL 验收用真实 Chrome GPU，不要 <code>--disable-gpu</code>。</p>
+</section>
+
+<section id="s11" data-stack="core">
+  <div class="sec-head"><span class="sec-num">11</span><h2>来源</h2><span class="sec-note">references</span></div>
+  <ul class="clean">
+    <li>Godot 官方 demo <code>2d/isometric</code>（MIT）· B 站 BV1kPxP6jEbr《Godot等距视角地牢Demo技术拆解》</li>
+    <li>B 站 BV1C44w62Ebp《Godot 复刻〈星之海〉通透像素水体效果》（擦玻璃的阿毛）</li>
+    <li>B 站 BV18DYt6mE24《2D游戏中的雪天效果 DEV LOG.05》（Mushreb，Godot 4.7/C#）</li>
+    <li>B 站 BV1x4nY6xEHo / BV1VxnX6ZECh《Three.js 案例合集》207/209 期</li>
+    <li><a href="saltline-teardown.md">Saltline 拆解</a> · <a href="https://github.com/storytold/craft-anything">Craft Anything</a> · <a href="https://github.com/morluto/rea">REA</a></li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <p>技术方案总览 · 2026-11 · 同目录有完整 Markdown：<a href="技术方案总览.md">技术方案总览.md</a>（含 9. 跨引擎可移植性全表）</p>
+  <p>所有 Demo 素材为程序化原创；参考视频仅用于可见效果研究，未随仓库分发原素材。</p>
+</footer>
+
+<div class="fab">
+  <button id="themeBtn" type="button">主题：暗</button>
+</div>
+
+</div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  const saved = localStorage.getItem('tech-overview-theme');
+  if (saved) root.dataset.theme = saved;
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) root.dataset.theme = 'light';
+  function syncTheme(){ themeBtn.textContent = '主题：' + (root.dataset.theme === 'dark' ? '暗' : '亮'); }
+  syncTheme();
+  themeBtn.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('tech-overview-theme', root.dataset.theme);
+    syncTheme();
+  });
+
+  const progress = document.getElementById('progress');
+  function onScroll(){
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const sections = Array.from(document.querySelectorAll('main > section'));
+  const idxCards = Array.from(document.querySelectorAll('a.idx'));
+  const tocLinks = Array.from(document.querySelectorAll('nav.toc a'));
+  let active = 'all';
+  let searchEl = null;
+  let countEl = null;
+
+  function apply(){
+    const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    let shown = 0;
+    sections.forEach(sec => {
+      const stacks = (sec.dataset.stack || 'core').split(/\s+/);
+      const stackOk = active === 'all' || stacks.includes(active) || stacks.includes('core');
+      const textOk = !q || sec.innerText.toLowerCase().includes(q);
+      const show = stackOk && textOk;
+      sec.classList.toggle('off', !show);
+      if (show) shown++;
+    });
+    idxCards.forEach(card => {
+      const stacks = (card.dataset.stack || '').split(/\s+/);
+      const stackOk = active === 'all' || stacks.includes(active);
+      const textOk = !q || card.innerText.toLowerCase().includes(q);
+      card.classList.toggle('off', !(stackOk && textOk));
+    });
+    tocLinks.forEach(link => {
+      const id = link.getAttribute('href').slice(1);
+      const sec = document.getElementById(id);
+      link.classList.toggle('off', !!(sec && sec.classList.contains('off')));
+    });
+    if (countEl) countEl.textContent = '显示 ' + shown + '/' + sections.length + ' 段';
+  }
+
+  // build toolbar (search + chips) and put it at the top of main
+  const toolbar = document.createElement('div');
+  toolbar.className = 'toolbar';
+  toolbar.innerHTML =
+    '<input id="search" type="search" placeholder="搜索：atlas / 锚点 / 蒙版 / 反射 / manifest / 移植 …  （/ 聚焦，Esc 清除）" aria-label="搜索">' +
+    '<button class="chip active" data-stack="all">全部</button>' +
+    '<button class="chip" data-stack="godot">Godot 2D</button>' +
+    '<button class="chip" data-stack="pipeline">资产管线</button>' +
+    '<button class="chip" data-stack="three">Three.js</button>' +
+    '<button class="chip" data-stack="research">调研</button>' +
+    '<button class="chip" data-stack="port">跨引擎</button>' +
+    '<span id="count"></span>';
+  const main = document.querySelector('main');
+  main.insertBefore(toolbar, main.firstElementChild);
+  searchEl = document.getElementById('search');
+  countEl = document.getElementById('count');
+  Array.from(toolbar.querySelectorAll('.chip')).forEach(btn => {
+    btn.addEventListener('click', () => {
+      active = btn.dataset.stack;
+      Array.from(toolbar.querySelectorAll('.chip')).forEach(b => b.classList.toggle('active', b === btn));
+      apply();
+    });
+  });
+  searchEl.addEventListener('input', apply);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchEl) {
+      e.preventDefault(); searchEl.focus();
+    } else if (e.key === 'Escape' && document.activeElement === searchEl) {
+      searchEl.value = ''; searchEl.blur(); apply();
+    }
+  });
+
+  const toolbarHeight = () => toolbar.offsetHeight + 52;
+  sections.forEach(sec => { sec.style.scrollMarginTop = toolbarHeight() + 'px'; });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+      tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    });
+  }, { rootMargin: '-25% 0px -60% 0px', threshold: 0 });
+  sections.forEach(sec => observer.observe(sec));
+
+  // copy buttons
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = pre.querySelector('.copy');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const text = pre.innerText.replace(/^复制\s*/, '');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '已复制';
+      } catch (err) {
+        btn.textContent = '复制失败';
+      }
+      setTimeout(() => { btn.textContent = '复制'; }, 1200);
+    });
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -5,3 +5,8 @@ cpp/build/
 bench_dll_split/build/
 .playwright-mcp/
 org-agent-flow.png
+
+# local/runtime artifacts
+.godot/
+.cc-connect/
+docs/task-plans/*.lock
