@@ -2,6 +2,29 @@
 
 ## 进行中
 
+## T-20261121-011 · Flow Field 审计级性能复测与优化消融（T-009 follow-up）
+- 来源: 飞书消息（2026-11-21，“做好文档积累以及技术原理分析报告”，承接 T-009 性能讨论）
+- 线程: T-20261121-009（Flow Field）
+- 父任务: T-20261121-009（Flow Field 已发布；现有 19.7→31.5→47.0 为单次累计对比）
+- 类型: game-demo（性能审计/工具）
+- 目标: 补齐审计级数据：消融矩阵、5 轮采样、P50/P95/P99、worst/hitch、720p+1080p、引擎渲染计数；解释每项优化的独立贡献
+- 交付: `godot-flowfield/tools/` 复测工具；`godot-flowfield/docs/perf/` 原始 CSV/JSON + REPORT.md + 对比图；smoke 无回归；媒体
+- 约束: 不改主 demo 默认行为/视觉；只改 bench/工具；同 seed/地图；真实 GPU；报告写清方法与局限
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261121-012 · Flow Field 技术原理报告 + 文档沉淀（T-009 follow-up）
+- 来源: 飞书消息（2026-11-21，“做好文档积累以及技术原理分析报告”）
+- 线程: T-20261121-009（Flow Field）
+- 父任务: T-20261121-009；依赖: T-20261121-011（审计数据）
+- 类型: docs-research
+- 目标: Flow Field 深挖 + WFC/Steering/Flow Field 总览；用消融数据解释优化机制；经验写回原项目 docs
+- 交付: `godot-flowfield/docs/TECHNICAL_PRINCIPLES.md` + 单文件交互 HTML + 更新 `godot-flowfield/docs/TECH.md` §6 + `docs/algorithm-demos-index.md` + 截图
+- 约束: 只读代码/docs，不改游戏代码/资产；原创图表；来源与访问日期；区分公开事实/推断；结论先行；中文
+- 指派: general-purpose worker（dispatcher）
+- 状态: blocked（等 T-011 done + Git 发布）
+- depends_on: T-20261121-011
+
 ## T-20261121-009 · 续跑 Flow Field 流场寻路 Demo（T-008 重试）
 - 来源: 飞书反馈（2026-11-21，“相关 demo 工程注意提交 git repo”；T-008 worker API 中断，遗留未完成的 `godot-flowfield/`）
 - 父任务: T-20261121-008（failed，API Error: Connection closed mid-response）
@@ -11,6 +34,7 @@
 - 约束: 不复制视频素材；Godot 4.6 GL Compatibility；不穿墙、流场单调、同地图可重复；commit_paths 必须包含 `godot-flowfield/`，完成后确认已在 git 历史中
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
+- 后续: T-20261121-011（性能审计复测）、T-20261121-012（技术原理报告 + 文档沉淀）
 
 ## T-20261121-008 · 复刻 Flow Field 流场寻路群体寻路 Demo
 - 来源: 飞书消息（B 站 BV12bzZY2EfA《〈群体寻路与避障〉Flow Field 流场寻路算法如何实现群体寻路》，3:53，2026-11-21）

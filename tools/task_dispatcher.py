@@ -181,6 +181,43 @@ def parse_claude_output(stdout: str):
     return None
 
 
+def find_task_dir(task_id: str):
+    """Locate a task dir across pending/running/done/failed."""
+    for folder in (RUNNING, PENDING, DONE, FAILED):
+        p = folder / task_id
+        if p.is_dir():
+            return p
+    return None
+
+
+def context_block(task):
+    """Build the follow-up/thread context injected into every worker prompt."""
+    parent = task.get("followup_of") or task.get("parent")
+    root = task.get("root_task")
+    ctx = task.get("context_paths") or []
+    if not parent and not ctx:
+        return ""
+    lines = ["[任务线程 / FOLLOW-UP CONTEXT]"]
+    if parent:
+        lines.append(f"- follow-up_of: {parent}" + (f"；root_task: {root}" if root else ""))
+        pdir = find_task_dir(str(parent))
+        if pdir:
+            result = pdir / "result.md"
+            if result.exists():
+                lines.append(f"- 父任务结果（必须先读）: {result}")
+            else:
+                lines.append(f"- 父任务目录（先查看已有产出）: {pdir}")
+    if ctx:
+        lines.append("- 必读上下文（先读再动手；复用既有结论、参数、验收口径，不要重复造轮子）:")
+        lines.extend(f"  - {p}" for p in ctx)
+    lines.append(
+        "- 本任务是原任务线程的延续：不要另起平行任务/线程；"
+        "新增结论与经验要写回原任务的 docs（TECH/迭代记录/README 等），"
+        "结果中说明相对父任务新增了什么。\n"
+    )
+    return "\n".join(lines)
+
+
 def run_task(task_path: Path):
     task = read_json(task_path)
     task_id = task.get("id") or task_path.parent.name
@@ -214,7 +251,8 @@ def run_task(task_path: Path):
                     "若任务产出图片/GIF/视频，完成后必须用 "
                     "`cc-connect send --image <绝对路径> --video <绝对路径>` "
                     "发送 1–3 个代表性附件到当前飞书会话（不要发中间产物）；"
-                    "文本摘要由 runner 统一发送。\n\n" + prompt
+                    "文本摘要由 runner 统一发送。\n\n"
+                    + context_block(task) + "\n\n" + prompt
                 )
                 cmd = [
                     CLAUDE, "-p", prompt,

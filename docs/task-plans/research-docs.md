@@ -2,6 +2,15 @@
 
 ## 进行中
 
+## T-20261121-010 · 调研 · 回合制游戏法术表现性能分析与审计方法
+- 来源: 飞书消息（2026-11-21，“回合制游戏的法术表现性能分析审计一般如何处理”）
+- 类型: docs-research
+- 目标: 调研业界对回合制游戏法术/VFX 表现做性能分析与审计的通用做法，形成可套用到 `godot-battle/` 的审计协议、预算表与验收门槛
+- 交付: `docs/spell-vfx-performance-audit.md`（结论先行 + 四层拆分 + Godot/Unity/Unreal/Three.js 映射 + 测量项/工具链/流程/门槛/报告模板）+ 交互式 HTML 检查表 + 截图；来源与访问日期
+- 约束: 只调研不改进游戏代码；区分公开事实与推断；不复制素材；面向 Godot 4.6 GL Compatibility / Intel HD 6000 与移动档位；中文
+- 指派: general-purpose worker（dispatcher）
+- 状态: running
+
 ## T-20261120-001 · 拆解 Unity 仿绝区零 Demo
 - 来源: 飞书消息（B 站 BV1FVsp6FELe，2026-11-20）
 - 类型: docs-research

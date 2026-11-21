@@ -8,8 +8,8 @@
 飞书消息
   → 解析目标/约束/交付物
   → 分类
-      ├─ 同类型新任务 → docs/task-plans/<category>.md 追加记录
-      └─ follow-up → 续到原任务
+      ├─ 新独立目标 → docs/task-plans/<category>.md 追加顶层任务
+      └─ follow-up → 续到原任务线程（沿用父任务 plan_file，父任务下记“后续”）
   → TaskCreate（运行态任务）
   → 写 task JSON → task_dispatcher.py enqueue
         → 立刻返回回执（主会话 turn 结束）
@@ -21,7 +21,7 @@
 - **默认一个任务一个 worker**（独立 Claude Code 进程）；一条消息多个独立任务就入队多个 worker。
 - **不直接实现**：主 Agent 可以读文件、写规划、核对验收结果，但代码/美术/渲染/长任务由 worker 做。
 - **同类归档**：同类任务都写进同一个规划文件，便于按类型推进。
-- **follow-up**：同一任务的补充、改方向、验收问题，续到原任务；不要新建重复任务。
+- **follow-up 必须续线程**：同一目标的补充、性能复测、文档沉淀、验收问题，不新建顶层任务线程；沿用父任务的 `plan_file`，在父任务记录下增加“后续”条目。task JSON 必须带 `parent` / `followup_of` / `root_task` / `context_paths`；dispatcher 会把父任务 `result.md` 与 `context_paths` 自动注入 worker prompt。只有**新独立目标**才建新顶层任务。
 
 ## 1.1 cc-connect 与 Claude Code 的真实机制
 
@@ -58,6 +58,13 @@
   "agent": "game-engineer",
   "model": "deepseek-flash",
   "notify": true,
+  "parent": "T-20261119-001",
+  "followup_of": "T-20261119-001",
+  "root_task": "T-20261119-001",
+  "context_paths": [
+    "godot-pixel-ocean/docs/TECH.md",
+    "godot-pixel-ocean/docs/迭代记录.md"
+  ],
   "commit_paths": ["godot-pixel-ocean/", "docs/task-plans/game-demos.md"],
   "prompt": "自包含的完整执行说明..."
 }
@@ -129,6 +136,14 @@ dispatcher 会以 `claude -p --agent <agent>` 启动，worker 的系统提示就
 - 产出: （完成时填）
 ```
 
+### 3.1 Follow-up 记录（续线程，不另起炉灶）
+
+- **执行 ID 仍唯一**（dispatcher 需要），但记录上属于父任务线程：沿用父任务的 `plan_file`，不要跨到 `research-docs.md` 等新文件另起一条线。
+- 父任务条目下加 `- 后续: T-…（简述）`；子任务条目加 `- 线程: T-…（原项目）`、`- 父任务: T-…`。
+- 子任务产出优先写回原项目 `docs/`（TECH / 迭代记录 / README / perf 数据），不要另起孤岛报告；跨项目索引只作为附属产物。
+- task JSON 必须带 `parent` / `followup_of` / `root_task` / `context_paths`；dispatcher（`run_task`）会注入父任务 `result.md` 与必读上下文，worker 必须先读再动手。
+- 例子：Flow Field 的性能复测、技术原理报告都应挂在 `T-...-009 · Flow Field` 下，而不是变成独立线程。
+
 - 状态变更直接改对应任务行；完成后移动到「已完成」。
 - 长任务在派发前先落盘，保证会话中断后能继续。
 
@@ -142,10 +157,12 @@ dispatcher 会以 `claude -p --agent <agent>` 启动，worker 的系统提示就
 类型: <category>
 目标: <一句话>
 来源: <飞书原文/链接/截图路径>
+父任务/线程: <T-...>（必读父任务 result.md；说明本任务相对父任务新增什么）
 相关上下文:
 - 仓库: /Users/ks_128/Documents/modelfw_demo
-- 之前的任务/文件: <...>
+- 父任务/文件: <TECH/迭代记录/perf 报告/父 result.md>
 - 约束: <引擎、原创、IP、验收命令、时间>
+经验沉淀: 结论与经验写回原项目 docs，不只留在聊天/独立报告里。
 交付:
 - <文件路径/功能/视频/GIF>
 验收:
@@ -185,7 +202,7 @@ dispatcher 会以 `claude -p --agent <agent>` 启动，worker 的系统提示就
   状态：`python3 tools/git_publisher.py status`；手动补发：`publish-all`。
 - **多个 worker 并发**：git 操作用 `~/.cc-connect/tasks/git.lock` 串行；push 失败会写
   `git.json` 并通知飞书，需人工处理冲突；不要自动 force push。
-- **follow-up**：如果原任务还在运行，建一个带 `parent`/上下文的新任务排队；避免两个 worker 同时改同一批文件。
+- **follow-up**：如果原任务还在运行，建一个带 `parent` / `followup_of` / `root_task` / `context_paths` 的后续任务排队；沿用父任务 `plan_file`，把上下文注入交给 dispatcher；避免两个 worker 同时改同一批文件。
 - **安全边界**：worker 使用 `bypassPermissions`，只应处理受信任的飞书消息；提示词中保留原创素材/版权/验收约束。
 
 ## 7. 版权与素材

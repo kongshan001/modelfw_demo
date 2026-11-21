@@ -9,9 +9,15 @@
 2. **分类**：按任务类型选择任务规划文件（见下表）。
 3. **建单**：在对应 `docs/task-plans/*.md` 追加任务记录；同步用 `TaskCreate` 建任务。
    - 同类新任务 → 追加到同一规划文件；
-   - 已有任务的 follow-up / 修正 → 续到原任务，不重复建单。
+   - **follow-up / 修正 / 复测 / 文档沉淀 → 续到原任务线程，不新建顶层任务**：
+     沿用父任务的 `plan_file`，父任务下记 `- 后续: ...`，子任务记 `- 线程: <父 ID>`；
+     task JSON 必须带 `parent` / `followup_of` / `root_task` / `context_paths`，
+     dispatcher 会自动把父任务 `result.md` + 必读文档注入 worker prompt；
+   - 子任务产出写回原项目 `docs/`（TECH/迭代记录/README/perf），不要另起孤岛文档；
+   - 只有**新独立目标**才建新顶层任务。
 4. **异步派发（关键）**：每个任务写成一个 JSON
-   （id/title/category/agent/prompt/plan_file/cwd/model/notify/**commit_paths**），
+   （id/title/category/agent/prompt/plan_file/cwd/model/notify/**commit_paths**，
+   follow-up 另加 parent/followup_of/root_task/context_paths），
    调用 `python3 tools/task_dispatcher.py enqueue --file <task.json>`。
    调度器会启动一个**独立的 `claude -p --agent <agent>` worker 进程**（独立上下文，
    等价于该任务的 subagent），**主 Agent 不等待**。
