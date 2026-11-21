@@ -18,8 +18,8 @@
 - 交付: `docs/design/gameplay-innovation-research.md`（结论先行 + 方法/案例/评分/流程/反模式 + 来源）+ 交互 HTML（约束卡/评分器）+ 截图；媒体
 - 约束: 只调研/写方法，不改代码；案例必须可查证（Balatro/Slay the Spire/Baba Is You/Outer Wilds/Hades 等），区分事实/推断；不复制 IP
 - 指派: general-purpose worker（dispatcher）
-- 状态: running
-- 产出: `docs/design/gameplay-innovation-research.md`；`docs/design/gameplay-innovation-交互版.html`；`docs/shots/gameplay-innovation-hero.png`、`gameplay-innovation-lab.png`、`gameplay-innovation-cases.png`
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-033/result.md
 - 备注: 10 个案例 / 24 个 idea seeds / 3 个一页 brief；交互版含约束卡随机器、五项评分器、案例卡；已发 2 张截图到飞书。
 
 ## T-20261121-032 · 调研 · 鬼灭「无限城」AI 3D 动作游戏 + MotionStage 工具
