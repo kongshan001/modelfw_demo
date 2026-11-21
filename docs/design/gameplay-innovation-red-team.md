@@ -20,7 +20,7 @@
 
 ### 0.1 最硬的 5 个问题
 
-1. **P0 · C1 的核心卖点已在交付代码里。** `player.gd:583 try_lamp_break()`、`main.gd:836 extinguish_duration()`、`world.gd:942 set_street_lamp()` 已经实现“灯=攻击 + 街灯数改变 Boss 黑暗”；portfolio 仍把“举/掷/灭灯”写成 N4 的新动词。
+1. **P0 · C1 的核心卖点已在交付代码里。** `player.gd:583 try_lamp_break()`、`main.gd:838 extinguish_duration()`、`world.gd:942 set_street_lamp()` 已经实现“灯=攻击 + 街灯数改变 Boss 黑暗”；portfolio 仍把“举/掷/灭灯”写成 N4 的新动词。
 2. **P0 · F 分与 brief 工期相差 4–12 倍。** A1 写 3–5 天却给 F4；B2/C1 写 5–7 天却给 F3，而 F3 的锚点是“1–3 个月”。同一份文档里“5–7 天”和“1–3 个月”同时成立，fast-track 门槛无法复算。
 3. **P1 · 评分规则要求“逐条证据/待实测”，30 行表没有执行。** §1.3 写“每个分数必须能指向证据；没有 playtest 的分数一律标待实测”，但 §2 只有参考模式/风险两列，零个“待实测”标记。
 4. **P1 · fast track 的“10 秒演示”没有交付。** 实际视觉证据只有一张 SVG 评分图，没有 top 3 的灰盒/GIF/原型；B2/C1 的 clarity=3，定义是“要试一局”，与“10 秒看懂”冲突。
@@ -84,7 +84,7 @@
 
 - **严重度**：P1（影响 L1 工期与可读性）
 - **证据**：
-  - Portfolio B2 L1 写“复用 hitscan 弹道”；实际玩家射击是 hitscan（`player.gd:208-209`），但敌方来弹是 projectile：`enemy_bullet.gd:41` 每帧 raycast，`enemy_bullet.gd:49-50` 距离 <15 才 `take_damage`。
+  - Portfolio B2 L1 写“复用 hitscan 弹道”；实际玩家射击是 hitscan（`player.gd:198-215`），但敌方来弹是 projectile：`enemy_bullet.gd:41` 每帧 raycast，`enemy_bullet.gd:49-50` 距离 <15 才 `take_damage`。
   - Portfolio 写“背包界面受击高亮”；实际 `backpack_panel.gd:54` 打开背包即 `get_tree().paused = true`，世界暂停，受击不可能在背包界面实时发生。
   - 玩家碰撞是半径 11 的圆（`player.gd:51-53`），6×4 背包格没有映射到任何身体/受击体积；这是一个新系统，不是复用。
 - **期望 vs 实际**：期望 L1 只加“物品耐久 + 2D 投影判定 + 受击高亮”；实际要加“背包格→身体部位映射 + 来弹命中物品 + 暂停外的受击反馈 + 耐久破坏状态”，至少 4 个新件。
@@ -392,7 +392,7 @@ Portfolio 自己已经承认部分重叠：
 
 - **Alan Wake**：光作为武器，消耗电池/光源；T-033/T-034 自己把 Alan Wake 列为参考抽象结构。
 - **Amnesia: The Dark Descent**：提灯油量/黑暗恐惧；**Dying Light**：UV 光对夜行敌人。
-- **本项目已有**：Q 灯破（`player.gd:583`）、3 盏街灯（`main.gd:31`/`world.gd:942`）、Boss 二阶段熄灯（`main.gd:820-836`）、HUD“街灯 x/3”（`hud.gd:130`）。
+- **本项目已有**：Q 灯破（`player.gd:583`）、3 盏街灯（`main.gd:31`/`world.gd:942`）、Boss 二阶段熄灯（`main.gd:827-838`）、HUD“街灯 x/3”（`hud.gd:130`）。
 - 因此“灯=武器/光=资源”不是本项目的新动词；C1 的潜在 delta 只有“可携带光 + 敌人光敏 + 灯油 + 掷灯”。这个 delta 可能成立，但当前 brief 把它包装成“举/掷/灭灯”的新动词，和现有 build 冲突。
 
 **核心动词/约束是否真实**
