@@ -9,7 +9,7 @@
 - 交付: `docs/spell-vfx-performance-audit.md`（结论先行 + 四层拆分 + Godot/Unity/Unreal/Three.js 映射 + 测量项/工具链/流程/门槛/报告模板）+ 交互式 HTML 检查表 + 截图；来源与访问日期
 - 约束: 只调研不改进游戏代码；区分公开事实与推断；不复制素材；面向 Godot 4.6 GL Compatibility / Intel HD 6000 与移动档位；中文
 - 指派: general-purpose worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261120-001 · 拆解 Unity 仿绝区零 Demo
 - 来源: 飞书消息（B 站 BV1FVsp6FELe，2026-11-20）
