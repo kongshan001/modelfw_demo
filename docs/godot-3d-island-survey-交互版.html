@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Godot 4.6 生成 3D 海岛 — 高度场 / 岛屿遮罩 / 海岸线交互讲义</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1410'/%3E%3Cpath d='M4 22c4-5 8-7 12-5s8 4 12 1v8H4z' fill='%235FD8C9' opacity='.8'/%3E%3Cpath d='M9 20c2-4 4-6 7-6s5 2 7 5' stroke='%23F2B35C' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --warn-dim:rgba(255,138,92,.12);
+  --ok:#5FD88A; --ok-dim:rgba(95,216,138,.12);
+  --grid:rgba(150,200,170,.05);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --warn-dim:rgba(180,68,31,.09);
+  --ok:#1B7A4A; --ok-dim:rgba(27,122,74,.09);
+  --grid:rgba(23,38,30,.05);
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(44px,6.5vw,84px) clamp(20px,5vw,56px) 22px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.2vw,56px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:78ch;margin:0 0 18px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,44px) clamp(18px,5vw,56px) 90px}
+section{margin:0 0 clamp(46px,6vw,80px);scroll-margin-top:96px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:var(--warn-dim)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px}
+pre b{color:var(--gold);font-weight:600}
+.warnbox{border-left:3px solid var(--warn);background:var(--warn-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--ok-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:12px 0 18px}
+.flow .step{flex:1 1 150px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 14px;box-shadow:var(--shadow)}
+.flow .step .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em}
+.flow .step .t{font-family:var(--serif);font-size:16px;font-weight:700;margin:2px 0 3px}
+.flow .step .d{font-size:13px;color:var(--ink-soft)}
+.flow .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-family:var(--mono);font-size:18px;flex:0 0 18px}
+.demo{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;box-shadow:var(--shadow);margin:14px 0 18px}
+.demo-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.demo-head .t{font-family:var(--serif);font-size:19px;font-weight:700;margin:0}
+.demo-head .d{font-size:13px;color:var(--ink-soft);margin:2px 0 0}
+.demo-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.9fr);gap:14px;align-items:stretch}
+.mapcol{display:flex;flex-direction:column;min-width:0}
+.mapcol .tune{flex:1}
+.demo canvas{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:var(--card-2)}
+#island,#profile{image-rendering:auto}
+#profile{margin-top:10px}
+.controls-panel{border:1px solid var(--line);border-radius:12px;background:var(--card-2);padding:12px;position:sticky;top:58px}
+.controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:8px 0}
+.controls label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap;width:100%;justify-content:space-between}
+.controls label span{min-width:72px}
+.controls input[type=number]{width:110px;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;outline:none}
+.controls input[type=range]{width:100%;accent-color:var(--teal)}
+.controls select{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:7px 8px;outline:none;width:100%}
+.controls output{font-family:var(--mono);font-size:11.5px;color:var(--teal)}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.btnrow{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.seg{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 10px}
+.seg .btn{padding:6px 9px;font-size:11px}
+.metrics{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 2px}
+.metric{font-family:var(--mono);font-size:11px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:4px 9px;background:var(--paper-2)}
+.metric b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:8px 0 2px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--teal);margin-right:5px;vertical-align:middle}
+.sw.gold{background:var(--gold)} .sw.warn{background:var(--warn)} .sw.water{background:#1D7C85} .sw.sand{background:#E8D8A6} .sw.leaf{background:var(--leaf)}
+.check{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin:6px 0}
+.check input{accent-color:var(--teal)}
+.note{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:6px 0 0}
+.tune{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--card-2);padding:10px 12px;font-size:12.5px;color:var(--ink-soft)}
+.tune b{color:var(--ink)}
+.tune ul{margin:4px 0 0;padding-left:1.1em}
+.tune li{margin:2px 0}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+footer a{color:var(--teal);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+@media screen and (max-width:900px){.demo-grid{grid-template-columns:1fr}.controls-panel{position:static}}
+@media screen and (max-width:760px){.sec-note{margin-left:0;width:100%}.fab{right:8px;bottom:8px}.fab button{padding:6px 9px;font-size:11px}}
+@media print{.fab,nav.toc,.progress{display:none}.controls-panel{position:static}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span> 2026-11 · T-20261121-022 · GODOT 4.6 · GL COMPATIBILITY</div>
+  <h1>从噪声到<span class="u">海岸线</span><br>Godot 4.6 生成<span class="g">3D 海岛</span></h1>
+  <p class="sub">一份可以照着实现的 3D 海岛方案：<b>高度场 + 岛屿遮罩 + 分块网格 + HeightMapShape3D + Gerstner 水面 + MultiMesh 植被</b>。下面有一个可交互的 Canvas 演示，调噪声/遮罩/海平面就能看到海岸线变化；右侧是同一套参数在 Godot 里的推荐起点。</p>
+  <div class="stat-row">
+    <span class="stat"><b>2</b> 套推荐路线</span>
+    <span class="stat"><b>1</b> 个可交互演示</span>
+    <span class="stat"><b>131k</b> tris MVP 地形</span>
+    <span class="stat"><b>5</b> 个插件已核实</span>
+    <span class="stat"><b>30</b> FPS+ 目标</span>
+    <span class="stat">URL 访问 2026-11-21</span>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0" class="active">结论</a>
+  <a href="#s1">两条路线</a>
+  <a href="#s2">交互演示</a>
+  <a href="#s3">网格 / 碰撞</a>
+  <a href="#s4">水面 / 海岸</a>
+  <a href="#s5">植被 / 群系</a>
+  <a href="#s6">插件</a>
+  <a href="#s7">MVP</a>
+  <a href="#s8">来源</a>
+</div></nav>
+
+<main>
+
+<section id="s0">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">默认方案 / 不推荐什么</span></div>
+  <div class="cards">
+    <div class="card ok">
+      <h4>路线 A · 默认推荐</h4>
+      <p class="t">高度场 + 岛屿遮罩 + 分块 LOD</p>
+      <p>FastNoiseLite 生成 2D 高度场，岛屿 mask 保证四周是海，海岸塑形 + 顶点色分层；<code>ArrayMesh</code> 分块、<code>HeightMapShape3D</code> 碰撞。适合可走、可远眺的主岛。</p>
+      <p><span class="tag">CPU 生成</span><span class="tag">Compatibility ✅</span><span class="tag gold">MVP 首选</span></p>
+    </div>
+    <div class="card">
+      <h4>路线 B · 风格化</h4>
+      <p class="t">低多边形 Stylized 岛</p>
+      <p>同一高度场，粗网格 + 平面着色 + 受限色板；三角数可压到 5–50k，生成 &lt;0.5 s。适合小岛、浮空岛、战棋/卡通项目。</p>
+      <p><span class="tag">视觉上限高</span><span class="tag">成本低</span><span class="tag gold">小体量首选</span></p>
+    </div>
+    <div class="card warn">
+      <h4>路线 C · 后续扩展</h4>
+      <p class="t">体素 / Marching Cubes / Transvoxel</p>
+      <p>可挖洞、悬垂、破坏，但 GDScript 逐体素不可行；Voxel Tools 的 GPU 特性需 Forward+ compute，Intel HD + Compatibility 不推荐进 MVP。</p>
+      <p><span class="tag warn">成本高</span><span class="tag warn">Compatibility 受限</span></p>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>问题</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td>最短落地路径？</td><td>257×257 高度场 → 8×8 分块 <code>ArrayMesh</code> → <code>HeightMapShape3D</code> → 水面平面 + 预生成岸线深度图 → 2–4 个 MultiMesh 植被。</td></tr>
+        <tr><td>为什么不用体素做 MVP？</td><td>体素的成本在“块重建 + 碰撞/导航同步 + 材质/UV”，不在生成本身；可破坏性对海岛 MVP 不是刚需。</td></tr>
+        <tr><td>为什么高度场能看？</td><td>海岛的视觉 70% 来自<strong>海岸线、色带、雾、植被密度</strong>，不是三角面数；高度场 + 顶点色就能做出可信的沙滩/草地/岩壁。</td></tr>
+        <tr><td>Compatibility 能做吗？</td><td>能：CPU 生成 + 普通材质 + MultiMesh + Depth/Height Fog。不能用 compute、SSR、体积雾、SDFGI/VoxelGI；水面反射用天空/Fresnel 近似。</td></tr>
+        <tr><td>最大风险？</td><td>接缝、法线、LOD 裂缝、碰撞网格不匹配、GDScript 生成卡顿；本文 §3/§7 给出逐项规避。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="okbox"><b>一句话：</b>先用高度场做出“形状正确 + 海岸可信”的灰模，再加水/树/雾；不要一上来写体素或 WFC 3D。</div>
+</section>
+
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>两条路线：高度场 vs 低多边形</h2><span class="sec-note">体素作为第三选项</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>维度</th><th>A 高度场</th><th>B 低多边形</th><th>C 体素 / MC</th></tr></thead>
+      <tbody>
+        <tr><td>输入</td><td>2D 高度场 + mask</td><td>粗高度场 / icosphere / 手工点</td><td>3D 密度场</td></tr>
+        <tr><td>视觉上限</td><td>中–高（靠美术/光照）</td><td>高（风格化）</td><td>高（但材质/UV 难）</td></tr>
+        <tr><td>可走性</td><td>天然（高度场碰撞）</td><td>天然（三角网碰撞）</td><td>需块碰撞/导航同步</td></tr>
+        <tr><td>洞穴/悬垂</td><td>❌</td><td>❌（除非手工）</td><td>✅</td></tr>
+        <tr><td>MVP 成本</td><td>中（500–800 行 GDScript）</td><td>低–中</td><td>高（GDExtension/C++）</td></tr>
+        <tr><td>Compatibility</td><td>✅</td><td>✅</td><td>⚠️ CPU 路径；GPU 需 Forward+</td></tr>
+        <tr><td>推荐场景</td><td>可探索主岛</td><td>卡通/小岛/战棋</td><td>沙盒/可破坏</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead"><b>高度场不是“低配”：</b>把 1024 m 岛的 257² 高度场、8×8 分块、顶点色、雾、2000 棵树和一层好水做扎实，在 1280×720 的 Intel HD 上已经能做出“像游戏”的画面。低多边形则把预算从三角形转到色板/轮廓/构图。</p>
+</section>
+
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>高度场解剖：噪声、遮罩与海岸线</h2><span class="sec-note">拖动参数，观察海岸线怎么变</span></div>
+  <p class="lead">推荐管线：<b>domain warp → 椭圆径向 mask → 基底 FBM → ridged 山脊 → 海岸塑形 → 台地/侵蚀 → 高度 LUT</b>。下面的演示是同一套公式的 CPU/Canvas 版，用来建立“参数 → 形状”的直觉；Godot 里换成 <code>FastNoiseLite</code> 即可。</p>
+
+  <div class="demo" id="demo">
+    <div class="demo-head">
+      <div>
+        <p class="t">海岛高度场实验室</p>
+        <p class="d">拖动滑杆即时重算；Canvas 160×105，同种子可复现。视图可切换“高度 / 遮罩 / 坡度 / 着色”。</p>
+      </div>
+      <div class="seg" id="viewSeg">
+        <button class="btn active" data-view="color">着色地形</button>
+        <button class="btn" data-view="height">高度灰阶</button>
+        <button class="btn" data-view="mask">岛屿遮罩</button>
+        <button class="btn" data-view="slope">坡度</button>
+      </div>
+    </div>
+    <div class="demo-grid">
+      <div class="mapcol">
+        <canvas id="island" width="160" height="105" aria-label="程序化海岛高度场"></canvas>
+        <div class="metrics" id="metrics">
+          <span class="metric">陆地 <b id="mLand">—</b></span>
+          <span class="metric">最高 <b id="mMax">—</b></span>
+          <span class="metric">海岸线 <b id="mCoast">—</b></span>
+          <span class="metric">生成 <b id="mTime">—</b></span>
+          <span class="metric">种子 <b id="mSeed">—</b></span>
+        </div>
+        <canvas id="profile" width="960" height="240" aria-label="中线高度剖面"></canvas>
+        <div class="legend">
+          <span><i class="sw water"></i>浅/深水</span>
+          <span><i class="sw sand"></i>沙滩</span>
+          <span><i class="sw leaf"></i>草地/森林</span>
+          <span><i class="sw gold"></i>岩石</span>
+          <span><i class="sw" style="background:#EDF2F4"></i>雪</span>
+          <span>亮线 = 海岸线 · 剖面位置滑杆可调</span>
+        </div>
+        <div class="tune">
+          <b>怎么调：</b>
+          <ul>
+            <li>海岸太圆 → 提高“域扭曲”、降低“海岸硬度”，或换 seed</li>
+            <li>岛太碎 → 降低频率、提高岛屿半径/海岸带宽</li>
+            <li>山不够 → 提高山脊权重/octaves；太尖 → 降山脊或加台地</li>
+          </ul>
+        </div>
+      </div>
+      <div class="controls-panel">
+        <div class="controls">
+          <label><span>噪声类型</span>
+            <select id="noiseType">
+              <option value="perlin">Perlin（推荐）</option>
+              <option value="value">Value（更块状）</option>
+            </select>
+          </label>
+        </div>
+        <div class="controls">
+          <label><span>种子</span><input id="seed" type="number" value="20261121" min="0" max="99999999" step="1"></label>
+        </div>
+        <div class="btnrow">
+          <button class="btn primary" id="randomSeed">随机种子</button>
+          <button class="btn" id="reset">恢复推荐</button>
+        </div>
+        <div class="controls"><label><span>频率</span><output id="freqOut"></output></label><input id="freq" type="range" min="0.006" max="0.045" step="0.001" value="0.021"></div>
+        <div class="controls"><label><span>octaves</span><output id="octOut"></output></label><input id="oct" type="range" min="2" max="6" step="1" value="4"></div>
+        <div class="controls"><label><span>gain</span><output id="gainOut"></output></label><input id="gain" type="range" min="0.30" max="0.70" step="0.01" value="0.50"></div>
+        <div class="controls"><label><span>域扭曲</span><output id="warpOut"></output></label><input id="warp" type="range" min="0" max="1" step="0.01" value="0.80"></div>
+        <div class="controls"><label><span>岛屿半径</span><output id="islandOut"></output></label><input id="islandSize" type="range" min="0.55" max="0.95" step="0.01" value="0.74"></div>
+        <div class="controls"><label><span>海岸带宽</span><output id="falloffOut"></output></label><input id="falloff" type="range" min="0.08" max="0.36" step="0.01" value="0.20"></div>
+        <div class="controls"><label><span>海岸硬度</span><output id="powerOut"></output></label><input id="power" type="range" min="0.8" max="3.0" step="0.1" value="1.45"></div>
+        <div class="controls"><label><span>山脊权重</span><output id="ridgeOut"></output></label><input id="ridge" type="range" min="0" max="1" step="0.01" value="0.55"></div>
+        <div class="controls"><label><span>台地混合</span><output id="terraceOut"></output></label><input id="terrace" type="range" min="0" max="1" step="0.01" value="0.12"></div>
+        <div class="controls"><label><span>海平面</span><output id="seaOut"></output></label><input id="sea" type="range" min="-4" max="20" step="0.5" value="0"></div>
+        <div class="controls"><label><span>剖面位置</span><output id="profileOut"></output></label><input id="profileRow" type="range" min="0.1" max="0.9" step="0.01" value="0.55"></div>
+        <label class="check"><input type="checkbox" id="showCoast" checked> 海岸线高亮</label>
+        <label class="check"><input type="checkbox" id="showContour" checked> 等高线（10 m）</label>
+        <label class="check"><input type="checkbox" id="showShade" checked> 山体阴影</label>
+        <p class="note" id="hint">先把“岛屿半径/海岸带宽/海岸硬度”调出喜欢的轮廓，再调频率与山脊。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>参数</th><th>Godot 推荐值（1024 m 岛）</th><th>直觉</th></tr></thead>
+      <tbody>
+        <tr><td>基底噪声</td><td><code>TYPE_SIMPLEX_SMOOTH</code>，<code>frequency 0.0025</code>，FBM 5 oct，gain 0.5</td><td>波长约 400 m；决定大陆块</td></tr>
+        <tr><td>山脊噪声</td><td><code>TYPE_SIMPLEX</code>，<code>frequency 0.006</code>，<code>FRACTAL_RIDGED</code> 4 oct</td><td>只在中部/高处加权，避免全岛尖刺</td></tr>
+        <tr><td>域扭曲</td><td>独立噪声 <code>frequency 0.004</code>，偏移 55 m</td><td>打破正圆岛；比直接改 mask 半径自然</td></tr>
+        <tr><td>岛屿遮罩</td><td>椭圆 <code>rx=420 m, rz=380 m</code>；<code>inner=0.74</code>；<code>power=1.6</code></td><td>四周必须留海；power 越大岸越陡</td></tr>
+        <tr><td>高度</td><td>基底 46 m + 山脊 28 m；海床 −12 m；峰高约 60–75 m</td><td>海岛不需要 500 m 雪山；起伏太大反而失真</td></tr>
+        <tr><td>台地</td><td><code>step 7 m, blend 0.15–0.3</code>（可选）</td><td>风格化岩层；写实路线可不加</td></tr>
+        <tr><td>侵蚀</td><td>离线 1 次水力；热力 2–5 次只用于预览</td><td>GDScript 257² × 3 次热力实测 2.72 s，别放运行时</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox"><b>实测提醒：</b>FastNoiseLite 的 FBM 输出不是严格 [−1,1]（本机采样约 [−0.67, 0.64]）。在 Godot 里用实测 min/max 或 <code>clamp</code> 归一化，别直接乘 0.5+0.5 后假设一定落在 [0,1]。</div>
+</section>
+
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>网格、LOD 与碰撞</h2><span class="sec-note">接缝是第一优先级</span></div>
+  <div class="cards">
+    <div class="card"><h4>ArrayMesh</h4><p>运行时批量生成优先用数组接口：<code>VERTEX / NORMAL / COLOR / INDEX</code>，<code>add_surface_from_arrays()</code>。本机 8×8 分块 / 131k tris 构建约 <b>0.30 s</b>。</p></div>
+    <div class="card"><h4>SurfaceTool</h4><p>原型/小网格更顺手，<code>generate_normals()</code> 只在必要时用；逐块算法线会在块边缘产生硬边。</p></div>
+    <div class="card"><h4>HeightMapShape3D</h4><p>1 m 格点、居中；257² 构建约 <b>15 ms</b>。比分块三角网碰撞快得多；调缩放或单独 1 m 碰撞场。</p></div>
+  </div>
+  <pre><b>防接缝铁律：</b>所有 chunk 共享同一张高度场 <code>H[iz*N+ix]</code> 与同一张法线表；
+边缘顶点坐标 = <code>ix * spacing</code>，绝不在块内重新采样/偏移噪声。
+LOD 裂缝用 <b>2–4 m 裙边</b> 遮住；距离切换留 5–10% 滞后。</pre>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>项目</th><th>MVP 预算</th><th>实测/说明</th></tr></thead>
+      <tbody>
+        <tr><td>高度场</td><td>257×257 / 4 m</td><td>66,049 采样；1.0–1.6 s 单线程（含网格/碰撞）</td></tr>
+        <tr><td>分块</td><td>8×8 chunks × 32×32 quads</td><td>每块 2,048 tris；共 131,072 tris / 64 draw calls</td></tr>
+        <tr><td>法线</td><td>中心差分</td><td>257² 约 0.24 s；可和高度场同循环合并优化</td></tr>
+        <tr><td>碰撞</td><td>1 个 HeightMapShape3D</td><td>257² 约 15 ms；不要用 trimesh 地形</td></tr>
+        <tr><td>侵蚀</td><td>离线</td><td>热力 3 次 257² 实测 2.72 s，运行时不可接受</td></tr>
+        <tr><td>LOD</td><td>2 级 + 裙边</td><td>4 m 近 / 8 m 远；`visibility_range_begin/end` 切换</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">绕序：Godot 正面是顺时针。地形从上方看不见就把索引顺序反过来；先做 2×2 测试块确认。顶点色若发暗，检查 sRGB→linear。</p>
+</section>
+
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>水面与海岸：Compatibility 安全做法</h2><span class="sec-note">预生成深度图 &gt; 实时深度纹理</span></div>
+  <p class="lead">本仓库 <code>godot-sea-water/</code> 已验证“<b>预生成深度图</b>驱动水色/泡沫/角色水线”的做法。3D 海岛直接复用这个结论：从高度场生成一张 512² R8 岸线深度图，水面 shader 用世界 XZ 采样，完全绕开 Compatibility 下深度纹理的 NDC/阶段限制。</p>
+  <div class="flow">
+    <div class="step"><div class="n">01</div><div class="t">高度场</div><div class="d">h(x,z)，海平面 0</div></div><div class="arrow">→</div>
+    <div class="step"><div class="n">02</div><div class="t">深度图</div><div class="d">depth = clamp((0−h)/12, 0, 1)</div></div><div class="arrow">→</div>
+    <div class="step"><div class="n">03</div><div class="t">水面 shader</div><div class="d">浅色→深色 + 泡沫 + Fresnel</div></div><div class="arrow">→</div>
+    <div class="step"><div class="n">04</div><div class="t">Gerstner</div><div class="d">4 波顶点位移 + 解析法线</div></div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>Compatibility</th><th>海岛里的替代</th></tr></thead>
+      <tbody>
+        <tr><td>Compute Shader</td><td>❌</td><td>CPU 生成高度场/网格；GPU 只渲染</td></tr>
+        <tr><td>Screen-Space Reflections</td><td>❌</td><td>天空/Fresnel/ReflectionProbe 近似</td></tr>
+        <tr><td>Volumetric Fog</td><td>❌</td><td>Depth/Height Fog（支持）+ 天空渐变</td></tr>
+        <tr><td>SDFGI / VoxelGI / SSIL</td><td>❌</td><td>方向光 + 烘焙 LightmapGI + SSAO（支持）</td></tr>
+        <tr><td>Depth/Height Fog / Glow / SSAO</td><td>✅</td><td>海岛氛围主力</td></tr>
+        <tr><td><code>hint_depth_texture</code></td><td>⚠️ fragment 可用</td><td>MVP 不用；要用时按 <code>CURRENT_RENDERER</code> 做 NDC 分支</td></tr>
+        <tr><td>vertex 阶段 screen/depth texture</td><td>❌（issue #124537）</td><td>只在 fragment 采样</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><b>Gerstner 起点：</b>4 个波，波长 18/31/57/96 m，振幅 0.18/0.12/0.07/0.04 m，
+陡度 0.6/0.5/0.4/0.3，速度 1.0–1.8。水面 Plane 2048² / 64×64 细分（约 8k tris）。
+泡沫 = smoothstep(0.08, 0.0, depth) × 噪声 × 时间；浅水 #2FB7B0 → 深水 #0B3C5D。</pre>
+  <div class="warnbox"><b>透明排序：</b>水面用 <code>depth_draw_never</code>、设置 render priority；透明材质不会写入 depth/screen texture，别指望它参与折射/反射。水面之下先画地形。</div>
+</section>
+
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>植被、岩石与生物群系</h2><span class="sec-note">MultiMesh + Poisson + 过滤</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>项</th><th>推荐</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>MultiMesh 数</td><td>2–4 个（树/岩石/草）</td><td>一次 draw call，但单实例不单独视锥剔除</td></tr>
+        <tr><td>树木</td><td>1,200–2,000，间距 6–12 m</td><td>每棵 80–200 tris；远 LOD 20–40 或 billboard</td></tr>
+        <tr><td>岩石</td><td>400–800，间距 3–6 m</td><td>40–80 tris；只有大岩石给碰撞</td></tr>
+        <tr><td>过滤</td><td>高度 2–45 m；<code>normal.y &gt; 0.72</code>；湿度 &gt; 0.45；离岸 2–4 m</td><td>先拒绝水下/陡坡/沙滩，再按密度接受</td></tr>
+        <tr><td>碰撞</td><td>只给玩家附近的大树/大石</td><td>每棵树碰撞会把物理服务器拖垮</td></tr>
+        <tr><td>分桶</td><td>按 8×8 区块或距离环拆 MultiMesh</td><td>弥补“单实例不剔除”</td></tr>
+        <tr><td>总量</td><td>100k–200k tris / 4 draw calls</td><td>加地形 131k，总 ≤300k</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cards">
+    <div class="card"><h4>群系规则</h4><p>单岛用「高度 + 坡度 + 湿度」：沙滩 0–2.5 m；草地 2.5–25 m；森林要湿度 &gt;0.45；岩石看坡度 &gt;0.62 或高度 &gt;25 m；雪 &gt;55 m。边界用 smoothstep 混色。</p></div>
+    <div class="card"><h4>Poisson Disk</h4><p>Bridson O(n)；树 r=8 m、k=30；用 <code>RandomNumberGenerator</code> 固定种子。同 seed 同点集，便于回归。</p></div>
+    <div class="card"><h4>远景</h4><p>billboard + <code>visibility_range</code>；草不投影不碰撞；雾把 300 m 外的细节吃掉，省下的预算给近景。</p></div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Godot 4.6 插件选型</h2><span class="sec-note">版本 / 许可 / Compatibility 已核实</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>项目</th><th>许可</th><th>Godot 4.6 / Compatibility</th><th>用途</th><th>注意</th></tr></thead>
+      <tbody>
+        <tr><td><b>Terrain3D</b></td><td>MIT</td><td>1.x 支持；Compatibility 自 1.0/4.4 起；v1.1.0 目标 4.5–4.8+</td><td>Clipmap LOD、区域、纹理、碰撞、植被、雕刻</td><td><b>2.0 计划不再支持 Compatibility</b>（要 compute）；项目锁 1.x</td></tr>
+        <tr><td><b>HTerrain</b></td><td>MIT</td><td>README 标注 4.6+；GDScript</td><td>编辑器雕刻/绘制、洞、LOD、草</td><td>维护模式（仅修 bug）；无 GDExtension</td></tr>
+        <tr><td><b>Voxel Tools</b></td><td>MIT</td><td>GDExtension 4.4.1+；v1.6 ↔ 4.6；GPU 特性需 Forward+</td><td>体素/Transvoxel、无限分页、可破坏</td><td>块重建/碰撞复杂；Intel HD 不推荐 MVP</td></tr>
+        <tr><td><b>Gaea</b></td><td>MIT</td><td>2.0 目标 4.4；GDScript</td><td>节点图生成高度图/地形/洞穴</td><td>2.0 早期开发；当作者工具用</td></tr>
+        <tr><td><b>Terrainy</b></td><td>MIT</td><td>Godot 4；需实测 4.6</td><td>节点式地形，内置岛屿/火山/散布</td><td>社区小（31★），生产前验证</td></tr>
+        <tr><td><b>LesusX Water-Shader</b></td><td>MIT</td><td>4.5 测试；Compatibility 未声明</td><td>Gerstner + 焦散 + 泡沫 + 深度着色 demo</td><td>小体量，参考实现</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lead"><b>结论：</b>MVP 不装插件，自写高度场管线最可控；要做 2 km+ 的可编辑世界再上 <b>Terrain3D 1.x</b>；要洞穴/可破坏才考虑 Voxel。</p>
+</section>
+
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>推荐 MVP：9 步 + 验收</h2><span class="sec-note">1280×720 / Intel HD / 30 FPS+</span></div>
+  <div class="flow">
+    <div class="step"><div class="n">00</div><div class="t">项目</div><div class="d">4.6 / Compatibility / Jolt</div></div>
+    <div class="step"><div class="n">01</div><div class="t">高度场</div><div class="d">257² + mask + LUT</div></div>
+    <div class="step"><div class="n">02</div><div class="t">网格</div><div class="d">8×8 chunks / 131k tris</div></div>
+    <div class="step"><div class="n">03</div><div class="t">碰撞</div><div class="d">HeightMapShape3D</div></div>
+    <div class="step"><div class="n">04</div><div class="t">水</div><div class="d">Gerstner + 深度图</div></div>
+    <div class="step"><div class="n">05</div><div class="t">植被</div><div class="d">MultiMesh + Poisson</div></div>
+    <div class="step"><div class="n">06</div><div class="t">氛围</div><div class="d">天空 / Fog / SSAO</div></div>
+    <div class="step"><div class="n">07</div><div class="t">验收</div><div class="d">30 FPS / 无接缝 / 同 seed</div></div>
+    <div class="step"><div class="n">08</div><div class="t">预烘焙</div><div class="d">16-bit 高度图 / 秒开</div></div>
+  </div>
+  <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card ok"><h4>验收门槛</h4><ul class="clean">
+      <li>同 seed 高度场 hash 一致；相邻 seed 明显不同</li>
+      <li>陆地 20–45%；主岛占陆地 ≥90%；四周 50 m 内无陆地</li>
+      <li>块间无裂缝/亮线；碰撞贴合视觉</li>
+      <li>水面浅深色/泡沫正确；无 z-fighting</li>
+      <li>平均 ≥30 FPS，P95 ≤33.3 ms（vsync off）</li>
+      <li>生成 ≤2 s 或预烘焙加载 &lt;300 ms</li>
+    </ul></div>
+    <div class="card warn"><h4>五个坑</h4><ul class="clean">
+      <li>块边缘各自采样 → 接缝；共享高度场/法线表</li>
+      <li>逐块 generate_normals → 硬边；用中心差分</li>
+      <li>LOD 无裙边 → 裂缝；2–4 m skirt + 滞后</li>
+      <li>HeightMapShape3D 缩放/格点错 → 浮空；先做 1 m 碰撞场</li>
+      <li>GDScript 侵蚀/噪声卡加载 → 离线/线程/预烘焙</li>
+    </ul></div>
+  </div>
+  <pre><b>参数起点：</b>world 1024 m / 257² @4 m / sea 0 / island rx 420 rz 380 / inner 0.74 / power 1.6
+base freq 0.0025 (5 oct) / ridge freq 0.006 (4 oct) / warp freq 0.004 @55 m
+8×8 chunks × 32×32 quads = 131,072 tris / normals central diff
+water 2048² plane / 64² subdiv / 4 Gerstner / 512² R8 depth map
+trees 1,500–2,000 @8 m / rocks 500–800 @4 m / moisture 0.0015 / slope 0.72</pre>
+  <div class="okbox"><b>先做哪一步？</b>先做 §2 的高度场 + 岛屿遮罩，用本页 Canvas 找到你喜欢的海岸轮廓；再把这组参数抄进 GDScript，生成灰模。不要先写水或树。</div>
+</section>
+
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>来源与边界</h2><span class="sec-note">URL 访问 2026-11-21 · 不复制素材</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>来源</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://godotengine.org/releases/4.6/">Godot 4.6 Release</a></td><td>4.6 版本；Jolt 为 4.6 新 3D 项目默认（社区报道 2026-01-26 发布）</td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_fastnoiselite.html">FastNoiseLite 4.6</a> · <a href="https://docs.godotengine.org/en/4.6/classes/class_heightmapshape3d.html">HeightMapShape3D</a> · <a href="https://docs.godotengine.org/en/4.6/classes/class_arraymesh.html">ArrayMesh</a> · <a href="https://docs.godotengine.org/en/4.6/classes/class_surfacetool.html">SurfaceTool</a></td><td>原生 API、属性、碰撞/网格约束</td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/tutorials/rendering/renderers.html">Renderers / Compatibility</a> · <a href="https://docs.godotengine.org/en/4.6/tutorials/shaders/shader_reference/shader_preprocessor.html">Shader preprocessor</a> · <a href="https://docs.godotengine.org/en/4.6/tutorials/shaders/shader_reference/spatial_shader.html">Spatial shaders</a></td><td>Compatibility 功能表、<code>CURRENT_RENDERER</code>、depth/screen texture</td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/tutorials/performance/using_multimesh.html">MultiMesh</a> · <a href="https://docs.godotengine.org/en/4.6/tutorials/3d/visibility_ranges.html">Visibility ranges</a> · <a href="https://docs.godotengine.org/en/4.6/tutorials/3d/mesh_lod.html">Mesh LOD</a></td><td>批量植被、距离 LOD、HLOD</td></tr>
+        <tr><td><a href="https://github.com/TokisanGames/Terrain3D">Terrain3D</a> · <a href="https://terrain3d.readthedocs.io/en/latest/docs/platforms.html">Platforms</a> · <a href="https://tokisan.com/terrain3d-gpu-driven-workflow/">2.0 GPU workflow</a></td><td>MIT、Compatibility、1.x vs 2.0</td></tr>
+        <tr><td><a href="https://github.com/Zylann/godot_heightmap_plugin">HTerrain</a> · <a href="https://github.com/Zylann/godot_voxel">Voxel Tools</a> · <a href="https://voxel-tools.readthedocs.io/en/latest/getting_the_module/">Voxel docs</a></td><td>插件版本/许可/渲染器限制</td></tr>
+        <tr><td><a href="https://github.com/LesusX/Water-Shader">LesusX/Water-Shader</a> · <a href="https://github.com/SebLague/Godot-Marching-Cubes">SebLague Godot Marching Cubes</a> · <a href="https://github.com/gaea-godot/gaea">Gaea</a> · <a href="https://github.com/fabian-becker/Terrainy">Terrainy</a></td><td>水面/体素/节点图/岛屿工具案例（MIT）</td></tr>
+        <tr><td><a href="https://github.com/SebLague/Procedural-Landmass-Generation">SebLague Landmass (Unity, MIT)</a> · <a href="https://github.com/SebLague/Hydraulic-Erosion">Hydraulic Erosion (MIT)</a> · <a href="https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models">GPU Gems Ch.1</a> · <a href="https://www.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf">Bridson 2007</a> · <a href="https://transvoxel.org/">Transvoxel</a></td><td>可移植算法：高度场/侵蚀/Gerstner/Poisson/体素 LOD</td></tr>
+        <tr><td><a href="https://github.com/godotengine/godot/issues/124537">Godot issue #124537</a></td><td>Compatibility 下 depth/screen texture 的 vertex 阶段限制</td></tr>
+        <tr><td><a href="godot-3d-island-survey.md">完整 md 报告</a> · <a href="godot-procgen-survey.md">父报告 T-020</a></td><td>参数表、实测、插件表、10 页速查</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">本页 Canvas 演示为原创实现，不使用任何案例画面/素材；案例仅引用公开链接与文字结论。Canvas 参数是教学缩放版，Godot 参数见 md §7.3。</p>
+</section>
+
+</main>
+
+<footer>
+  <p>T-20261121-022 · Godot 4.6 3D 海岛调研 · 交互讲义。实测环境：Godot 4.6 stable / macOS / Intel HD 6000 / GL Compatibility。所有 URL 访问日期 2026-11-21。</p>
+</footer>
+</div>
+
+<div class="fab">
+  <button id="themeBtn" title="切换明暗主题">◐ 主题</button>
+  <button onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ 顶部</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const W = 160, H = 105;
+  const canvas = $('island');
+  const ctx = canvas.getContext('2d');
+  const pcanvas = $('profile');
+  const pctx = pcanvas.getContext('2d');
+  const img = ctx.createImageData(W, H);
+  const heights = new Float32Array(W * H);
+  const masks = new Float32Array(W * H);
+
+  const DEFAULTS = {
+    seed: 20261121, view: 'color', noiseType: 'perlin',
+    freq: 0.021, oct: 4, gain: 0.50, warp: 0.80,
+    islandSize: 0.74, falloff: 0.20, power: 1.45,
+    ridge: 0.50, terrace: 0.12, sea: 0,
+    profileRow: 0.55, showCoast: true, showContour: true, showShade: true
+  };
+  let state = { ...DEFAULTS };
+
+  const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function smoothstep(e0, e1, x) {
+    const t = clamp((x - e0) / (e1 - e0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function mulberry32(a) {
+    a = a >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makePerlin(seed) {
+    const rnd = mulberry32(seed);
+    const p = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) p[i] = i;
+    for (let i = 255; i > 0; i--) {
+      const j = (rnd() * (i + 1)) | 0;
+      const t = p[i]; p[i] = p[j]; p[j] = t;
+    }
+    const perm = new Uint8Array(512);
+    for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+    const gxT = [1, -1, 1, -1, 1, -1, 0, 0];
+    const gyT = [1, 1, -1, -1, 0, 0, 1, -1];
+    return function (x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const X = xi & 255, Y = yi & 255;
+      const xf = x - xi, yf = y - yi;
+      const u = xf * xf * xf * (xf * (xf * 6 - 15) + 10);
+      const v = yf * yf * yf * (yf * (yf * 6 - 15) + 10);
+      const g0 = perm[perm[X] + Y] & 7;
+      const g1 = perm[perm[X + 1] + Y] & 7;
+      const g2 = perm[perm[X] + Y + 1] & 7;
+      const g3 = perm[perm[X + 1] + Y + 1] & 7;
+      const xf1 = xf - 1, yf1 = yf - 1;
+      const x1 = lerp(gxT[g0] * xf + gyT[g0] * yf, gxT[g1] * xf1 + gyT[g1] * yf, u);
+      const x2 = lerp(gxT[g2] * xf + gyT[g2] * yf1, gxT[g3] * xf1 + gyT[g3] * yf1, u);
+      return lerp(x1, x2, v) * 1.35;
+    };
+  }
+  function makeValue(seed) {
+    const rnd = mulberry32(seed);
+    const tbl = new Float32Array(256);
+    for (let i = 0; i < 256; i++) tbl[i] = rnd() * 2 - 1;
+    const hash = (x, y) => tbl[((x * 73856093) ^ (y * 19349663)) & 255];
+    return function (x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const xf = x - xi, yf = y - yi;
+      const u = xf * xf * (3 - 2 * xf);
+      const v = yf * yf * (3 - 2 * yf);
+      const a = hash(xi, yi), b = hash(xi + 1, yi);
+      const c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+      return lerp(lerp(a, b, u), lerp(c, d, u), v);
+    };
+  }
+  let noise = null, warpNoise = null, noiseKey = '';
+  function ensureNoise() {
+    const key = state.seed + '|' + state.noiseType;
+    if (key === noiseKey) return;
+    noiseKey = key;
+    const s = (state.seed >>> 0) || 1;
+    if (state.noiseType === 'value') {
+      noise = makeValue(s);
+      warpNoise = makeValue(s ^ 0x9e3779b9);
+    } else {
+      noise = makePerlin(s);
+      warpNoise = makePerlin(s ^ 0x9e3779b9);
+    }
+  }
+  function fbm(fn, x, y, oct, gain) {
+    let amp = 1, f = 1, sum = 0, norm = 0;
+    for (let i = 0; i < oct; i++) {
+      sum += amp * fn(x * f, y * f);
+      norm += amp;
+      amp *= gain;
+      f *= 2.0;
+    }
+    return sum / norm;
+  }
+  function ridged(fn, x, y, oct) {
+    let amp = 1, f = 1, sum = 0, norm = 0;
+    for (let i = 0; i < oct; i++) {
+      const n = 1 - Math.min(1, Math.abs(fn(x * f, y * f)));
+      sum += amp * n * n;
+      norm += amp;
+      amp *= 0.5;
+      f *= 2.0;
+    }
+    return sum / norm;
+  }
+
+  function generate() {
+    ensureNoise();
+    const t0 = performance.now();
+    const rx = state.islandSize;
+    const rz = state.islandSize * 0.84;
+    const gain = state.gain;
+    const oct = state.oct | 0;
+    const warpAmp = state.warp * 0.35;
+    let land = 0, maxH = -999;
+    for (let y = 0; y < H; y++) {
+      const v = (y / (H - 1) - 0.5) * 2;
+      for (let x = 0; x < W; x++) {
+        const u = (x / (W - 1) - 0.5) * 2;
+        const wx = warpNoise(x * 0.012, y * 0.012) * warpAmp;
+        const wy = warpNoise((x + 137) * 0.012, (y + 71) * 0.012) * warpAmp;
+        const uu = u + wx, vv = v + wy;
+        const d = Math.sqrt((uu / rx) * (uu / rx) + (vv / rz) * (vv / rz));
+        let mask = 1 - smoothstep(1 - state.falloff, 1, d);
+        mask = Math.pow(clamp(mask, 0, 1), state.power);
+        const edge = Math.max(Math.abs(u), Math.abs(v));
+        mask *= 1 - smoothstep(0.93, 1.0, edge);
+        const base = clamp(fbm(noise, x * state.freq, y * state.freq, oct, gain) * 0.5 + 0.5, 0, 1);
+        const r = ridged(noise, x * state.freq * 2.3 + 31.7, y * state.freq * 2.3 + 17.3, 3);
+        let h = mask * (base * 55 + r * 38 * state.ridge * Math.pow(mask, 1.5)) - 14 * (1 - mask);
+        if (state.terrace > 0 && h > state.sea) {
+          const step = 7;
+          h += (Math.floor(h / step) * step - h) * state.terrace * 0.7;
+        }
+        const i = y * W + x;
+        heights[i] = h;
+        masks[i] = mask;
+        if (h > state.sea) land++;
+        if (h > maxH) maxH = h;
+      }
+    }
+    let coastCells = 0;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        if (heights[i] <= state.sea) continue;
+        if ((x > 0 && heights[i - 1] <= state.sea) ||
+            (x < W - 1 && heights[i + 1] <= state.sea) ||
+            (y > 0 && heights[i - W] <= state.sea) ||
+            (y < H - 1 && heights[i + W] <= state.sea)) coastCells++;
+      }
+    }
+    const ms = performance.now() - t0;
+    $('mLand').textContent = (100 * land / (W * H)).toFixed(1) + '%';
+    $('mMax').textContent = maxH.toFixed(1) + ' m';
+    $('mCoast').textContent = (coastCells * 1024 / W / 1000).toFixed(2) + ' km';
+    $('mTime').textContent = ms.toFixed(1) + ' ms';
+    $('mSeed').textContent = state.seed;
+    render();
+    renderProfile();
+  }
+
+  const PAL = {
+    deep: [10, 48, 78], shallow: [56, 190, 180],
+    sand: [232, 216, 166], grass: [111, 158, 78], forest: [79, 122, 58],
+    rock: [112, 110, 102], snow: [237, 242, 244], foam: [245, 250, 235]
+  };
+  function mix(a, b, t) {
+    t = clamp(t, 0, 1);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function slopeAt(x, y) {
+    const i = y * W + x;
+    const hl = heights[y * W + Math.max(0, x - 1)];
+    const hr = heights[y * W + Math.min(W - 1, x + 1)];
+    const hd = heights[Math.max(0, y - 1) * W + x];
+    const hu = heights[Math.min(H - 1, y + 1) * W + x];
+    const nx = (hl - hr) / (2 * 1024 / W);
+    const nz = (hd - hu) / (2 * 1024 / H);
+    const inv = 1 / Math.sqrt(nx * nx + 1 + nz * nz);
+    return { nx: nx * inv, ny: inv, nz: nz * inv, raw: 1 - inv };
+  }
+  function heightColor(h, slope, x, y) {
+    if (h <= state.sea) {
+      const depth = clamp((state.sea - h) / 24, 0, 1);
+      let c = mix(PAL.shallow, PAL.deep, depth);
+      // subtle waves
+      const w = Math.sin(x * 0.11 + y * 0.07) * 0.5 + 0.5;
+      c = mix(c, [255, 255, 255], 0.03 * w * (1 - depth));
+      return c;
+    }
+    const t = h - state.sea;
+    let c;
+    if (t < 3.0) {
+      c = mix(PAL.sand, PAL.grass, smoothstep(2.4, 4.0, t) * 0.55);
+    } else if (t < 50) {
+      const m = Math.sin(x * 0.047 + 1.7) * Math.cos(y * 0.061 - 0.8) * 0.5 + 0.5;
+      c = mix(PAL.grass, PAL.forest, clamp((t - 3) / 47 * 0.45 + m * 0.45, 0, 1));
+    } else if (t < 68) c = PAL.rock;
+    else c = PAL.snow;
+    const rockW = smoothstep(0.60, 0.90, slope.raw) * (t > 3 ? 1 : 0);
+    c = mix(c, PAL.rock, rockW * 0.7);
+    if (t > 68) c = mix(c, PAL.snow, clamp((t - 68) / 14, 0, 1) * 0.75);
+    if (state.showShade) {
+      const lx = -0.55, ly = 0.68, lz = 0.48;
+      const dot = Math.max(0, slope.nx * lx + slope.ny * ly + slope.nz * lz);
+      const shade = 0.80 + 0.32 * dot;
+      c = [c[0] * shade, c[1] * shade, c[2] * shade];
+    }
+    if (state.showContour) {
+      const band = Math.floor(h / 10);
+      const bi = Math.max(0, x - 1) + y * W;
+      if (band !== Math.floor(heights[bi] / 10)) c = [c[0] * 0.88, c[1] * 0.88, c[2] * 0.88];
+    }
+    return c;
+  }
+  function render() {
+    const d = img.data;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        const h = heights[i];
+        let c;
+        if (state.view === 'height') {
+          const g = clamp((h + 20) / 115, 0, 1);
+          c = [g * 235 + 10, g * 235 + 10, g * 235 + 10];
+        } else if (state.view === 'mask') {
+          const m = masks[i];
+          c = [m * 50 + 8, m * 205 + 20, m * 190 + 25];
+        } else if (state.view === 'slope') {
+          const s = slopeAt(x, y);
+          const g = clamp(s.raw * 2.2, 0, 1);
+          c = [40 + g * 190, 70 + g * 150, 80 + g * 120];
+        } else {
+          c = heightColor(h, slopeAt(x, y), x, y);
+        }
+        // coastline highlight (all views)
+        if (state.showCoast) {
+          const isLand = h > state.sea;
+          let nearWater = false;
+          if (x > 0 && (heights[i - 1] > state.sea) !== isLand) nearWater = true;
+          if (x < W - 1 && (heights[i + 1] > state.sea) !== isLand) nearWater = true;
+          if (y > 0 && (heights[i - W] > state.sea) !== isLand) nearWater = true;
+          if (y < H - 1 && (heights[i + W] > state.sea) !== isLand) nearWater = true;
+          if (nearWater) {
+            c = isLand ? mix(c, PAL.foam, 0.48) : mix(c, PAL.shallow, 0.35);
+          }
+        }
+        const p = i * 4;
+        d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  function renderProfile() {
+    const w = pcanvas.width, hgt = pcanvas.height;
+    pctx.clearRect(0, 0, w, hgt);
+    const row = clamp(Math.floor(state.profileRow * (H - 1)), 0, H - 1);
+    const lo = -22, hi = 96;
+    const yOf = (v) => hgt - ((clamp(v, lo, hi) - lo) / (hi - lo)) * (hgt - 24) - 12;
+    // sea band
+    const seaY = yOf(state.sea);
+    pctx.fillStyle = 'rgba(30,120,130,.24)';
+    pctx.fillRect(0, seaY, w, hgt - seaY);
+    // terrain fill
+    pctx.beginPath();
+    pctx.moveTo(0, hgt);
+    for (let x = 0; x < W; x++) {
+      const h = heights[row * W + x];
+      const px = x / (W - 1) * w;
+      pctx.lineTo(px, yOf(h));
+    }
+    pctx.lineTo(w, hgt);
+    pctx.closePath();
+    const grad = pctx.createLinearGradient(0, 0, 0, hgt);
+    grad.addColorStop(0, 'rgba(242,179,92,.42)');
+    grad.addColorStop(0.55, 'rgba(95,216,201,.26)');
+    grad.addColorStop(1, 'rgba(95,216,201,.04)');
+    pctx.fillStyle = grad;
+    pctx.fill();
+    // terrain stroke
+    pctx.beginPath();
+    for (let x = 0; x < W; x++) {
+      const h = heights[row * W + x];
+      const px = x / (W - 1) * w;
+      if (x === 0) pctx.moveTo(px, yOf(h)); else pctx.lineTo(px, yOf(h));
+    }
+    pctx.strokeStyle = 'rgba(232,241,232,.8)';
+    pctx.lineWidth = 1.4;
+    pctx.stroke();
+    // sea line
+    pctx.beginPath();
+    pctx.setLineDash([6, 5]);
+    pctx.moveTo(0, seaY);
+    pctx.lineTo(w, seaY);
+    pctx.strokeStyle = 'rgba(95,216,201,.9)';
+    pctx.lineWidth = 1;
+    pctx.stroke();
+    pctx.setLineDash([]);
+    // labels
+    pctx.fillStyle = 'rgba(154,175,162,.95)';
+    pctx.font = '11px ui-monospace, Menlo, monospace';
+    pctx.fillText('中线剖面 · y=' + state.profileRow.toFixed(2) + ' · 海平面 ' + state.sea.toFixed(1) + ' m', 10, 15);
+    // coast markers
+    for (let x = 1; x < W; x++) {
+      const a = heights[row * W + x - 1] > state.sea;
+      const b = heights[row * W + x] > state.sea;
+      if (a !== b) {
+        const px = x / (W - 1) * w;
+        pctx.fillStyle = 'rgba(245,250,235,.9)';
+        pctx.fillRect(px - 0.5, seaY - 4, 1.5, 8);
+      }
+    }
+  }
+
+  // ---- UI wiring ----
+  const bind = (id, key, outId, fmt) => {
+    const el = $(id);
+    if (!el) return;
+    const out = outId ? $(outId) : null;
+    const sync = () => {
+      state[key] = parseFloat(el.value);
+      if (out) out.textContent = fmt ? fmt(state[key]) : state[key];
+    };
+    el.addEventListener('input', () => { sync(); schedule(); });
+    sync();
+  };
+  bind('freq', 'freq', 'freqOut', v => v.toFixed(3));
+  bind('oct', 'oct', 'octOut', v => String(v));
+  bind('gain', 'gain', 'gainOut', v => v.toFixed(2));
+  bind('warp', 'warp', 'warpOut', v => v.toFixed(2));
+  bind('islandSize', 'islandSize', 'islandOut', v => v.toFixed(2));
+  bind('falloff', 'falloff', 'falloffOut', v => v.toFixed(2));
+  bind('power', 'power', 'powerOut', v => v.toFixed(1));
+  bind('ridge', 'ridge', 'ridgeOut', v => v.toFixed(2));
+  bind('terrace', 'terrace', 'terraceOut', v => v.toFixed(2));
+  bind('sea', 'sea', 'seaOut', v => v.toFixed(1) + ' m');
+  bind('profileRow', 'profileRow', 'profileOut', v => v.toFixed(2));
+  $('seed').addEventListener('input', () => {
+    const v = parseInt($('seed').value, 10);
+    if (Number.isFinite(v) && v >= 0) { state.seed = v; ensureNoise(); schedule(); }
+  });
+  $('noiseType').addEventListener('change', () => { state.noiseType = $('noiseType').value; ensureNoise(); schedule(); });
+  $('showCoast').addEventListener('change', () => { state.showCoast = $('showCoast').checked; schedule(); });
+  $('showContour').addEventListener('change', () => { state.showContour = $('showContour').checked; schedule(); });
+  $('showShade').addEventListener('change', () => { state.showShade = $('showShade').checked; schedule(); });
+  document.querySelectorAll('#viewSeg .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#viewSeg .btn').forEach(b => b.classList.toggle('active', b === btn));
+      state.view = btn.dataset.view;
+      render(); renderProfile();
+    });
+  });
+  $('randomSeed').addEventListener('click', () => {
+    const v = Math.floor(Math.random() * 99999999);
+    $('seed').value = v;
+    state.seed = v; ensureNoise(); schedule();
+  });
+  $('reset').addEventListener('click', () => {
+    state = { ...DEFAULTS };
+    $('seed').value = state.seed;
+    $('noiseType').value = state.noiseType;
+    $('freq').value = state.freq; $('oct').value = state.oct; $('gain').value = state.gain;
+    $('warp').value = state.warp; $('islandSize').value = state.islandSize;
+    $('falloff').value = state.falloff; $('power').value = state.power;
+    $('ridge').value = state.ridge; $('terrace').value = state.terrace;
+    $('sea').value = state.sea; $('profileRow').value = state.profileRow;
+    $('showCoast').checked = true; $('showContour').checked = true; $('showShade').checked = true;
+    document.querySelectorAll('#viewSeg .btn').forEach(b => b.classList.toggle('active', b.dataset.view === 'color'));
+    $('freqOut').textContent = state.freq.toFixed(3);
+    $('octOut').textContent = state.oct;
+    $('gainOut').textContent = state.gain.toFixed(2);
+    $('warpOut').textContent = state.warp.toFixed(2);
+    $('islandOut').textContent = state.islandSize.toFixed(2);
+    $('falloffOut').textContent = state.falloff.toFixed(2);
+    $('powerOut').textContent = state.power.toFixed(1);
+    $('ridgeOut').textContent = state.ridge.toFixed(2);
+    $('terraceOut').textContent = state.terrace.toFixed(2);
+    $('seaOut').textContent = state.sea.toFixed(1) + ' m';
+    $('profileOut').textContent = state.profileRow.toFixed(2);
+    noiseKey = ''; ensureNoise(); schedule();
+  });
+
+  let pending = false;
+  function schedule() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; generate(); });
+  }
+
+  // theme + TOC + progress
+  const root = document.documentElement;
+  $('themeBtn').addEventListener('click', () => {
+    const light = root.getAttribute('data-theme') === 'light';
+    root.setAttribute('data-theme', light ? 'dark' : 'light');
+  });
+  const tocLinks = [...document.querySelectorAll('nav.toc a')];
+  const sections = tocLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+  addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    $('progress').style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+  }, { passive: true });
+
+  // init
+  generate();
+})();
+</script>
+</body>
+</html>
