@@ -27,7 +27,8 @@
 - 交付: `docs/motion-stage-and-ai-3d-game-teardown.md`（结论先行 + 流程/坑 + MotionStage 技术/许可/导出 + 接入方案 + IP 边界 + 来源）+ 工具截图/证据；媒体
 - 约束: 只研究，不复制鬼灭 IP/游戏素材/角色；MotionStage 为 MIT，可研究/试用但保留许可；不改游戏代码；区分作者自述与验证
 - 指派: general-purpose worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-032/result.md
 
 ## T-20261121-030 · 调研 · Blender 二次元女性角色管线（供美术 Agent 能力建设）
 - 来源: 飞书消息（2026-11-21，“如果不具备，调研怎么把这个能力补全到美术 agent，持续迭代到接近原神品质”）
