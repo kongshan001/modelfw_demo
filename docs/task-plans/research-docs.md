@@ -9,7 +9,7 @@
 - 交付: `docs/reskin-pipeline-teardown.md`（结论先行 + 步骤/参数 + 提示词模板 + 零件 manifest + 工具替代 + 验收 + IP 边界 + 来源）+ 交互 HTML 检查表 + 截图；媒体
 - 约束: 只研究/写规格，不复制《末日小队》素材/界面；风格只做通用描述，不点名模仿在世艺术家；区分魔触（商业工具）与开源替代；不写入代码
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261121-033 · 调研 · 玩法创新方法与案例库（Game Designer 能力建设）
 - 来源: 飞书消息（2026-11-21，“AI 做游戏越来越便宜，后续更需要玩法创新；策划 agent 是否具备，若不具备帮我推动积累”）
@@ -18,7 +18,9 @@
 - 交付: `docs/design/gameplay-innovation-research.md`（结论先行 + 方法/案例/评分/流程/反模式 + 来源）+ 交互 HTML（约束卡/评分器）+ 截图；媒体
 - 约束: 只调研/写方法，不改代码；案例必须可查证（Balatro/Slay the Spire/Baba Is You/Outer Wilds/Hades 等），区分事实/推断；不复制 IP
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: running
+- 产出: `docs/design/gameplay-innovation-research.md`；`docs/design/gameplay-innovation-交互版.html`；`docs/shots/gameplay-innovation-hero.png`、`gameplay-innovation-lab.png`、`gameplay-innovation-cases.png`
+- 备注: 10 个案例 / 24 个 idea seeds / 3 个一页 brief；交互版含约束卡随机器、五项评分器、案例卡；已发 2 张截图到飞书。
 
 ## T-20261121-032 · 调研 · 鬼灭「无限城」AI 3D 动作游戏 + MotionStage 工具
 - 来源: 飞书消息（B 站《7.9万人玩过的鬼灭游戏，我是怎么用 AI 做出来的｜附开源动作工具》，https://b23.tv/MsgL53G，2026-11-21）
@@ -38,8 +40,9 @@
 - 约束: 只调研；优先开源/免费工具；核实插件许可与 Blender 3.4/4.2 兼容；区分“可达风格化”与“原神级生产管线”；不复制 IP；面向 Intel HD 渲染限制
 - 范围补充: 必须覆盖 Tripo 图生 3D（API/计费/输出/接入），并与 TripoSR 等方案对比
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: done
 - 线程: T-20261121-029（能力建设）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-030/result.md
 
 ## T-20261121-028 · 调研 · AI 半成品游戏 4 步抢救法（B 站 BV1AVs461EFQ）
 - 来源: 飞书消息（B 站《AI给的半成品差点意思？4招妙手回春！》，https://b23.tv/VmLeMCN，2026-11-21）
