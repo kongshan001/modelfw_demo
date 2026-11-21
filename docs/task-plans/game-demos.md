@@ -97,7 +97,7 @@
 - 交付: `godot-pixel-vfx/` 可运行项目；4 组特效 sprite sheet + JSON；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；MIT 许可与来源
 - 约束: 仅使用 PixelFX（MIT）与原创场景/角色/UI；不复制其他游戏素材；字体若单独授权则不打包；1280×720/1920×1080，GL Compatibility，Intel 30fps+；像素完美（nearest/无 AA）
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261121-021 · Godot 程序化地图生成优秀案例复刻（T-020 follow-up）
 - 来源: 飞书消息（2026-11-21，“godot在程序化地图生成这块有哪些技术方案，以及优秀效果案例然后复刻”）

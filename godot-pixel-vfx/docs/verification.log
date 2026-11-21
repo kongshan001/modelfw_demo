@@ -1,0 +1,76 @@
+Pixel VFX Lab — verification (T-20261121-023)
+Sat Nov 21 18:06:22 CST 2026
+device: Intel(R) HD Graphics 6000 / OpenGL 4.1 Compatibility / macOS
+project: godot-pixel-vfx (Godot 4.6, GL Compatibility, allow_hidpi=false)
+clean checkout: `godot --headless --path . --import` verified; one-command path: tools/verify.sh
+
+== 1. headless smoke ==
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+PIXEL_VFX_READY effects=6 world=640x360
+SMOKE slash ok fx=25 frames duration=0.833s cleanup=yes
+SMOKE fireball ok projectile=hit explosion=yes burn=3.0s cleanup=yes
+SMOKE freeze ok timer=2.9s fx=4.03s thaw=yes cleanup=yes
+SMOKE coins ok +40 once=yes bursts=4 respawn=2.6s cleanup=yes
+SMOKE speed ok 2x=0.10s/tick 0.5x=0.10s/tick 1x=restored
+SMOKE cleanup ok active_fx=0 popups=0 projectile=none statuses=clear
+PIXEL_VFX_SMOKE_OK checks=all
+
+== 2. real GPU boot (180 frames, window 1280x720) ==
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PIXEL_VFX_READY effects=6 world=640x360
+
+== 3. 1920x1080 screenshots (real GPU, offscreen 3x) ==
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PIXEL_VFX_READY effects=6 world=640x360
+SHOT res://docs/shots/00_overview.png 1920x1080
+SHOT res://docs/shots/01_slash.png 1920x1080
+SHOT res://docs/shots/02_fireball.png 1920x1080
+SHOT res://docs/shots/03_freeze.png 1920x1080
+SHOT res://docs/shots/04_coins.png 1920x1080
+SHOT res://docs/shots/05_combo.png 1920x1080
+SHOT res://docs/shots/06_speed2x.png 1920x1080
+SHOT res://docs/shots/07_burn.png 1920x1080
+PIXEL_VFX_SHOTS_OK files=8 size=1920x1080
+
+== 4. perf.json (last clean 1280x720 + 1920x1080 FPS probe) ==
+{
+  "device": "Intel(R) HD Graphics 6000",
+  "driver": "OpenGL 4.1 Compatibility",
+  "note": "1920x1080 is rendered offscreen because the test Mac's display is 1440x900; the world is integer-scaled 3x.",
+  "resolution_1080p": {
+    "avg": 40.7,
+    "frames": 163,
+    "min_sample": 2.0,
+    "seconds": 4.0
+  },
+  "resolution_720p": {
+    "avg": 66.4,
+    "frames": 266,
+    "min_sample": 29.0,
+    "seconds": 4.01
+  }
+}
+== 5. error scan ==
+
+0 Godot error lines found (scan section 5)
+
+== 6. final smoke (input/button hit-rect checks added) ==
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+PIXEL_VFX_READY effects=6 world=640x360
+SMOKE slash ok fx=25 frames duration=0.833s cleanup=yes
+SMOKE fireball ok projectile=hit explosion=yes burn=3.0s cleanup=yes
+SMOKE freeze ok timer=2.9s fx=4.03s thaw=yes cleanup=yes
+SMOKE coins ok +40 once=yes bursts=4 respawn=2.6s cleanup=yes
+SMOKE speed ok 2x=0.10s/tick 0.5x=0.10s/tick 1x=restored
+SMOKE input ok keyboard=1/5 buttons=4+3 hit-rects
+SMOKE cleanup ok active_fx=0 popups=0 projectile=none statuses=clear
+PIXEL_VFX_SMOKE_OK checks=all
+
+== 7. final error scan ==
+0 Godot error lines found (scan section 7; summary lines excluded)

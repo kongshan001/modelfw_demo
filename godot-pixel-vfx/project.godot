@@ -1,0 +1,33 @@
+; Pixel VFX Lab — Godot 4.6 pixel-perfect VFX playground.
+; World renders at 640x360 into a SubViewport (2x at 720p, 3x at 1080p);
+; HUD renders at 1280x720. All art is original or PixelFX (MIT) sprite sheets.
+
+config_version=5
+
+[application]
+
+config/name="Pixel VFX Lab · 像素特效试验场"
+config/description="Interactive pixel VFX playground powered by PixelFX (MIT): double slash, fireball, freeze and coin pickups."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/dpi/allow_hidpi=false
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+environment/defaults/default_clear_color=Color(0.027451, 0.039216, 0.070588, 1)

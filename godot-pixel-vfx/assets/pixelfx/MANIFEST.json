@@ -1,0 +1,171 @@
+{
+  "source": {
+    "repo": "https://github.com/patch-gg/pixelfx",
+    "commit": "5294518ce7c72e48b6100a744596e0acf57f2826",
+    "commit_date": "2026-11-12",
+    "version": "0.3.1",
+    "license": "MIT",
+    "license_file": "assets/pixelfx/LICENSE",
+    "notice_file": "assets/pixelfx/NOTICE.md",
+    "renderer": "tools/render.mjs (Node 18+; exported with Node v22.19.0)",
+    "export_note": "Official PixelFX sheet export. Only the exported PNG/JSON plus LICENSE/NOTICE are copied; the rest of the repository is not vendored."
+  },
+  "effects": {
+    "slash": {
+      "effect_id": "melee/double-slash",
+      "png": "assets/pixelfx/melee/double-slash/double-slash.png",
+      "json": "assets/pixelfx/melee/double-slash/double-slash.json",
+      "sha256": "7d752919a604bc44c8dd2db86589d688fa164f89747f543665f1bb6ed0256193",
+      "frame_size": [
+        164,
+        108
+      ],
+      "frames": 25,
+      "fps": 30,
+      "duration_s": 0.8333,
+      "loop": false,
+      "pivot": [
+        44,
+        92
+      ],
+      "columns": 5,
+      "sheet_size": [
+        820,
+        540
+      ],
+      "palette": "default",
+      "export_command": "node tools/render.mjs melee/double-slash --sheet"
+    },
+    "fireball": {
+      "effect_id": "fire/fireball",
+      "png": "assets/pixelfx/fire/fireball/fireball.png",
+      "json": "assets/pixelfx/fire/fireball/fireball.json",
+      "sha256": "fca263aac680ac95052d02c06e5ebdcbad0d72c4714ce4a8b49c5375497835a2",
+      "frame_size": [
+        136,
+        56
+      ],
+      "frames": 36,
+      "fps": 30,
+      "duration_s": 1.2,
+      "loop": true,
+      "pivot": [
+        112,
+        28
+      ],
+      "columns": 4,
+      "sheet_size": [
+        544,
+        504
+      ],
+      "palette": "default",
+      "export_command": "node tools/render.mjs fire/fireball --sheet"
+    },
+    "explosion": {
+      "effect_id": "explosions/small-explosion",
+      "png": "assets/pixelfx/explosions/small-explosion/small-explosion.png",
+      "json": "assets/pixelfx/explosions/small-explosion/small-explosion.json",
+      "sha256": "8be88f80e1aea35a235ed3071a7ab9a28fab296141d0b03e0aabb4ad1379719f",
+      "frame_size": [
+        300,
+        240
+      ],
+      "frames": 163,
+      "fps": 30,
+      "duration_s": 5.4333,
+      "loop": false,
+      "pivot": [
+        150,
+        196
+      ],
+      "columns": 12,
+      "sheet_size": [
+        3600,
+        3360
+      ],
+      "palette": "default",
+      "export_command": "node tools/render.mjs explosions/small-explosion --sheet"
+    },
+    "freeze": {
+      "effect_id": "ice/freeze",
+      "png": "assets/pixelfx/ice/freeze/freeze.png",
+      "json": "assets/pixelfx/ice/freeze/freeze.json",
+      "sha256": "f1f255432da1f3ec9d4ada9dcec2473b80be118b26eb7a1cd36707c5a1c3ab88",
+      "frame_size": [
+        176,
+        128
+      ],
+      "frames": 121,
+      "fps": 30,
+      "duration_s": 4.0333,
+      "loop": false,
+      "pivot": [
+        88,
+        108
+      ],
+      "columns": 10,
+      "sheet_size": [
+        1760,
+        1664
+      ],
+      "palette": "default",
+      "export_command": "node tools/render.mjs ice/freeze --sheet"
+    },
+    "coin": {
+      "effect_id": "pickups/coin-spin",
+      "png": "assets/pixelfx/pickups/coin-spin/coin-spin.png",
+      "json": "assets/pixelfx/pickups/coin-spin/coin-spin.json",
+      "sha256": "e6d0f114b0bb1acc4bb3bd13d29ad9c057d653d9a0c093c588f7fc752ed68fdd",
+      "frame_size": [
+        56,
+        56
+      ],
+      "frames": 48,
+      "fps": 30,
+      "duration_s": 1.6,
+      "loop": true,
+      "pivot": [
+        28,
+        48
+      ],
+      "columns": 7,
+      "sheet_size": [
+        392,
+        392
+      ],
+      "palette": "default",
+      "export_command": "node tools/render.mjs pickups/coin-spin --sheet"
+    },
+    "burst": {
+      "effect_id": "pickups/collect-burst",
+      "png": "assets/pixelfx/pickups/collect-burst/collect-burst.png",
+      "json": "assets/pixelfx/pickups/collect-burst/collect-burst.json",
+      "sha256": "00dad3bb40b88ad954582a0ab0af9548d6788af776f71ed1f1592927757bb42e",
+      "frame_size": [
+        112,
+        108
+      ],
+      "frames": 42,
+      "fps": 30,
+      "duration_s": 1.4,
+      "loop": false,
+      "pivot": [
+        56,
+        94
+      ],
+      "columns": 7,
+      "sheet_size": [
+        784,
+        648
+      ],
+      "palette": "gold",
+      "export_command": "node tools/render.mjs pickups/collect-burst --sheet --opts '{\"palette\":[\"#1a1205\",\"#3d2a08\",\"#704a0c\",\"#b07b12\",\"#f5b92c\",\"#ffde5e\",\"#fff4bc\",\"#ffffff\"]}'"
+    }
+  },
+  "notes": [
+    "small-explosion is exported in full (163 frames / 5.433 s) but the runtime plays only the first 2.2 s via SpriteFX.max_time; this trims the long lingering-smoke tail.",
+    "collect-burst was re-exported with a gold palette to match coin-spin; all other sheets use the library defaults.",
+    "No font files from PixelFX are bundled. Chinese HUD copy uses OS system fonts; the English title/score/damage numerals use an original 5x7 bitmap font drawn in code.",
+    "The exported sheets are MIT-licensed PixelFX artwork; see CREDITS.md and assets/pixelfx/NOTICE.md."
+  ]
+}

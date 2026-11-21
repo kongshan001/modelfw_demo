@@ -1,0 +1,17 @@
+{
+  "device": "Intel(R) HD Graphics 6000",
+  "driver": "OpenGL 4.1 Compatibility",
+  "note": "1920x1080 is rendered offscreen because the test Mac's display is 1440x900; the world is integer-scaled 3x.",
+  "resolution_1080p": {
+    "avg": 40.7,
+    "frames": 163,
+    "min_sample": 2.0,
+    "seconds": 4.0
+  },
+  "resolution_720p": {
+    "avg": 66.4,
+    "frames": 266,
+    "min_sample": 29.0,
+    "seconds": 4.01
+  }
+}
