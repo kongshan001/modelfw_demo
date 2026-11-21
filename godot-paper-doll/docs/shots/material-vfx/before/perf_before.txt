@@ -1,0 +1,3 @@
+PAPERDOLL_FPS samples=[32.0, 32.0, 33.0, 34.0, 33.0, 35.0, 34.0] steady_min=32.0 steady_avg=33.5 gpu=Intel(R) HD Graphics 6000
+PAPERDOLL_BAKE_OK card_median_ms=8.70 card_p90_ms=11.48 card_max_ms=11.69 overlay_median_ms=10.58 overlay_p90_ms=13.66 overlay_max_ms=23.58 wall_max_ms=81.3 budget_ms=16.0
+PAPERDOLL_FPS_OK min=32.0 avg=33.5

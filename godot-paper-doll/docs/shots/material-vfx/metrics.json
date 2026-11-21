@@ -1,0 +1,633 @@
+{
+  "chars": {},
+  "phases": {
+    "before": {
+      "ink": {
+        "moss_knight": {
+          "ink_px": 3083,
+          "opaque_px": 28198,
+          "bbox": [
+            353,
+            149
+          ],
+          "ink_ratio_bbox": 5.86,
+          "ink_ratio_opaque": 10.93
+        },
+        "ember_mage": {
+          "ink_px": 4876,
+          "opaque_px": 28003,
+          "bbox": [
+            370,
+            131
+          ],
+          "ink_ratio_bbox": 10.06,
+          "ink_ratio_opaque": 17.41
+        },
+        "cloud_baker": {
+          "ink_px": 2300,
+          "opaque_px": 25650,
+          "bbox": [
+            349,
+            114
+          ],
+          "ink_ratio_bbox": 5.78,
+          "ink_ratio_opaque": 8.97
+        }
+      },
+      "roi": {
+        "moss_knight": {
+          "cloth": {
+            "bins": 8,
+            "span": 28.6,
+            "median": 62.0
+          },
+          "face_skin": {
+            "bins": 9,
+            "span": 35.2,
+            "median": 62.0
+          },
+          "leather": {
+            "bins": 11,
+            "span": 71.2,
+            "median": 30.8
+          },
+          "prop_metal_wood": {
+            "bins": 16,
+            "span": 58.3,
+            "median": 62.0
+          },
+          "hair": {
+            "bins": 16,
+            "span": 58.6,
+            "median": 62.0
+          },
+          "cloth_shadow_hue": {
+            "light_hue_p90": 161.2,
+            "dark_hue_p10": 161.2,
+            "delta_deg": -0.0,
+            "samples": 2196
+          }
+        },
+        "ember_mage": {
+          "cloth": {
+            "bins": 9,
+            "span": 36.4,
+            "median": 60.1
+          },
+          "face_skin": {
+            "bins": 5,
+            "span": 33.9,
+            "median": 60.1
+          },
+          "leather": {
+            "bins": 11,
+            "span": 37.5,
+            "median": 30.8
+          },
+          "prop_metal_wood": {
+            "bins": 18,
+            "span": 72.6,
+            "median": 60.1
+          },
+          "hair": {
+            "bins": 13,
+            "span": 58.6,
+            "median": 60.1
+          }
+        },
+        "cloud_baker": {
+          "cloth": {
+            "bins": 9,
+            "span": 15.2,
+            "median": 92.1
+          },
+          "face_skin": {
+            "bins": 5,
+            "span": 16.9,
+            "median": 92.1
+          },
+          "leather": {
+            "bins": 12,
+            "span": 71.9,
+            "median": 75.2
+          },
+          "prop_metal_wood": {
+            "bins": 12,
+            "span": 51.0,
+            "median": 84.7
+          },
+          "hair": {
+            "bins": 11,
+            "span": 21.1,
+            "median": 79.9
+          }
+        }
+      },
+      "edge": {
+        "moss_knight": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.58,
+            "outline_contrast": 1.58
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.58,
+            "outline_contrast": 1.58
+          }
+        ],
+        "ember_mage": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#f2b34c",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f6e9d2",
+            "contrast": 1.55,
+            "outline_contrast": 10.5
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#d9a86c",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.85,
+            "outline_contrast": 10.82
+          }
+        ],
+        "cloud_baker": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#ddc7a5",
+            "outline_rgb": "#ddc7a5",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.41,
+            "outline_contrast": 1.41
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#c08b56",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 2.55,
+            "outline_contrast": 10.82
+          }
+        ]
+      },
+      "stage": {
+        "stage_median_L": 94.0,
+        "char_median_L": 62.0,
+        "delta_L": 32.0,
+        "paper_texture_std_L": 0.043,
+        "edge_1x": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.58,
+            "outline_contrast": 1.58
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.58,
+            "outline_contrast": 1.58
+          }
+        ]
+      }
+    },
+    "after": {
+      "ink": {
+        "moss_knight": {
+          "ink_px": 3361,
+          "opaque_px": 28113,
+          "bbox": [
+            353,
+            149
+          ],
+          "ink_ratio_bbox": 6.39,
+          "ink_ratio_opaque": 11.96
+        },
+        "ember_mage": {
+          "ink_px": 2791,
+          "opaque_px": 27880,
+          "bbox": [
+            370,
+            131
+          ],
+          "ink_ratio_bbox": 5.76,
+          "ink_ratio_opaque": 10.01
+        },
+        "cloud_baker": {
+          "ink_px": 1945,
+          "opaque_px": 24816,
+          "bbox": [
+            349,
+            113
+          ],
+          "ink_ratio_bbox": 4.93,
+          "ink_ratio_opaque": 7.84
+        }
+      },
+      "roi": {
+        "moss_knight": {
+          "cloth": {
+            "bins": 13,
+            "span": 36.8,
+            "median": 62.0
+          },
+          "face_skin": {
+            "bins": 13,
+            "span": 29.8,
+            "median": 48.1
+          },
+          "leather": {
+            "bins": 12,
+            "span": 63.2,
+            "median": 30.8
+          },
+          "prop_metal_wood": {
+            "bins": 18,
+            "span": 51.8,
+            "median": 58.4
+          },
+          "hair": {
+            "bins": 21,
+            "span": 58.1,
+            "median": 48.1
+          },
+          "cloth_shadow_hue": {
+            "light_hue_p90": 161.1,
+            "dark_hue_p10": 180.1,
+            "delta_deg": 19.0,
+            "samples": 2200
+          }
+        },
+        "ember_mage": {
+          "cloth": {
+            "bins": 15,
+            "span": 51.3,
+            "median": 58.4
+          },
+          "face_skin": {
+            "bins": 8,
+            "span": 59.2,
+            "median": 58.7
+          },
+          "leather": {
+            "bins": 12,
+            "span": 30.3,
+            "median": 33.6
+          },
+          "prop_metal_wood": {
+            "bins": 17,
+            "span": 55.8,
+            "median": 53.1
+          },
+          "hair": {
+            "bins": 14,
+            "span": 57.5,
+            "median": 58.7
+          }
+        },
+        "cloud_baker": {
+          "cloth": {
+            "bins": 10,
+            "span": 28.4,
+            "median": 90.3
+          },
+          "face_skin": {
+            "bins": 5,
+            "span": 21.0,
+            "median": 93.3
+          },
+          "leather": {
+            "bins": 11,
+            "span": 41.9,
+            "median": 77.1
+          },
+          "prop_metal_wood": {
+            "bins": 12,
+            "span": 46.6,
+            "median": 72.1
+          },
+          "hair": {
+            "bins": 12,
+            "span": 26.9,
+            "median": 78.9
+          }
+        }
+      },
+      "edge": {
+        "moss_knight": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#ecd1ae",
+            "contrast": 1.25,
+            "outline_contrast": 1.25
+          }
+        ],
+        "ember_mage": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#f2b34c",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5e7cc",
+            "contrast": 1.52,
+            "outline_contrast": 10.31
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#d9a86c",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#e0c099",
+            "contrast": 1.25,
+            "outline_contrast": 7.3
+          }
+        ],
+        "cloud_baker": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#b9b39c",
+            "outline_rgb": "#b9b39c",
+            "bg_rgb": "#f5edde",
+            "contrast": 1.81,
+            "outline_contrast": 1.81
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#c08b56",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#ebcfad",
+            "contrast": 1.99,
+            "outline_contrast": 8.43
+          }
+        ]
+      },
+      "stage": {
+        "stage_median_L": 94.0,
+        "char_median_L": 48.1,
+        "delta_L": 45.9,
+        "paper_texture_std_L": 0.064,
+        "edge_1x": [
+          {
+            "y_frac": 0.35,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.55,
+            "edge_rgb": "#3a2f43",
+            "outline_rgb": "#3a2f43",
+            "bg_rgb": "#f5edde",
+            "contrast": 10.82,
+            "outline_contrast": 10.82
+          },
+          {
+            "y_frac": 0.72,
+            "edge_rgb": "#b9c0c8",
+            "outline_rgb": "#b9c0c8",
+            "bg_rgb": "#ecd1ae",
+            "contrast": 1.25,
+            "outline_contrast": 1.25
+          }
+        ]
+      }
+    }
+  },
+  "slash": {
+    "after": {
+      "core_px": 1140,
+      "roi_bbox": [
+        385,
+        107,
+        521,
+        272
+      ],
+      "core_width_col_px": 9,
+      "core_width_radial_px": [
+        25.0,
+        4.9,
+        5.7
+      ],
+      "core_width_area_over_arc_px": 5.59,
+      "arc_screen_len_px": 203.9,
+      "core_hex": "#8f5f1f",
+      "edge_hex": "#8f3030",
+      "bg_median_hex": "#f5edde",
+      "core_contrast_vs_bg": 4.72,
+      "edge_contrast_vs_bg": 6.85,
+      "frame_diffs_22_30": [
+        {
+          "pair": [
+            22,
+            23
+          ],
+          "mean_abs": 8.43
+        },
+        {
+          "pair": [
+            23,
+            24
+          ],
+          "mean_abs": 12.21
+        },
+        {
+          "pair": [
+            24,
+            25
+          ],
+          "mean_abs": 12.75
+        },
+        {
+          "pair": [
+            25,
+            26
+          ],
+          "mean_abs": 6.98
+        },
+        {
+          "pair": [
+            26,
+            27
+          ],
+          "mean_abs": 1.42
+        },
+        {
+          "pair": [
+            27,
+            28
+          ],
+          "mean_abs": 3.66
+        },
+        {
+          "pair": [
+            28,
+            29
+          ],
+          "mean_abs": 2.77
+        },
+        {
+          "pair": [
+            29,
+            30
+          ],
+          "mean_abs": 2.82
+        }
+      ]
+    },
+    "before": {
+      "core_px": 1357,
+      "roi_bbox": [
+        381,
+        83,
+        464,
+        283
+      ],
+      "core_width_col_px": 45,
+      "core_width_radial_px": [],
+      "core_width_area_over_arc_px": 0.0,
+      "arc_screen_len_px": 0.0,
+      "core_hex": "#8f5f1f",
+      "edge_hex": "#8f3030",
+      "bg_median_hex": "#f5edde",
+      "core_contrast_vs_bg": 4.72,
+      "edge_contrast_vs_bg": 6.85,
+      "frame_diffs_22_30": [
+        {
+          "pair": [
+            22,
+            23
+          ],
+          "mean_abs": 8.11
+        },
+        {
+          "pair": [
+            23,
+            24
+          ],
+          "mean_abs": 12.09
+        },
+        {
+          "pair": [
+            24,
+            25
+          ],
+          "mean_abs": 11.89
+        },
+        {
+          "pair": [
+            25,
+            26
+          ],
+          "mean_abs": 5.27
+        },
+        {
+          "pair": [
+            26,
+            27
+          ],
+          "mean_abs": 1.81
+        },
+        {
+          "pair": [
+            27,
+            28
+          ],
+          "mean_abs": 2.24
+        },
+        {
+          "pair": [
+            28,
+            29
+          ],
+          "mean_abs": 1.96
+        },
+        {
+          "pair": [
+            29,
+            30
+          ],
+          "mean_abs": 2.03
+        }
+      ]
+    }
+  }
+}

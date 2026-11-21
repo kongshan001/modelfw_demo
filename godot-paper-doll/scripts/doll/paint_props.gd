@@ -95,8 +95,8 @@ static func _hat(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			var pts := DrawKit._ellipse_points(PaintUtil.head_point(ctx, Vector2(0, -22)), Vector2(19.5, 13.5), ha, 24)
 			if studio:
 				DrawKit.layer_shadow(ci, pts, 0.11)
-			DrawKit.ellipse(ci, PaintUtil.head_point(ctx, Vector2(0, -22)), Vector2(19.5, 13.5), ha,
-					col, ink, outline)
+			DrawKit.ellipse_tones(ci, PaintUtil.head_point(ctx, Vector2(0, -22)), Vector2(19.5, 13.5), ha,
+					PaintUtil.ramp(ctx), 4, 1.2, ink, outline)
 			DrawKit.rrect(ci, PaintUtil.head_point(ctx, Vector2(0, -12.5)), Vector2(39, 7.4), 3.0, ha,
 					shade, ink, PaintUtil.ol(ctx, "struct"))
 			DrawKit.circle(ci, PaintUtil.head_point(ctx, Vector2(0, -36)), 6.2, light, ink, 0.5)
@@ -127,7 +127,10 @@ static func _hat(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			var pts := PackedVector2Array()
 			for pt in [Vector2(-15, -13), Vector2(-9, -39), Vector2(0, -50), Vector2(12, -13)]:
 				pts.append(PaintUtil.head_point(ctx, pt))
-			DrawKit.polygon(ci, pts, col, ink, outline)
+			if studio:
+				DrawKit.polygon_tones(ci, pts, PaintUtil.ramp(ctx), 3, 2.2, ink, outline)
+			else:
+				DrawKit.polygon(ci, pts, col, ink, outline)
 			DrawKit.rrect(ci, PaintUtil.head_point(ctx, Vector2(0, -16)), Vector2(30, 5.4), 2.0, ha,
 					accent, ink, 0.0)
 			DrawKit.star(ci, PaintUtil.head_point(ctx, Vector2(-1, -30)), 4.2, 5,
@@ -168,7 +171,9 @@ static func _hat(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			])
 			if studio:
 				DrawKit.layer_shadow(ci, leaf_pts, 0.12)
-			DrawKit.polygon(ci, leaf_pts, col, ink, outline)
+				DrawKit.polygon_tones(ci, leaf_pts, PaintUtil.ramp(ctx), 3, 2.4, ink, outline)
+			else:
+				DrawKit.polygon(ci, leaf_pts, col, ink, outline)
 			DrawKit.line(ci, PaintUtil.head_point(ctx, Vector2(-9, -15)),
 					PaintUtil.head_point(ctx, Vector2(3, -41)),
 					PaintUtil.with_alpha(deep, 0.75), 1.1)
@@ -182,10 +187,10 @@ static func _hat(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 				DrawKit.line(ci, PaintUtil.head_point(ctx, Vector2(-8, -17)),
 						PaintUtil.head_point(ctx, Vector2(4, -38)),
 						PaintUtil.with_alpha(light, 0.75), 1.0)
-	# 主光左上 / 轮廓光右侧：帽顶右缘一条 1.0px 暖边（mini 删除）。
+	# 主光左上 / 轮廓光右侧：帽顶右缘 2px α0.5 6500K 轮廓光（mini 删除）。
 	if not PaintUtil.is_mini(ctx):
 		DrawKit.arc(ci, PaintUtil.head_point(ctx, Vector2(0, -13)), 20.0, -1.15, -0.05,
-				PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.62), 1.0)
+				PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.50), 0.95)
 		DrawKit.arc(ci, PaintUtil.head_point(ctx, Vector2(0, -13)), 20.6, 2.05, 2.75,
 				PaintUtil.with_alpha(PaintUtil.rim_cool(ctx), 0.30), 0.8)
 
@@ -213,7 +218,7 @@ static func _weapon(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 	var metal_deep := PaintUtil.mat_color(ctx, "metal", "deep")
 	var wood := PaintUtil.mat_color(ctx, "wood", "base")
 	var wood_deep := PaintUtil.mat_color(ctx, "wood", "deep")
-	var outline := PaintUtil.ol(ctx, "outer") * 0.35
+	var outline := PaintUtil.ol(ctx, "outer") * 0.90
 	var studio := not PaintUtil.is_mini(ctx) and not bool(ctx.get("silhouette", false))
 
 	match variant:
@@ -229,18 +234,26 @@ static func _weapon(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 				tip, blade_base + side + dir * 38.0, blade_base + side,
 			])
 			DrawKit.polygon(ci, pts, metal, ink, outline)
+			# 金属 4 阶 specular：deep 背光边 / hi 2px 高光 / reflect 环境反射带。
 			DrawKit.line(ci, blade_base + dir * 3.0, blade_base + dir * 35.0,
-					PaintUtil.with_alpha(metal_hi, 0.95), 1.3)
+					PaintUtil.with_alpha(metal_hi, 0.95), 1.35)
+			DrawKit.line(ci, blade_base + dir * 5.0 + side * 0.7, blade_base + dir * 33.0 + side * 0.7,
+					PaintUtil.with_alpha(PaintUtil.reflect(ctx), 0.62), 0.6)
 			DrawKit.line(ci, blade_base + dir * 2.0 - side * 0.65,
 					blade_base + dir * 37.0 - side * 0.65,
-					PaintUtil.with_alpha(metal_deep, 0.75), 0.8)
-			# 护手 + 木柄 + 金尾。
+					PaintUtil.with_alpha(metal_deep, 0.80), 0.8)
+			# 护手 + 木柄（2 条年轮签名）+ 金尾（2px 高光）。
 			DrawKit.rrect(ci, hand + Vector2(0, -6).rotated(sword_ang), Vector2(20, 3.6), 1.2, sword_ang,
 					accent, ink, 0.4)
+			DrawKit.line(ci, hand + Vector2(-8.5, -6.8).rotated(sword_ang), hand + Vector2(8.5, -6.8).rotated(sword_ang),
+					PaintUtil.with_alpha(PaintUtil.mat_color(ctx, "gold", "hi"), 0.9), 0.95)
 			DrawKit.capsule(ci, hand + Vector2(0, -2).rotated(sword_ang),
 					hand + Vector2(0, 9).rotated(sword_ang), 5.2, wood, ink, 0.4)
 			DrawKit.circle(ci, hand + Vector2(0, 10).rotated(sword_ang), 3.2, accent, ink, 0.4)
 			if studio:
+				var grain := PaintUtil.with_alpha(Color("#9a653f"), 0.60)
+				DrawKit.arc(ci, hand + Vector2(0, 3.5).rotated(sword_ang), 2.3, -1.1, 1.1, grain, 0.50)
+				DrawKit.arc(ci, hand + Vector2(0, 6.6).rotated(sword_ang), 1.8, -1.0, 1.2, grain, 0.50)
 				DrawKit.line(ci, hand + Vector2(0.8, 0).rotated(sword_ang), hand + Vector2(0.8, 7).rotated(sword_ang),
 						PaintUtil.with_alpha(wood_deep, 0.75), PaintUtil.detail_w(ctx))
 		"hammer":
@@ -250,11 +263,18 @@ static func _weapon(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			DrawKit.rrect(ci, head, Vector2(27, 16), 3.2, ang, metal, ink, outline)
 			DrawKit.line(ci, head + Vector2(-9, -4).rotated(ang), head + Vector2(9, -4).rotated(ang),
 					PaintUtil.with_alpha(metal_hi, 0.95), 1.4)
+			DrawKit.line(ci, head + Vector2(-8, 1.2).rotated(ang), head + Vector2(8, 1.2).rotated(ang),
+					PaintUtil.with_alpha(PaintUtil.reflect(ctx), 0.60), 0.6)
 			DrawKit.line(ci, head + Vector2(-9, 4).rotated(ang), head + Vector2(9, 4).rotated(ang),
 					PaintUtil.with_alpha(metal_deep, 0.7), 0.8)
 			for i in 2:
-				DrawKit.circle(ci, head + Vector2(-6 + i * 12, 0).rotated(ang), 1.4, accent, ink, 0.25)
+				DrawKit.circle(ci, head + Vector2(-6 + i * 12, 0).rotated(ang), 1.5, accent, ink, 0.25)
+				DrawKit.circle(ci, head + Vector2(-6.4 + i * 12, -0.4).rotated(ang), 0.55,
+						PaintUtil.mat_color(ctx, "gold", "hi"), Color.WHITE, 0.0)
 			if studio:
+				var grain := PaintUtil.with_alpha(Color("#9a653f"), 0.60)
+				DrawKit.arc(ci, hand + Vector2(0.6, 2).rotated(ang), 2.0, -1.1, 1.2, grain, 0.40)
+				DrawKit.arc(ci, hand + Vector2(0.6, 5.4).rotated(ang), 1.5, -1.0, 1.2, grain, 0.40)
 				DrawKit.line(ci, hand + Vector2(1, 11).rotated(ang), hand + Vector2(1, -22).rotated(ang),
 						PaintUtil.with_alpha(wood_deep, 0.7), PaintUtil.detail_w(ctx))
 		"staff":
@@ -271,6 +291,15 @@ static func _weapon(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			DrawKit.circle(ci, tip, 10.0, PaintUtil.with_alpha(PaintUtil.mat_color(ctx, "gold", "light"), 0.16), ink, 0.0)
 			DrawKit.star(ci, tip, 5.6, 4, accent, ink, 0.45, 0.4)
 			DrawKit.circle(ci, hand + Vector2(0, 2).rotated(ang), 2.2, accent, ink, 0.3)
+			# 白蜡杆 2 条年轮（0.8px 60%）+ 金饰 2px 高光 + 第二颗铆钉。
+			if studio:
+				var grain := PaintUtil.with_alpha(Color("#9a653f"), 0.60)
+				DrawKit.arc(ci, hand + Vector2(0.8, 8).rotated(ang), 2.4, -1.1, 1.2, grain, 0.50)
+				DrawKit.arc(ci, hand + Vector2(0.8, 12.6).rotated(ang), 1.9, -1.0, 1.2, grain, 0.50)
+				DrawKit.line(ci, tip + Vector2(-3.4, -1.2), tip + Vector2(3.4, -1.2),
+						PaintUtil.with_alpha(PaintUtil.mat_color(ctx, "gold", "hi"), 0.90), 0.95)
+				DrawKit.circle(ci, hand + Vector2(0, -3).rotated(ang), 1.2,
+						PaintUtil.mat_color(ctx, "gold", "hi"), ink, 0.2)
 		"fan":
 			var pivot := hand + Vector2(0, -5).rotated(ang)
 			var pts := PackedVector2Array([pivot])

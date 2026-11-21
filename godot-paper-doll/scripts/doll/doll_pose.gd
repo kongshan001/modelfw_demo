@@ -53,7 +53,9 @@ static func compute(time: float, action: String, dir_index: int) -> Dictionary:
 	var swing_l := 0.0
 	var swing_r := 0.0
 	var attack_k := 0.0
+	var attack_p := 0.0
 	var slash := 0.0
+	var vfx_t := -1.0
 	var hit_k := 0.0
 	var shake := Vector2.ZERO
 	var stance := 1.0
@@ -86,8 +88,12 @@ static func compute(time: float, action: String, dir_index: int) -> Dictionary:
 			# → 披风 sway = lag × 1.4 ≈ ±4.8 local。
 			secondary = -sin(swing - TAU * (2.0 / 30.0) / WALK_PERIOD) * 3.4
 		"attack":
-			# 0.00–0.28 蓄力 / 0.28–0.40 停顿 / 0.40–0.52 挥砍 / 0.62–0.98 收势。
-			var p := fposmod(time, 1.05) / 1.05
+			# 0.00–0.28 蓄力 / 0.28–0.40 停顿 / 0.40–0.52 挥砍 / 命中 hold 2 帧 / 0.62–0.98 收势。
+			var p_raw := fposmod(time, 1.05) / 1.05
+			# impact hold：命中帧（p=0.52）停 2 帧 @30fps（0.0667s ≈ 0.0635 p）。
+			var hold := 0.52 + 2.0 / 30.0 / 1.05
+			var p := 0.52 if (p_raw >= 0.52 and p_raw < hold) else p_raw
+			attack_p = p
 			var wind := smoothstep(0.0, 0.28, p)
 			var swing := smoothstep(0.40, 0.52, p)
 			var recover := smoothstep(0.62, 0.98, p)
@@ -107,6 +113,10 @@ static func compute(time: float, action: String, dir_index: int) -> Dictionary:
 			gait = 0.24 * swing
 			stance = 1.08
 			slash = sin(PI * clampf((p - 0.40) / 0.24, 0.0, 1.0))
+			# 斩击 VFX 时间轴（秒，自挥砍起点 0.40 起算）：core/glow 寿命 0.22s，
+			# 12–24 粒子寿命 0.2–0.45s（由 renderer 按 vfx_t 生成）。
+			if p_raw >= 0.40:
+				vfx_t = (p_raw - 0.40) * 1.05
 			secondary = -2.6 * wind + 6.5 * swing * (1.0 - recover)
 		"hit":
 			var p := fposmod(time, 1.10) / 1.10
@@ -233,6 +243,9 @@ static func compute(time: float, action: String, dir_index: int) -> Dictionary:
 		"foot_angle_r": foot_angle_r,
 		"weapon_angle": upper_r,
 		"slash": slash,
+		"attack_p": attack_p,
+		"vfx_t": vfx_t,
+		"impact": 1.0 if (action == "attack" and vfx_t >= 0.0 and vfx_t <= 0.135) else 0.0,
 		"hit": hit_k,
 		"attack": attack_k,
 		"bob": bob,

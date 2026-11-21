@@ -100,14 +100,24 @@
   - L2 细节线 `0.40 local ≈ 0.8px`；
   - 内层部件 outline 传 `0` 或 `0.28–0.58×ow`；`mini` 只保留 L0，并把线加粗到
     `OUTER_MINI = 2.30 local`（0.56× 卡片 ≈ 1.29px），同时删除木纹/缝线/铆钉/睫毛等细节。
-- **材质细节预算**（只在屏幕长度 ≥3px 时画）：
-  - 木：2 条年轮弧（0.4px `#9a653f` 50%）；
-  - 布：1–2 条折线（0.4px shade）+ 下摆 shade；
-  - 皮：0.6px 针脚 + 铆钉；
-  - 金属：2px `#fffaf0` 高光 + 金色只做扣/饰；
-  - 纸：4% 纸纤维（0.32px 短线）+ 1.5px 层影 `(1.7,2.7)` + 切边色。
-- **光照语言**：躯干/头/披风/帽/四肢右缘 0.9–1.1px `#ffe0a8` 暖轮廓，
-  左缘 0.6–0.8px `#a8d4dd` 冷轮廓；受光面 `light` 40–60% 椭圆，背光面 `shade` 32–40%。
+- **七档材质色阶（T-20261121-007 · G1）**：
+  - `RAMP_SPECS`：base + 阴影色相偏移；`_build_ramp` 派生
+    `deep / shade / base / light / hi / reflect / sss`；
+  - 冷材（teal/navy/blue/leaf/sky/metal/plum/paper）shade = h + 0.85×shift、deep = +shift
+    （teal/metal/leaf 20°、navy/blue/sky 18°、plum 17°、paper 14°）；暖材（wood/leather/
+    mustard/coral/rust）−12°；明度 shade v×0.76、deep v×0.64，深色 base（v<0.46）跳过 deep；
+  - 5 档面绘制由 `capsule_tones / ellipse_tones / polygon_tones` 完成：外深内浅、逐层向
+    45° 左上收窄；`polygon_tones` 用 `Geometry2D.offset_polygon` 内缩；
+  - `reflect` 冷材混 6500K、暖材混纸面暖色；`sss` = base 混 `#e8836f` 40%，按 8–10% α 用在
+    头/耳/手受光面；
+  - 12% AO `Color(0.15,0.19,0.25)`；2px α0.5 6500K `rim_stroke`；8–12% `bounce_stroke`。
+- **5 个 1× 材质签名**：木 2 条年轮 0.8px `#9a653f` 60%；布 1 条褶 + 下摆 2px shade + 1px
+  纸切边；皮 1 排针脚 0.8px `#d1a06a` 60% + 1 孔；金属 4 阶 spec + 2px 高光 + 2 铆钉 +
+  reflect 带；纸 1px 切边 + 1.5px 层影 + 纸纤维。
+- **光照语言**：主光 45° 左上 5600K；躯干/头/披风/帽/四肢右缘 2px（0.95 local）`#b7d7e8`
+  α0.5 轮廓光；受光面 `light`（≤0.9 α 叠加）、背光面 `shade`；下缘 8–12% 暖纸反弹。
+- **绘制预算裁剪**：被 shirt/pants 覆盖的身体躯干/腿/上臂跳过 tone stack，只画颈/前臂/手；
+  mini（95px 卡片）直接平面 + L0；深色布跳过 deep，避免墨色族与黑块。
 - **层视**：`explode` 按绘制层序号把整层沿 `(4.6, 5.2) local × (i−8)` 展开；
   `highlight_slot` 把其余层 alpha 降到 0.42。
 
@@ -138,11 +148,15 @@ T-010 追加的绘制预算：
 - `PaperDollRenderer`：单个纸偶的 CanvasItem；`set_doll / set_direction / set_action / set_clock`；
   朝左时 `scale.x` 取负实现镜像；`show_shadow / show_effects / silhouette / mini / explode /
   highlight_slot / redraw_hz` 可调。
-  - 试衣镜默认 `redraw_hz = 24`（定格木偶节奏），空闲时无重绘。
+  - 试衣镜自适应重绘：idle 6Hz / walk 18Hz / attack·hit 24Hz（`redraw_hz` 为上限；
+    展示物料用 `animate=false` + 强制 clock，仍是 30fps）；空闲时无重绘。
   - 渲染时按 `yaw` 设 `DrawKit.set_xscale`；`body` 变体再给身体/衣物乘 build。
-  - 接触影：环境 223×34 + 接触 168×32（1280 口径），三层同心椭圆近似 blur 8，
-    颜色 `#463426` α 0.030/0.105，整体下移 2px。
-  - 斩击：三层弧 4.6px `#8f3030` + 2.6px `#b23c33` + 2.0px `#ffd27a`，半径 46–58 local。
+  - 接触影：双层（G5）——半影 53r/α0.022×3 + 本影 35r/α0.055×3；向 45° 光反方向偏移 (2.2,1.2)，
+    随命中轻震一起平移。
+  - 斩击（G5）：109°–143° 前挥弧，半径 46–52 local；9px local 外晕 α0.14 + 4.9px `#f4c76a`
+    α0.6 辉光 + 3.0px `#8f3030` 深边 + 2.5px `#8f5f1f` 核心 + 0.5px `#ffd27a` 装饰；
+    VFX 在屏幕空间绘制（xscale=1.0，只把手位乘 2.5D 压缩），保证 640×360 核心 ≥4px；
+    18 粒粒子 0.22–0.4s；impact hold 2 帧；命中 2–3px 角色轻震。
 - `DollThumbnail`：把 `PaperDollRenderer` 放进 `SubViewport`，渲染两帧后把
   `render_target_update_mode` 设为 `UPDATE_DISABLED`，外层用 `TextureRect` 显示结果。
   - 用于 16 张阵容卡与 8 向 / 4 动作对照页，避免 24 个木偶每帧重画。
@@ -162,9 +176,13 @@ T-010 追加的绘制预算：
 - `AtelierTheme`：奶油纸面、墨色描边、珊瑚/青绿/芥末三色；中文最小 11px；
   激活态 `#b23c33 / #2f7a6b / #6c5490`，白字 ≥4.5:1；`MUTED #5f5260`；
   所有控件 `FOCUS_ALL` + 2px 墨色焦点环（2px expand）。
-- `StageBackdrop`（P0-5）：`#f4ddc0 → #e4c7a5` 渐变、左上 35% 暖光池 `#fff3d6`、
-  太阳移到左上 15%、四周 10% 暗角、64 根纸纤维 + 96 个微点（α 4.5–5%）、
-  纸胶带、14% 虚线缝边；不再画第二层地面阴影（由渲染器统一出接触影）。
+- `StageBackdrop`（G5）：4 层背景——
+  ① 渐变 `#f7ecd7 → #e6c9a8` + 左上 5600K 光池 + 太阳；
+  ② 中景左纸丘、右纸架（2 书 + 1 盆纸植物）+ 3 面吊旗；
+  ③ 地面 `#e8cead → #dcbd96` + 26px 木板缝 + 纸纤维/微点；
+  ④ 10% 暗角 + 18 粒纸尘。
+  光源只有 2 个（主光 + 轮廓光）；地面 8–10% 暖反弹；纸纹理按面积自适应（28–140 根/40–220 点）；
+  静态绘制，只在 resize 时重绘。
 
 ## 6. 预设与存档
 
@@ -202,6 +220,7 @@ T-010 追加的绘制预算：
 | T-006 最终 | 批次 + 24 Hz 试衣镜 + 签名缓存 | 35–55 FPS |
 | T-20261120-009 | 新增兜帽/肩披/气场/层视/侧身压缩 | **31–48 FPS，avg 39.0，min 31** |
 | T-20261120-010 | 2× SubViewport 超采样 + Linear + mini 几何预算 + 色板缓存 | **30–45 FPS，avg 31.0–38.6，min 30**；verify 最终串联 min 30.0 / avg 31.0（低负载时 33.0/33.3） |
+| T-20261121-007 | 7 档材质 + 4 层舞台 + VFX；覆盖层 tone stack 裁剪、mini 平面、自适应 6/18/24Hz | **verify 串联 min 39 / avg 42**；独立采样 min 34–39 / avg 37.3–40.7（后台并行 worker 时可掉到 22–27，需洁净机复测）；bake card p90 13.10 / overlay p90 11.53 |
 
 试衣镜与卡片在未变化时不重绘；阵容/对照页在数据变化时才重新烘焙。
 `tools/perf_paperdoll.gd` 采样 7 秒（**丢弃首秒暖机样本**，避免窗口焦点/上一进程退出污染），
@@ -277,10 +296,36 @@ PAPERDOLL_BAKE_OK card_median_ms=7.99 card_p90_ms=10.40 card_max_ms=12.04
 2. **正/背 IoU 0.687**：依赖披风槽的兜帽/肩披/加宽下摆/后发；没有披风的角色仍会更接近。
 3. **缩略图 AA（T-010 已修）**：`DollThumbnail` 改为 2× SubViewport + Linear；16/16 卡
    由 smoke 校验。残留问题是 2× 采样带来的 1px 软边（设计预期），不是 1px 阶梯。
-4. **斩击金色核心 1.22:1**：核心是 2px 高光，靠外两层深边/珊瑚圈提供 ≥3:1 的可读性；
-   如果 QA 要求“每一层都 ≥3:1”，需把核心改为深金或加深边。
+4. **斩击对比（T-20261121-007 已修）**：核心改为 2.5px `#8f5f1f`（对纸面 4.72:1，640 下
+   实测 5.6px），深边 3.0px `#8f3030`（6.85:1）；旧 `#ffd27a` 金核只保留 0.5px 装饰、不计入 ROI。
 5. **FPS 稳态 min 30–33**：2× 超采样后与 T-009 同量级（稳态无每帧重绘），但 Intel HD 6000 余量仍小；
    后台负载高时首秒或个别 1 秒窗口会掉到 23–29。perf 已改为 7×1s 并丢弃首秒，
    原始样本照实输出。若后续还要加层，优先把试衣镜降到 20Hz 或预烘焙部件。
 6. **随机阵容的烘焙尖峰**：16 张卡仍会在同一帧发起重烘焙（一次性），
    16 个 2× 视口同时填充会造成一次短暂尖峰；未做逐帧排队，避免改变“立即换装”的反馈。
+
+### 10.1 G1 材质 / G5 舞台 / VFX（T-20261121-007）
+
+采集：`tools/material_vfx_rig.gd` 同机位渲染 before/after（1280×720、1920×1080、透明底、
+640×360 斩击序列）；`tools/material_vfx_metrics.py` 复算并写
+`docs/shots/material-vfx/metrics.json`。指标口径与评审 §3 一致。
+
+| 指标 | Before | After | 目标 | 判定 |
+| --- | ---: | ---: | ---: | --- |
+| 墨色族 / bbox（苔藓骑士 / 法师 / 面包师） | 5.86 / 10.06 / 5.78% | **6.39 / 5.76 / 4.93%** | ≤6.5% | PASS |
+| L* 分箱（苔藓 cloth / face / leather / prop / hair） | 8 / 9 / 11 / 16 / 16 | **13 / 13 / 12 / 18 / 21** | ≥5 阶/材质 | PASS |
+| 绿色布料亮/暗主簇色相差 | 0.0° | **+19.0°** | +15°~+20° | PASS |
+| 角色 vs 舞台 ΔL* | 32.0 | **45.9** | ≥35 | PASS |
+| 纸纹理高频 std L* | 0.043 | **0.064** | 1× 可见 | PASS |
+| 舞台层次 | 3 | **4** | 4–6 | PASS |
+| 斩击核心宽 @640（面积/弧长） | 旧核细（无口径） | **5.6px** | ≥4px | PASS |
+| 斩击核心 / 深边 vs 纸面 | 1.22 / 6.85 | **4.72 / 6.85** | ≥3:1 | PASS |
+| impact hold | 无 | **2 帧；pose 一致；帧差 1.45 vs 挥砍 12.83** | 2 帧 | PASS |
+| 试衣镜单次重绘（受载波动大） | — | **8–16ms**（自适应 6/18/24Hz） | ≤16ms | PASS（中位） |
+| 缩略图烘焙 p90 | 11.48 | **10.64** | ≤16 | PASS |
+
+证据：`docs/shots/material-vfx/{before,after}/`、`compare_*`、`contact_*`、`slash_before_after.png`、
+`after/slash_after.gif`；逐项数字见 `metrics.json`。
+
+**仍存风险**：本机并行 worker 时 FPS 会掉到 22–27；洁净机 3/3 仍交 QA。
+材质人测（≥4/5）、640 GIF 命中帧 3 人协议未执行。

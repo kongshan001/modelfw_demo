@@ -36,56 +36,74 @@ static func _body(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 	var far := PaintUtil.far_color(ctx) if PaintUtil.is_far(ctx) else col
 	var lean: float = p["torso_lean"]
 	var studio := not PaintUtil.is_mini(ctx) and not bool(ctx.get("silhouette", false))
+	var ramp := PaintUtil.ramp(ctx)
 
-	_limb(ci, p["shoulder_l"], p["elbow_l"], p["hand_l"], far, true, ctx)
-	_leg(ci, p["hip_l"], p["knee_l"], p["foot_l"], far, true, ctx)
+	# 被 shirt/pants 覆盖的身体层只画平面：7 档留给 1× 可见的衣物与皮肤，
+	# 不把预算花在看不见的层上（studio 重绘 20Hz，FPS 门 ≥30）。
+	var torso_covered := bool(ctx.get("torso_covered", false))
+	var legs_covered := bool(ctx.get("legs_covered", false))
+	var arms_covered := bool(ctx.get("arms_covered", false))
+	_limb(ci, p["shoulder_l"], p["elbow_l"], p["hand_l"], far, true, ctx, arms_covered)
+	if not legs_covered:
+		_leg(ci, p["hip_l"], p["knee_l"], p["foot_l"], far, true, ctx)
 
-	# 躯干：外剪影 L0 + 受光面 / 背光面 / 右侧暖轮廓。
+	# 躯干：7 档色阶（deep→hi）+ 12% AO + 2px 6500K 轮廓光 + 8–12% 暖反弹。
+	# 被上衣覆盖时整段跳过（z 序保证不可见），只保留颈/手等露出部分。
 	var hip: Vector2 = p["hip"]
 	var chest: Vector2 = p["chest"]
-	if studio:
-		DrawKit.layer_shadow(ci, DrawKit._ellipse_points((hip + chest) * 0.5, Vector2(14.5, 22.0), lean, 20), 0.10)
-	DrawKit.capsule(ci, hip, chest, 24.0, col, PaintUtil.ink(ctx), ow)
-	if studio:
-		var lit := (hip + chest) * 0.5 + Vector2(-4.6, -1.5).rotated(lean)
-		DrawKit.ellipse(ci, lit, Vector2(6.2, 17.0), lean, PaintUtil.with_alpha(light, 0.55), Color.WHITE, 0.0)
-		var dark := (hip + chest) * 0.5 + Vector2(6.8, 2.0).rotated(lean)
-		DrawKit.ellipse(ci, dark, Vector2(4.0, 16.0), lean, PaintUtil.with_alpha(shade, 0.40), Color.WHITE, 0.0)
-		DrawKit.line(ci, chest + Vector2(10.6, 2).rotated(lean), hip + Vector2(10.6, -4).rotated(lean),
-				PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.85), 1.0)
-		DrawKit.line(ci, chest + Vector2(-10.8, 3).rotated(lean), hip + Vector2(-10.8, -3).rotated(lean),
-				PaintUtil.with_alpha(PaintUtil.rim_cool(ctx), 0.45), 0.7)
-	# 肩桥/颈：内层部件不描 ink，用 shade 结构线。
-	DrawKit.capsule(ci, (p["shoulder_l"] as Vector2).lerp(chest, 0.25),
-			(p["shoulder_r"] as Vector2).lerp(chest, 0.25), 13.0, col, PaintUtil.ink(ctx), 0.0)
-	DrawKit.line(ci, (p["shoulder_l"] as Vector2).lerp(chest, 0.10) + Vector2(0, -5.6),
-			(p["shoulder_r"] as Vector2).lerp(chest, 0.10) + Vector2(0, -5.6),
-			PaintUtil.with_alpha(shade, 0.8), PaintUtil.detail_w(ctx) * 1.4)
+	if not torso_covered:
+		if studio:
+			DrawKit.layer_shadow(ci, DrawKit._ellipse_points((hip + chest) * 0.5, Vector2(14.5, 22.0), lean, 20), 0.10)
+		DrawKit.capsule_tones(ci, hip, chest, 24.0, ramp, 4, 1.55, PaintUtil.ink(ctx), ow)
+		if studio:
+			DrawKit.ao_ellipse(ci, hip + Vector2(0, -4).rotated(lean), Vector2(10.0, 4.6), lean, 0.12)
+			DrawKit.ellipse(ci, (hip + chest) * 0.5 + Vector2(-4.6, -1.8).rotated(lean),
+					Vector2(5.4, 14.0), lean, PaintUtil.with_alpha(PaintUtil.key_light(ctx), 0.10), Color.WHITE, 0.0)
+			DrawKit.rim_stroke(ci, chest + Vector2(10.6, 2).rotated(lean), hip + Vector2(10.6, -4).rotated(lean), 0.5, 0.95)
+			DrawKit.bounce_stroke(ci, hip + Vector2(-9.5, 1).rotated(lean), hip + Vector2(-4.0, 6).rotated(lean), 0.10)
+		DrawKit.capsule_tones(ci, (p["shoulder_l"] as Vector2).lerp(chest, 0.25),
+				(p["shoulder_r"] as Vector2).lerp(chest, 0.25), 13.0, ramp, 3, 1.2, PaintUtil.ink(ctx), 0.0)
+		DrawKit.line(ci, (p["shoulder_l"] as Vector2).lerp(chest, 0.10) + Vector2(0, -5.6),
+				(p["shoulder_r"] as Vector2).lerp(chest, 0.10) + Vector2(0, -5.6),
+				PaintUtil.with_alpha(PaintUtil.shade_of(ctx), 0.8), PaintUtil.detail_w(ctx) * 1.4)
+	else:
+		DrawKit.capsule(ci, (chest as Vector2).lerp(p["neck"], 0.72),
+				(p["neck"] as Vector2) + Vector2(0, -1), 8.6, PaintUtil.shade_of(ctx), PaintUtil.ink(ctx), 0.0)
 	DrawKit.capsule(ci, (chest as Vector2).lerp(p["neck"], 0.62),
-			(p["neck"] as Vector2) + Vector2(0, -2), 9.0, shade, PaintUtil.ink(ctx), 0.0)
-
-	_leg(ci, p["hip_r"], p["knee_r"], p["foot_r"], col, false, ctx)
-	_limb(ci, p["shoulder_r"], p["elbow_r"], p["hand_r"], col, false, ctx)
-
+			(p["neck"] as Vector2) + Vector2(0, -2), 9.0, PaintUtil.shade_of(ctx), PaintUtil.ink(ctx), 0.0)
 	if studio:
-		# 黄铜两脚钉：解释“为什么能动”。4 处关节，mini 删除。
+		DrawKit.ao_ellipse(ci, (chest as Vector2).lerp(p["neck"], 0.75), Vector2(6.2, 2.4), lean, 0.12)
+
+	if not legs_covered:
+		_leg(ci, p["hip_r"], p["knee_r"], p["foot_r"], col, false, ctx)
+	_limb(ci, p["shoulder_r"], p["elbow_r"], p["hand_r"], col, false, ctx, arms_covered)
+
+	if studio and not torso_covered:
+		# 黄铜两脚钉：解释“为什么能动”。4 处关节，mini/被衣物覆盖时删除。
 		for joint in [p["shoulder_l"], p["shoulder_r"], p["hip_l"], p["hip_r"]]:
 			DrawKit.circle(ci, joint, 1.7, PaintUtil.mat_color(ctx, "metal", "light"),
 					PaintUtil.mat_color(ctx, "metal", "deep"), 0.45)
 			DrawKit.circle(ci, joint + Vector2(-0.5, -0.5), 0.55,
 					PaintUtil.mat_color(ctx, "gold", "light"), Color.WHITE, 0.0)
 
+	# 木纹签名（1× 可见）：2 条年轮弧 0.8px `#9a653f` 60%，间距 3–4px，只画在裸露木面。
+	if studio and not torso_covered and not arms_covered:
+		var wood_grain := PaintUtil.with_alpha(Color("#9a653f"), 0.60)
+		var ring_c := chest.lerp(hip, 0.46) + Vector2(0.5, 0).rotated(lean)
+		var ring_n := 2 if variant == "grain" else 1
+		for i in ring_n:
+			DrawKit.arc(ci, ring_c + Vector2(0, float(i) * 3.6), 6.2 - float(i) * 1.4, 0.35, 2.55,
+					wood_grain, 0.40)
+
 	match variant:
 		"grain":
-			if studio:
+			if studio and not (torso_covered and legs_covered and arms_covered):
 				var near_shin := PaintUtil.lerp_pt(p["knee_r"], p["foot_r"], 0.55)
-				var grain := PaintUtil.with_alpha(Color("#9a653f"), 0.5)
-				DrawKit.arc(ci, near_shin, 3.4, 0.2, 2.4, grain, PaintUtil.detail_w(ctx))
-				DrawKit.arc(ci, near_shin + Vector2(0, 3), 2.4, 0.4, 2.2, grain, PaintUtil.detail_w(ctx))
+				var grain := PaintUtil.with_alpha(Color("#9a653f"), 0.60)
+				DrawKit.arc(ci, near_shin, 3.8, 0.2, 2.4, grain, 0.40)
+				DrawKit.arc(ci, near_shin + Vector2(0, 3.4), 2.7, 0.4, 2.2, grain, 0.40)
 				var fore := PaintUtil.lerp_pt(p["elbow_r"], p["hand_r"], 0.5)
-				DrawKit.arc(ci, fore, 2.6, -1.2, 1.4, grain, PaintUtil.detail_w(ctx))
-				DrawKit.arc(ci, chest.lerp(hip, 0.42) + Vector2(2, 0), 9.0, 0.4, 2.4,
-						PaintUtil.with_alpha(deep, 0.45), PaintUtil.detail_w(ctx))
+				DrawKit.arc(ci, fore, 2.6, -1.2, 1.4, grain, 0.40)
 		"patch":
 			var fore := PaintUtil.lerp_pt(p["elbow_r"], p["hand_r"], 0.56)
 			var angle: float = p["forearm_angle_r"]
@@ -102,51 +120,59 @@ static func _body(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 				if studio:
 					DrawKit.circle(ci, joint + Vector2(-0.4, -0.5), 0.5, hi, Color.WHITE, 0.0)
 		_:
-			if studio:
-				DrawKit.arc(ci, chest.lerp(hip, 0.38) + Vector2(3, 0), 7.0, 0.2, 2.2,
-						PaintUtil.with_alpha(deep, 0.4), PaintUtil.detail_w(ctx))
+			pass
 
 
-static func _limb(ci: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2, col: Color, is_far: bool, ctx: Dictionary) -> void:
+static func _limb(ci: CanvasItem, shoulder: Vector2, elbow: Vector2, hand: Vector2, col: Color, is_far: bool, ctx: Dictionary, covered := false) -> void:
 	var shade := PaintUtil.shade_of(ctx)
 	var light := PaintUtil.highlight(ctx)
 	var ow := PaintUtil.ow(ctx)
+	var ramp := PaintUtil.ramp(ctx)
 	var outline := 0.0 if PaintUtil.is_mini(ctx) else ow * (0.28 if is_far else 0.35)
-	DrawKit.capsule(ci, shoulder, elbow, 7.6, col, PaintUtil.ink(ctx), outline)
-	DrawKit.capsule(ci, elbow, hand, 6.6, col, PaintUtil.ink(ctx), outline)
-	DrawKit.circle(ci, elbow, 3.6, col.lightened(0.08), PaintUtil.ink(ctx), 0.0)
-	DrawKit.circle(ci, hand, 4.3, col, PaintUtil.ink(ctx), 0.0)
+	if covered:
+		# 袖子内：上臂/肘由袖子承担；前臂到手腕必须画满（否则露袖子与手之间会断）。
+		DrawKit.capsule(ci, elbow, hand, 6.2, PaintUtil.color(ctx, "base"), PaintUtil.ink(ctx), outline)
+	else:
+		DrawKit.capsule_tones(ci, shoulder, elbow, 7.6, ramp, 3, 0.95, PaintUtil.ink(ctx), outline)
+		DrawKit.capsule_tones(ci, elbow, hand, 6.6, ramp, 3, 0.85, PaintUtil.ink(ctx), outline)
+	if not covered:
+		DrawKit.circle(ci, elbow, 3.6, PaintUtil.color(ctx, "base").lightened(0.08), PaintUtil.ink(ctx), 0.0)
+	DrawKit.circle(ci, hand, 4.3, PaintUtil.color(ctx, "base"), PaintUtil.ink(ctx), 0.0)
 	if not PaintUtil.is_mini(ctx):
+		# 8–10% 红润 SSS：手；木偶手也要有“肤色受光”。
+		DrawKit.ellipse(ci, hand + Vector2(-1.2, -1.4), Vector2(2.8, 2.2), 0.0,
+				PaintUtil.with_alpha(PaintUtil.sss(ctx), 0.10), Color.WHITE, 0.0)
+		if covered:
+			return
 		var seam := PaintUtil.lerp_pt(shoulder, elbow, 0.55)
 		DrawKit.line(ci, seam + Vector2(-2, 0), seam + Vector2(2, 0),
 				PaintUtil.with_alpha(shade, 0.75), PaintUtil.detail_w(ctx))
 		var lit := PaintUtil.lerp_pt(shoulder, elbow, 0.45) + Vector2(-1.4, -1.6)
 		DrawKit.line(ci, lit, lit + Vector2(1.4, 2.2), PaintUtil.with_alpha(light, 0.55), PaintUtil.detail_w(ctx))
-		# 主光左上 / 轮廓光右侧：近侧肢体右缘 1.1px 暖边。
 		if not is_far:
-			DrawKit.line(ci, shoulder + Vector2(3.2, 2.4), elbow + Vector2(3.2, 2.0),
-					PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.55), 1.1)
-			DrawKit.line(ci, elbow + Vector2(2.8, 2.0), hand + Vector2(2.6, 1.6),
-					PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.45), 1.0)
+			# 轮廓光：2px @2.1×、α0.5、6500K；环境反弹在左下。
+			DrawKit.rim_stroke(ci, shoulder + Vector2(3.2, 2.4), elbow + Vector2(3.2, 2.0), 0.5, 0.95)
+			DrawKit.rim_stroke(ci, elbow + Vector2(2.8, 2.0), hand + Vector2(2.6, 1.6), 0.5, 0.95)
+			DrawKit.bounce_stroke(ci, hand + Vector2(-3.4, 2.4), hand + Vector2(-1.0, 4.0), 0.10)
 
 
 static func _leg(ci: CanvasItem, hip: Vector2, knee: Vector2, foot: Vector2, col: Color, is_far: bool, ctx: Dictionary) -> void:
 	var shade := PaintUtil.shade_of(ctx)
 	var ow := PaintUtil.ow(ctx)
+	var ramp := PaintUtil.ramp(ctx)
 	var outline := 0.0 if PaintUtil.is_mini(ctx) else ow * (0.30 if is_far else 0.38)
-	DrawKit.capsule(ci, hip, knee, 9.0, col, PaintUtil.ink(ctx), outline)
-	DrawKit.capsule(ci, knee, foot, 7.8, col, PaintUtil.ink(ctx), outline)
-	DrawKit.circle(ci, knee, 4.2, col.lightened(0.08), PaintUtil.ink(ctx), 0.0)
-	DrawKit.ellipse(ci, foot + Vector2(1, -1), Vector2(4.6, 3.6), 0.0, col, PaintUtil.ink(ctx), 0.0)
+	DrawKit.capsule_tones(ci, hip, knee, 9.0, ramp, 3, 1.0, PaintUtil.ink(ctx), outline)
+	DrawKit.capsule_tones(ci, knee, foot, 7.8, ramp, 3, 0.9, PaintUtil.ink(ctx), outline)
+	DrawKit.circle(ci, knee, 4.2, PaintUtil.color(ctx, "base").lightened(0.08), PaintUtil.ink(ctx), 0.0)
+	DrawKit.ellipse(ci, foot + Vector2(1, -1), Vector2(4.6, 3.6), 0.0, PaintUtil.color(ctx, "base"),
+			PaintUtil.ink(ctx), 0.0)
 	if not PaintUtil.is_mini(ctx):
 		DrawKit.line(ci, PaintUtil.lerp_pt(hip, knee, 0.55) + Vector2(-2, 0),
 				PaintUtil.lerp_pt(hip, knee, 0.55) + Vector2(2, 0),
 				PaintUtil.with_alpha(shade, 0.7), PaintUtil.detail_w(ctx))
 		if not is_far:
-			DrawKit.line(ci, hip + Vector2(3.6, 1.0), knee + Vector2(3.4, 0.6),
-					PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.50), 1.0)
-			DrawKit.line(ci, knee + Vector2(3.2, 0.4), foot + Vector2(3.0, -1.0),
-					PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.42), 0.9)
+			DrawKit.rim_stroke(ci, hip + Vector2(3.6, 1.0), knee + Vector2(3.4, 0.6), 0.5, 0.95)
+			DrawKit.rim_stroke(ci, knee + Vector2(3.2, 0.4), foot + Vector2(3.0, -1.0), 0.5, 0.95)
 
 
 # ------------------------------------------------------------------ 头
@@ -163,32 +189,37 @@ static func _head(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 	var center: Vector2 = p["head"]
 	var studio := not PaintUtil.is_mini(ctx) and not bool(ctx.get("silhouette", false))
 	var back: bool = bool(ctx["back"])
+	var ramp := PaintUtil.ramp(ctx)
 	DrawKit.capsule(ci, p["neck"], center + Vector2(0, 14).rotated(ha), 8.5, shade, ink, 0.0)
 
+	# 头是 7 档色阶的主展示面：deep→shade→base→light→hi，1× 下 ≥5 阶可见。
 	match variant:
 		"square":
-			DrawKit.rrect(ci, center, Vector2(32, 32), 8.0, ha, col, ink, ow)
+			DrawKit.polygon_tones(ci, DrawKit.rrect_points(center, Vector2(32, 32), 8.0, ha),
+					ramp, 5, 1.05, ink, ow)
 		"acorn":
-			DrawKit.ellipse(ci, center + Vector2(0, 1).rotated(ha), Vector2(17.5, 19.5), ha, col, ink, ow)
+			DrawKit.ellipse_tones(ci, center + Vector2(0, 1).rotated(ha), Vector2(17.5, 19.5), ha,
+					ramp, 3, 1.3, ink, ow, 32, 1)
 			DrawKit.line(ci, PaintUtil.head_point(ctx, Vector2(0, -18)),
 					PaintUtil.head_point(ctx, Vector2(2, -24)), shade, PaintUtil.ol(ctx, "struct"))
 			DrawKit.circle(ci, PaintUtil.head_point(ctx, Vector2(2, -24)), 2.2, light, ink, 0.0)
 		"pebble":
-			DrawKit.ellipse(ci, center, Vector2(20.5, 16.5), ha, col, ink, ow)
+			DrawKit.ellipse_tones(ci, center, Vector2(20.5, 16.5), ha, ramp, 3, 1.3, ink, ow, 32, 1)
 		_:
-			DrawKit.circle(ci, center, 18.0, col, ink, ow)
+			DrawKit.ellipse_tones(ci, center, Vector2(18.0, 18.0), ha, ramp, 3, 1.3, ink, ow, 32, 1)
 
 	if studio:
-		# 受光面（左上）与背光面（右下），保持“球”体积但不加第二条黑边。
-		DrawKit.ellipse(ci, PaintUtil.head_point(ctx, Vector2(-5.4, -6.2)), Vector2(8.2, 7.2), ha,
-				PaintUtil.with_alpha(light, 0.60), Color.WHITE, 0.0)
-		DrawKit.ellipse(ci, PaintUtil.head_point(ctx, Vector2(8.0, 6.2)), Vector2(5.2, 7.4), ha,
-				PaintUtil.with_alpha(shade, 0.35), Color.WHITE, 0.0)
+		# 8–10% 红润 SSS（受光面）+ 12% 下颌 AO + 2px α0.5 6500K 轮廓光。
+		DrawKit.ellipse(ci, PaintUtil.head_point(ctx, Vector2(-5.0, -5.4)), Vector2(7.2, 6.2), ha,
+				PaintUtil.with_alpha(PaintUtil.sss(ctx), 0.09), Color.WHITE, 0.0)
+		DrawKit.ellipse(ci, PaintUtil.head_point(ctx, Vector2(-5.4, -6.6)), Vector2(4.6, 4.0), ha,
+				PaintUtil.with_alpha(PaintUtil.key_light(ctx), 0.08), Color.WHITE, 0.0)
+		DrawKit.ao_ellipse(ci, PaintUtil.head_point(ctx, Vector2(1.2, 13.4)), Vector2(7.4, 2.4), ha, 0.12)
 		DrawKit.arc(ci, PaintUtil.head_point(ctx, Vector2(1, 1)), 15.6, -1.35, -0.30,
-				PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.75), 0.9)
+				PaintUtil.with_alpha(PaintUtil.rim_warm(ctx), 0.50), 0.95)
 		DrawKit.arc(ci, PaintUtil.head_point(ctx, Vector2(-1, 1)), 15.8, 2.2, 3.1,
-				PaintUtil.with_alpha(PaintUtil.rim_cool(ctx), 0.35), 0.6)
-		DrawKit.paper_fibers(ci, center, Vector2(28, 28), variant.hash(), PaintUtil.with_alpha(deep, 0.05))
+				PaintUtil.with_alpha(PaintUtil.rim_cool(ctx), 0.32), 0.6)
+		DrawKit.paper_fibers(ci, center, Vector2(28, 28), variant.hash(), PaintUtil.with_alpha(deep, 0.06))
 
 	if back:
 		# 后脑不是纯圆球：加发际线、颈窝与两缕碎发；头发槽位会在其上继续画。
@@ -257,15 +288,23 @@ static func _ear_shape(ci: CanvasItem, variant: String, center: Vector2, side: f
 			DrawKit.circle(ci, center + Vector2(0, 1).rotated(ha), 6.4, col, ink, outline)
 			DrawKit.circle(ci, center + Vector2(0, 1).rotated(ha), 3.0,
 					PaintUtil.with_alpha(light, 0.75), ink, 0.0)
+			DrawKit.ellipse(ci, center + Vector2(-1.4, -1.2).rotated(ha), Vector2(2.0, 1.6), ha,
+					PaintUtil.with_alpha(PaintUtil.sss(ctx), 0.10), Color.WHITE, 0.0)
 		"pointy":
 			# 更长的尖耳：作为许多无帽角色的剪影破形件。
 			DrawKit.poly_at(ci, center, [
 				Vector2(-4.0 * side, -8.0), Vector2(11.0 * side, 0.0),
 				Vector2(-4.0 * side, 8.0), Vector2(-1.0 * side, 0.0),
 			], ha, col, ink, outline)
+			DrawKit.poly_at(ci, center, [
+				Vector2(-1.5 * side, -3.6), Vector2(7.0 * side, 0.0),
+				Vector2(-1.5 * side, 3.6), Vector2(-0.2 * side, 0.0),
+			], ha, light, Color.WHITE, 0.0)
 			DrawKit.line(ci, center + Vector2(-1.0 * side, 0).rotated(ha),
 					center + Vector2(6.0 * side, 0).rotated(ha),
 					PaintUtil.with_alpha(light, 0.8), PaintUtil.detail_w(ctx))
+			DrawKit.ellipse(ci, center + Vector2(1.0 * side, 1.6).rotated(ha), Vector2(2.4, 1.4), ha,
+					PaintUtil.with_alpha(PaintUtil.sss(ctx), 0.10), Color.WHITE, 0.0)
 		"horn":
 			var base := center + Vector2(0, -4).rotated(ha)
 			var tip := center + Vector2(6.5 * side, -17).rotated(ha)
@@ -425,7 +464,10 @@ static func _eyes(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 # ------------------------------------------------------------------ 头发
 
 static func _hair(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
-	var col := PaintUtil.color(ctx, "primary")
+	var hair_base := PaintUtil.color(ctx, "primary")
+	# 近黑发色抬到冷炭灰（避免落入“墨色族”），同时让 3–5 束高光可读。
+	var col := hair_base.lerp(Color("#5f5868"), 0.55) if hair_base.v < 0.32 \
+			else hair_base.lerp(PaintUtil.color(ctx, "light"), 0.30)
 	var shade := PaintUtil.color(ctx, "shade")
 	var light := PaintUtil.color(ctx, "light")
 	var ink := PaintUtil.ink(ctx)
@@ -495,6 +537,15 @@ static func _hair(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 				PaintUtil.with_alpha(light, 0.85), 0.9 if mini else 1.1)
 		DrawKit.line(ci, base + Vector2(-13, 4), base + Vector2(-14 + lag, 12), shade, strand)
 		DrawKit.line(ci, base + Vector2(13, 4), base + Vector2(14 + lag, 12), shade, strand)
+		if not mini:
+			# 头发 3–5 束高光带：后脑 4 束，1.5px 宽，1× 可数。
+			for i in 4:
+				var bx := -1.5 + float(i)
+				var top := PaintUtil.head_point(ctx, Vector2(bx * 9.0, 2.0))
+				var bot := PaintUtil.head_point(ctx, Vector2(bx * 11.0 + lag * 0.4, 24.0 + absf(bx) * 1.2))
+				DrawKit.line(ci, top, bot, PaintUtil.with_alpha(light, 0.55), 0.60)
+				DrawKit.line(ci, top + Vector2(0.4, 0.0), bot + Vector2(0.6, 0.0),
+						PaintUtil.with_alpha(PaintUtil.highlight(ctx), 0.22), 0.28)
 		return
 
 	# 正面/侧面：帽盖 + 鬓发 + 刘海，中央留出脸（眼睛在 y≈+2.6，不能被帽盖压住）。
@@ -502,6 +553,17 @@ static func _hair(ci: CanvasItem, variant: String, ctx: Dictionary) -> void:
 			col, ink, outline)
 	DrawKit.line(ci, PaintUtil.head_point(ctx, Vector2(-11, -18)),
 			PaintUtil.head_point(ctx, Vector2(3, -21)), PaintUtil.with_alpha(light, 0.9), 1.2 if mini else 1.5)
+	if not mini:
+		# 头顶 4 束高光带（阴影/高光成对，读“发束”而不是一块色）。
+		for i in 4:
+			var hx := -1.0 + 2.0 * float(i) / 3.0
+			var top := PaintUtil.head_point(ctx, Vector2(hx * 12.0 - 1.0, -20.0 + absf(hx) * 1.6))
+			var bot := PaintUtil.head_point(ctx, Vector2(hx * 16.5 + 1.5, -7.0 + absf(hx) * 2.6))
+			DrawKit.line(ci, top, bot, PaintUtil.with_alpha(shade, 0.55), 0.95)
+			DrawKit.line(ci, top + Vector2(-0.5, 0.0), bot + Vector2(-0.4, 0.0),
+					PaintUtil.with_alpha(light, 0.55), 0.58)
+			DrawKit.line(ci, top + Vector2(0.1, 0.0), bot + Vector2(0.2, 0.0),
+					PaintUtil.with_alpha(PaintUtil.highlight(ctx), 0.24), 0.28)
 
 	match variant:
 		"short":

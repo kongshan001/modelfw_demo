@@ -79,6 +79,7 @@ static func mat_color(ctx: Dictionary, key: String, tone := "base") -> Color:
 
 
 static func rim_warm(ctx: Dictionary) -> Color:
+	# 6500K 轮廓光（G5）：2px、α0.5；名字保留兼容旧调用。
 	return color(ctx, "rim")
 
 
@@ -88,6 +89,30 @@ static func rim_cool(ctx: Dictionary) -> Color:
 
 static func highlight(ctx: Dictionary) -> Color:
 	return color(ctx, "highlight")
+
+
+static func reflect(ctx: Dictionary) -> Color:
+	# 环境反射：冷影材质 6500K 天光 / 暖材质纸面暖反弹。
+	return color(ctx, "reflect")
+
+
+static func sss(ctx: Dictionary) -> Color:
+	# 8–10% 红润 SSS，用在皮肤/木偶头/耳/手的受光面。
+	return color(ctx, "sss")
+
+
+static func bounce(ctx: Dictionary) -> Color:
+	# 环境反弹 8–12% 暖纸面。
+	return color(ctx, "bounce")
+
+
+static func key_light(ctx: Dictionary) -> Color:
+	return color(ctx, "key")
+
+
+static func ramp(ctx: Dictionary) -> Dictionary:
+	# 当前槽位的 7 档命名色阶（deep/shade/base/light/hi/reflect/sss）。
+	return ctx["pal"]
 
 
 static func head_angle(ctx: Dictionary) -> float:

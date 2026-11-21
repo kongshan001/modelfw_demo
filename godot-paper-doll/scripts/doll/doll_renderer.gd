@@ -24,8 +24,10 @@ var redraw_hz := 24.0
 var _base_scale := 1.0
 var _flip := false
 var _redraw_accum := 0.0
+var _blink_last := false
 # 烘焙成本观测（T-010）：_draw 的 CPU 耗时。
 var last_draw_usec := 0
+var draw_count := 0
 
 
 func _ready() -> void:
@@ -40,8 +42,27 @@ func _process(delta: float) -> void:
 		return
 	anim_time += delta
 	_redraw_accum += delta
-	var hz := minf(redraw_hz, 15.0) if mini else redraw_hz
+	# 自适应重绘：idle 6Hz（呼吸 1.4 local，幅度小）；walk 18Hz；命中/受击 24Hz。
+	# 展示物料（GIF/录屏）用 animate=false + 强制 clock，仍是 30fps，不受影响。
+	var hz := 24.0
+	match action:
+		"walk":
+			hz = 18.0
+		"attack", "hit":
+			hz = 24.0
+		_:
+			hz = 6.0
+	hz = minf(hz, redraw_hz)
+	if mini:
+		hz = minf(hz, 7.0)
 	var interval := 1.0 / maxf(hz, 1.0)
+	# 眨眼是 0.16s 的瞬时状态：状态翻转时强制重绘一帧，低 idle 频率下也不会丢。
+	var blink_now := action != "hit" and action != "attack" and fposmod(anim_time + 1.4, 4.3) < 0.16
+	if blink_now != _blink_last:
+		_blink_last = blink_now
+		queue_redraw()
+		_redraw_accum = 0.0
+		return
 	if _redraw_accum >= interval:
 		_redraw_accum = 0.0
 		queue_redraw()
@@ -119,18 +140,23 @@ func _apply_transform() -> void:
 
 
 func _draw() -> void:
+	draw_count += 1
 	var draw_started := Time.get_ticks_usec()
 	var dir: Dictionary = DollData.DIRS[clampi(direction, 0, 7)]
 	var local_time := anim_time + time_offset
 	var pose := DollPose.compute(local_time, action, direction)
-	var blink := action != "hit" and fposmod(local_time + 1.4, 4.3) < 0.10
+	var blink := action != "hit" and action != "attack" and fposmod(local_time + 1.4, 4.3) < 0.16
+	# 屏幕轻震 2–3px（local 1.2 @2.1× ≈ 2.5px）：命中帧起 0.16s 内衰减；
+	# 只平移角色 + 影子（舞台是静态纸卡，不动相机）。
+	var impact_shake := _impact_shake(pose, local_time)
 	if show_shadow and not silhouette and explode <= 0.01:
-		# 环境影 223×34 + 接触影 168×32（1280 口径），整体下移 2px。
-		DrawKit.contact_shadow(self, Vector2(0, 0), shadow_scale_y)
+		# 双层接触影：半影 + 本影（影子随轻震一起动）。
+		DrawKit.contact_shadow(self, Vector2(0, 0), shadow_scale_y, impact_shake)
 
 	DrawKit.begin_batch(self)
 	DrawKit.set_mini(mini)
 	DrawKit.set_silhouette(silhouette)
+	DrawKit.set_shake(impact_shake)
 	# 侧身 x 压缩：正 1.0 / 斜 0.835 / 侧 0.70，让相邻方向剪影分开。
 	var yaw_scale := 1.0 - 0.38 * float(dir["yaw"])
 	DrawKit.set_xscale(yaw_scale)
@@ -172,6 +198,11 @@ func _draw() -> void:
 			"silhouette": silhouette,
 			"explode": explode,
 			"build_x": build_x,
+			# 被覆盖层的渲染预算：身体躯干/腿在 shirt/pants 之下，不必画 7 档；
+			# 只保留手/前臂（袖子外的部分）的材质。这是 FPS 预算，不改变可见外观。
+			"torso_covered": str(outfit.get("shirt", {}).get("variant", "none")) != "none",
+			"legs_covered": str(outfit.get("pants", {}).get("variant", "none")) != "none",
+			"arms_covered": str(outfit.get("shirt", {}).get("variant", "none")) in ["tunic", "hoodie", "dress", "armor"],
 		}
 		# build 只影响身体/衣物/背饰轮廓；头、发、帽、武器保持原宽。
 		var body_slots := ["body", "pants", "shirt", "cape", "belt", "shoes", "gloves", "backpack", "weapon", "accessory"]
@@ -181,7 +212,8 @@ func _draw() -> void:
 
 	DrawKit.set_offset(Vector2.ZERO)
 	DrawKit.set_alpha(1.0)
-	DrawKit.set_xscale(yaw_scale)
+	# VFX 在屏幕空间绘制：不随 2.5D 侧向 x 压缩，保证 640×360 下核心 ≥4px。
+	DrawKit.set_xscale(1.0)
 	if show_effects and not silhouette and explode <= 0.01:
 		_draw_effects(pose, outfit)
 	DrawKit.set_silhouette(false)
@@ -189,25 +221,72 @@ func _draw() -> void:
 	last_draw_usec = Time.get_ticks_usec() - draw_started
 
 
+func _impact_shake(pose: Dictionary, t: float) -> Vector2:
+	if silhouette:
+		return Vector2.ZERO
+	var vfx_t: float = pose.get("vfx_t", -1.0)
+	if action == "attack" and vfx_t >= 0.10 and vfx_t <= 0.30:
+		var k := 1.0 if vfx_t <= 0.126 else 1.0 - (vfx_t - 0.126) / 0.174
+		# 用 attack_p 而非 wall clock：impact hold 2 帧内轻震也保持同相位，帧差可测。
+		var ap: float = pose.get("attack_p", 0.0)
+		return Vector2(sin(ap * 611.0), cos(ap * 457.0)) * 1.2 * k
+	if action == "hit":
+		return Vector2(sin(t * 83.0), cos(t * 59.0)) * 1.2 * float(pose.get("hit", 0.0))
+	return Vector2.ZERO
+
+
 func _draw_effects(pose: Dictionary, outfit_now: Dictionary) -> void:
 	var slash: float = pose.get("slash", 0.0)
+	var vfx_t: float = pose.get("vfx_t", -1.0)
+	var yaw_scale := 1.0 - 0.38 * float(DollData.DIRS[clampi(direction, 0, 7)]["yaw"])
+	var hand: Vector2 = pose["hand_r"]
+	hand.x *= yaw_scale
+	var arm_angle: float = pose["weapon_angle"]
+	# 109°–143° 前挥弧：从右上到右下，经过身前；不再绕成“呼啦圈”。
+	var start := arm_angle - 2.15
+	var finish := arm_angle - 0.25
+	var radius := 46.0 + 6.0 * clampf(slash, 0.0, 1.0)
 	if slash > 0.05:
-		# 三层斩击：深边（对舞台 ≥3:1）+ 珊瑚外圈 + 金色核心；半径 40–56 local。
-		var hand: Vector2 = pose["hand_r"]
-		var arm_angle: float = pose["weapon_angle"]
-		var start := arm_angle - 2.4
-		var finish := arm_angle + 1.0
-		var radius := 46.0 + 6.0 * slash
+		# 三层斩击（G5 / P1-2）：
+		#   辉光 8–12px@640（local 4.9，α0.6）+ 16px 外晕；
+		#   深边 1px `#8f3030`（local 0.5 每侧 → 总宽 3.0）；
+		#   核心 2px `#8f5f1f`（local 2.0 ≈ 4.1px@640，对纸面 ≈5.6:1）；
+		#   1px `#ffd27a` 装饰高光不计入对比。
+		DrawKit.arc(self, hand, radius, start - 0.03, finish + 0.03,
+				PaintUtil.with_alpha(Color("#ffd27a"), 0.14 * slash), 9.0)
 		DrawKit.arc(self, hand, radius, start, finish,
-				PaintUtil.with_alpha(Color("#8f3030"), 0.92 * slash), 4.6)
-		DrawKit.arc(self, hand, radius - 1.0, start + 0.04, finish - 0.04,
-				PaintUtil.with_alpha(Color("#b23c33"), 0.85 * slash), 2.6)
-		DrawKit.arc(self, hand, radius - 2.4, start + 0.10, finish - 0.12,
-				PaintUtil.with_alpha(Color("#ffd27a"), 0.96 * slash), 2.0)
-		for i in 3:
-			var a := start + (finish - start) * (0.18 + 0.28 * float(i))
-			var tip := hand + Vector2(cos(a), sin(a)) * (radius + 4.0)
-			DrawKit.circle(self, tip, 1.4, PaintUtil.with_alpha(Color("#fff0cd"), 0.9 * slash), Color("#8f3030"), 0.4)
+				PaintUtil.with_alpha(Color("#f4c76a"), 0.60 * slash), 4.9)
+		DrawKit.arc(self, hand, radius + 0.35, start + 0.02, finish - 0.02,
+				PaintUtil.with_alpha(Color("#8f3030"), 0.95 * slash), 3.0)
+		DrawKit.arc(self, hand, radius + 0.35, start + 0.03, finish - 0.03,
+				PaintUtil.with_alpha(Color("#8f5f1f"), 0.98 * slash), 2.50)
+		DrawKit.arc(self, hand, radius + 0.35, start + 0.05, finish - 0.05,
+				PaintUtil.with_alpha(Color("#ffd27a"), 0.90 * slash), 0.5)
+
+	# 粒子 12–24 粒、寿命 0.2–0.45s：命中后继续飞散，不依赖 slash 曲线。
+	if vfx_t >= 0.0 and vfx_t <= 0.48:
+		var wave_dir := finish - start
+		for i in 18:
+			var spawn := 0.012 * float(i) + 0.004 * float(i % 3)
+			var life := 0.22 + 0.06 * float(i % 4)
+			var age := vfx_t - spawn
+			if age < 0.0 or age > life:
+				continue
+			var u := 0.08 + 0.86 * float(i) / 17.0
+			var a := start + wave_dir * u
+			var dir := Vector2(cos(a), sin(a))
+			var tangent := Vector2(-dir.y, dir.x) * (1.0 if sin(a) < 0.0 else -1.0)
+			var jitter := Vector2(sin(float(i) * 12.9898), cos(float(i) * 7.233)) * 0.25
+			var vel := (dir * (46.0 + 34.0 * float(i % 5) * 0.25) + tangent * 42.0 + jitter * 30.0)
+			var pos: Vector2 = hand + dir * (radius + 2.0) + vel * age + Vector2(0, 92.0 * age * age)
+			var fade := 1.0 - age / life
+			var col: Color = [Color("#ffd27a"), Color("#e86a5c"), Color("#fff0cd")][i % 3]
+			var r := (1.0 + float(i % 4) * 0.35) * (0.6 + fade * 0.4)
+			if i % 4 == 0:
+				DrawKit.star(self, pos, r + 1.4, 4,
+						PaintUtil.with_alpha(col, 0.95 * fade), Color("#8f3030"), 0.3, 0.38, a)
+			else:
+				DrawKit.circle(self, pos, r, PaintUtil.with_alpha(col, 0.92 * fade), Color("#8f3030"), 0.25)
 
 	var hit_k: float = pose.get("hit", 0.0)
 	if hit_k > 0.18:

@@ -19,7 +19,7 @@
 - 交付: 更新 `godot-paper-doll/`；同机位 before/after（100%/25%/640×360 命中帧）+ 指标（L* 分箱、阴影色相、墨占比、舞台层数、斩击 ROI）+ GIF/MP4；README/TECH/迭代记录；媒体
 - 约束: 只改视觉层/材质/光照/VFX；保留 17 槽/8 向/4 动作/16 预设；不降 AA/超采样；原创素材；FPS 不回退；外部参考图不入库
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261121-006 · 复刻《群体寻路与避障》Steering Behavior 可交互 Demo
 - 来源: 飞书消息（B 站 BV1yCqfYuEh1《〈群体寻路与避障〉Steering Behavior 转向行为如何实现避障智能体》，4:03，2026-11-21）

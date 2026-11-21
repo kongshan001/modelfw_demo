@@ -1,0 +1,20 @@
+{
+	"arm_angle": 1.55,
+	"core_hex": "#8f5f1f",
+	"edge_hex": "#8f3030",
+	"hand_local": [
+		58.3659439086914,
+		-79.9612731933594
+	],
+	"impact_hold_frames": 2,
+	"impact_hold_same_pose": true,
+	"origin": [
+		320.0,
+		330.0
+	],
+	"radius_local": 52.0,
+	"scale": 2.05,
+	"slash": 1.0,
+	"vfx_t": 0.126,
+	"xscale": 0.62
+}
