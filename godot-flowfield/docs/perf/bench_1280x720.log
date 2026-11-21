@@ -1,0 +1,84 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+ABL meta tag=1280x720 mode=window window=(1280, 720) screen=(1440, 900) adapter=Intel(R) HD Graphics 6000 api=4.1 INTEL-18.8.16 seed=421 map=medium
+ABL note=1280×720 real window
+ABL matrix_begin agents=1000 configs=8 runs=5
+ABL ablation agents=1000 config=baseline round=1 fps=9.5 p50=86.0 p95=201.6 p99=271.6 worst=355.5 hitch33=300 hitch50=300 logic=21.37ms max_step=193.43ms budget=64% build=11.63ms draw=166 load1=6.01/6.16
+ABL ablation agents=1000 config=aa_off round=1 fps=15.7 p50=61.5 p95=98.7 p99=136.7 worst=222.6 hitch33=276 hitch50=242 logic=19.76ms max_step=77.48ms budget=59% build=12.84ms draw=161 load1=6.16/6.54
+ABL ablation agents=1000 config=hz10 round=1 fps=11.3 p50=78.8 p95=145.4 p99=259.1 worst=448.6 hitch33=299 hitch50=280 logic=16.17ms max_step=104.17ms budget=49% build=20.96ms draw=166 load1=6.34/6.18
+ABL ablation agents=1000 config=half round=1 fps=11.9 p50=74.0 p95=148.9 p99=233.2 worst=300.3 hitch33=297 hitch50=290 logic=21.35ms max_step=169.80ms budget=64% build=7.99ms draw=163 load1=6.14/8.56
+ABL ablation agents=1000 config=aa_off_hz10 round=1 fps=21.2 p50=43.8 p95=84.0 p99=97.3 worst=159.3 hitch33=192 hitch50=111 logic=15.73ms max_step=107.56ms budget=47% build=13.90ms draw=161 load1=8.56/9.79
+ABL ablation agents=1000 config=aa_off_half round=1 fps=27.2 p50=37.0 p95=54.0 p99=60.2 worst=72.8 hitch33=168 hitch50=35 logic=15.54ms max_step=35.56ms budget=47% build=14.53ms draw=161 load1=9.73/8.99
+ABL ablation agents=1000 config=hz10_half round=1 fps=18.8 p50=52.7 p95=78.5 p99=83.5 worst=93.4 hitch33=278 hitch50=174 logic=13.78ms max_step=43.12ms budget=41% build=16.42ms draw=163 load1=8.91/8.57
+ABL ablation agents=1000 config=all round=1 fps=28.1 p50=33.1 p95=56.8 p99=73.9 worst=96.1 hitch33=149 hitch50=49 logic=14.07ms max_step=48.15ms budget=42% build=18.07ms draw=161 load1=8.57/8.40
+ABL ablation agents=1000 config=aa_off round=2 fps=10.5 p50=81.6 p95=182.7 p99=254.3 worst=281.7 hitch33=293 hitch50=284 logic=28.07ms max_step=168.66ms budget=84% build=21.55ms draw=161 load1=9.68/8.73
+ABL ablation agents=1000 config=hz10 round=2 fps=8.2 p50=110.1 p95=213.3 p99=321.7 worst=420.5 hitch33=300 hitch50=299 logic=21.99ms max_step=222.27ms budget=66% build=12.43ms draw=166 load1=8.27/7.95
+ABL ablation agents=1000 config=half round=2 fps=9.3 p50=92.5 p95=194.1 p99=261.9 worst=1459.1 hitch33=300 hitch50=297 logic=28.26ms max_step=690.57ms budget=85% build=16.54ms draw=163 load1=10.95/11.62
+ABL ablation agents=1000 config=aa_off_hz10 round=2 fps=6.2 p50=132.4 p95=312.7 p99=402.4 worst=1092.9 hitch33=300 hitch50=297 logic=38.44ms max_step=299.63ms budget=115% build=20.92ms draw=161 load1=11.73/21.49
+ABL ablation agents=1000 config=aa_off_half round=2 fps=14.7 p50=56.5 p95=137.4 p99=310.3 worst=559.1 hitch33=257 hitch50=208 logic=23.94ms max_step=403.67ms budget=72% build=15.01ms draw=161 load1=21.49/20.06
+ABL ablation agents=1000 config=hz10_half round=2 fps=12.5 p50=70.0 p95=163.2 p99=227.0 worst=555.1 hitch33=285 hitch50=244 logic=18.68ms max_step=206.19ms budget=56% build=14.82ms draw=163 load1=19.75/16.74
+ABL ablation agents=1000 config=all round=2 fps=17.0 p50=56.3 p95=98.1 p99=139.9 worst=218.1 hitch33=251 hitch50=174 logic=18.52ms max_step=101.63ms budget=56% build=11.52ms draw=161 load1=16.44/14.92
+ABL ablation agents=1000 config=baseline round=2 fps=12.5 p50=78.6 p95=96.4 p99=112.5 worst=139.0 hitch33=300 hitch50=300 logic=16.41ms max_step=50.23ms budget=49% build=12.28ms draw=166 load1=14.45/13.21
+ABL ablation agents=1000 config=hz10 round=3 fps=11.4 p50=76.6 p95=148.4 p99=221.9 worst=300.1 hitch33=300 hitch50=291 logic=16.23ms max_step=120.26ms budget=49% build=14.11ms draw=166 load1=11.86/12.38
+ABL ablation agents=1000 config=half round=3 fps=17.2 p50=55.8 p95=95.6 p99=138.4 worst=437.4 hitch33=280 hitch50=206 logic=16.34ms max_step=282.95ms budget=49% build=13.48ms draw=163 load1=12.19/11.26
+ABL ablation agents=1000 config=aa_off_hz10 round=3 fps=29.5 p50=29.3 p95=53.1 p99=64.6 worst=91.7 hitch33=120 hitch50=30 logic=13.04ms max_step=55.72ms budget=39% build=9.35ms draw=161 load1=10.68/9.42
+ABL ablation agents=1000 config=aa_off_half round=3 fps=28.8 p50=35.0 p95=50.5 p99=54.8 worst=57.8 hitch33=159 hitch50=18 logic=15.51ms max_step=34.88ms budget=47% build=14.47ms draw=161 load1=9.42/8.81
+ABL ablation agents=1000 config=hz10_half round=3 fps=22.8 p50=40.5 p95=61.5 p99=66.7 worst=69.1 hitch33=238 hitch50=113 logic=12.15ms max_step=33.56ms budget=36% build=16.24ms draw=163 load1=8.34/7.60
+ABL ablation agents=1000 config=all round=3 fps=32.2 p50=27.3 p95=49.3 p99=54.2 worst=58.0 hitch33=100 hitch50=15 logic=12.57ms max_step=32.70ms budget=38% build=16.32ms draw=161 load1=7.60/7.12
+ABL ablation agents=1000 config=baseline round=3 fps=10.7 p50=85.9 p95=145.4 p99=188.6 worst=252.1 hitch33=300 hitch50=300 logic=18.91ms max_step=104.37ms budget=57% build=9.61ms draw=166 load1=6.63/6.43
+ABL ablation agents=1000 config=aa_off round=3 fps=14.9 p50=65.9 p95=102.5 p99=134.8 worst=165.1 hitch33=281 hitch50=254 logic=20.02ms max_step=86.90ms budget=60% build=16.95ms draw=161 load1=9.27/8.64
+ABL ablation agents=1000 config=half round=4 fps=14.1 p50=68.8 p95=112.1 p99=132.1 worst=170.3 hitch33=298 hitch50=267 logic=18.17ms max_step=80.79ms budget=55% build=13.95ms draw=163 load1=8.99/8.76
+ABL ablation agents=1000 config=aa_off_hz10 round=4 fps=15.8 p50=52.9 p95=131.0 p99=196.5 worst=473.1 hitch33=253 hitch50=166 logic=18.62ms max_step=207.46ms budget=56% build=10.54ms draw=161 load1=8.38/10.81
+ABL ablation agents=1000 config=aa_off_half round=4 fps=26.9 p50=38.9 p95=55.8 p99=61.4 worst=78.9 hitch33=177 hitch50=44 logic=16.04ms max_step=63.54ms budget=48% build=14.12ms draw=161 load1=10.59/9.89
+ABL ablation agents=1000 config=hz10_half round=4 fps=20.7 p50=48.2 p95=64.7 p99=73.5 worst=74.9 hitch33=275 hitch50=139 logic=13.01ms max_step=41.68ms budget=39% build=13.27ms draw=163 load1=9.50/8.96
+ABL ablation agents=1000 config=all round=4 fps=26.5 p50=34.2 p95=57.8 p99=64.5 worst=81.5 hitch33=161 hitch50=58 logic=14.40ms max_step=43.55ms budget=43% build=12.37ms draw=161 load1=8.80/8.28
+ABL ablation agents=1000 config=baseline round=4 fps=12.7 p50=76.2 p95=94.1 p99=100.7 worst=104.9 hitch33=300 hitch50=300 logic=15.97ms max_step=39.59ms budget=48% build=12.52ms draw=166 load1=8.02/7.04
+ABL ablation agents=1000 config=aa_off round=4 fps=26.3 p50=39.0 p95=52.7 p99=57.3 worst=60.5 hitch33=182 hitch50=32 logic=15.10ms max_step=38.87ms budget=45% build=12.30ms draw=161 load1=6.64/6.61
+ABL ablation agents=1000 config=hz10 round=4 fps=14.4 p50=68.5 p95=89.1 p99=106.3 worst=124.0 hitch33=300 hitch50=295 logic=13.20ms max_step=45.11ms budget=40% build=10.78ms draw=166 load1=6.32/6.24
+ABL ablation agents=1000 config=aa_off_hz10 round=5 fps=26.0 p50=35.2 p95=62.2 p99=71.6 worst=76.7 hitch33=164 hitch50=71 logic=13.65ms max_step=39.75ms budget=41% build=11.73ms draw=161 load1=6.38/6.57
+ABL ablation agents=1000 config=aa_off_half round=5 fps=16.9 p50=53.8 p95=108.6 p99=187.5 worst=615.6 hitch33=244 hitch50=174 logic=20.77ms max_step=269.79ms budget=62% build=11.09ms draw=161 load1=14.53/26.22
+ABL ablation agents=1000 config=hz10_half round=5 fps=17.2 p50=54.5 p95=85.3 p99=118.6 worst=783.0 hitch33=260 hitch50=175 logic=15.69ms max_step=589.72ms budget=47% build=7.24ms draw=163 load1=24.68/23.22
+ABL ablation agents=1000 config=all round=5 fps=23.9 p50=39.2 p95=72.6 p99=98.7 worst=108.8 hitch33=185 hitch50=88 logic=15.22ms max_step=65.78ms budget=46% build=8.76ms draw=161 load1=23.22/19.66
+ABL ablation agents=1000 config=baseline round=5 fps=11.0 p50=79.3 p95=158.8 p99=228.1 worst=258.6 hitch33=300 hitch50=300 logic=18.28ms max_step=95.83ms budget=55% build=11.50ms draw=166 load1=18.56/14.74
+ABL ablation agents=1000 config=aa_off round=5 fps=25.6 p50=40.7 p95=54.2 p99=60.1 worst=65.9 hitch33=182 hitch50=52 logic=15.14ms max_step=37.91ms budget=45% build=10.49ms draw=161 load1=14.04/12.66
+ABL ablation agents=1000 config=hz10 round=5 fps=15.4 p50=65.5 p95=82.0 p99=87.4 worst=90.8 hitch33=299 hitch50=276 logic=12.33ms max_step=43.72ms budget=37% build=12.09ms draw=166 load1=12.05/9.78
+ABL ablation agents=1000 config=half round=5 fps=16.2 p50=61.2 p95=86.7 p99=114.6 worst=123.3 hitch33=298 hitch50=244 logic=16.89ms max_step=50.32ms budget=51% build=16.08ms draw=163 load1=9.16/7.64
+ABL matrix_done agents=1000
+ABL matrix_begin agents=500 configs=4 runs=5
+ABL ablation_500 agents=500 config=baseline round=1 fps=26.0 p50=36.7 p95=51.0 p99=97.3 worst=261.0 hitch33=187 hitch50=17 logic=7.68ms max_step=29.09ms budget=23% build=11.89ms draw=163 load1=7.64/9.42
+ABL ablation_500 agents=500 config=aa_off round=1 fps=40.9 p50=24.5 p95=37.2 p99=42.3 worst=58.3 hitch33=31 hitch50=1 logic=8.10ms max_step=23.68ms budget=24% build=12.15ms draw=161 load1=8.90/8.83
+ABL ablation_500 agents=500 config=half round=1 fps=27.4 p50=36.9 p95=48.0 p99=51.7 worst=69.4 hitch33=182 hitch50=7 logic=7.83ms max_step=20.97ms budget=23% build=12.17ms draw=163 load1=9.08/8.07
+ABL ablation_500 agents=500 config=aa_off_half round=1 fps=43.0 p50=22.0 p95=34.1 p99=39.3 worst=41.2 hitch33=20 hitch50=0 logic=7.82ms max_step=22.36ms budget=23% build=14.28ms draw=161 load1=8.07/7.85
+ABL ablation_500 agents=500 config=aa_off round=2 fps=40.7 p50=23.9 p95=36.8 p99=41.7 worst=47.5 hitch33=30 hitch50=0 logic=8.02ms max_step=21.78ms budget=24% build=23.19ms draw=161 load1=7.85/7.90
+ABL ablation_500 agents=500 config=half round=2 fps=25.0 p50=40.6 p95=59.4 p99=64.7 worst=71.2 hitch33=207 hitch50=53 logic=8.45ms max_step=33.39ms budget=25% build=15.23ms draw=163 load1=7.90/7.06
+ABL ablation_500 agents=500 config=aa_off_half round=2 fps=38.5 p50=25.4 p95=38.2 p99=43.5 worst=46.4 hitch33=52 hitch50=0 logic=8.57ms max_step=23.80ms budget=26% build=12.78ms draw=161 load1=7.06/9.48
+ABL ablation_500 agents=500 config=baseline round=2 fps=24.8 p50=39.8 p95=55.5 p99=64.6 worst=90.8 hitch33=221 hitch50=50 logic=8.16ms max_step=29.53ms budget=24% build=15.91ms draw=163 load1=9.48/8.67
+ABL ablation_500 agents=500 config=half round=3 fps=25.8 p50=37.8 p95=56.5 p99=68.7 worst=88.2 hitch33=203 hitch50=44 logic=8.25ms max_step=28.50ms budget=25% build=10.50ms draw=163 load1=8.67/7.80
+ABL ablation_500 agents=500 config=aa_off_half round=3 fps=43.2 p50=22.3 p95=33.8 p99=37.5 worst=42.5 hitch33=19 hitch50=0 logic=7.38ms max_step=18.26ms budget=22% build=12.13ms draw=161 load1=7.80/7.49
+ABL ablation_500 agents=500 config=baseline round=3 fps=29.2 p50=34.3 p95=45.1 p99=48.3 worst=63.9 hitch33=168 hitch50=1 logic=7.24ms max_step=24.25ms budget=22% build=12.05ms draw=163 load1=7.05/6.58
+ABL ablation_500 agents=500 config=aa_off round=3 fps=39.0 p50=24.2 p95=38.4 p99=43.4 worst=46.2 hitch33=56 hitch50=0 logic=8.35ms max_step=21.66ms budget=25% build=10.51ms draw=161 load1=6.58/6.03
+ABL ablation_500 agents=500 config=aa_off_half round=4 fps=42.6 p50=22.6 p95=34.7 p99=38.0 worst=39.0 hitch33=21 hitch50=0 logic=7.60ms max_step=19.44ms budget=23% build=12.28ms draw=161 load1=6.03/6.09
+ABL ablation_500 agents=500 config=baseline round=4 fps=27.4 p50=36.9 p95=50.9 p99=58.7 worst=64.1 hitch33=187 hitch50=16 logic=8.13ms max_step=20.35ms budget=24% build=12.23ms draw=163 load1=6.09/6.07
+ABL ablation_500 agents=500 config=aa_off round=4 fps=40.5 p50=24.1 p95=34.7 p99=43.0 worst=44.1 hitch33=31 hitch50=0 logic=7.76ms max_step=24.56ms budget=23% build=17.00ms draw=161 load1=6.07/6.46
+ABL ablation_500 agents=500 config=half round=4 fps=28.9 p50=34.8 p95=45.5 p99=51.5 worst=53.8 hitch33=160 hitch50=5 logic=7.71ms max_step=23.39ms budget=23% build=12.98ms draw=163 load1=6.10/5.77
+ABL ablation_500 agents=500 config=baseline round=5 fps=25.0 p50=36.4 p95=61.3 p99=108.3 worst=317.3 hitch33=193 hitch50=27 logic=8.64ms max_step=74.95ms budget=26% build=12.75ms draw=163 load1=5.55/5.23
+ABL ablation_500 agents=500 config=aa_off round=5 fps=41.3 p50=24.5 p95=35.3 p99=38.5 worst=46.4 hitch33=28 hitch50=0 logic=7.70ms max_step=18.80ms budget=23% build=9.86ms draw=161 load1=5.23/5.20
+ABL ablation_500 agents=500 config=half round=5 fps=27.0 p50=39.0 p95=50.5 p99=56.6 worst=85.4 hitch33=187 hitch50=16 logic=7.80ms max_step=35.38ms budget=23% build=11.36ms draw=163 load1=6.14/5.97
+ABL ablation_500 agents=500 config=aa_off_half round=5 fps=41.8 p50=22.9 p95=35.5 p99=38.9 worst=39.7 hitch33=38 hitch50=0 logic=7.86ms max_step=20.49ms budget=24% build=12.81ms draw=161 load1=5.97/6.07
+ABL matrix_done agents=500
+ABL layers_begin agents=1000 variants=4 runs=3
+ABL layer agents=1000 config=layer_full round=1 fps=30.2 p50=30.0 p95=51.0 p99=58.2 worst=66.4 hitch33=128 hitch50=19 logic=13.35ms max_step=40.03ms budget=40% build=12.19ms draw=161 load1=6.07/5.68
+ABL layer agents=1000 config=layer_no_trails round=1 fps=27.8 p50=31.5 p95=60.8 p99=96.4 worst=141.6 hitch33=137 hitch50=41 logic=15.04ms max_step=70.30ms budget=45% build=11.65ms draw=160 load1=6.99/7.41
+ABL layer agents=1000 config=layer_no_agents round=1 fps=33.7 p50=26.6 p95=49.8 p99=56.5 worst=62.0 hitch33=109 hitch50=14 logic=14.30ms max_step=38.25ms budget=43% build=11.08ms draw=158 load1=7.41/7.09
+ABL layer agents=1000 config=layer_no_arrows round=1 fps=48.6 p50=15.8 p95=46.8 p99=77.9 worst=114.0 hitch33=56 hitch50=13 logic=14.08ms max_step=64.06ms budget=42% build=18.87ms draw=158 load1=7.09/8.01
+ABL layer agents=1000 config=layer_no_trails round=2 fps=23.2 p50=37.1 p95=79.7 p99=164.3 worst=237.7 hitch33=173 hitch50=82 logic=16.23ms max_step=96.86ms budget=49% build=19.39ms draw=160 load1=8.01/7.16
+ABL layer agents=1000 config=layer_no_agents round=2 fps=20.7 p50=43.8 p95=89.8 p99=137.0 worst=537.5 hitch33=194 hitch50=106 logic=19.89ms max_step=526.20ms budget=60% build=12.30ms draw=158 load1=7.16/7.39
+ABL layer agents=1000 config=layer_no_arrows round=2 fps=54.4 p50=14.7 p95=40.0 p99=53.6 worst=65.4 hitch33=46 hitch50=5 logic=13.32ms max_step=54.15ms budget=40% build=10.76ms draw=158 load1=7.39/8.08
+ABL layer agents=1000 config=layer_full round=2 fps=26.9 p50=34.0 p95=61.5 p99=70.8 worst=109.4 hitch33=158 hitch50=56 logic=13.86ms max_step=69.58ms budget=42% build=7.93ms draw=161 load1=7.59/8.06
+ABL layer agents=1000 config=layer_no_agents round=3 fps=34.9 p50=26.1 p95=50.6 p99=59.1 worst=74.4 hitch33=93 hitch50=17 logic=13.61ms max_step=45.96ms budget=41% build=11.19ms draw=158 load1=8.06/8.29
+ABL layer agents=1000 config=layer_no_arrows round=3 fps=63.5 p50=13.1 p95=36.1 p99=41.0 worst=44.7 hitch33=24 hitch50=0 logic=11.48ms max_step=29.57ms budget=34% build=14.97ms draw=158 load1=8.29/8.27
+ABL layer agents=1000 config=layer_full round=3 fps=25.1 p50=35.7 p95=66.2 p99=96.6 worst=118.3 hitch33=172 hitch50=78 logic=14.85ms max_step=46.26ms budget=45% build=13.95ms draw=161 load1=7.93/7.87
+ABL layer agents=1000 config=layer_no_trails round=3 fps=26.2 p50=36.9 p95=65.7 p99=77.0 worst=85.8 hitch33=175 hitch50=70 logic=14.93ms max_step=58.20ms budget=45% build=20.91ms draw=160 load1=7.72/7.86
+ABL layers_done
+ABLATION_DONE tag=1280x720 csv=res://docs/perf/ablation_1280x720.csv json=res://docs/perf/runs_raw.json

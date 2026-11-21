@@ -2,6 +2,62 @@
 
 ## 进行中
 
+## T-20261121-014 · 复刻《幻唐志》手游道具背包界面（Godot UI）
+- 来源: 飞书消息（2026-11-21，“帮我用godot来复刻幻唐志手游的道具背包界面”）
+- 类型: game-demo（Godot UI / 界面复刻）
+- 目标: 按参考截图的布局/信息层级/交互，用原创素材在 Godot 4.6 复刻可交互道具背包：左侧人物装备盘 + 属性/货币，右侧分类/分页物品网格 + 详情/使用/整理
+- 交付: `godot-inventory-ui/` 可运行项目；30–40 件示例道具数据；中文 UI；交互（切页/选中/悬停/使用/整理/筛选/丢弃确认/键鼠）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke `INVENTORY_UI_SMOKE_OK`
+- 约束: 只参考布局/配色/交互，**不复制幻唐志截图/图标/Logo/UI 素材**；原创面板/图标/背景；不用游戏名做品牌；1280×720 逻辑 + 1920×1080 截图，GL Compatibility，Intel 30fps+
+- 指派: game-artist worker（dispatcher）
+- 状态: running
+- 后续: T-20261121-015（1:1 复刻校正，等本任务完成后启动）
+
+## T-20261121-015 · 背包界面 1:1 复刻校正（T-014 follow-up）
+- 来源: 飞书消息（2026-11-21，“注意是尽量做到1比1复刻”）
+- 线程: T-20261121-014（幻唐志背包界面）
+- 父任务: T-20261121-014；依赖: T-20261121-014（done + Git 发布）
+- 类型: game-demo（UI 保真度校正）
+- 目标: 在 T-014 可交互版本上做 1:1 校正：量参考图归一化坐标/尺寸/色值，逐项对齐面板边界、左右分区、装备槽、页签、物品网格、属性/货币行与字号；交互/信息层级同步
+- 交付: 更新 `godot-inventory-ui/`；`docs/fidelity-1to1.md`（参考 vs 实现测量表、误差、例外）；同尺寸对照图（参考图不入库）；新截图/GIF/MP4；smoke 通过
+- 约束: 1:1 指布局/比例/配色/交互；**不复制参考截图/图标/Logo/受版权素材**，用原创重绘；不用幻唐志品牌；不改其他项目
+- 指派: game-artist worker（dispatcher）
+- 状态: blocked（等 T-014 done + Git 发布）
+- depends_on: T-20261121-014
+- 后续: T-20261121-017（开发文档 + 跨引擎资产包）
+
+## T-20261121-017 · 背包界面开发文档 + 跨引擎资产包（T-015 follow-up）
+- 线程: T-20261121-014（幻唐志背包界面）
+- 父任务: T-20261121-015；依赖: T-20261121-015（done + Git 发布）
+- 类型: docs-research
+- 目标: 沉淀开发文档与技术原理；导出引擎无关的 UI 规格/资产清单，方便在 Unity/Unreal/Three.js 等引擎复刻
+- 交付: `godot-inventory-ui/docs/DEVELOPMENT.md`（节点树/状态机/数据 schema/动效）、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（九宫格/图标/色板/命名/许可）、`export/ui_layout.json`、`export/asset_manifest.json` + 截图
+- 约束: 只读项目/资产，不改 UI 行为；原创素材；参考图不入库；不得复制幻唐志素材/Logo
+- 指派: general-purpose worker（dispatcher）
+- 状态: blocked（等 T-015 done + Git 发布）
+- depends_on: T-20261121-015
+
+## T-20261121-013 · 复刻 Duelyst 式卡牌战棋（CC0 资产）可玩 Vertical Slice
+- 来源: 飞书消息（微信公众号文章《服务器关停两年后，公司把整个游戏的代码美术用CC0全送给人类》，https://mp.weixin.qq.com/s/XY3uZmsJEiZy3sZ4MS0YyA，2026-11-21）
+- 类型: game-demo（卡牌 + 战棋）
+- 目标: 复刻 Duelyst 的核心：9×5 棋盘上的卡牌+走位对战、双将军、法力/手牌/随从、移动/攻击/射程、简单 AI；使用 CC0 开源资产做可玩 vertical slice
+- 交付: `godot-card-tactics/` Godot 4.6 可玩项目；CC0 资产子集 + LICENSE/SOURCE；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke `CARD_TACTICS_SMOKE_OK` + 真实 GPU 验证
+- 约束: 资产来自 open-duelyst（CC0 1.0），保留许可与来源；**不使用 Duelyst 名称/Logo 作为游戏品牌**（商标不在 CC0 内），用原创标题/UI；不复制 Duelyst II/Steam 素材；原创 GDScript 实现；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: `godot-card-tactics/`（9×5 棋盘、玩家 vs AI、16 卡池、20 张套牌、嘲讽/远程/疾行/登场治疗、胜负/重开、固定 seed 可复现）；CC0 资产子集 60 源文件/约 1.1MB（LICENSE/SOURCE/CREDITS）；`CARD_TACTICS_SMOKE_OK`（65 checks）；5 张 1920×1080 截图 + 10.43s MP4/GIF；Intel HD 6000 实测待机 avg 117.2 FPS / AI 行动 avg 100.0 FPS；README/TECH/迭代记录
+- 后续: T-20261121-016（开发文档 + 跨引擎资产包）
+
+## T-20261121-016 · Duelyst 复刻开发文档 + 跨引擎资产包（T-013 follow-up）
+- 线程: T-20261121-013（Duelyst 式卡牌战棋）
+- 父任务: T-20261121-013；依赖: T-20261121-013（done + Git 发布）
+- 类型: docs-research
+- 目标: 沉淀规则/状态机/AI/资产管线文档，导出引擎无关的资产 manifest 与图集切片工具，支持 Unity/Unreal/Three.js 复刻
+- 交付: `godot-card-tactics/docs/DEVELOPMENT.md`、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（图集 schema/帧名/锚点/许可）、`export/asset_manifest.json`、`export/slice_atlas.py` + 联系表截图
+- 约束: 只读代码/资产，不改玩法；CC0 许可与来源保留；不复制 Duelyst 商标/版权外素材
+- 指派: general-purpose worker（dispatcher）
+- 状态: blocked（等 T-013 done + Git 发布）
+- depends_on: T-20261121-013
+
 ## T-20261121-011 · Flow Field 审计级性能复测与优化消融（T-009 follow-up）
 - 来源: 飞书消息（2026-11-21，“做好文档积累以及技术原理分析报告”，承接 T-009 性能讨论）
 - 线程: T-20261121-009（Flow Field）
@@ -11,15 +67,16 @@
 - 交付: `godot-flowfield/tools/` 复测工具；`godot-flowfield/docs/perf/` 原始 CSV/JSON + REPORT.md + 对比图；smoke 无回归；媒体
 - 约束: 不改主 demo 默认行为/视觉；只改 bench/工具；同 seed/地图；真实 GPU；报告写清方法与局限
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-011/result.md
 
 ## T-20261121-012 · Flow Field 技术原理报告 + 文档沉淀（T-009 follow-up）
 - 来源: 飞书消息（2026-11-21，“做好文档积累以及技术原理分析报告”）
 - 线程: T-20261121-009（Flow Field）
 - 父任务: T-20261121-009；依赖: T-20261121-011（审计数据）
 - 类型: docs-research
-- 目标: Flow Field 深挖 + WFC/Steering/Flow Field 总览；用消融数据解释优化机制；经验写回原项目 docs
-- 交付: `godot-flowfield/docs/TECHNICAL_PRINCIPLES.md` + 单文件交互 HTML + 更新 `godot-flowfield/docs/TECH.md` §6 + `docs/algorithm-demos-index.md` + 截图
+- 目标: Flow Field 深挖 + WFC/Steering/Flow Field 总览；用消融数据解释优化机制；经验写回原项目 docs；按四层拆分给出跨引擎映射与移植契约
+- 交付: `godot-flowfield/docs/TECHNICAL_PRINCIPLES.md` + 单文件交互 HTML + 更新 `godot-flowfield/docs/TECH.md` §6 + `docs/algorithm-demos-index.md` + Godot/Unity/Unreal/Three.js 映射表/移植契约/验收清单 + 截图
 - 约束: 只读代码/docs，不改游戏代码/资产；原创图表；来源与访问日期；区分公开事实/推断；结论先行；中文
 - 指派: general-purpose worker（dispatcher）
 - 状态: blocked（等 T-011 done + Git 发布）

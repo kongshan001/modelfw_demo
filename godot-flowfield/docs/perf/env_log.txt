@@ -1,0 +1,23 @@
+=== env before 2026-11-21 14:10:29 ===
+ProductName:	macOS
+ProductVersion:	12.7.6
+BuildVersion:	21H1320
+CPU: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+logical_cpus: 4
+loadavg: { 6.82 7.35 6.64 }
+Note: No thermal warning level has been recorded
+Note: No performance warning level has been recorded
+2026-11-21 14:10:29 +0800 CPU Power notify
+	CPU_Scheduler_Limit 	= 100
+	CPU_Available_CPUs 	= 4
+	CPU_Speed_Limit 	= 100
+
+=== env after 2026-11-21 14:56:53 ===
+loadavg: { 8.41 10.52 10.96 }
+Note: No thermal warning level has been recorded
+Note: No performance warning level has been recorded
+2026-11-21 14:56:53 +0800 CPU Power notify
+	CPU_Scheduler_Limit 	= 100
+	CPU_Available_CPUs 	= 4
+	CPU_Speed_Limit 	= 100
+

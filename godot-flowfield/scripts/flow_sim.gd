@@ -47,6 +47,13 @@ var arrivals := 0
 var last_build_usec := 0
 var last_step_usec := 0
 var avg_step_usec := 0.0
+# 审计用精确计数：bench 在每个采样段开始前清零，避免 EMA 受预热/上一轮影响。
+var step_count := 0
+var step_total_usec := 0
+var step_max_usec := 0
+# bench 消融开关：false = 初版行为（固定每 2 拍刷新/拖尾），true = 大群降到每 3 拍。
+# 默认 true，主场景行为与 T-009 一致。
+var large_group_10hz := true
 
 var profiling := false
 var prof := {}
@@ -91,6 +98,22 @@ func set_manual_capture(value: bool) -> void:
 func set_agent_count(value: int) -> void:
 	target_agent_count = clampi(value, 1, MAX_AGENTS)
 	reset()
+
+
+# bench 消融：关闭后无论群数都按初版每 2 拍刷新/拖尾。
+func set_large_group_10hz(value: bool) -> void:
+	large_group_10hz = value
+	if agent_count > 0:
+		var decimate := large_group_10hz and agent_count > 700
+		_refresh_every = 3 if decimate else 2
+		_trail_every = 3 if decimate else 2
+		_force_flow_refresh = true
+
+
+func reset_step_stats() -> void:
+	step_count = 0
+	step_total_usec = 0
+	step_max_usec = 0
 
 
 func set_map_size(key: String) -> void:
@@ -195,8 +218,10 @@ func reset() -> void:
 	_agent_rng.seed = seed * 7919 + 17
 	agent_count = target_agent_count
 	# 大群时把方向/分离刷新降到 10Hz、拖尾降到 10Hz，换取 30fps 余量；移动仍按 30Hz 积分。
-	_refresh_every = 3 if agent_count > 700 else 2
-	_trail_every = 3 if agent_count > 700 else 2
+	var decimate := large_group_10hz and agent_count > 700
+	_refresh_every = 3 if decimate else 2
+	_trail_every = 3 if decimate else 2
+	reset_step_stats()
 	agent_pos.resize(agent_count)
 	agent_prev.resize(agent_count)
 	agent_vel.resize(agent_count)
@@ -611,6 +636,9 @@ func step_fixed(dt: float) -> void:
 	var t_trail := Time.get_ticks_usec()
 
 	last_step_usec = Time.get_ticks_usec() - start_usec
+	step_count += 1
+	step_total_usec += last_step_usec
+	step_max_usec = maxi(step_max_usec, last_step_usec)
 	avg_step_usec = lerpf(avg_step_usec, float(last_step_usec), 0.06)
 	if profiling:
 		prof["hash"] = prof.get("hash", 0) + (t_hash - t0)

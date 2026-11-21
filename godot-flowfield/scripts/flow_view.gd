@@ -24,6 +24,9 @@ var show_numbers := false
 var show_arrows := true
 var show_agents := true
 var show_trails := true
+# bench 消融开关：默认值即主场景当前行为（关 AA、大群隔一取样）。
+var trail_antialias := false
+var trail_half_sampling := true
 
 var hover_cell := Vector2i(-1, -1)
 var hover_active := false
@@ -112,6 +115,14 @@ func set_show(key: String, value: bool) -> void:
 		_:
 			return
 	queue_redraw()
+
+
+# bench 消融：仅影响拖尾绘制，不改默认视觉（默认 false/true）。
+func set_trail_options(antialias: bool, half_sampling: bool) -> void:
+	trail_antialias = antialias
+	trail_half_sampling = half_sampling
+	if _trail_layer != null:
+		_trail_layer.queue_redraw()
 
 
 func set_hover(cell: Vector2i, active: bool, mode := "goal") -> void:
@@ -427,7 +438,7 @@ func _draw_trails(canvas: CanvasItem) -> void:
 	var tlen: int = sim.trail_len
 	var trail: PackedVector2Array = sim.trail
 	# 大群只画一半拖尾，线段数从 5000 降到 2500，视觉密度几乎不变。
-	var stride := 1 if count <= 700 else 2
+	var stride := 2 if trail_half_sampling and count > 700 else 1
 	for i in range(0, count, stride):
 		var base := i * tlen
 		for k in range(tlen - 1):
@@ -439,7 +450,7 @@ func _draw_trails(canvas: CanvasItem) -> void:
 			points.append(b)
 	if points.size() > 0:
 		# 拖尾线段数量随群数线性增长，关闭抗锯齿可显著降低 GLES3 的批次开销。
-		canvas.draw_multiline(points, Color(0.973, 0.259, 0.553, 0.115), 1.1, false)
+		canvas.draw_multiline(points, Color(0.973, 0.259, 0.553, 0.115), 1.1, trail_antialias)
 
 
 func _make_glow_texture(size: int) -> ImageTexture:
