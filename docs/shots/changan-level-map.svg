@@ -1,0 +1,280 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">灯下客 · 灯市街俯视布局示意图</title>
+  <desc id="desc">长安风虚构夜街 90m × 12m + 24m 广场；三个区域、三场战斗、三盏街灯、NPC 与 Boss、相机与边界。原创设计示意图，非实机截图、非等比。</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#121b33"/>
+      <stop offset="100%" stop-color="#070b15"/>
+    </radialGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#20304f" stroke-width="0.6" opacity="0.55"/>
+    </pattern>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9fb0d0"/>
+    </marker>
+    <g id="lanternSmall">
+      <line x1="0" y1="-12" x2="0" y2="-7" stroke="#d9a441" stroke-width="1.5"/>
+      <rect x="-6" y="-7" width="12" height="16" rx="4" fill="#f2b34c" stroke="#8a4a1c" stroke-width="1"/>
+      <circle cx="0" cy="0" r="14" fill="#f2b34c" opacity="0.12"/>
+    </g>
+    <g id="npc">
+      <circle cx="0" cy="-6" r="5" fill="#f0e2c8"/>
+      <path d="M -8 9 Q 0 -2 8 9 Z" fill="#f0e2c8"/>
+    </g>
+    <style>
+      .panel { fill: #0e1730; stroke: #2c3c60; stroke-width: 1.2; }
+      .bldg { fill: #17233c; stroke: #2e4066; stroke-width: 1; }
+      .bldg2 { fill: #1b2a46; stroke: #364a72; stroke-width: 1; }
+      .street { fill: #1b2742; stroke: #3b5078; stroke-width: 1.2; }
+      .plaza { fill: #1b2742; stroke: #3b5078; stroke-width: 1.2; }
+      .fight { fill: #e0664f; fill-opacity: 0.10; stroke: #e0664f; stroke-width: 1.6; stroke-dasharray: 8 5; }
+      .boss { fill: #e0664f; fill-opacity: 0.09; stroke: #e0664f; stroke-width: 1.6; stroke-dasharray: 10 6; }
+      .trigger { stroke: #e0664f; stroke-width: 2; stroke-dasharray: 4 4; }
+      .borderline { stroke: #e0664f; stroke-width: 1.2; stroke-dasharray: 3 5; opacity: 0.7; }
+      .paper { fill: #f0e2c8; }
+      .gold { fill: #f2b34c; }
+      .jade { fill: #56b39b; }
+      .verm { fill: #e0664f; }
+      .muted { fill: #9fb0d0; }
+      .tiny { fill: #7f90b2; }
+      .h1 { font-size: 34px; font-weight: 700; fill: #f6e7c8; }
+      .h2 { font-size: 20px; font-weight: 700; fill: #f6e7c8; }
+      .h3 { font-size: 16px; font-weight: 700; fill: #f6e7c8; }
+      .label { font-size: 13px; fill: #c7d3e8; }
+      .small { font-size: 12px; fill: #8fa2c4; }
+      .zone { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)" opacity="0.55"/>
+  <rect x="20" y="20" width="1560" height="960" rx="20" fill="none" stroke="#d9a441" stroke-width="1.4" opacity="0.6"/>
+
+  <!-- Header -->
+  <text x="56" y="66" class="h1">灯市街 · 俯视布局</text>
+  <text x="58" y="94" class="muted" font-size="14">长安风虚构夜街 · 90m × 12m + 24m 广场 · 非等比示意图 · 原创设计，不是实机截图</text>
+  <g text-anchor="end">
+    <text x="1544" y="62" class="gold" font-size="15" font-weight="700">T-20261121-024 · 2026-11-21</text>
+    <text x="1544" y="86" class="paper" font-size="15">1 场景 · 3 战 · 3 灯 · 10–15 分钟</text>
+    <text x="1544" y="108" class="muted" font-size="12">Godot 4.6 GL · 1280×720 · Intel HD 30fps+</text>
+  </g>
+  <line x1="56" y1="124" x2="1544" y2="124" stroke="#d9a441" stroke-width="1" opacity="0.5"/>
+
+  <!-- Map panel -->
+  <rect class="panel" x="40" y="140" width="980" height="800" rx="16"/>
+  <text x="64" y="172" class="h2">A · 一条街，三个区域，一条前进方向</text>
+  <text x="64" y="194" class="small">玩家从底部牌楼进入，沿 Z+ 前进；每区一个地标，战斗时不黑屏。</text>
+
+  <!-- Z axis -->
+  <line x1="100" y1="850" x2="100" y2="220" stroke="#3b5078" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <text x="84" y="238" class="small" text-anchor="middle">Z=90</text>
+  <text x="84" y="420" class="small" text-anchor="middle">Z=60</text>
+  <text x="84" y="650" class="small" text-anchor="middle">Z=30</text>
+  <text x="84" y="852" class="small" text-anchor="middle">Z=0</text>
+  <text x="108" y="500" class="tiny" transform="rotate(-90 108 500)">前进方向 / 时间</text>
+
+  <!-- Buildings left/right -->
+  <g>
+    <rect class="bldg" x="250" y="220" width="150" height="630" rx="6"/>
+    <rect class="bldg" x="600" y="220" width="150" height="630" rx="6"/>
+    <rect class="bldg2" x="270" y="240" width="110" height="90" rx="4"/>
+    <rect class="bldg2" x="270" y="360" width="110" height="80" rx="4"/>
+    <rect class="bldg2" x="270" y="470" width="110" height="90" rx="4"/>
+    <rect class="bldg2" x="270" y="590" width="110" height="80" rx="4"/>
+    <rect class="bldg2" x="620" y="240" width="110" height="80" rx="4"/>
+    <rect class="bldg2" x="620" y="350" width="110" height="70" rx="4"/>
+    <rect class="bldg2" x="620" y="450" width="110" height="70" rx="4"/>
+    <rect class="bldg2" x="620" y="560" width="110" height="90" rx="4"/>
+    <rect class="bldg2" x="620" y="680" width="110" height="70" rx="4"/>
+  </g>
+  <text x="325" y="216" class="tiny" text-anchor="middle">西侧建筑立面</text>
+  <text x="675" y="216" class="tiny" text-anchor="middle">东侧建筑立面</text>
+
+  <!-- Street and plaza -->
+  <rect class="street" x="400" y="380" width="200" height="470" rx="4"/>
+  <rect class="plaza" x="300" y="190" width="400" height="190" rx="4"/>
+  <rect class="street" x="400" y="850" width="200" height="30" rx="3"/>
+
+  <!-- Zone bands / labels -->
+  <rect x="400" y="650" width="200" height="230" fill="#56b39b" opacity="0.05"/>
+  <rect x="400" y="380" width="200" height="270" fill="#f2b34c" opacity="0.05"/>
+  <rect x="300" y="190" width="400" height="190" fill="#e0664f" opacity="0.05"/>
+  <text x="500" y="700" class="jade zone" text-anchor="middle">A · 入口 / 教学</text>
+  <text x="500" y="430" class="gold zone" text-anchor="middle">B · 灯市 / 中段</text>
+  <text x="500" y="218" class="verm zone" text-anchor="middle">C · 鼓楼广场</text>
+
+  <!-- Gate / entry -->
+  <rect x="380" y="836" width="240" height="28" rx="4" fill="#241f16" stroke="#f2b34c" stroke-width="1.4"/>
+  <text x="500" y="855" class="gold" font-size="14" font-weight="700" text-anchor="middle">牌楼 · 入口 / 出生</text>
+  <text x="500" y="890" class="small" text-anchor="middle">标题 → 按任意键 → 10 秒内可操作</text>
+
+  <!-- Fight 1 -->
+  <rect class="fight" x="400" y="700" width="200" height="80" rx="6"/>
+  <text x="500" y="732" class="verm" font-size="15" font-weight="700" text-anchor="middle">战斗 1 · 2 泼皮</text>
+  <text x="500" y="753" class="small" text-anchor="middle">12 × 14m 竞技场 · 45–75s</text>
+  <text x="500" y="772" class="small" text-anchor="middle">教学：锁定 / 刺拳 / 踢 / 翻滚</text>
+
+  <!-- Fight 2 -->
+  <rect class="fight" x="400" y="500" width="200" height="70" rx="6"/>
+  <text x="500" y="528" class="verm" font-size="15" font-weight="700" text-anchor="middle">战斗 2 · 油贩 + 打手</text>
+  <text x="500" y="549" class="small" text-anchor="middle">伏击 · 60–90s · 环境道具</text>
+  <text x="500" y="566" class="small" text-anchor="middle">教目标优先级 / 道具 / 火油</text>
+
+  <!-- Boss plaza -->
+  <rect class="boss" x="300" y="190" width="400" height="190" rx="6"/>
+  <text x="500" y="242" class="verm" font-size="17" font-weight="700" text-anchor="middle">Boss · 霍三更</text>
+  <text x="500" y="264" class="small" text-anchor="middle">24 × 24m 广场 · 90–150s · 目标 ≤3 次</text>
+  <text x="500" y="284" class="small" text-anchor="middle">P1 铁尺三连 / 扫堂 / 撒油</text>
+  <text x="500" y="304" class="small" text-anchor="middle">P2 熄灯 = 3 − 已点亮街灯数</text>
+
+  <!-- Drum tower -->
+  <rect x="440" y="196" width="120" height="34" rx="4" fill="#241f16" stroke="#f2b34c" stroke-width="1.4"/>
+  <text x="500" y="218" class="gold" font-size="13" font-weight="700" text-anchor="middle">鼓楼 / 三更鼓</text>
+
+  <!-- Boss trigger line -->
+  <line class="trigger" x1="300" y1="322" x2="700" y2="322"/>
+  <text x="710" y="326" class="verm" font-size="12">Boss 触发线 Z=75</text>
+
+  <!-- Fight 2 trigger line -->
+  <line class="trigger" x1="400" y1="490" x2="600" y2="490"/>
+  <text x="610" y="494" class="verm" font-size="12">战斗 2 触发线 Z=45</text>
+
+  <!-- Street lanterns -->
+  <g transform="translate(566,652)" filter="url(#glow)"><use href="#lanternSmall"/></g>
+  <circle cx="566" cy="652" r="13" fill="none" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="566" y="657" class="paper" font-size="11" font-weight="700" text-anchor="middle">1</text>
+  <text x="590" y="648" class="gold" font-size="12" font-weight="700">街灯 1</text>
+  <text x="590" y="664" class="tiny">Z=30 · 战斗 1 后</text>
+
+  <g transform="translate(434,562)" filter="url(#glow)"><use href="#lanternSmall"/></g>
+  <circle cx="434" cy="562" r="13" fill="none" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="434" y="567" class="paper" font-size="11" font-weight="700" text-anchor="middle">2</text>
+  <text x="458" y="558" class="gold" font-size="12" font-weight="700">街灯 2</text>
+  <text x="458" y="574" class="tiny">Z=42 · 战斗 2 前</text>
+
+  <g transform="translate(566,472)" filter="url(#glow)"><use href="#lanternSmall"/></g>
+  <circle cx="566" cy="472" r="13" fill="none" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="566" y="477" class="paper" font-size="11" font-weight="700" text-anchor="middle">3</text>
+  <text x="590" y="468" class="gold" font-size="12" font-weight="700">街灯 3</text>
+  <text x="590" y="484" class="tiny">Z=52 · 战斗 2 后</text>
+
+  <!-- Ambient lanterns (small dots) -->
+  <g fill="#f2b34c" opacity="0.55">
+    <circle cx="416" cy="620" r="2.5"/><circle cx="416" cy="640" r="2.5"/><circle cx="416" cy="680" r="2.5"/><circle cx="416" cy="720" r="2.5"/><circle cx="416" cy="760" r="2.5"/><circle cx="416" cy="800" r="2.5"/>
+    <circle cx="584" cy="620" r="2.5"/><circle cx="584" cy="640" r="2.5"/><circle cx="584" cy="680" r="2.5"/><circle cx="584" cy="720" r="2.5"/><circle cx="584" cy="760" r="2.5"/><circle cx="584" cy="800" r="2.5"/>
+    <circle cx="416" cy="420" r="2.5"/><circle cx="416" cy="440" r="2.5"/><circle cx="416" cy="600" r="2.5"/>
+    <circle cx="584" cy="420" r="2.5"/><circle cx="584" cy="440" r="2.5"/><circle cx="584" cy="600" r="2.5"/>
+  </g>
+  <text x="500" y="818" class="tiny" text-anchor="middle">沿街 30 盏氛围灯笼（emissive + 假辉光）；实光 ≤5</text>
+
+  <!-- Noodle stall / Ahe -->
+  <rect x="404" y="770" width="58" height="42" rx="5" fill="#2a1c1c" stroke="#e0664f" stroke-width="1.2"/>
+  <text x="433" y="790" class="verm" font-size="11" font-weight="700" text-anchor="middle">面摊</text>
+  <text x="433" y="805" class="tiny" text-anchor="middle">+40 HP</text>
+  <g transform="translate(478,790)"><use href="#npc"/></g>
+  <text x="492" y="788" class="paper" font-size="12" font-weight="700">阿禾</text>
+  <text x="492" y="804" class="tiny">NPC1 · 情报/回血</text>
+
+  <!-- Wen Jiu / notice board / side alley -->
+  <g transform="translate(434,448)"><use href="#npc"/></g>
+  <text x="448" y="446" class="paper" font-size="12" font-weight="700">闻九</text>
+  <text x="448" y="462" class="tiny">NPC2 · 更夫/鼓</text>
+  <rect x="404" y="596" width="34" height="26" rx="3" fill="#241f16" stroke="#f2b34c" stroke-width="1"/>
+  <text x="421" y="613" class="gold" font-size="9" text-anchor="middle">告示</text>
+
+  <path d="M 600 540 L 744 540 L 744 600 L 600 600 Z" fill="#1a2742" stroke="#3b5078" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="672" y="566" class="muted" font-size="12" text-anchor="middle">支路（可选）</text>
+  <text x="672" y="584" class="tiny" text-anchor="middle">灯油样本 · 1 句线索</text>
+
+  <!-- Destructibles -->
+  <g fill="#8a4a1c" stroke="#e0664f" stroke-width="1">
+    <rect x="406" y="672" width="12" height="12" rx="2"/>
+    <rect x="580" y="706" width="12" height="12" rx="2"/>
+    <rect x="580" y="586" width="12" height="12" rx="2"/>
+    <rect x="408" y="620" width="12" height="12" rx="2"/>
+  </g>
+  <text x="620" y="716" class="tiny">酒坛/竹筐 ×7</text>
+  <text x="620" y="732" class="tiny">踢中 10 伤害+硬直</text>
+
+  <!-- Camera icons/cones -->
+  <g>
+    <polygon points="340,740 400,720 400,760" fill="#56b39b" opacity="0.12" stroke="#56b39b" stroke-width="0.8"/>
+    <rect x="326" y="734" width="16" height="12" rx="2" fill="#14241f" stroke="#56b39b" stroke-width="1.2"/>
+    <circle cx="342" cy="740" r="3" fill="#56b39b"/>
+    <text x="318" y="728" class="jade" font-size="11">相机</text>
+  </g>
+  <g>
+    <polygon points="340,535 400,515 400,555" fill="#56b39b" opacity="0.12" stroke="#56b39b" stroke-width="0.8"/>
+    <rect x="326" y="529" width="16" height="12" rx="2" fill="#14241f" stroke="#56b39b" stroke-width="1.2"/>
+    <circle cx="342" cy="535" r="3" fill="#56b39b"/>
+    <text x="318" y="523" class="jade" font-size="11">相机</text>
+  </g>
+  <g>
+    <polygon points="286,300 300,250 300,350" fill="#56b39b" opacity="0.12" stroke="#56b39b" stroke-width="0.8"/>
+    <rect x="272" y="294" width="16" height="12" rx="2" fill="#14241f" stroke="#56b39b" stroke-width="1.2"/>
+    <circle cx="288" cy="300" r="3" fill="#56b39b"/>
+    <text x="264" y="288" class="jade" font-size="11">相机</text>
+  </g>
+
+  <!-- Boundary markers -->
+  <line class="borderline" x1="396" y1="380" x2="396" y2="850"/>
+  <line class="borderline" x1="604" y1="380" x2="604" y2="850"/>
+  <text x="380" y="874" class="verm" font-size="10" text-anchor="middle">边界</text>
+  <text x="620" y="874" class="verm" font-size="10" text-anchor="middle">边界</text>
+
+  <!-- Legend / right panel -->
+  <rect class="panel" x="1040" y="140" width="520" height="800" rx="16"/>
+  <text x="1064" y="176" class="h2">B · 图例 / 关卡规则</text>
+
+  <g transform="translate(1080,208)"><use href="#lanternSmall"/></g>
+  <text x="1104" y="212" class="label">可点亮街灯（3 盏，影响 Boss）</text>
+  <circle cx="1090" cy="242" r="3" fill="#f2b34c" opacity="0.7"/>
+  <text x="1104" y="246" class="label">氛围灯笼（30 盏，不可交互）</text>
+  <g transform="translate(1090,276)"><use href="#npc"/></g>
+  <text x="1104" y="280" class="label">NPC（阿禾 / 闻九）</text>
+  <rect x="1082" y="302" width="16" height="12" rx="2" fill="#14241f" stroke="#56b39b" stroke-width="1.2"/>
+  <text x="1104" y="313" class="label">相机 / 战斗取景</text>
+  <rect x="1082" y="330" width="16" height="14" rx="2" fill="#e0664f" fill-opacity="0.12" stroke="#e0664f" stroke-dasharray="4 3"/>
+  <text x="1104" y="342" class="label">战斗区 / Boss 区</text>
+  <line x1="1082" y1="366" x2="1098" y2="366" stroke="#e0664f" stroke-width="2" stroke-dasharray="4 4"/>
+  <text x="1104" y="370" class="label">触发线 / 边界</text>
+  <rect x="1082" y="390" width="16" height="12" rx="2" fill="#8a4a1c" stroke="#e0664f"/>
+  <text x="1104" y="401" class="label">可破坏道具（7 个）</text>
+
+  <line x1="1064" y1="426" x2="1536" y2="426" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1064" y="454" class="h3">区域 / 时间 / 内容</text>
+  <text x="1064" y="480" class="jade" font-size="14" font-weight="700">A · 0–30m / 0:00–2:30</text>
+  <text x="1064" y="500" class="label">牌楼 → 面摊 → 战斗 1（2 泼皮）</text>
+  <text x="1064" y="520" class="label">教学：移动 / 锁定 / 刺拳 / 踢 / 翻滚</text>
+
+  <text x="1064" y="550" class="gold" font-size="14" font-weight="700">B · 30–60m / 2:30–8:00</text>
+  <text x="1064" y="570" class="label">灯 1 → 灯 2 → 战斗 2（油贩+打手）</text>
+  <text x="1064" y="590" class="label">灯 3 → 闻九 → 吃面回血 → 鼓楼</text>
+
+  <text x="1064" y="620" class="verm" font-size="14" font-weight="700">C · 60–90m / 8:00–13:00</text>
+  <text x="1064" y="640" class="label">鼓楼广场 → Boss 两阶段 → 留手/了结</text>
+  <text x="1064" y="660" class="label">结算：用时 / 连击 / 点灯 / 受击 / 选择</text>
+
+  <line x1="1064" y1="686" x2="1536" y2="686" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1064" y="714" class="h3">尺寸 / 相机 / 边界</text>
+  <text x="1064" y="738" class="label">街宽 12m；战斗竞技场 12×14m；广场 24×24m</text>
+  <text x="1064" y="758" class="label">相机：3.6m / FOV 60；Boss 3.2m / FOV 55</text>
+  <text x="1064" y="778" class="label">地面不可跌落；invisible wall 距可见墙 0.4m</text>
+  <text x="1064" y="798" class="label">出界 2s 拉回；战斗区外敌人不追击</text>
+
+  <rect x="1064" y="818" width="472" height="96" rx="10" fill="#241f16" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="1080" y="844" class="gold" font-size="14" font-weight="700">三盏灯：关卡与 Boss 的同一套语言</text>
+  <text x="1080" y="866" class="label">灯 0/1/2/3 → Boss 熄灯 20/15/10/5s</text>
+  <text x="1080" y="886" class="label">HUD 常驻“街灯 n/3”；闻九一句话教会</text>
+
+  <line x1="1064" y1="930" x2="1536" y2="930" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1064" y="952" class="small">关卡验收：3/3 不迷路；到 Boss ≤8 分钟；≥2 灯自然发现；</text>
+  <text x="1064" y="970" class="small">相机不穿墙；无出界/掉地；截图 5 层 / 3 地标 / 30 灯笼。</text>
+
+  <!-- Footer -->
+  <text x="56" y="974" class="tiny">原创设计示意图 · 非等比 · 不替代美术 brief / QA 报告 · 2026-11-21</text>
+</svg>

@@ -42,7 +42,7 @@
 - 约束: 原创角色，不复制原神/任何 IP；Blender 3.4.1/4.2.9；时间盒 1–2h；如实记录失败；不用付费资产
 - 建模管线: 原创参考图 → Tripo 图生 3D → Blender 清理/重拓扑/绑骨/贴图/toon → GLB/VRM（用户 2026-11-21 指定）
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: running
 - 后续: T-20261121-031（能力建设）
 
 ## T-20261121-031 · 美术 Agent Blender 二次元能力建设（T-029 follow-up）
@@ -75,7 +75,7 @@
 - 约束: 只设计不改代码/资产；区分作者自述与已验证事实；原创角色/故事；面向 Godot 4.6 GL Compatibility / Intel HD；不复制原游戏素材
 - 资产策略: 原创参考图 → Tripo → Blender 清理/绑骨/toon → GLB（用户 2026-11-21 指定）
 - 指派: game-designer worker（dispatcher）
-- 状态: queued
+- 状态: done
 - 后续: T-20261121-025（实现）
 
 ## T-20261121-025 · 复刻 Opus 5.5 长安城动作游戏 · 可玩 Vertical Slice（T-024 follow-up）

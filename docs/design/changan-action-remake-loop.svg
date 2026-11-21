@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">灯下客 · 长安一夜 — 核心循环与优先级（一页图）</title>
+  <desc id="desc">10–15 分钟 3D 动作 vertical slice 的核心循环、三盏灯差异化钩子、P0 三项与验收口径。原创设计图，不是实机截图。</desc>
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="0%" r="90%">
+      <stop offset="0%" stop-color="#1b2a4a"/>
+      <stop offset="55%" stop-color="#0f1730"/>
+      <stop offset="100%" stop-color="#080c18"/>
+    </radialGradient>
+    <linearGradient id="goldLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f2b34c"/>
+      <stop offset="100%" stop-color="#e0664f"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d9a441"/>
+    </marker>
+    <marker id="arrowJade" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#56b39b"/>
+    </marker>
+    <g id="lantern">
+      <line x1="0" y1="-26" x2="0" y2="-16" stroke="#d9a441" stroke-width="2"/>
+      <rect x="-11" y="-16" width="22" height="30" rx="7" fill="#f2b34c" stroke="#8a4a1c" stroke-width="1.5"/>
+      <line x1="-11" y1="-7" x2="11" y2="-7" stroke="#8a4a1c" stroke-width="1.2" opacity="0.7"/>
+      <line x1="-11" y1="5" x2="11" y2="5" stroke="#8a4a1c" stroke-width="1.2" opacity="0.7"/>
+      <line x1="0" y1="14" x2="0" y2="22" stroke="#e0664f" stroke-width="2"/>
+      <circle cx="0" cy="0" r="24" fill="#f2b34c" opacity="0.10"/>
+    </g>
+    <style>
+      .panel { fill: #121a30; stroke: #2c3c60; stroke-width: 1.2; }
+      .node { fill: #16213d; stroke: #31446b; stroke-width: 1.4; }
+      .gold { fill: #f2b34c; }
+      .jade { fill: #56b39b; }
+      .verm { fill: #e0664f; }
+      .paper { fill: #f0e2c8; }
+      .muted { fill: #9fb0d0; }
+      .tiny { fill: #7f90b2; }
+      .nodeTitle { font-size: 21px; font-weight: 700; fill: #f6e7c8; }
+      .nodeTime { font-size: 13px; font-weight: 700; fill: #f2b34c; letter-spacing: 0.5px; }
+      .bullet { font-size: 14px; fill: #c7d3e8; }
+      .small { font-size: 12px; fill: #8fa2c4; }
+      .h2 { font-size: 20px; font-weight: 700; fill: #f6e7c8; }
+      .h3 { font-size: 16px; font-weight: 700; fill: #f6e7c8; }
+      .cardTitle { font-size: 18px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect x="20" y="20" width="1560" height="960" rx="20" fill="none" stroke="#d9a441" stroke-width="1.4" opacity="0.65"/>
+
+  <!-- Header -->
+  <text x="56" y="70" class="paper" font-size="38" font-weight="700">灯下客 · 长安一夜</text>
+  <text x="58" y="98" class="muted" font-size="14">ORIGINAL HOMAGE · 3D ACTION VERTICAL SLICE · DESIGN LOOP v1.0</text>
+  <g text-anchor="end">
+    <text x="1544" y="62" class="gold" font-size="15" font-weight="700">T-20261121-024 · 2026-11-21</text>
+    <text x="1544" y="86" class="paper" font-size="16">10–15 分钟 · 1 场景 · 4 原创角色 · 3 场战斗</text>
+    <text x="1544" y="108" class="muted" font-size="12">质量目标 7.6 / 10 · 公开试玩门槛 7.0</text>
+  </g>
+  <line x1="56" y1="124" x2="1544" y2="124" stroke="#d9a441" stroke-width="1" opacity="0.5"/>
+
+  <!-- Section A label -->
+  <text x="56" y="158" class="h2">A · 核心循环：10–15 分钟一条街</text>
+  <text x="56" y="180" class="small">进入 → 对话/目标 → 遭遇 → 战斗 → 点灯/推进 → Boss → 结算 → 再走一遍</text>
+
+  <!-- Loop node 1 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="50" y="200" width="290" height="150" rx="12"/>
+    <rect x="50" y="200" width="290" height="6" rx="3" fill="#f2b34c"/>
+    <text x="68" y="232" class="nodeTime">0:00 · 入夜</text>
+    <text x="68" y="259" class="nodeTitle">① 灯市入口</text>
+    <text x="68" y="286" class="bullet">牌楼推入 · 10 秒可操作</text>
+    <text x="68" y="308" class="bullet">第一眼：夜街 / 灯笼 / 鼓楼</text>
+    <text x="68" y="330" class="bullet">先给“这是哪里”</text>
+  </g>
+
+  <!-- Loop node 2 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="370" y="200" width="290" height="150" rx="12"/>
+    <rect x="370" y="200" width="290" height="6" rx="3" fill="#56b39b"/>
+    <text x="388" y="232" class="nodeTime">0:30 · 对话</text>
+    <text x="388" y="259" class="nodeTitle">② 目标 · 黑灯油</text>
+    <text x="388" y="286" class="bullet">阿禾：灯油被换了</text>
+    <text x="388" y="308" class="bullet">目标：点亮三盏街灯</text>
+    <text x="388" y="330" class="bullet">过肩 + 字幕，不黑屏</text>
+  </g>
+
+  <!-- Loop node 3 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="690" y="200" width="290" height="150" rx="12"/>
+    <rect x="690" y="200" width="290" height="6" rx="3" fill="#e0664f"/>
+    <text x="708" y="232" class="nodeTime">1:30 · 遭遇</text>
+    <text x="708" y="259" class="nodeTitle">③ 拳脚 · 首战</text>
+    <text x="708" y="286" class="bullet">2 泼皮：教锁定/刺拳/踢</text>
+    <text x="708" y="308" class="bullet">3 连 + 翻滚 i-frames</text>
+    <text x="708" y="330" class="bullet">首战 45–75s，允许重试</text>
+  </g>
+
+  <!-- Loop node 4 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="690" y="440" width="290" height="150" rx="12"/>
+    <rect x="690" y="440" width="290" height="6" rx="3" fill="#f2b34c"/>
+    <text x="708" y="472" class="nodeTime">3:00 · 点灯</text>
+    <text x="708" y="499" class="nodeTitle">④ 探索 · 改战局</text>
+    <text x="708" y="526" class="bullet">灯 1 → 战斗 2 前灯 2 → 灯 3</text>
+    <text x="708" y="548" class="bullet">面摊回血 40 · 环境道具</text>
+    <text x="708" y="570" class="bullet">闻九：点亮几盏，他就熄几盏</text>
+  </g>
+
+  <!-- Loop node 5 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="370" y="440" width="290" height="150" rx="12"/>
+    <rect x="370" y="440" width="290" height="6" rx="3" fill="#e0664f"/>
+    <text x="388" y="472" class="nodeTime">8:00 · Boss</text>
+    <text x="388" y="499" class="nodeTitle">⑤ 三更 · 熄灯</text>
+    <text x="388" y="526" class="bullet">P1 铁尺三连/扫堂/撒油</text>
+    <text x="388" y="548" class="bullet">P2 熄灯 = 3 − 已点亮灯数</text>
+    <text x="388" y="570" class="bullet">90–150s，目标 ≤3 次</text>
+  </g>
+
+  <!-- Loop node 6 -->
+  <g filter="url(#soft)">
+    <rect class="node" x="50" y="440" width="290" height="150" rx="12"/>
+    <rect x="50" y="440" width="290" height="6" rx="3" fill="#56b39b"/>
+    <text x="68" y="472" class="nodeTime">12:00 · 结算</text>
+    <text x="68" y="499" class="nodeTitle">⑥ 留手 · 了结</text>
+    <text x="68" y="526" class="bullet">选择只改结尾文案/结算图</text>
+    <text x="68" y="548" class="bullet">用时/最大连击/点灯/受击</text>
+    <text x="68" y="570" class="bullet">再走一遍 · 回到标题</text>
+  </g>
+
+  <!-- Arrows -->
+  <line x1="340" y1="275" x2="362" y2="275" stroke="#d9a441" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="660" y1="275" x2="682" y2="275" stroke="#d9a441" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M 835 350 L 835 432" stroke="#d9a441" stroke-width="2.2" fill="none" marker-end="url(#arrow)"/>
+  <line x1="690" y1="515" x2="668" y2="515" stroke="#d9a441" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <line x1="370" y1="515" x2="348" y2="515" stroke="#d9a441" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M 195 440 L 195 358" stroke="#56b39b" stroke-width="2" stroke-dasharray="7 5" fill="none" marker-end="url(#arrowJade)"/>
+  <text x="208" y="402" class="jade" font-size="12">再走一遍 / 另一条结尾</text>
+
+  <!-- Signature card -->
+  <rect class="panel" x="50" y="630" width="930" height="200" rx="14"/>
+  <text x="72" y="664" class="h2">B · 差异化钩子：三盏灯 — 探索改变战局</text>
+  <g transform="translate(120, 742)" filter="url(#glow)">
+    <use href="#lantern"/>
+  </g>
+  <g transform="translate(180, 742)">
+    <use href="#lantern"/>
+  </g>
+  <g transform="translate(240, 742)">
+    <use href="#lantern"/>
+  </g>
+  <text x="92" y="796" class="small">0/3</text>
+  <text x="158" y="796" class="small">1/3</text>
+  <text x="218" y="796" class="small">2/3</text>
+  <text x="278" y="796" class="gold" font-size="12" font-weight="700">3/3</text>
+  <text x="330" y="706" class="h3">灯数 → Boss 二阶段黑暗</text>
+  <text x="330" y="732" class="bullet">0 灯：熄灯 20s，靠眼灯/rim 读招，最难</text>
+  <text x="330" y="754" class="bullet">1–2 灯：15s / 10s，逐步变亮</text>
+  <text x="330" y="776" class="bullet">3 灯：仅 5s 闪烁，Boss 失去压制</text>
+  <text x="330" y="798" class="bullet">HUD 提前显示 0/3–3/3；闻九一句话教会</text>
+  <text x="700" y="706" class="h3">为什么不是功能堆</text>
+  <text x="700" y="732" class="bullet">同一套光：氛围 + 可读性 + 机制</text>
+  <text x="700" y="754" class="bullet">探索回报可见，不需要数值 buff</text>
+  <text x="700" y="776" class="bullet">最小原型：3 个交互点 + 4 档黑暗</text>
+  <text x="700" y="798" class="bullet">Kill：≤1/3 玩家关联 → 改自动点灯</text>
+
+  <!-- Original boundary strip -->
+  <rect x="50" y="850" width="930" height="96" rx="12" fill="#1a1420" stroke="#5a3340" stroke-width="1.2"/>
+  <text x="72" y="880" class="verm" font-size="15" font-weight="700">C · 原创边界 / 不做清单</text>
+  <text x="72" y="906" class="bullet">不做：原作者 5 角色（豆姐/梁子/老马/提伯/阿迪王）的名字/造型/剧情/素材</text>
+  <text x="72" y="928" class="bullet">不做：PINOC/JST-2 splat · 上传视频舞蹈 · 一天工期承诺 · 开放街区 · 10 小时 RPG</text>
+  <text x="72" y="948" class="tiny">资产：原创参考图 → Tripo → Blender 重拓扑/绑骨/toon → GLB；禁用鬼灭/第三方 IP 参考图。</text>
+
+  <!-- Right panel -->
+  <rect class="panel" x="1010" y="150" width="540" height="830" rx="16"/>
+  <text x="1034" y="186" class="h2">D · 这一轮只证明三件事</text>
+  <text x="1034" y="208" class="small">P0 ≤3；只能做一项时，先 P0-1。</text>
+
+  <rect x="1034" y="228" width="492" height="156" rx="10" fill="#261620" stroke="#e0664f" stroke-width="1.4"/>
+  <text x="1052" y="256" class="verm cardTitle">P0-1 拳脚落地</text>
+  <text x="1052" y="280" class="bullet">玩家会看到：3 连、翻滚、击倒/起身、</text>
+  <text x="1052" y="302" class="bullet">命中停顿/震屏/伤害数字；打 2 泼皮有重量。</text>
+  <text x="1052" y="326" class="tiny">范围：灰盒夜街 + 玩家动作集 + 1 敌型 + 锁定/相机。</text>
+  <text x="1052" y="348" class="gold" font-size="12" font-weight="700">完成线：3/3 打出 3 连；10/10 滚过同一招；3/3 说“有打中”。</text>
+  <text x="1052" y="370" class="tiny">成本 S–M / 风险低 · 不过 → 停内容先修手感。</text>
+
+  <rect x="1034" y="398" width="492" height="156" rx="10" fill="#241f16" stroke="#f2b34c" stroke-width="1.4"/>
+  <text x="1052" y="426" class="gold cardTitle">P0-2 夜街成立</text>
+  <text x="1052" y="450" class="bullet">玩家会看到：完整 10–15 分钟；夜街、</text>
+  <text x="1052" y="472" class="bullet">2 杂兵 + 1 精英 + Boss、3 战、3 灯、3 beat。</text>
+  <text x="1052" y="496" class="tiny">范围：模块街 + 光照/HUD + 敌型 + Boss + 触发/目标。</text>
+  <text x="1052" y="518" class="gold" font-size="12" font-weight="700">完成线：3/3 通关；Intel avg ≥30；截图 5 层/3 地标。</text>
+  <text x="1052" y="540" class="tiny">成本 L / 风险高 · 超时砍支路/道具，不砍 3 战。</text>
+
+  <rect x="1034" y="568" width="492" height="156" rx="10" fill="#14241f" stroke="#56b39b" stroke-width="1.4"/>
+  <text x="1052" y="596" class="jade cardTitle">P0-3 故事收口</text>
+  <text x="1052" y="620" class="bullet">玩家会看到：对话/目标/结算/留手；</text>
+  <text x="1052" y="642" class="bullet">能一句话复述故事，愿意再走一遍。</text>
+  <text x="1052" y="666" class="tiny">范围：对话系统 + 3 beat 文案 + 结算 + 标题/重试 + 中文 UI。</text>
+  <text x="1052" y="688" class="gold" font-size="12" font-weight="700">完成线：3/3 一句话复述；2/3 记得选择；重玩可用。</text>
+  <text x="1052" y="710" class="tiny">成本 M / 风险中 · 超时留手只做文本。</text>
+
+  <rect x="1034" y="738" width="492" height="150" rx="10" fill="#101a30" stroke="#3b5078" stroke-width="1.2"/>
+  <text x="1052" y="766" class="h3">E · 验收三条（3 名未见过项目者）</text>
+  <text x="1052" y="792" class="bullet">① 3/3 首战内打出 3 连 + 滚过 1 次攻击；</text>
+  <text x="1052" y="814" class="bullet">② 3/3 在 10–15 分钟内通关，Boss ≤3 次；</text>
+  <text x="1052" y="836" class="bullet">③ 3/3 一句话复述故事 + 说出灯影响 Boss。</text>
+  <text x="1052" y="862" class="tiny">另有：avg ≥30 / min ≥20；资产 100% 许可；无原作素材。</text>
+  <text x="1052" y="882" class="tiny">证据：8 张截图 + 15s GIF/MP4 + FPS/smoke 日志 + 访谈。</text>
+
+  <line x1="1034" y1="906" x2="1526" y2="906" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1052" y="930" class="small">范围：1 场景 / 4 角色 / 3 战 / 10–15 分钟</text>
+  <text x="1052" y="952" class="small">Godot 4.6 GL · 1280×720 / 1920×1080 · Intel HD 30fps+</text>
+
+  <!-- Footer -->
+  <text x="56" y="970" class="tiny">原创设计图 · 来源：T-024 任务与公开资料（见 spec §16） · 不替代美术 brief/QA 报告 · 2026-11-21</text>
+  <text x="1544" y="970" text-anchor="end" class="tiny">灯下客 · 长安一夜 · Loop v1.0</text>
+</svg>

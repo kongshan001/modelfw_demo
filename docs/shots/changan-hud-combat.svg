@@ -1,0 +1,324 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">灯下客 · HUD 与战斗信息层级示意</title>
+  <desc id="desc">1280×720 战斗 HUD 示意：气血/气/目标/Boss 血条/连击/锁定/交互提示/伤害数字；下方附对话与结算状态；右侧为图例。原创设计示意图，不是实机截图。</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1226"/>
+      <stop offset="60%" stop-color="#17233f"/>
+      <stop offset="100%" stop-color="#2a2233"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#202a40"/>
+      <stop offset="100%" stop-color="#0c111d"/>
+    </linearGradient>
+    <radialGradient id="lanternGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffcf7a" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#ffcf7a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <g id="lantern">
+      <line x1="0" y1="-25" x2="0" y2="-15" stroke="#d9a441" stroke-width="2"/>
+      <rect x="-10" y="-15" width="20" height="28" rx="6" fill="#f2b34c" stroke="#8a4a1c" stroke-width="1.4"/>
+      <line x1="-10" y1="-6" x2="10" y2="-6" stroke="#8a4a1c" stroke-width="1" opacity="0.7"/>
+      <line x1="-10" y1="5" x2="10" y2="5" stroke="#8a4a1c" stroke-width="1" opacity="0.7"/>
+      <line x1="0" y1="13" x2="0" y2="20" stroke="#e0664f" stroke-width="1.6"/>
+    </g>
+    <style>
+      .paper { fill: #f0e2c8; }
+      .gold { fill: #f2b34c; }
+      .jade { fill: #56b39b; }
+      .verm { fill: #e0664f; }
+      .muted { fill: #9fb0d0; }
+      .tiny { fill: #7f90b2; }
+      .h1 { font-size: 30px; font-weight: 700; fill: #f6e7c8; }
+      .h2 { font-size: 18px; font-weight: 700; fill: #f6e7c8; }
+      .h3 { font-size: 15px; font-weight: 700; fill: #f6e7c8; }
+      .label { font-size: 13px; fill: #c7d3e8; }
+      .small { font-size: 11px; fill: #8fa2c4; }
+      .badge { font-size: 11px; font-weight: 700; fill: #0b1020; }
+      .panel { fill: #0e1730; stroke: #2c3c60; stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#070b15"/>
+  <rect width="1600" height="1000" fill="url(#sky)" opacity="0.35"/>
+  <rect x="20" y="20" width="1560" height="960" rx="20" fill="none" stroke="#d9a441" stroke-width="1.4" opacity="0.6"/>
+
+  <!-- Header -->
+  <text x="56" y="58" class="h1">HUD 与战斗信息层级</text>
+  <text x="58" y="82" class="muted" font-size="13">1280×720 示意 · 中文 · 键鼠 + 手柄 · 只保留 6 类信息 · 非实机截图</text>
+  <g text-anchor="end">
+    <text x="1544" y="54" class="gold" font-size="14" font-weight="700">T-20261121-024 · 2026-11-21</text>
+    <text x="1544" y="76" class="paper" font-size="13">夜蓝 / 灯金 / 朱砂 / 纸白</text>
+  </g>
+
+  <!-- Game frame -->
+  <rect x="40" y="96" width="1280" height="720" rx="4" fill="url(#sky)"/>
+  <rect x="40" y="96" width="1280" height="720" rx="4" fill="none" stroke="#3b5078" stroke-width="1.2"/>
+
+  <!-- Sky / moon / buildings -->
+  <circle cx="1080" cy="180" r="38" fill="#f0e2c8" opacity="0.85"/>
+  <circle cx="1068" cy="172" r="38" fill="#0d1629" opacity="0.55"/>
+  <g fill="#0c1426">
+    <rect x="40" y="300" width="180" height="200"/>
+    <rect x="220" y="270" width="150" height="230"/>
+    <rect x="370" y="320" width="120" height="180"/>
+    <rect x="470" y="290" width="160" height="210"/>
+    <rect x="630" y="330" width="130" height="170"/>
+    <rect x="760" y="280" width="190" height="220"/>
+    <rect x="950" y="310" width="140" height="190"/>
+    <rect x="1090" y="270" width="230" height="230"/>
+  </g>
+  <g stroke="#2c3c60" stroke-width="1.5" fill="none" opacity="0.8">
+    <path d="M 40 300 L 220 300 L 220 270 L 370 270 L 370 320 L 470 320 L 470 290 L 630 290 L 630 330 L 760 330 L 760 280 L 950 280 L 950 310 L 1090 310 L 1090 270 L 1320 270"/>
+  </g>
+  <!-- Eaves -->
+  <g stroke="#d9a441" stroke-width="2" opacity="0.55">
+    <path d="M 180 300 Q 220 286 260 300"/>
+    <path d="M 620 330 Q 660 316 700 330"/>
+    <path d="M 1010 310 Q 1050 296 1090 310"/>
+  </g>
+
+  <!-- Lanterns in scene -->
+  <g opacity="0.9">
+    <circle cx="300" cy="360" r="46" fill="url(#lanternGlow)"/>
+    <g transform="translate(300,360)"><use href="#lantern"/></g>
+    <circle cx="690" cy="330" r="46" fill="url(#lanternGlow)"/>
+    <g transform="translate(690,330)"><use href="#lantern"/></g>
+    <circle cx="1160" cy="350" r="46" fill="url(#lanternGlow)"/>
+    <g transform="translate(1160,350)"><use href="#lantern"/></g>
+    <circle cx="980" cy="300" r="38" fill="url(#lanternGlow)"/>
+    <g transform="translate(980,300)"><use href="#lantern"/></g>
+  </g>
+
+  <!-- Ground -->
+  <rect x="40" y="500" width="1280" height="316" fill="url(#ground)"/>
+  <g stroke="#3b5078" stroke-width="1" opacity="0.45">
+    <path d="M 40 720 L 640 500 L 1320 720"/>
+    <path d="M 40 800 L 640 560 L 1320 800"/>
+    <path d="M 260 500 L 100 800"/>
+    <path d="M 1020 500 L 1180 800"/>
+  </g>
+  <ellipse cx="640" cy="700" rx="300" ry="46" fill="#000" opacity="0.25"/>
+
+  <!-- Player silhouette -->
+  <g filter="url(#soft)">
+    <ellipse cx="612" cy="690" rx="58" ry="14" fill="#000" opacity="0.55"/>
+    <circle cx="612" cy="474" r="25" fill="#101a2c" stroke="#56b39b" stroke-width="2"/>
+    <path d="M 580 500 Q 612 486 644 500 L 654 596 Q 612 614 570 596 Z" fill="#14243a" stroke="#56b39b" stroke-width="2"/>
+    <path d="M 580 520 L 548 566 L 536 556" stroke="#56b39b" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M 644 520 L 676 548 L 690 536" stroke="#56b39b" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M 586 596 L 566 672 L 548 676" stroke="#56b39b" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M 638 596 L 658 672 L 678 676" stroke="#56b39b" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M 586 506 Q 612 530 640 506" stroke="#f0e2c8" stroke-width="3" fill="none" opacity="0.9"/>
+    <rect x="560" y="548" width="18" height="24" rx="4" fill="#f2b34c" stroke="#8a4a1c" stroke-width="1.2"/>
+    <path d="M 612 450 Q 636 430 646 448" stroke="#0b1020" stroke-width="10" fill="none"/>
+  </g>
+
+  <!-- Enemy 1 (thug) -->
+  <g filter="url(#soft)">
+    <ellipse cx="852" cy="650" rx="44" ry="11" fill="#000" opacity="0.5"/>
+    <circle cx="852" cy="492" r="20" fill="#241a22" stroke="#e0664f" stroke-width="2"/>
+    <path d="M 826 514 Q 852 502 878 514 L 884 602 Q 852 616 820 602 Z" fill="#2a1c24" stroke="#e0664f" stroke-width="2"/>
+    <path d="M 826 530 L 794 566 L 786 556" stroke="#e0664f" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M 878 530 L 906 558 L 918 548" stroke="#e0664f" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <path d="M 832 602 L 818 650" stroke="#e0664f" stroke-width="8" stroke-linecap="round"/>
+    <path d="M 872 602 L 888 650" stroke="#e0664f" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <!-- Enemy 1 lock-on + HP -->
+  <g filter="url(#glow)">
+    <path d="M 852 438 L 866 452 L 852 466 L 838 452 Z" fill="none" stroke="#f2b34c" stroke-width="2"/>
+  </g>
+  <text x="852" y="486" class="gold" font-size="10" text-anchor="middle" font-weight="700">锁定</text>
+  <rect x="818" y="512" width="68" height="5" rx="2" fill="#2a1c24" stroke="#e0664f" stroke-width="0.8"/>
+  <rect x="818" y="512" width="44" height="5" rx="2" fill="#e0664f"/>
+
+  <!-- Enemy 2 (enforcer) -->
+  <g filter="url(#soft)">
+    <ellipse cx="1006" cy="646" rx="58" ry="13" fill="#000" opacity="0.5"/>
+    <circle cx="1006" cy="468" r="24" fill="#241a22" stroke="#e0664f" stroke-width="2"/>
+    <path d="M 974 492 Q 1006 478 1038 492 L 1048 598 Q 1006 616 964 598 Z" fill="#2a1c24" stroke="#e0664f" stroke-width="2"/>
+    <path d="M 974 510 L 936 548 L 924 536" stroke="#e0664f" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <path d="M 1038 510 L 1074 542 L 1088 528" stroke="#e0664f" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <path d="M 976 598 L 960 648" stroke="#e0664f" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 1036 598 L 1052 648" stroke="#e0664f" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 1006 446 L 1006 418" stroke="#e0664f" stroke-width="4"/>
+    <circle cx="1006" cy="414" r="5" fill="#e0664f"/>
+  </g>
+  <rect x="966" y="492" width="80" height="5" rx="2" fill="#2a1c24" stroke="#e0664f" stroke-width="0.8"/>
+  <rect x="966" y="492" width="58" height="5" rx="2" fill="#e0664f"/>
+
+  <!-- Hit VFX / damage numbers -->
+  <g filter="url(#glow)">
+    <path d="M 690 560 Q 780 500 846 548" fill="none" stroke="#ffcf7a" stroke-width="7" opacity="0.9"/>
+    <path d="M 690 560 Q 780 500 846 548" fill="none" stroke="#f0e2c8" stroke-width="2.5"/>
+  </g>
+  <g fill="#ffcf7a">
+    <circle cx="840" cy="540" r="3"/><circle cx="860" cy="530" r="2.5"/><circle cx="825" cy="560" r="2.5"/>
+    <circle cx="878" cy="556" r="2"/><circle cx="850" cy="568" r="2"/>
+  </g>
+  <text x="884" y="512" fill="#f6e7c8" font-size="28" font-weight="700">20</text>
+  <text x="914" y="528" fill="#f2b34c" font-size="20" font-weight="700">14</text>
+  <circle cx="860" cy="548" r="26" fill="#ffcf7a" opacity="0.12"/>
+
+  <!-- HUD: player HP/Qi -->
+  <g filter="url(#soft)">
+    <text x="64" y="128" class="paper" font-size="14" font-weight="700">沈灯</text>
+    <text x="112" y="128" class="tiny" font-size="11">守灯人 · Lv.1</text>
+    <rect x="64" y="138" width="240" height="14" rx="3" fill="#101a2c" stroke="#3b5078" stroke-width="1"/>
+    <rect x="64" y="138" width="188" height="14" rx="3" fill="#56b39b"/>
+    <rect x="64" y="138" width="188" height="14" rx="3" fill="none" stroke="#8fe0c8" stroke-width="0.8" opacity="0.5"/>
+    <text x="312" y="150" class="jade" font-size="11" font-weight="700">78 / 100</text>
+    <rect x="64" y="158" width="240" height="8" rx="2" fill="#101a2c" stroke="#3b5078" stroke-width="0.8"/>
+    <rect x="64" y="158" width="156" height="8" rx="2" fill="#f2b34c"/>
+    <text x="312" y="166" class="gold" font-size="10" font-weight="700">气 65 / 100</text>
+  </g>
+  <circle cx="360" cy="145" r="12" fill="#f2b34c" opacity="0.15"/>
+  <text x="360" y="149" class="gold" font-size="10" font-weight="700" text-anchor="middle">Q</text>
+
+  <!-- HUD: objective -->
+  <g filter="url(#soft)">
+    <rect x="470" y="112" width="420" height="30" rx="15" fill="#0b1020" opacity="0.82" stroke="#3b5078" stroke-width="1"/>
+    <g transform="translate(492,127)"><use href="#lantern"/></g>
+    <text x="514" y="133" class="paper" font-size="14" font-weight="700">点亮街灯</text>
+    <text x="600" y="133" class="gold" font-size="14" font-weight="700">2 / 3</text>
+    <text x="660" y="133" class="muted" font-size="12">→ 去鼓楼找闻九</text>
+  </g>
+
+  <!-- HUD: combo -->
+  <g text-anchor="end" filter="url(#soft)">
+    <text x="1256" y="420" class="gold" font-size="30" font-weight="700">连击 ×8</text>
+    <text x="1256" y="444" class="muted" font-size="12">2.4s 内继续命中</text>
+    <rect x="1120" y="456" width="136" height="4" rx="2" fill="#2a3448"/>
+    <rect x="1120" y="456" width="92" height="4" rx="2" fill="#f2b34c"/>
+  </g>
+
+  <!-- HUD: interaction prompt -->
+  <g filter="url(#soft)">
+    <rect x="520" y="620" width="240" height="34" rx="17" fill="#0b1020" opacity="0.86" stroke="#f2b34c" stroke-width="1"/>
+    <circle cx="542" cy="637" r="11" fill="#f2b34c"/>
+    <text x="542" y="641" class="badge" text-anchor="middle">E</text>
+    <text x="562" y="642" class="paper" font-size="14" font-weight="700">点亮街灯</text>
+    <text x="642" y="642" class="tiny" font-size="11">（2/3）</text>
+  </g>
+
+  <!-- HUD: boss bar (only boss) -->
+  <g opacity="0.55">
+    <text x="380" y="694" class="paper" font-size="12" font-weight="700">霍三更 · 灯市行首</text>
+    <text x="940" y="694" class="tiny" font-size="11" text-anchor="end">Boss 血条（仅 Boss 战显示）</text>
+    <rect x="380" y="702" width="560" height="10" rx="3" fill="#101a2c" stroke="#5a3340" stroke-width="1"/>
+    <rect x="380" y="702" width="336" height="10" rx="3" fill="#c2473c"/>
+    <line x1="660" y1="702" x2="660" y2="712" stroke="#f0e2c8" stroke-width="1.5"/>
+    <text x="660" y="728" class="verm" font-size="10" text-anchor="middle">50% 阶段线</text>
+  </g>
+
+  <!-- HUD: controls -->
+  <g filter="url(#soft)">
+    <rect x="64" y="730" width="720" height="30" rx="6" fill="#0b1020" opacity="0.72"/>
+    <text x="78" y="750" class="muted" font-size="11">WASD 移动 · Tab 锁定 · 左键 刺拳 · 右键 踢击 · 空格 翻滚 · Shift 冲刺 · Q 灯破 · E 交互</text>
+  </g>
+
+  <!-- Vignette -->
+  <rect x="40" y="96" width="1280" height="720" rx="4" fill="none" stroke="#000" stroke-width="60" opacity="0.18"/>
+
+  <!-- Callout badges on frame -->
+  <g>
+    <circle cx="404" cy="130" r="11" fill="#f2b34c"/><text x="404" y="134" class="badge" text-anchor="middle">1</text>
+    <circle cx="922" cy="112" r="11" fill="#f2b34c"/><text x="922" y="116" class="badge" text-anchor="middle">2</text>
+    <circle cx="1288" cy="400" r="11" fill="#f2b34c"/><text x="1288" y="404" class="badge" text-anchor="middle">3</text>
+    <circle cx="852" cy="418" r="11" fill="#f2b34c"/><text x="852" y="422" class="badge" text-anchor="middle">4</text>
+    <circle cx="922" cy="500" r="11" fill="#f2b34c"/><text x="922" y="504" class="badge" text-anchor="middle">5</text>
+    <circle cx="788" cy="616" r="11" fill="#f2b34c"/><text x="788" y="620" class="badge" text-anchor="middle">6</text>
+    <circle cx="968" cy="700" r="11" fill="#f2b34c"/><text x="968" y="704" class="badge" text-anchor="middle">7</text>
+    <circle cx="806" cy="738" r="11" fill="#f2b34c"/><text x="806" y="742" class="badge" text-anchor="middle">8</text>
+  </g>
+
+  <!-- Right legend -->
+  <rect class="panel" x="1340" y="96" width="220" height="720" rx="14"/>
+  <text x="1356" y="126" class="h2">图例 / 原则</text>
+
+  <g>
+    <circle cx="1356" cy="156" r="9" fill="#f2b34c"/><text x="1356" y="160" class="badge" text-anchor="middle">1</text>
+    <text x="1372" y="154" class="label" font-weight="700">气血 / 气</text>
+    <text x="1372" y="170" class="small">左上常驻；≤30% 脉冲</text>
+
+    <circle cx="1356" cy="196" r="9" fill="#f2b34c"/><text x="1356" y="200" class="badge" text-anchor="middle">2</text>
+    <text x="1372" y="194" class="label" font-weight="700">目标条</text>
+    <text x="1372" y="210" class="small">顶部中央；含 0/3 灯</text>
+
+    <circle cx="1356" cy="236" r="9" fill="#f2b34c"/><text x="1356" y="240" class="badge" text-anchor="middle">3</text>
+    <text x="1372" y="234" class="label" font-weight="700">连击</text>
+    <text x="1372" y="250" class="small">右侧；2.4s 衰减</text>
+
+    <circle cx="1356" cy="276" r="9" fill="#f2b34c"/><text x="1356" y="280" class="badge" text-anchor="middle">4</text>
+    <text x="1372" y="274" class="label" font-weight="700">锁定</text>
+    <text x="1372" y="290" class="small">菱形标记；不挡身体</text>
+
+    <circle cx="1356" cy="316" r="9" fill="#f2b34c"/><text x="1356" y="320" class="badge" text-anchor="middle">5</text>
+    <text x="1372" y="314" class="label" font-weight="700">伤害数字</text>
+    <text x="1372" y="330" class="small">白/朱砂/金；24px</text>
+
+    <circle cx="1356" cy="356" r="9" fill="#f2b34c"/><text x="1356" y="360" class="badge" text-anchor="middle">6</text>
+    <text x="1372" y="354" class="label" font-weight="700">交互提示</text>
+    <text x="1372" y="370" class="small">靠近才显示；E/A</text>
+
+    <circle cx="1356" cy="396" r="9" fill="#f2b34c"/><text x="1356" y="400" class="badge" text-anchor="middle">7</text>
+    <text x="1372" y="394" class="label" font-weight="700">Boss 血条</text>
+    <text x="1372" y="410" class="small">仅 Boss；底部中央</text>
+
+    <circle cx="1356" cy="436" r="9" fill="#f2b34c"/><text x="1356" y="440" class="badge" text-anchor="middle">8</text>
+    <text x="1372" y="434" class="label" font-weight="700">操作提示</text>
+    <text x="1372" y="450" class="small">左下；可关闭（P1）</text>
+  </g>
+
+  <line x1="1356" y1="474" x2="1544" y2="474" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1356" y="500" class="h3">原则</text>
+  <text x="1356" y="522" class="small">只保留 6 类信息：</text>
+  <text x="1356" y="540" class="small">血/气 · 目标 · 连击 · 锁定 ·</text>
+  <text x="1356" y="558" class="small">交互 · Boss。对话/结算另层。</text>
+  <text x="1356" y="582" class="small">中文 ≥16px @720p；</text>
+  <text x="1356" y="600" class="small">文字对比 ≥4.5:1；</text>
+  <text x="1356" y="618" class="small">不用红绿单一区分。</text>
+  <text x="1356" y="642" class="small">战斗中心不放大面板；</text>
+  <text x="1356" y="660" class="small">对话在底部，不遮 HP。</text>
+
+  <line x1="1356" y1="684" x2="1544" y2="684" stroke="#2c3c60" stroke-width="1"/>
+  <text x="1356" y="710" class="h3">输入</text>
+  <text x="1356" y="732" class="small">键鼠：WASD / 鼠标 /</text>
+  <text x="1356" y="750" class="small">左键刺拳 / 右键踢击 /</text>
+  <text x="1356" y="768" class="small">空格翻滚 / Tab 锁定 / Q 灯破</text>
+  <text x="1356" y="790" class="small">手柄（Xbox）：LS/RS ·</text>
+  <text x="1356" y="808" class="small">X/Y · B · RB · RT · A</text>
+
+  <!-- Bottom: dialogue state -->
+  <rect class="panel" x="40" y="832" width="620" height="128" rx="10"/>
+  <text x="58" y="856" class="h3">对话状态（非战斗）</text>
+  <rect x="58" y="868" width="584" height="72" rx="6" fill="#0b1020" stroke="#3b5078" stroke-width="1"/>
+  <text x="74" y="892" class="gold" font-size="14" font-weight="700">阿禾</text>
+  <text x="116" y="892" class="paper" font-size="14">“沈哥，灯油被换了。点得着，但一股黑烟。”</text>
+  <text x="74" y="918" class="paper" font-size="14">“霍三更的人。他说三更鼓一响，这条街就归他了。”</text>
+  <text x="74" y="938" class="tiny">空格 / A 继续 · Esc 长按跳过 · 打字机 30 字/s · 无配音</text>
+
+  <!-- Bottom: settlement state -->
+  <rect class="panel" x="680" y="832" width="880" height="128" rx="10"/>
+  <text x="698" y="856" class="h3">结算状态（Boss 后）</text>
+  <text x="698" y="884" class="paper" font-size="14" font-weight="700">灯下客 · 结算</text>
+  <text x="698" y="906" class="label">用时 11:42 · 最大连击 18 · 街灯 3/3 · 受击 9</text>
+  <text x="698" y="928" class="small">选择：留手（交官/闻九） / 了结（吹灭他的灯）——只改结尾文案 + 结算图（P0）</text>
+  <rect x="1180" y="870" width="100" height="28" rx="14" fill="#14241f" stroke="#56b39b" stroke-width="1.2"/>
+  <text x="1230" y="888" class="jade" font-size="12" font-weight="700" text-anchor="middle">留手</text>
+  <rect x="1290" y="870" width="100" height="28" rx="14" fill="#261620" stroke="#e0664f" stroke-width="1.2"/>
+  <text x="1340" y="888" class="verm" font-size="12" font-weight="700" text-anchor="middle">了结</text>
+  <rect x="1400" y="870" width="140" height="28" rx="14" fill="#241f16" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="1470" y="888" class="gold" font-size="12" font-weight="700" text-anchor="middle">再走一遍</text>
+  <text x="698" y="950" class="tiny">无存档 · 无掉落 · 重试满血回当前战斗起点 · 结算可跳过</text>
+
+  <!-- Footer -->
+  <text x="56" y="982" class="tiny">原创 HUD 示意图 · 1280×720；1080p 等比 ×1.5 · 不是实机截图 · 2026-11-21</text>
+</svg>
