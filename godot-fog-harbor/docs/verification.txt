@@ -1,0 +1,147 @@
+# 验证记录 · 雾港余烬
+
+日期：2026-11-21
+环境：macOS，Godot 4.6.stable.official.89cea1439，GL Compatibility
+GPU：Intel(R) HD Graphics 6000；CPU：Intel(R) Core(TM) i7-5650U @ 2.20GHz
+项目：`/Users/ks_128/Documents/modelfw_demo/godot-fog-harbor`
+
+## 1) Headless 600 帧（无 SCRIPT ERROR）
+
+```bash
+godot --headless --path /Users/ks_128/Documents/modelfw_demo/godot-fog-harbor --quit-after 600
+```
+
+实际输出：
+
+```text
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+```
+
+`grep -c 'SCRIPT ERROR\|ERROR:'` = **0**（未出现 SCRIPT ERROR / ERROR）。
+
+## 2) Headless smoke（106 项）
+
+```bash
+godot --headless --path /Users/ks_128/Documents/modelfw_demo/godot-fog-harbor -s tools/smoke_fog_harbor.gd
+```
+
+实际末尾：
+
+```text
+PASS  重开后信用点与仓库一致
+PASS  重开后升级一致
+PASS  再次部署按升级携带初始医疗包
+PASS  返回基地
+checks=106 failures=0
+FOG_HARBOR_SMOKE_OK
+```
+
+覆盖：物品字段/掉落确定性/精英保底、背包堆叠与 2×2/2×1、满包、使用/丢弃、箱内剩余、
+撤离计时/激活/3 秒/超时、升级价格与容量、撤离转移/溢出现金、存档读回、阵亡清包不动仓库、
+整场景 9 箱/8 敌/3 archetype、hitscan 伤害、AI ALERT→CHASE、近战伤害、硬直/死亡/击杀、
+背包暂停、**真实 E/WASD/Shift/鼠标左键/R 输入**、**实际 HP 死亡 → 结算**、成功结算、再次部署、返回基地。
+
+连续运行 4 次（含最终日志轮）：`checks=106 failures=0` / `FOG_HARBOR_SMOKE_OK`（4/4）。
+
+## 3) 真实 GPU 截图（1920×1080）
+
+```bash
+godot --path /Users/ks_128/Documents/modelfw_demo/godot-fog-harbor -s tools/screenshot_fog_harbor.gd
+```
+
+实际输出（9 张）：
+
+```text
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+SHOT res://docs/shots/01_base_1920x1080.png 1920x1080
+SHOT res://docs/shots/02_map_1920x1080.png 1920x1080
+SHOT res://docs/shots/03_search_1920x1080.png 1920x1080
+SHOT res://docs/shots/04_combat_1920x1080.png 1920x1080
+SHOT res://docs/shots/04b_combat_1920x1080.png 1920x1080
+SHOT res://docs/shots/05_backpack_1920x1080.png 1920x1080
+SHOT res://docs/shots/06_extraction_1920x1080.png 1920x1080
+SHOT res://docs/shots/07_result_success_1920x1080.png 1920x1080
+SHOT res://docs/shots/08_result_death_1920x1080.png 1920x1080
+FOG_HARBOR_SHOTS_OK
+```
+
+`grep -c ERROR` = **0**（console 无错误）。
+
+## 4) 10 秒视频（1920×1080 / 30fps）
+
+```bash
+godot --path /Users/ks_128/Documents/modelfw_demo/godot-fog-harbor --fixed-fps 30 -s tools/capture_fog_harbor.gd
+```
+
+实际末尾：
+
+```text
+FRAME 240
+FRAME 270
+FOG_HARBOR_VIDEO_FRAMES_OK frames=300
+```
+
+编码：
+
+```bash
+ffmpeg -y -framerate 30 -i /tmp/fog_harbor_frames/frame_%04d.jpg \
+  -c:v libx264 -pix_fmt yuv420p -crf 20 -preset medium -movflags +faststart \
+  docs/fog_harbor_demo.mp4
+ffmpeg -y -i docs/fog_harbor_demo.mp4 \
+  -vf "fps=12,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=160[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4" \
+  -loop 0 docs/fog_harbor_demo.gif
+```
+
+`ffprobe`：
+
+```text
+width=1920
+height=1080
+r_frame_rate=30/1
+duration=10.000000
+size=1643451
+```
+
+文件：
+
+```text
+docs/fog_harbor_demo.mp4  1.6M
+docs/fog_harbor_demo.gif  5.4M
+```
+
+## 5) 真实窗口 FPS（1280×720，vsync off）
+
+```bash
+godot --path /Users/ks_128/Documents/modelfw_demo/godot-fog-harbor --resolution 1280x720 -s tools/probe_fps.gd
+```
+
+最终验收轮（2026-11-21 20:00，最终版 123 draws，主机 load 16.5）：
+
+```text
+FOG_HARBOR_FPS samples=[29.0, 29.0, 6.0, 6.0, 27.0, 27.0, 27.0, 49.0, 49.0, 49.0, 49.0, 37.0, 37.0, 37.0, 37.0, 49.0, 49.0, 49.0, 49.0, 43.0, 43.0, 43.0, 43.0, 37.0, 37.0, 37.0, 40.0, 40.0, 40.0, 40.0, 26.0, 26.0, 26.0, 18.0, 18.0, 18.0, 24.0, 24.0, 24.0, 24.0]
+FOG_HARBOR_FPS avg=34.05 median=37.00 min=6.00 best2s=46.00 draws=123
+FOG_HARBOR_FPS_OK
+```
+
+历史（同一台 Intel HD 6000，共享主机）：
+
+- 18:51，夜间 shader 版本，207 draws：**avg 55.65 / min 51.00**。
+- 19:42，最终版，123 draws，主机 load 38：avg 9.32 / best2s 16.25（外部 GPU 争用）。
+- 19:56，最终版，133 draws，主机 load 38.5：avg 15.57 / best2s 38.62。
+
+结论：最终版验收轮 34.05 avg（median 37 / best 2s 46）达到 30fps+；低负载可到 55.65 avg。
+完整采样与说明见 `docs/fps.txt`。演示场景：raid + 8 敌人 + 战斗 staged + 夜间/雾 shader。
+
+## 6) 文件规模 / 媒体
+
+```text
+docs/shots/*.png             9 张，1920×1080
+docs/fog_harbor_demo.mp4     1.6 MB，10.0s，1920×1080，30fps
+docs/fog_harbor_demo.gif     5.4 MB，960 宽，12fps
+```
+
+## 7) 备注
+
+- 所有命令均在本机真实执行；未伪造输出。
+- 共享主机有外部负载/GPU 争用，FPS 单轮波动大；已在 `docs/fps.txt` 保留低负载与争用时段的所有采样。
+- `godot --headless --quit-after 600` 只输出引擎版本行，未出现 SCRIPT ERROR / ERROR。

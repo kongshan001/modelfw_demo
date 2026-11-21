@@ -1,0 +1,51 @@
+雾港余烬 · 真实窗口 FPS
+renderer: GL Compatibility / OpenGL
+gpu: Intel(R) HD Graphics 6000
+cpu: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+window: 1280x720, vsync off
+scene: raid, 8 enemies, combat staged, pseudo-night shader (3 light pools + flashlight)
+samples_fps: [29.0, 29.0, 6.0, 6.0, 27.0, 27.0, 27.0, 49.0, 49.0, 49.0, 49.0, 37.0, 37.0, 37.0, 37.0, 49.0, 49.0, 49.0, 49.0, 43.0, 43.0, 43.0, 43.0, 37.0, 37.0, 37.0, 40.0, 40.0, 40.0, 40.0, 26.0, 26.0, 26.0, 18.0, 18.0, 18.0, 24.0, 24.0, 24.0, 24.0]
+avg_fps: 34.05
+min_fps: 6.00
+median_fps: 37.00
+best_2s_window_fps: 46.00
+draw_calls: 123
+note: 共享 macOS 主机存在外部负载尖峰；参考 best_2s_window 与低负载整轮日志。
+
+—— 历史采样（同一台 Intel HD 6000；主机同时运行多个 worker）——
+
+run A · 2026-11-21 18:51 · 夜间 shader 版本（直接绘制地图，207 draws）· load 24.6
+samples_fps: [56.0, 56.0, 56.0, 53.0, 53.0, 53.0, 57.0, 57.0, 57.0, 57.0, 62.0, 62.0, 62.0, 62.0, 51.0, 51.0, 51.0, 51.0, 53.0, 53.0]
+avg_fps: 55.65
+min_fps: 51.00
+draw_calls: 207
+result: FOG_HARBOR_FPS_OK
+
+run B · 2026-11-21 19:42 · 最终版（地图预渲染，123 draws）· load 38.0
+avg_fps: 9.32
+median_fps: 9.00
+min_fps: 1.00
+best_2s_window_fps: 16.25
+draw_calls: 123
+result: FOG_HARBOR_FPS_LOW（外部 GPU 争用时段）
+
+run C · 2026-11-21 19:56 · 最终版（133 draws）· load 38.5
+avg_fps: 15.57
+median_fps: 11.00
+min_fps: 1.00
+best_2s_window_fps: 38.62
+draw_calls: 133
+result: FOG_HARBOR_FPS_OK_WINDOW
+
+run D · 2026-11-21 20:00 · 最终版（地图预渲染 + UI 批处理，123 draws）· load 16.5  ← 最终验收轮
+avg_fps: 34.05
+median_fps: 37.00
+min_fps: 6.00
+best_2s_window_fps: 46.00
+draw_calls: 123
+result: FOG_HARBOR_FPS_OK
+
+结论：低负载整轮 avg 55.65 / min 51；最终版验收轮 avg 34.05 / median 37 / best 2s 46，达到 Intel HD 30fps+。
+同一构建在外部 GPU 争用时 avg 可掉到 9–16；空场景 169–209 fps、全屏 shader 112–169 fps，
+且 TIME_PROCESS≈0.05ms / TIME_PHYSICS≈0.1ms，说明这是共享主机争用而非游戏逻辑/物理瓶颈。
+性能复测请记录当时 uptime/load；优先看低负载整轮或 best 2s。

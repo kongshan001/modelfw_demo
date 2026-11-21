@@ -1,0 +1,4 @@
+.godot/
+docs/frames/
+*.log
+.DS_Store

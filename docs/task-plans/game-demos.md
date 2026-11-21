@@ -42,7 +42,8 @@
 - 约束: 原创角色，不复制原神/任何 IP；Blender 3.4.1/4.2.9；时间盒 1–2h；如实记录失败；不用付费资产
 - 建模管线: 原创参考图 → Tripo 图生 3D → Blender 清理/重拓扑/绑骨/贴图/toon → GLB/VRM（用户 2026-11-21 指定）
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done（2026-11-21；Blender-only 基线完成；Tripo 无 key 未测，401 已记录）
+- 产出: `docs/agent-capabilities/blender-anime-probe.md`；`agent-probes/blender-anime-girl/`（qinghe.blend / qinghe.glb / 构建·渲染·校验脚本 / 贴图 / 四视图+角色卡+剪影）；实测 3.4.1 EEVEE 可用，4.2.9 Workbench/EEVEE Next 崩溃（含默认立方体），Cycles CPU toon 不可用
 - 后续: T-20261121-031（能力建设）
 
 ## T-20261121-031 · 美术 Agent Blender 二次元能力建设（T-029 follow-up）
@@ -64,7 +65,7 @@
 - 交付: `godot-fog-harbor/` 可运行 Godot 4.6 demo（1 张地图、3 敌型、8 类战利品、6×4 背包、撤离/死亡结算、仓库/3 项升级、存读）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 只复刻玩法/体验，不复制原作者游戏名/角色/素材/UI；用原创名称与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；可复用 `godot-inventory-ui/` 的数据 schema/九宫格思路（若已稳定）
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 - 后续: 视效果补美术评审/QA
 
 ## T-20261121-024 · 复刻 Opus 5.5 长安城动作游戏 · 设计规格（Game Designer）
@@ -87,7 +88,7 @@
 - 约束: 只复刻玩法/体验，不复制原作者角色/名字/素材/品牌；优先复用仓库内原创系统与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
 - 资产管线: 原创参考图 → Tripo 图生 3D → Blender 清理/绑骨/toon → GLB（用户 2026-11-21 指定）
 - 指派: game-engineer worker（dispatcher）
-- 状态: blocked（等 T-024 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-024
 
 ## T-20261121-023 · 复刻 PixelFX 像素特效（挥剑/火球/冰冻/捡金币）Godot Demo
