@@ -31,7 +31,8 @@
 - 交付: `docs/design/gameplay-innovation-red-team.md`（证据/评分/verdict/下一轮问题）+ 代表图；不改代码/agent
 - 约束: 独立红队，不看实现者自评；可查证案例；不复制 IP；中文
 - 指派: game-red-team worker（dispatcher）
-- 状态: blocked（等 T-034）
+- 状态: done
+- 产出: `docs/design/gameplay-innovation-red-team.md` + `.png`（1600×1000 判定卡）；结论：需修复，不放行 L1（A1 KEEP 条件式 / B2 ITERATE 先 L0 / C1 KILL 作为 top 3 创新）
 - depends_on: T-20261121-034
 
 ## T-20261121-029 · 美术 Agent Blender 二次元角色能力探针
@@ -55,7 +56,7 @@
 - 约束: 原创；保留 agent 角色边界；不复制 IP/付费资产；只改工具/skill/文档；真实可跑
 - 管线: Tripo 初模 → Blender 清理/重拓扑/绑骨/toon → GLB；工具从 `TRIPO_API_KEY` 读 key（用户 2026-11-21 指定）
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: failed
 - depends_on: T-20261121-029, T-20261121-030
 
 ## T-20261121-026 · 复刻《雾港撤离》式俯视角搜打撤 Demo
