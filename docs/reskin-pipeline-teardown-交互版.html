@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>换皮管线拆解 · 一套布局到三套皮 · Reskin Kit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23120E0A'/%3E%3Cpath d='M6 7h9v9H6zM18 7h8v9h-8zM6 19h9v7H6z' fill='%23F2B35C' opacity='.92'/%3E%3Cpath d='M18 19h8v7h-8z' fill='%235FD8C9'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#120E0A; --paper-2:#19130D; --card:#1D160F; --card-2:#15100B;
+  --ink:#F4EDE1; --ink-soft:#B7A995; --ink-faint:#7E6F5E;
+  --line:rgba(230,190,140,.16); --line-strong:rgba(230,190,140,.34);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.13);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --ok:#5FD88A;
+  --grid:rgba(230,190,140,.045);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F6F0E4; --paper-2:#EDE4D3; --card:#FFFCF5; --card-2:#F8F2E6;
+  --ink:#241B12; --ink-soft:#5C4D3D; --ink-faint:#8D7B66;
+  --line:rgba(36,27,18,.14); --line-strong:rgba(36,27,18,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --ok:#1B7A4A;
+  --grid:rgba(36,27,18,.045);
+  --shadow:0 1px 0 rgba(36,27,18,.04), 0 14px 32px -24px rgba(36,27,18,.42);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(42px,6.5vw,84px) clamp(20px,5vw,56px) 24px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(31px,5.2vw,56px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:82ch;margin:0 0 18px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 80px}
+section{margin:0 0 clamp(44px,6vw,76px);scroll-margin-top:96px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card .big{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--teal);line-height:1.1}
+.card .rank{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,var(--line));background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.banner{border:1px solid var(--line-strong);border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--teal) 8%,var(--card)),var(--card));padding:18px 20px;box-shadow:var(--shadow);margin:14px 0 18px}
+.banner b{color:var(--teal)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px}
+pre b{color:var(--gold);font-weight:600}
+pre .c{color:var(--ink-faint)}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);line-height:1.6}
+.check{list-style:none;padding:0;margin:.2em 0 1em}
+.check li{padding-left:1.6em;position:relative;margin:.3em 0;font-size:14px;color:var(--ink-soft)}
+.check li::before{content:"□";position:absolute;left:0;color:var(--teal);font-family:var(--mono)}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+footer a{color:var(--teal);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+
+/* ===== timeline ===== */
+.timeline{position:relative;margin:14px 0 20px;padding-left:22px}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:linear-gradient(var(--teal),var(--gold),var(--line))}
+.tl{position:relative;margin:0 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+.tl::before{content:"";position:absolute;left:-21px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px var(--teal-dim)}
+.tl.gold::before{background:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.tl.warn::before{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 15%,transparent)}
+.tl .time{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.06em}
+.tl .q{font-family:var(--serif);font-size:16px;font-weight:700;margin:2px 0 4px;color:var(--ink)}
+.tl .d{font-size:13.5px;color:var(--ink-soft);margin:0}
+
+/* ===== pipeline ===== */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0 18px}
+.flow .step-card{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px;position:relative;box-shadow:var(--shadow)}
+.flow .step-card .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em}
+.flow .step-card .t{font-family:var(--serif);font-size:15px;font-weight:700;margin:2px 0 4px}
+.flow .step-card .d{font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+.flow .step-card::after{content:"→";position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:14px;z-index:2}
+.flow .step-card:last-child::after{display:none}
+
+/* ===== lab ===== */
+.lab{border:1px solid var(--line-strong);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--teal) 6%,var(--card)),var(--card));padding:18px;box-shadow:var(--shadow);margin:14px 0 18px}
+.lab-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.lab-head .t{font-family:var(--serif);font-size:21px;font-weight:700;margin:0}
+.lab-head .d{font-size:13px;color:var(--ink-soft);margin:2px 0 0}
+.lab-body{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.phone-wrap{display:flex;justify-content:center;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:16px;background:var(--card-2);min-height:520px}
+.phone{width:286px;aspect-ratio:9/16;border-radius:28px;border:1px solid var(--line-strong);background:var(--p-bg);color:var(--p-ink);padding:10px;display:flex;flex-direction:column;gap:7px;position:relative;overflow:hidden;transition:background .35s,color .35s,border-radius .35s,transform .35s;box-shadow:0 18px 40px -24px rgba(0,0,0,.55), inset 0 0 0 1px color-mix(in srgb,var(--p-line) 22%,transparent)}
+.phone[data-theme="ink"]{--p-bg:#dfe7e4;--p-surface:#edf1ea;--p-ink:#20363d;--p-accent:#8ea9a2;--p-line:#5d7d7c;--p-gold:#b48a45;--p-btn:#a9c5c1;--p-radius:5px;--p-font:var(--serif)}
+.phone[data-theme="moe"]{--p-bg:#fff3dc;--p-surface:#ffe8c7;--p-ink:#5b4636;--p-accent:#ffb59e;--p-line:#d8a77b;--p-gold:#f2c46d;--p-btn:#ffd79a;--p-radius:16px;--p-font:var(--sans)}
+.phone[data-theme="west"]{--p-bg:#2a2140;--p-surface:#3a2d58;--p-ink:#f6e8d6;--p-accent:#ff7a4d;--p-line:#b78bff;--p-gold:#ffd166;--p-btn:#5c3d8a;--p-radius:8px;--p-font:var(--sans)}
+.phone .p-top{display:flex;align-items:center;gap:5px;font-family:var(--p-font);font-size:9px;line-height:1.2}
+.phone .p-avatar{width:19px;height:19px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--p-gold),var(--p-accent));border:1px solid var(--p-line);flex:none}
+.phone .p-hp{flex:1;height:7px;border-radius:99px;background:color-mix(in srgb,var(--p-line) 35%,transparent);overflow:hidden;border:1px solid color-mix(in srgb,var(--p-line) 45%,transparent)}
+.phone .p-hp i{display:block;width:78%;height:100%;background:linear-gradient(90deg,var(--p-accent),var(--p-gold));border-radius:99px}
+.phone .p-wave{border:1px solid var(--p-line);border-radius:999px;padding:2px 6px;font-weight:700;white-space:nowrap;background:color-mix(in srgb,var(--p-surface) 55%,transparent);transition:transform .35s}
+.phone .p-res{font-family:var(--mono);font-size:8px;border:1px solid var(--p-line);border-radius:99px;padding:1px 5px;white-space:nowrap}
+.phone .p-lane{flex:1;position:relative;border-radius:var(--p-radius);border:1px solid color-mix(in srgb,var(--p-line) 55%,transparent);background:
+  linear-gradient(180deg,color-mix(in srgb,var(--p-surface) 70%,transparent),color-mix(in srgb,var(--p-bg) 65%,transparent)),
+  repeating-linear-gradient(90deg,transparent 0 31px,color-mix(in srgb,var(--p-line) 14%,transparent) 31px 32px);
+  overflow:hidden;transition:transform .35s,border-radius .35s}
+.phone .p-lane::before{content:"";position:absolute;left:8%;right:8%;top:10%;bottom:18%;background:linear-gradient(180deg,color-mix(in srgb,var(--p-line) 10%,transparent),transparent);border-radius:var(--p-radius)}
+.phone .p-mon{position:absolute;width:20px;height:20px;border-radius:50% 50% 42% 42%;background:radial-gradient(circle at 35% 30%,var(--p-gold),var(--p-accent));border:1px solid color-mix(in srgb,var(--p-line) 70%,transparent);box-shadow:0 2px 0 color-mix(in srgb,var(--p-line) 35%,transparent);transition:transform .35s}
+.phone .p-mon::after{content:"";position:absolute;left:5px;top:8px;width:2px;height:2px;border-radius:50%;background:var(--p-ink);box-shadow:6px 0 0 var(--p-ink)}
+.phone .p-mon.m1{left:14%;top:16%}.phone .p-mon.m2{left:40%;top:12%}.phone .p-mon.m3{left:68%;top:18%}
+.phone .p-mon.m4{left:24%;top:32%}.phone .p-mon.m5{left:52%;top:30%}.phone .p-mon.m6{left:76%;top:36%}
+.phone .p-mon.m7{left:12%;top:48%}.phone .p-mon.m8{left:44%;top:50%}.phone .p-mon.m9{left:66%;top:52%}
+.phone .p-hero{position:absolute;bottom:6%;width:26px;height:30px;border-radius:10px 10px 6px 6px;background:linear-gradient(180deg,var(--p-surface),var(--p-accent));border:1px solid var(--p-line);box-shadow:0 3px 0 color-mix(in srgb,var(--p-line) 35%,transparent);transition:transform .35s}
+.phone .p-hero::before{content:"";position:absolute;left:7px;top:-7px;width:10px;height:10px;border-radius:50%;background:var(--p-surface);border:1px solid var(--p-line)}
+.phone .p-hero.h1{left:18%}.phone .p-hero.h2{left:43%}.phone .p-hero.h3{left:68%}
+.phone .p-skills{display:flex;justify-content:center;gap:8px;transition:transform .35s}
+.phone .p-skill{width:42px;height:42px;border-radius:50%;border:2px solid var(--p-line);background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--p-gold) 85%,white),var(--p-btn));display:grid;place-items:center;font-family:var(--p-font);font-size:15px;font-weight:700;color:var(--p-ink);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--p-surface) 55%,transparent)}
+.phone .p-foot{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:color-mix(in srgb,var(--p-ink) 75%,transparent)}
+.phone .p-lobby{display:none;flex:1;flex-direction:column;gap:5px;min-height:0}
+.phone[data-mode="lobby"] .p-lane,.phone[data-mode="lobby"] .p-skills{display:none}
+.phone[data-mode="lobby"] .p-lobby{display:flex}
+.phone .p-lobby-title{font-family:var(--p-font);font-size:17px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid var(--p-line);padding-bottom:3px;transition:transform .35s}
+.phone .p-tabs{display:flex;gap:3px}
+.phone .p-tab{flex:1;height:18px;border-radius:calc(var(--p-radius)/2);border:1px solid var(--p-line);background:color-mix(in srgb,var(--p-surface) 65%,transparent);font-family:var(--p-font);font-size:8px;display:grid;place-items:center}
+.phone .p-tab.on{background:var(--p-btn);font-weight:700}
+.phone .p-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;flex:1;min-height:0}
+.phone .p-cell{border:1px solid color-mix(in srgb,var(--p-line) 60%,transparent);border-radius:calc(var(--p-radius)/2);background:radial-gradient(circle at 40% 30%,color-mix(in srgb,var(--p-surface) 85%,white),color-mix(in srgb,var(--p-btn) 55%,var(--p-surface)));min-height:28px;position:relative}
+.phone .p-cell::after{content:"";position:absolute;left:30%;top:26%;width:40%;height:40%;border-radius:50%;border:1px solid color-mix(in srgb,var(--p-line) 70%,transparent);background:color-mix(in srgb,var(--p-gold) 55%,transparent)}
+.phone .p-detail{border:1px solid var(--p-line);border-radius:calc(var(--p-radius)/2);background:color-mix(in srgb,var(--p-surface) 78%,transparent);padding:4px 5px;font-family:var(--p-font);font-size:8px;line-height:1.35;min-height:48px}
+.phone .p-detail b{display:block;font-size:9px}
+.phone .p-msg{font-family:var(--mono);font-size:8px;color:color-mix(in srgb,var(--p-ink) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* strength-driven drift */
+.phone.drift-1 .p-wave{transform:translate(5px,-1px)}
+.phone.drift-1 .p-skills{transform:translateX(4px)}
+.phone.drift-1 .p-lobby-title{transform:translateX(3px)}
+.phone.drift-2 .p-wave{transform:translate(13px,5px) rotate(2deg)}
+.phone.drift-2 .p-skills{transform:translateX(12px) scale(1.04)}
+.phone.drift-2 .p-tabs{transform:translateX(5px)}
+.phone.drift-2 .p-lobby-title{transform:translateX(8px)}
+.phone.drift-2 .p-mon{transform:translateX(5px)}
+.phone.recompose .p-lane{transform:scale(1.09) rotate(-3deg)}
+.phone.recompose .p-wave{transform:translate(28px,-12px) rotate(7deg);opacity:.55}
+.phone.recompose .p-skills{transform:translateX(22px) scale(.88)}
+.phone.recompose .p-top{opacity:.6}
+.phone.recompose .p-lobby-title{transform:translateX(22px) rotate(-2deg)}
+.phone.recompose .p-tabs{transform:translateX(-12px) scale(.92)}
+.phone.recompose .p-grid{transform:translate(8px,-6px) rotate(1.5deg)}
+.phone.recompose .p-detail{transform:translate(-10px,7px)}
+.phone.recompose .p-mon:nth-child(2n){transform:translate(9px,-7px)}
+.phone.recompose .p-mon:nth-child(3n){transform:translate(-7px,6px)}
+.phone .garble{letter-spacing:.08em;filter:blur(.45px)}
+.lab-side{min-width:0}
+.theme-btns{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.theme-btns .btn{flex:1;min-width:88px}
+.ctrl-row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin:0 0 6px}
+.ctrl-row label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.ctrl-row output{font-family:var(--mono);font-size:12px;color:var(--teal);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--teal);margin:0 0 8px}
+.seg{display:flex;gap:4px;margin:0 0 10px}
+.seg .btn{flex:1;font-size:11px}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 10px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{color:var(--paper);filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.on{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+.metrics{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 2px}
+.metric{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:var(--paper-2)}
+.metric b{color:var(--ink);font-weight:600}
+.risk{margin:10px 0 4px}
+.risk-row{display:grid;grid-template-columns:86px minmax(0,1fr) 42px;gap:8px;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin:6px 0}
+.riskbar{height:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.riskbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--gold),var(--warn));transition:width .2s}
+.risk-row b{text-align:right;color:var(--ink);font-weight:600}
+.statusline{font-family:var(--mono);font-size:11.5px;color:var(--teal);border:1px dashed var(--line-strong);border-radius:8px;padding:6px 8px;margin:8px 0;min-height:30px}
+.statusline.warn{color:var(--warn)}
+.statusline.bad{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+
+/* ===== steps / checklist ===== */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:12px 0 16px}
+.step{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 14px;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--shadow)}
+.step input[type=checkbox]{margin-top:5px;accent-color:var(--teal);width:16px;height:16px;flex:none}
+.step .t{font-family:var(--serif);font-size:15px;font-weight:700;margin:0 0 2px}
+.step .d{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.5}
+.step.done{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:color-mix(in srgb,var(--ok) 6%,var(--card))}
+.progressline{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
+.progressline .bar{flex:1;height:8px;background:var(--paper-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.progressline .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .2s}
+.progressline b{font-family:var(--mono);font-size:12px;color:var(--gold);min-width:42px;text-align:right}
+
+/* ===== manifest ===== */
+.manifest-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0 10px}
+.manifest-tools .btn{font-size:11px;padding:5px 8px}
+.manifest-tools .grow{flex:1}
+.manifest-summary{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.manifest-summary b{color:var(--ink)}
+.manifest-summary .pass{color:var(--ok)}
+.manifest-summary .fail{color:var(--warn)}
+.mtable td,.mtable th{padding:7px 9px;font-size:12px}
+.mtable tr.badrow td{background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.mtable .st{font-family:var(--mono);font-size:10.5px}
+.mtable .st.ok{color:var(--ok)}
+.mtable .st.bad{color:var(--warn)}
+.mtable .id{font-family:var(--mono);color:var(--teal);font-size:11.5px}
+.switch{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);cursor:pointer}
+.switch input{accent-color:var(--teal)}
+
+/* ===== prompts ===== */
+.prompt{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:12px 0 14px;overflow:hidden}
+.prompt .ph{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--card-2)}
+.prompt .ph .t{font-family:var(--serif);font-size:15px;font-weight:700}
+.prompt .ph .meta{font-family:var(--mono);font-size:10px;color:var(--ink-faint)}
+.prompt pre{margin:0;border:0;border-radius:0;background:transparent}
+.prompt .copy{position:static;margin-left:auto}
+
+/* ===== misc ===== */
+.flow-note{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:-6px}
+.mini{font-size:12.5px;color:var(--ink-soft)}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 12px;font-size:13.5px;margin:8px 0 14px}
+.kv dt{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.kv dd{margin:0;color:var(--ink-soft)}
+.tick{display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--teal);margin-right:5px;vertical-align:middle}
+.tick.gold{background:var(--gold)}.tick.warn{background:var(--warn)}.tick.ok{background:var(--ok)}
+@media screen and (max-width:980px){
+  .lab-body{grid-template-columns:1fr}
+  .phone-wrap{min-height:0}
+  .flow{grid-template-columns:1fr 1fr}
+  .flow .step-card::after{display:none}
+}
+@media screen and (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .fab{right:8px;bottom:8px}
+  .fab button{padding:6px 9px;font-size:11px}
+  .sec-note{margin-left:0;width:100%}
+  .phone{width:250px}
+  .lab{padding:12px}
+  .kv{grid-template-columns:88px minmax(0,1fr)}
+}
+@media print{.fab,nav.toc,.progress{display:none}section{break-inside:avoid}.phone{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span>技术调研 · Reskin Kit · 2026-11-21</div>
+  <h1>一套布局，<span class="g">三套皮</span><br>把 1:18 视频拆成 <span class="u">可执行管线</span></h1>
+  <p class="sub">一页回答：这条视频到底做了什么、哪些参数能复用、魔触是什么、开源怎么替代、本仓库背包 UI 怎么 dry-run。所有图形为<b>原创 CSS/SVG</b>；不复用案例游戏素材/界面，不点名模仿在世艺术家。</p>
+  <div class="stat-row">
+    <span class="stat"><b>5</b> 步顺序</span>
+    <span class="stat">战斗 <b>0.30</b> / 文本密集 <b>0.25</b></span>
+    <span class="stat"><b>32</b> 个零件</span>
+    <span class="stat"><b>73</b> 条唯一文案（dry-run）</span>
+    <span class="stat">开源覆盖 <b>70–85%</b></span>
+    <span class="stat">访问日期 <b>2026-11-21</b></span>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0">结论</a>
+  <a href="#s1">取证</a>
+  <a href="#s2">五步 / 实验室</a>
+  <a href="#s3">Kit 规格</a>
+  <a href="#s4">提示词</a>
+  <a href="#s5">工具替代</a>
+  <a href="#s6">本仓库 Dry-run</a>
+  <a href="#s7">验收 / 边界</a>
+  <a href="#s8">来源</a>
+</div></nav>
+
+<main>
+
+<section id="s0">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">先看这页，再看细节</span></div>
+  <p class="lead">视频真正的可复用点不是“某个风格模型”，而是<b>五段式顺序</b>：布局锁定 → 只换题材（先别洗）→ 低强度风格洗 → 4K 修字 → 设定表切零件/同名替换 → 进游戏。换皮是<b>乘法</b>，不是玩法创新。</p>
+
+  <div class="cards">
+    <div class="card ok">
+      <div class="rank">01 · 顺序</div>
+      <div class="t">先别洗</div>
+      <p>用“全能编辑/Theme only”拿自己的界面当布局参考，只换题材；再用风格模型洗。上来就洗会把 HUD、按钮、站位一起洗坏。</p>
+      <span class="tag ok">A 已验证</span><span class="tag">布局锚点</span>
+    </div>
+    <div class="card">
+      <div class="rank">02 · 参数</div>
+      <div class="t">0.30 / 0.25</div>
+      <p>战斗界面 strength 0.30；字多的大厅/商城 0.25。0.65 的反例“整张图都会重画”。生产上把 0.35 写成硬上限。</p>
+      <span class="tag gold">A 画面</span><span class="tag warn">0.65 = 反例</span>
+    </div>
+    <div class="card">
+      <div class="rank">03 · 落地</div>
+      <div class="t">32 件，同名替换</div>
+      <p>角色背面、怪物、技能图标、HUD 组件出设定表，一键抠图切 32 个零件；文件名和原文件一一对应，进游戏切一套新皮。</p>
+      <span class="tag">A/B</span><span class="tag">manifest diff = 0</span>
+    </div>
+  </div>
+
+  <div class="tablewrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th style="width:23%">问题</th><th>结论</th><th style="width:12%">等级</th></tr></thead>
+      <tbody>
+        <tr><td>提示词原文能拿到吗？</td><td><b>不能</b>：置顶评论说“提示词贴在下面几条评论”，但 2026-11-21 三个 B 站 reply 接口都显示 <code>all_count=1</code>、无楼中楼。本页模板是<b>按步骤重建</b>，不是作者原文。</td><td><span class="tag ok">A 已验证</span></td></tr>
+        <tr><td>三套皮真的同一份代码？</td><td>视频 01:11 并排四张运行时，HUD/按钮/伤害数字/2× 速度结构一致；作者称“三套皮 同一份代码”。没有性能/包体数据。</td><td><span class="tag ok">A/B</span></td></tr>
+        <tr><td>最强的一步是哪一步？</td><td><b>先别洗</b>。先做题材替换、锁住布局，再洗风格；否则 0.3 也会把布局洗坏。0.25 是文字密集界面的保险值。</td><td><span class="tag ok">A</span></td></tr>
+        <tr><td>开源能替代吗？</td><td>工程上 70–85%：ComfyUI + SDXL/FLUX + ControlNet/IP-Adapter + Real-ESRGAN + rembg + Krita/GIMP + manifest 脚本。最弱的是中文文字与“游戏 UI 专用风格模型”。</td><td><span class="tag gold">D 推断</span></td></tr>
+        <tr><td>本仓库先拿谁试？</td><td><code>godot-inventory-ui/</code>：27 个现用资产 + 5 个烘焙组件 = <b>32 件</b>；84 个文本节点 / 73 条唯一文案；先做 token reskin，再做 texture reskin。</td><td><span class="tag ok">A/D</span></td></tr>
+        <tr><td>换皮 = 玩法创新？</td><td><b>不等于</b>。它改变题材/风格/素材，不改变动词、约束、信息结构。先有 D1/D7/付费数据，再换皮。</td><td><span class="tag warn">D</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="banner"><b>三句话选型：</b>要低成本做风格探索 → 小额买魔触额度；要可复现/可商用 → 开源栈 + 自有 manifest；要上线 → 把“文字校对 + 同名映射 + 九宫格 + IP 检查”写成 fail-closed 门禁，而不是靠人盯。</div>
+  <div class="warnbox"><b>本页边界：</b>只做调研/规格，不改游戏代码；不复制《末日小队》或其他游戏素材/界面/Logo；风格只用通用词；AI 文字必须人工校对。证据等级：A 画面/API、B 作者自述、C 第三方、D 本报告推断。</div>
+</section>
+
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>取证：视频里到底做了什么</h2><span class="sec-note">元数据 · 关键帧 · 自述 / 已验证</span></div>
+  <p class="lead">来源：B 站 <a href="https://www.bilibili.com/video/BV16gs36aECJ" target="_blank" rel="noopener">BV16gs36aECJ</a>（魔触AI官方，77.7 秒，2026-11-17 发布）；2026-11-21 通过 view/reply API 取证，并用 yt-dlp + ffmpeg 抽帧。</p>
+
+  <div class="timeline">
+    <div class="tl"><div class="time">00:18–00:21 · 先别洗</div><div class="q">“正确的顺序是”；“先别洗 Not yet”；“别一上来就拿风格模型去洗”</div><p class="d">先用全能编辑锁布局、换题材，再洗风格。<span class="tag ok">A</span></p></div>
+    <div class="tl gold"><div class="time">00:30–00:33 · Theme only</div><div class="q">把我们的战斗界面当布局参考 → 同一布局并排三种题材</div><p class="d">HUD、波次徽章、资源计数、底部 3 个技能按钮、角色站位全部不动。<span class="tag ok">A</span></p></div>
+    <div class="tl"><div class="time">00:39–00:42 · 0.30</div><div class="q">“0.3 换风格 / Style model · strength 0.3”；“布局一点没动”</div><p class="d">战斗界面 0.30，边框/按钮/线条/材质洗成目标风格。<span class="tag ok">A</span></p></div>
+    <div class="tl warn"><div class="time">00:24 · 0.65 反例</div><div class="q">“强度 0.65”→“整张图都会重画”</div><p class="d">UI 位置/构图明显变化，已经“变成别人的游戏”；生产禁用。<span class="tag warn">A</span></p></div>
+    <div class="tl"><div class="time">00:45–00:54 · 4K 修字</div><div class="q">“参考图只给洗过的那张”；“修字时把每一处文字都写进提示词”</div><p class="d">给两张参考会“Reverts to the draft”；文字密集界面 0.30 会移按钮，0.25 才保住。<span class="tag ok">A</span></p></div>
+    <div class="tl gold"><div class="time">01:00–01:06 · 设定表 / 32 件</div><div class="q">角色背面、怪物、技能图标、HUD 组件；“32 个零件”；“一键抠图”</div><p class="d">可见文件名：<code>back_hero.png</code>、<code>z_walker.png</code>、<code>z_boss.png</code>、<code>sk_fire.png</code>、<code>gem.png</code>；“文件名和原来一一对应”。<span class="tag ok">A/B</span></p></div>
+    <div class="tl"><div class="time">01:09–01:11 · 进游戏</div><div class="q">“切一下就是一套新皮”；“三套皮 同一份代码”</div><p class="d">四张运行时并排：原版废弃商业街、国风青石古镇、萌系向日葵花园、欧美卡王陵内部；HUD 结构一致。<span class="tag ok">A</span></p></div>
+  </div>
+
+  <h3>三套皮的画面观察（通用风格词，不复制具体素材）</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="t">国风水墨</div>
+      <p>青灰/墨蓝/金线；纸绢质感、细描边；剑客/道士/妖僧，青石古镇、屋檐石阶；冰/火/藤蔓图标，细金边框、书法标题。</p>
+      <span class="tag">00:33</span><span class="tag">01:06</span><span class="tag">01:09</span>
+    </div>
+    <div class="card">
+      <div class="t">萌系治愈</div>
+      <p>奶油黄/草绿/桃粉；哑光纸感、软阴影；向日葵/毛毛虫/圆润史莱姆，花园木栅栏；果实/叶子/水滴图标，大圆角、低对比。</p>
+      <span class="tag">00:33</span><span class="tag">01:06</span><span class="tag">01:11</span>
+    </div>
+    <div class="card">
+      <div class="t">欧美卡通</div>
+      <p>紫/橙/饱和蓝；厚描边、宝石金属高光；重甲骑士/骷髅/巫妖，石砌王陵；火焰/宝石图标，厚边框、高对比。</p>
+      <span class="tag">00:33</span><span class="tag">01:06</span><span class="tag">01:11</span>
+    </div>
+  </div>
+
+  <div class="tablewrap" style="margin-top:14px">
+    <table>
+      <thead><tr><th>类别</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><b>已验证（A）</b></td><td>三套主题存在；同一布局并排；战斗 0.30、文本密集 0.25；0.65 会重画；4K 修字只给洗过的图；逐条文字提示；32 个零件；同名文件；运行时替换；四张运行时并排。</td></tr>
+        <tr><td><b>作者自述（B）</b></td><td>“一个晚上”完成；“原创”《末日小队》；“魔触排名最靠前”的三个风格；32 件是“一键抠图”一次完成；提示词“在下面几条评论”。</td></tr>
+        <tr><td><b>未取证</b></td><td>提示词正文（评论数 1、无楼中楼）；每个主题的风格模型 ID/版本；每套皮的实际生成时长与成本；商用授权范围；性能/包体/机型数据；“一个晚上”的真实工时。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>五步管线 + 换皮实验室</h2><span class="sec-note">顺序 · 参数 · 风险模拟</span></div>
+  <p class="lead">每一步只改一个维度：题材 → 风格 → 文字 → 零件 → 引擎。下面先给顺序，再给一个<b>原创的交互实验室</b>：拖动强度，看布局漂移与文字风险；这不是模型推理结果，只是把视频里的 0.30/0.25/0.65 参数关系做成可感知的示意。</p>
+
+  <div class="flow">
+    <div class="step-card"><div class="n">01</div><div class="t">布局锁定</div><div class="d">原创截图 + bbox + 文本清单 + 零件 manifest</div></div>
+    <div class="step-card"><div class="n">02</div><div class="t">只换题材</div><div class="d">Theme only：僵尸→妖僧/虫子/骷髅；枪→法杖；街道→古镇/花园/王陵</div></div>
+    <div class="step-card"><div class="n">03</div><div class="t">风格洗</div><div class="d">战斗 0.30；文字密集 0.25；0.65 反例</div></div>
+    <div class="step-card"><div class="n">04</div><div class="t">4K 修字</div><div class="d">只给洗过的图；每处文字写进提示词；OCR + 人工</div></div>
+    <div class="step-card"><div class="n">05</div><div class="t">切件 / 替换</div><div class="d">设定表 → 32 件 → 同名映射 → 进引擎</div></div>
+  </div>
+  <p class="flow-note">注意：第 2 步不是“风格”，是“题材/语义”。先换题材，再洗风格；顺序反了，布局会和风格一起被洗掉。</p>
+
+  <div class="lab" id="lab">
+    <div class="lab-head">
+      <div><div class="t">换皮实验室 · 强度 × 布局 × 文字</div><div class="d">原创 CSS/SVG 示意；切换主题/场景，拖动强度，观察 0.25–0.30 的“安全带”和 0.65 的“重画区”。</div></div>
+      <div><span class="tag">交互示意</span><span class="tag gold">非模型输出</span></div>
+    </div>
+    <div class="lab-body">
+      <div class="phone-wrap">
+        <div class="phone" id="phone" data-theme="ink" data-mode="battle" data-strength="30">
+          <div class="p-top">
+            <span class="p-avatar"></span>
+            <span class="p-hp"><i></i></span>
+            <span class="p-wave" id="pWave">第 3 / 10 波</span>
+            <span class="p-res">142 / 183</span>
+          </div>
+          <div class="p-lane">
+            <span class="p-mon m1"></span><span class="p-mon m2"></span><span class="p-mon m3"></span>
+            <span class="p-mon m4"></span><span class="p-mon m5"></span><span class="p-mon m6"></span>
+            <span class="p-mon m7"></span><span class="p-mon m8"></span><span class="p-mon m9"></span>
+            <span class="p-hero h1"></span><span class="p-hero h2"></span><span class="p-hero h3"></span>
+          </div>
+          <div class="p-skills">
+            <span class="p-skill" id="sk1">火</span><span class="p-skill" id="sk2">冰</span><span class="p-skill" id="sk3">叶</span>
+          </div>
+          <div class="p-lobby">
+            <div class="p-lobby-title" id="pTitle">云璃背包</div>
+            <div class="p-tabs"><span class="p-tab on">一</span><span class="p-tab">二</span><span class="p-tab">三</span><span class="p-tab">四</span><span class="p-tab">临时</span></div>
+            <div class="p-grid" id="pGrid"></div>
+            <div class="p-detail"><b id="pItem">回春丹</b><span id="pDesc">千年灵芝配晨露炼成。服用后回复 500 气血。</span></div>
+            <div class="p-msg" id="pMsg">背包容量 35 / 216 · 第 1 / 5 页 · 可交易 · 120 银两/件</div>
+          </div>
+          <div class="p-foot"><span id="pFoot">2× 速度</span><span id="pFps">60 FPS</span></div>
+        </div>
+      </div>
+      <div class="lab-side">
+        <div class="theme-btns">
+          <button class="btn on" data-theme-btn="ink">国风水墨</button>
+          <button class="btn" data-theme-btn="moe">萌系治愈</button>
+          <button class="btn" data-theme-btn="west">欧美卡通</button>
+        </div>
+        <div class="seg">
+          <button class="btn on" data-mode-btn="battle">战斗界面</button>
+          <button class="btn" data-mode-btn="lobby">大厅 / 商城</button>
+        </div>
+        <div class="ctrl-row"><label for="strength">重绘强度 strength</label><output id="strengthOut">0.30</output></div>
+        <input type="range" id="strength" min="10" max="70" step="1" value="30">
+        <div class="risk">
+          <div class="risk-row"><span>布局漂移</span><div class="riskbar"><i id="riskLayout"></i></div><b id="riskLayoutOut">0%</b></div>
+          <div class="risk-row"><span>文字风险</span><div class="riskbar"><i id="riskText"></i></div><b id="riskTextOut">0%</b></div>
+        </div>
+        <div class="statusline" id="statusLine">推荐区：0.25–0.30，能洗风格且布局基本不动。</div>
+        <div class="metrics">
+          <span class="metric">推荐 <b id="rec">0.30</b></span>
+          <span class="metric">硬上限 <b>0.35</b></span>
+          <span class="metric">反例 <b>0.65</b></span>
+        </div>
+        <div class="btnrow">
+          <button class="btn primary" id="btnRec">恢复推荐</button>
+          <button class="btn" id="btnDanger">0.65 反例</button>
+          <button class="btn ghost" id="btnReset">重置</button>
+        </div>
+        <p class="note" style="margin-top:10px">示意逻辑：强度 &gt; 0.40 开始位移 HUD；&gt; 0.55 文字开始“花”；0.65 进入整图重画。真实模型还会受 ControlNet、mask、seed、模型版本影响；不要把这个滑块当成跨工具固定参数。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>参数</th><th>推荐值</th><th>范围</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>战斗界面 strength</td><td><b>0.30</b></td><td>0.20–0.35</td><td>视频实测；&gt;0.40 开始改布局</td></tr>
+        <tr><td>文本密集 strength</td><td><b>0.25</b></td><td>0.18–0.30</td><td>大厅/商城/背包/详情；0.30 就可能移按钮</td></tr>
+        <tr><td>危险强度</td><td>0.65</td><td>—</td><td>视频反例：整图重画；生产禁用</td></tr>
+        <tr><td>ControlNet lineart</td><td>0.80</td><td>0.60–1.00</td><td>锁线稿/边框；太高会保留旧风格</td></tr>
+        <tr><td>ControlNet seg</td><td>0.70</td><td>0.50–0.90</td><td>锁 UI 区块</td></tr>
+        <tr><td>IP-Adapter style</td><td>0.60</td><td>0.40–0.80</td><td>只取风格；太高会复制参考内容</td></tr>
+        <tr><td>文字 mask dilation</td><td>4 px</td><td>2–8 px</td><td>盖住描边/抗锯齿</td></tr>
+        <tr><td>4K 放大 / inpaint denoise</td><td>2×→4K / 0.20</td><td>0.10–0.30</td><td>只修文字/边缘，不重画</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="okbox"><b>为什么 0.25 和 0.30 差这么点却有区别？</b>因为文字密集界面的“有效信号”更多：页签、标题、按钮、列表、数值都在小区域里；强度稍高，模型就有更多自由度去“重排”。战斗界面的大块背景/角色给模型更多容错，0.30 还能保住 HUD。</div>
+</section>
+
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Reskin Kit 规格</h2><span class="sec-note">输入契约 · 输出契约 · manifest</span></div>
+  <p class="lead">Kit 的目标：给定<b>原创布局</b>和<b>风格 token</b>，稳定产出可替换资产，并能验证“布局没坏、文字没错、零件没漏、许可清楚”。非目标：不改玩法、不做数值/关卡、不做“一键出完整游戏”。</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>输入</h4>
+      <ul class="clean">
+        <li><b>layout_ref</b>：原创截图 1×/2×/4K，同机位；有字版 + 无字/遮罩版；HUD/按钮/文字 bbox。</li>
+        <li><b>style_token.json</b>：色板 hex、笔触、材质、光照、字体倾向、motifs、negative、参考图许可。</li>
+        <li><b>text_manifest.csv</b>：id、text、bbox、font、size、color、align、language、mode(live/baked)。</li>
+        <li><b>parts_manifest.csv</b>：32 件、source/display 尺寸、pivot、九宫格 margin、state、engine_target。</li>
+        <li><b>target_profile.json</b>：引擎/渲染器/分辨率/sRGB/alpha/filter/max texture/九宫格单位。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>输出</h4>
+      <ul class="clean">
+        <li><b>textures/</b>：成套贴图，文件名与原文件一一对应。</li>
+        <li><b>manifest.json</b>：原文件 → 新文件 → 尺寸/锚点/九宫格/状态。</li>
+        <li><b>report.json</b>：布局漂移、OCR 错字、零件数、命名 diff、九宫格、对比度、FPS。</li>
+        <li><b>contact_sheet.png</b>：全套缩略图；<b>before_after.png</b>：同机位对比。</li>
+        <li><b>text_manifest.csv</b>：校对状态；<b>parts_manifest.csv</b>：切图记录。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.1 style_token.json（示例）</h3>
+<pre><button class="copy" data-copy="tokenJson">复制</button><code id="tokenJson">{
+  "id": "moe-healing-v1",
+  "name": "萌系治愈",
+  "palette": {
+    "bg": "#FFF6E5", "surface": "#FFE8C7", "ink": "#5B4636",
+    "accent": "#E07856", "secondary": "#7FB77E",
+    "gold": "#F2C46D", "shadow": "rgba(91,70,54,0.18)"
+  },
+  "medium": "哑光纸感，圆角，2px 描边，软阴影",
+  "lighting": "左上柔光，低对比",
+  "type": { "family": "rounded sans", "fallback": "Noto Sans SC", "license": "OFL-1.1", "weight": 600 },
+  "motifs": ["sunflower", "cloud", "dot", "ribbon"],
+  "negative": ["ink splatter", "hard black outline", "neon", "metallic"],
+  "reference_images": [
+    { "path": "style_ref/moe_01.png", "license": "original", "weight": 0.6 }
+  ]
+}</code></pre>
+
+  <h3>3.2 manifest 表 + 同名校验器</h3>
+  <p class="mini">下面是 dry-run 的示例零件（全量 32 件见报告 §5.3）；勾选“模拟错名/漏切”可以看到 fail-closed 的门禁效果。</p>
+  <div class="manifest-tools">
+    <button class="btn on" data-filter="all">全部</button>
+    <button class="btn" data-filter="icon">图标</button>
+    <button class="btn" data-filter="ui">UI</button>
+    <button class="btn" data-filter="scene">场景</button>
+    <button class="btn" data-filter="component">组件</button>
+    <span class="grow"></span>
+    <label class="switch"><input type="checkbox" id="simulateBad"> 模拟 1 个错名/漏切</label>
+    <button class="btn primary" id="validateBtn">校验命名映射</button>
+  </div>
+  <div class="manifest-summary" id="manifestSummary">示例 16 / 全量 32 · 等待校验</div>
+  <div class="tablewrap">
+    <table class="mtable" id="manifestTable">
+      <thead><tr><th>#</th><th>id</th><th>原文件</th><th>类型</th><th>输出</th><th>九宫格</th><th>状态</th></tr></thead>
+      <tbody id="manifestBody"></tbody>
+    </table>
+  </div>
+  <p class="note">命名规则：`^[a-z][a-z0-9_]*\.(png|webp)$`；全小写、下划线、无中文/空格。九宫格 margin 是源图像素示例值，需在 1×/2×/4× 拉伸下复核。</p>
+</section>
+
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>提示词模板</h2><span class="sec-note">可直接复用 · 非作者原文</span></div>
+  <div class="warnbox"><b>先说明：</b>视频置顶评论称“提示词按顺序贴在下面几条评论”，但 B 站 API 在 2026-11-21 显示评论总数 1、无楼中楼，因此<b>作者原文未取证</b>。以下模板按“每步只改一个维度 + 写清不许改什么”重建；可直接替换 <code>{}</code> 使用。</div>
+
+  <div class="prompt">
+    <div class="ph"><div><div class="t">A · 布局锁定 / 只换题材（Theme only）</div><div class="meta">输入：布局参考 + 题材参考 · 输出：同尺寸</div></div><button class="copy" data-copy="pA">复制</button></div>
+<pre><code id="pA">任务：只更换题材与角色身份，保持输入图的构图、镜头、UI 位置、尺寸比例、文字位置完全不变。
+参考图 1（布局）：{layout_ref} —— 保留全部 HUD、按钮、页签、角色站位、伤害数字位置。
+参考图 2（题材/风格）：{theme_ref} —— 只取题材、服装、建筑、道具造型，不取构图。
+替换映射：
+- {旧对象 A} → {新对象 A}
+- {旧对象 B} → {新对象 B}
+- {旧场景} → {新场景}
+保持：
+- 画幅 {9:16 / 16:9}、分辨率 {W×H}；
+- 顶部 HUD、波次徽章、资源计数、底部技能按钮数量与位置；
+- 文字内容、字号、对齐、颜色；
+- 角色/怪物数量与站位。
+禁止：移动/增删 UI；改变按钮数量；改写文字；新增水印/Logo/签名；改变画幅；透视变化。
+输出：与参考图同尺寸，sRGB，无文字新增。</code></pre>
+  </div>
+
+  <div class="prompt">
+    <div class="ph"><div><div class="t">B · 风格洗（战斗，0.30）</div><div class="meta">img2img + ControlNet + IP-Adapter</div></div><button class="copy" data-copy="pB">复制</button></div>
+<pre><code id="pB">任务：在不改变布局的前提下，把画面风格洗成“{style_name}”。
+输入：{washed_theme_image}
+风格 token：
+- 色板：{hex list}
+- 笔触：{线宽/圆角/纹理}
+- 材质：{纸/哑光/金属/宝石}
+- 光照：{方向/对比/阴影}
+- 字体倾向：{圆体/宋体/黑体}
+参数：重绘强度 0.30；ControlNet lineart {0.8}；seg {0.7}；IP-Adapter style {0.6}；seed {fixed}。
+保持：构图、镜头、HUD 位置、按钮数量、角色站位、伤害数字位置、画幅。
+禁止：移动 UI；新增/删除按钮；改写文字；改变画幅；复制参考图中的具体角色/Logo；水印/签名。
+输出：{W×H}，sRGB。</code></pre>
+  </div>
+
+  <div class="prompt">
+    <div class="ph"><div><div class="t">C · 风格洗（文字密集，0.25）</div><div class="meta">0.25 是保险值；0.30 可能移按钮</div></div><button class="copy" data-copy="pC">复制</button></div>
+<pre><code id="pC">任务：把“{lobby_or_shop}”界面洗成“{style_name}”，布局和文字位置必须保持。
+输入：{washed_theme_image}
+强度：0.25（不要超过 0.30）。
+必须保持：
+- 标题栏、页签、按钮、列表/格子、底部导航的位置与尺寸；
+- 每一处文字的位置、字号、对齐、颜色层级；
+- 弹窗/浮层的层级关系。
+风格：{palette}；{medium}；{lighting}；{motifs}。
+禁止：移动/缩放任何 UI；改写文字；新增装饰遮住文字；改变画幅；水印/签名。
+输出：{W×H}，sRGB。</code></pre>
+  </div>
+
+  <div class="prompt">
+    <div class="ph"><div><div class="t">D · 4K 修字（只给洗过的图）</div><div class="meta">逐条文字 · OCR + 人工</div></div><button class="copy" data-copy="pD">复制</button></div>
+<pre><code id="pD">任务：把输入图放大到 4K，并修复文字区域；参考图只使用这一张洗过的图，不要使用原图/草稿。
+输入：{washed_image_4k_source}
+逐条文字（必须全部写入，不得遗漏）：
+1. 位置 {bbox}：{text_1}；字号 {px}；颜色 {hex}；对齐 {align}。
+2. 位置 {bbox}：{text_2}；……
+3. ……
+要求：
+- 中文字形正确、笔画完整、无错字、无乱码、无缺字；
+- 不新增文字，不改写文案，不改变字号/对齐/位置；
+- 文字与背景的对比度 ≥ 4.5:1（正文）/ ≥ 3:1（大字）；
+- 字体使用 {Noto Sans SC / 思源黑体 / 自有无版权字体}。
+禁止：把文字做成装饰纹理；用英文/拼音替代中文；添加水印/签名；改变画幅。
+输出：4K，sRGB，PNG。</code></pre>
+  </div>
+
+  <div class="prompt">
+    <div class="ph"><div><div class="t">E · 设定表 / 零件（Asset sheet）</div><div class="meta">角色 · 怪物 · 技能图标 · HUD</div></div><button class="copy" data-copy="pE">复制</button></div>
+<pre><code id="pE">任务：生成“{style_name}”风格的游戏零件设定表，用于切图。
+内容：
+- 角色背面 × {3}：{角色列表}；
+- 怪物 × {4}：{怪物列表}；
+- 技能图标 × {9}：{技能列表}；
+- HUD 组件：血条、横幅、按钮、边框、宝石、环、城墙等。
+要求：
+- 同一风格、同一光照方向、同一描边宽度；
+- 正交视角/背面视角；角色脚底对齐；
+- 纯色或透明背景；零件之间留 {16–32}px 间距；
+- 每个零件完整、不裁切、不重叠；
+- 输出 4K 透明 PNG；另存分层 PSD。
+禁止：透视变化；零件重叠；文字水印；复制第三方角色/Logo；不同零件风格不一致。</code></pre>
+  </div>
+
+  <details class="fold"><summary>F · 通用负面提示词（可复制）</summary><div class="body">
+    <pre><button class="copy" data-copy="pNeg">复制</button><code id="pNeg">文字变形，错字，乱码，缺笔画，额外文字，移动 UI，缩放按钮，改变画幅，透视变化，新增 HUD，删除按钮，角色裁切，零件重叠，水印，签名，Logo，第三方角色，过度锐化，过曝，低对比，色偏，脏边，锯齿，重复纹理</code></pre>
+  </div></details>
+
+  <div class="okbox"><b>去字 / 加字策略：</b>优先 <code>live text</code>（文字由引擎渲染，换皮只换字体/颜色）；必须洗掉旧字时，先做文字 mask + 局部 inpaint“移除文字、保留背景/边框/布局”，再用引擎排版；必须烘焙时，4K + 逐条文字 + OCR + 人工逐字 + 字体许可，四件套。AI 只负责背景/装饰/材质，人负责文字/字号/对齐/许可。</div>
+</section>
+
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>魔触 vs 开源替代</h2><span class="sec-note">能力 · 许可 · 不能替代的部分</span></div>
+
+  <h3>5.1 魔触是什么</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:16%">维度</th><th>结论</th><th style="width:20%">证据/等级</th></tr></thead>
+      <tbody>
+        <tr><td>产品/主体</td><td>魔触AI（Magic Touch AI），面向游戏资产创作的在线 AI 平台；运营主体为上海魔触科技有限公司</td><td><a href="https://mochu.art" target="_blank" rel="noopener">mochu.art</a>；用户协议；A/C</td></tr>
+        <tr><td>形态/账号</td><td>浏览器在线，无需安装；在线生成需注册/登录（协议以注册或实际使用为接受方式）</td><td>官网 + 协议；D（未实际注册验证）</td></tr>
+        <tr><td>核心功能</td><td>AI 生图、换风格、延续风格、全能编辑/指哪改哪、自由画布/拆图层/PSD、控图/视角/扩图、4K 放大、抠图/透明 PNG</td><td>官网功能说明；A</td></tr>
+        <tr><td>2.5 增量</td><td>无限画布、一键拆图层、局部改图、改图中文字、扩图、高清放大、PSD/PNG 导出、Cocos/Unity/Godot 导出入口</td><td>官方公众号标题/摘要；原文触发环境验证；B/C</td></tr>
+        <tr><td>价格</td><td>官网首页<b>未公开价目</b>；第三方测评称 1 张 12 积分、每天 100 积分；2.5 活动送 200 积分</td><td>uisdc / aiproducthub；C/B</td></tr>
+        <tr><td>商用许可</td><td>公开资料<b>未确认</b>生成内容可否直接商用；协议全文未完整取证</td><td>协议入口 + 第三方提示；C/D</td></tr>
+        <tr><td>数据风险</td><td>上传自有 UI/角色到云端；保密项目需评估 NDA/数据留存/跨境</td><td>D（工程判断）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox"><b>采购建议：</b>可以买小额额度做风格探索；不要把 prompt/manifest/命名/验收外包给平台；商用前读完整协议（生成内容权属、商用范围、二次分发、训练数据），并用原创素材测试。</div>
+
+  <h3>5.2 步骤 → 工具矩阵</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>步骤</th><th>开源/本地替代</th><th>能替代</th><th>不能替代</th></tr></thead>
+      <tbody>
+        <tr><td>布局锁定 / 只换题材</td><td>ComfyUI + Flux Kontext / SDXL inpaint + ControlNet + 区域提示</td><td>60–80%：题材替换/局部重绘</td><td>不能保证 UI 像素级不动；复杂界面要手动蒙版</td></tr>
+        <tr><td>风格洗</td><td>ComfyUI + SDXL/FLUX + LoRA / IP-Adapter + ControlNet；固定 seed</td><td>80%：风格方向可复现</td><td>没有现成“游戏 UI 专用风格模型”；要自己训/筛参考</td></tr>
+        <tr><td>4K 修字</td><td>Real-ESRGAN + inpaint + Krita/GIMP 重排文字</td><td>30–50%：放大/去噪</td><td><b>不能保证中文 glyph 正确</b>；必须人工校对/引擎文字</td></tr>
+        <tr><td>抠图</td><td>rembg / BiRefNet / SAM 2</td><td>80–90%：简单角色/图标</td><td>半透明光晕、墨迹边缘、发丝要手修</td></tr>
+        <tr><td>切图/命名</td><td>OpenCV/Pillow + 连通域/网格检测 + manifest 脚本</td><td>100%：规则明确时</td><td>语义识别（哪个是按钮/图标）仍需人工标注</td></tr>
+        <tr><td>拆图层/PSD</td><td>Krita/GIMP 手动分层</td><td>60–80%</td><td>没有稳定“一键拆 UI 图层”的开源等价物</td></tr>
+        <tr><td>导出/进引擎</td><td>Godot NinePatchRect / Unity / Unreal</td><td>100%</td><td>需自己写导入/校验脚本</td></tr>
+        <tr><td>QA</td><td>PaddleOCR/Tesseract + 图像 diff + 人工</td><td>70%</td><td>语义错字、风格一致性、IP 相似度仍需人工/额外模型</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.3 许可：工具、权重、字体分开记</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>工具/模型</th><th>代码许可</th><th>权重/输出注意</th></tr></thead>
+      <tbody>
+        <tr><td>ComfyUI</td><td><b>GPL-3.0</b></td><td>GPL 是对工具的许可，不会自动“传染”到生成图片；图片许可由模型/训练数据/平台条款决定</td></tr>
+        <tr><td>Stable Diffusion XL</td><td>代码仓库 MIT</td><td>权重 <b>CreativeML Open RAIL++-M</b>：允许商用但带使用限制，读模型卡</td></tr>
+        <tr><td>FLUX.1 [schnell]</td><td>Apache-2.0</td><td>权重 Apache-2.0；商用以模型卡为准</td></tr>
+        <tr><td>FLUX.1 [dev] / Kontext [dev]</td><td>Apache-2.0</td><td>权重<b>非商用</b>；商用需另获授权</td></tr>
+        <tr><td>ControlNet / IP-Adapter</td><td>Apache-2.0</td><td>各权重可能有单独许可；参考图也要有版权</td></tr>
+        <tr><td>Real-ESRGAN</td><td>BSD-3-Clause</td><td>模型权重单独核对</td></tr>
+        <tr><td>rembg</td><td>MIT</td><td>内置分割模型权重（U2-Net 等）有各自许可</td></tr>
+        <tr><td>PaddleOCR / Tesseract</td><td>Apache-2.0</td><td>语言包许可单独记录</td></tr>
+        <tr><td>InvokeAI / A1111</td><td>Apache-2.0 / AGPL-3.0</td><td>内部使用没问题；分发修改版需遵守对应许可证</td></tr>
+        <tr><td>Krita / GIMP</td><td>GPL-3.0 / GPL-3.0-or-later</td><td>修图/分层/文字重排</td></tr>
+        <tr><td>字体（Noto Sans SC 等）</td><td>SIL OFL 1.1</td><td>可商用/嵌入；保留许可；不要用未授权商业字体</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="okbox"><b>最小可用栈：</b>ComfyUI + SDXL/FLUX + ControlNet lineart/seg + IP-Adapter + inpaint + Real-ESRGAN + rembg + OpenCV/Pillow + Krita/GIMP + PaddleOCR + Godot NinePatchRect。本机 Intel HD 6000 不适合本地跑 SDXL/FLUX；实际生成走云端 GPU/API，本机做切图/命名/OCR/引擎验收。</div>
+</section>
+
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>本仓库 Dry-run：`godot-inventory-ui/`</h2><span class="sec-note">不改项目 · 只列清单与风险</span></div>
+  <p class="lead">选它因为：文本密集（最适合验证 0.25）、已有完整布局/资产规格（139 节点、29 资产、九宫格/色板/命名）、已有真实 GPU 截图、所有素材原创。下面数字来自仓库现有文档/资产（2026-11-21）。</p>
+
+  <div class="cards">
+    <div class="card"><h4>布局参考</h4><p><code>docs/media/screenshots/01_overview_1920x1080.png</code>（总览）；另有选中详情、空页、丢弃确认 3 张。</p><span class="tag">同机位 1920×1080</span></div>
+    <div class="card"><h4>文本清单</h4><p><code>ui_layout.json</code>：<b>84 个文本节点 / 73 条唯一</b>；另有 <code>data/items.json</code> 的 35 件物品/8 件装备文案。</p><span class="tag gold">文字密集</span></div>
+    <div class="card"><h4>零件</h4><p><b>27 个现用资产</b>（1 背景 + 1 立绘 + 20 图标 + 5 UI）+ <b>5 个烘焙组件</b> = <b>32 件</b>。</p><span class="tag ok">32/32</span></div>
+    <div class="card"><h4>目标 profile</h4><p>Godot 4.6 / GL Compatibility / 1280×720 逻辑 + 1920×1080 截图 / sRGB / straight alpha / linear / no mipmaps。</p><span class="tag">九宫格源 px</span></div>
+  </div>
+
+  <h3>6.1 两种落地策略</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>策略</th><th>做什么</th><th>工期（D）</th><th>风险</th><th>视觉收益</th></tr></thead>
+      <tbody>
+        <tr><td><b>A. Token reskin（先做）</b></td><td>只换色板/字体/20 图标/面板/背景/立绘；保留运行时渐变 UI</td><td>1.5–2 人日</td><td>低：不改布局/代码</td><td>中：一眼能看出换风格，但按钮/页签仍是旧几何</td></tr>
+        <tr><td><b>B. Texture reskin（后做）</b></td><td>烘焙 5 个组件 + 面板九宫格 + 全部图标；替换纹理</td><td>4–6 人日</td><td>中高：九宫格/文字/描边/命中区</td><td>高：完整一套皮</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="okbox"><b>建议：</b>先 A 验证“布局不动 + 文字可读 + 风格成立”，再 B 补组件。不要一上来做 B；B 的问题会掩盖 A 的方向问题。</div>
+
+  <h3>6.2 风险清单</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>风险</th><th>影响</th><th>缓解</th></tr></thead>
+      <tbody>
+        <tr><td>面板不是九宫格设计（整图 2× 拉伸）</td><td>风格洗后角饰/云纹被拉伸或洗糊</td><td>按 120 源 px margin 试九宫格；不行保留整图 + 只换色板</td></tr>
+        <tr><td>运行时渐变 UI vs 烘焙贴图</td><td>两套视觉语言不一致</td><td>A 策略先统一色板；B 策略统一定义圆角/描边/阴影 token</td></tr>
+        <tr><td>73 条唯一文案 + 物品描述</td><td>错字/漏字/字重不一致</td><td>保留 live text；4K 修字只修背景；OCR + 人工逐字</td></tr>
+        <tr><td>系统字体未打包（PingFang/KaiTi）</td><td>分发/跨平台字形不一致；许可不明</td><td>换 Noto Sans SC / 思源宋体（OFL）；随包附许可</td></tr>
+        <tr><td>20 个 SVG 图标线宽/视角不一</td><td>换风格后像拼贴</td><td>先统一 2px 线宽/圆角/光源；再做风格化</td></tr>
+        <tr><td>品质边框靠颜色区分</td><td>色弱/缩略图不可读</td><td>加形状/角标/文字；不要只用颜色</td></tr>
+        <tr><td>344 draw calls / GL Compatibility</td><td>换 4K 贴图后内存/带宽上升</td><td>控制 max texture；合图/atlas；实测 FPS</td></tr>
+        <tr><td>F1 对齐覆盖层 / 现有截图</td><td>对比时误把诊断层当成品</td><td>验收截图关闭 F1；另存 overlay 图</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>对比度实测（WCAG）</th><th>比值</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>#5B4636</code> on <code>#FFF6E5</code></td><td><b>8.24:1</b></td><td>正文，安全</td></tr>
+        <tr><td><code>#5B4636</code> on <code>#F2C46D</code></td><td><b>5.43:1</b></td><td>按钮文字，安全</td></tr>
+        <tr><td><code>#E07856</code> on <code>#FFF6E5</code></td><td>2.80:1</td><td>只能装饰/大字，不能正文</td></tr>
+        <tr><td>现有 <code>#F2FBFF</code> on <code>#69A1D2</code></td><td>2.62:1</td><td><b>换皮时不要沿用为正文</b>；正文用深色 <code>#123B56</code>（6.47:1）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>验收 / 边界</h2><span class="sec-note">fail-closed · 换皮 ≠ 玩法创新</span></div>
+
+  <h3>7.1 七步检查表</h3>
+  <div class="progressline"><div class="bar"><i id="stepBar"></i></div><b id="stepCount">0 / 7</b></div>
+  <div class="steps" id="stepList">
+    <label class="step"><input type="checkbox"><div><div class="t">0 · 布局冻结</div><p class="d">原创截图 1×/2×/4K；HUD/按钮/文字/站位 bbox；文本 100% 列出；32 件确认。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">1 · 只换题材</div><p class="d">Theme only；HUD/按钮/站位/画幅不动；文字不新增/不消失。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">2 · 风格洗</div><p class="d">战斗 0.28–0.30；文本密集 0.22–0.25；锚点漂移 ≤1%。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">3 · 4K 修字</div><p class="d">只给洗过的图；逐条文字；OCR 0 错/0 缺；人工签字；字体许可。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">4 · 切件</div><p class="d">32/32；alpha 干净；bbox/pivot/九宫格正确；padding 2–8 px。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">5 · 同名导入</div><p class="d">manifest diff = 0；1×/2×/4× 预览；点击命中区不变。</p></div></label>
+    <label class="step"><input type="checkbox"><div><div class="t">6 · 对比验收</div><p class="d">同机位 before/after；25% 缩略可读；运行时截图/录像；FPS/内存达标。</p></div></label>
+  </div>
+  <div class="btnrow"><button class="btn" id="resetSteps">重置检查表</button><span class="note">勾选只在本页生效，不写入项目。</span></div>
+
+  <h3>7.2 验收清单（fail-closed）</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>视觉/布局</h4>
+      <ul class="check">
+        <li>同机位 before/after（1× 与 25% 缩略）</li>
+        <li>HUD/按钮/页签锚点漂移 ≤1% 或 ≤2 px</li>
+        <li>九宫格 1×/2×/4× 拉伸无角糊/边裂</li>
+        <li>32/32 零件齐全，alpha 边缘干净</li>
+        <li>运行时截图 + 点击命中区测试</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>文字/许可/IP</h4>
+      <ul class="check">
+        <li>OCR 0 错字/0 缺字/0 多字 + 人工逐字</li>
+        <li>正文对比度 ≥4.5:1；大字 ≥3:1</li>
+        <li>manifest diff = 0（无缺失/多余/错名）</li>
+        <li>字体/模型/参考图许可记录齐全</li>
+        <li>无第三方案例角色/Logo/UI；无在世艺术家点名</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>7.3 换皮 ≠ 玩法创新</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>维度</th><th>换皮</th><th>玩法创新</th></tr></thead>
+      <tbody>
+        <tr><td>玩家重复的动作</td><td>不变</td><td>出现新动词，或旧动词的代价改变</td></tr>
+        <tr><td>决策结构</td><td>不变</td><td>新的取舍、风险、信息差</td></tr>
+        <tr><td>30 秒可教</td><td>靠题材解释</td><td>一句话 + 一个可试的演示</td></tr>
+        <tr><td>删掉这个“创新”</td><td>只是换回原主题</td><td>核心循环不成立</td></tr>
+        <tr><td>验证方式</td><td>截图/宣传语/CPI</td><td>可证伪的 playtest 假设</td></tr>
+        <tr><td>典型失败</td><td>版权/同质化/买量疲劳</td><td>新颖但不可读、不可行</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="banner"><b>判断：</b>换皮适合“核心循环已验证、需要低成本获取新用户/新渠道”的场景；不适合用来掩盖“玩法不成立”。先有 D1/D7/付费/留存数据，再决定是否换皮；不要用“换了三套皮”当作创新证据（呼应 T-033）。</div>
+
+  <h3>7.4 IP / 文字 / 数据边界</h3>
+  <div class="cards">
+    <div class="card warn"><h4>素材</h4><p>不复制《末日小队》或其他游戏的角色、怪物、技能图标、HUD、Logo、UI 布局、文案；参考只用于流程/参数分析。生成/参考素材必须原创/CC0/已授权，记录来源与访问日期。</p></div>
+    <div class="card warn"><h4>风格</h4><p>只用通用词（国风水墨/萌系治愈/欧美卡通）；不点名模仿在世艺术家；不写“像某某画师”。AI 输出要做相似度/商标/角色检查。</p></div>
+    <div class="card warn"><h4>文字</h4><p>中文必须人工校对；AI 修字可能造字/缺笔画；能 live text 就 live text；字体只用 OFL/自有/已购，随包附许可。</p></div>
+    <div class="card warn"><h4>数据/平台</h4><p>上传云端前确认 NDA/留存/跨境/训练；不要把换皮做成“马甲包/欺骗性克隆”；应用商店对重复内容/图标名称混淆有政策风险。</p></div>
+  </div>
+</section>
+
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>来源</h2><span class="sec-note">访问日期 2026-11-21</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>来源</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>S1</td><td><a href="https://www.bilibili.com/video/BV16gs36aECJ" target="_blank" rel="noopener">B 站视频 BV16gs36aECJ</a> / <a href="https://b23.tv/BxqFSUh" target="_blank" rel="noopener">短链</a></td><td>标题/简介/流程</td></tr>
+        <tr><td>S2</td><td><a href="https://api.bilibili.com/x/web-interface/view?bvid=BV16gs36aECJ" target="_blank" rel="noopener">view API</a> · <a href="https://api.bilibili.com/x/v2/reply?type=1&oid=117629742287408&sort=2" target="_blank" rel="noopener">reply API</a> · <a href="https://api.bilibili.com/x/v2/reply/main?oid=117629742287408&type=1&mode=3" target="_blank" rel="noopener">reply/main</a></td><td>元数据/置顶评论；确认 all_count=1</td></tr>
+        <tr><td>S3</td><td><a href="https://mochu.art" target="_blank" rel="noopener">魔触官网</a></td><td>产品定位/功能/在线形态</td></tr>
+        <tr><td>S4</td><td><a href="https://mp.weixin.qq.com/s?__biz=MzI2NDMyMDc0NA==&mid=2247493958&idx=1&sn=1f6b36b1568ccdf559764322f6429dcc" target="_blank" rel="noopener">魔触 2.5 公众号</a></td><td>2.5 功能/活动（页面触发环境验证，B/C）</td></tr>
+        <tr><td>S5</td><td><a href="https://my.feishu.cn/wiki/LX7QwflEuiSKeEkq2adchIXsnfe" target="_blank" rel="noopener">魔触用户协议</a></td><td>运营主体/账号规则（全文未完整取证）</td></tr>
+        <tr><td>S6</td><td><a href="https://www.uisdc.com/ai-game-tools" target="_blank" rel="noopener">uisdc 测评</a> · <a href="https://aiproducthub.cn/zt/71295.html" target="_blank" rel="noopener">aiproducthub</a> · <a href="https://www.cxgn.cn/ja/mo-chu-ai" target="_blank" rel="noopener">cxgn</a></td><td>价格/额度/商用提示（第三方）</td></tr>
+        <tr><td>S7</td><td>ComfyUI / ControlNet / IP-Adapter / Real-ESRGAN / rembg / PaddleOCR / InvokeAI / A1111 的 GitHub LICENSE</td><td>工具许可</td></tr>
+        <tr><td>S8</td><td>SDXL / FLUX.1 schnell / FLUX.1 dev 模型卡（Hugging Face）</td><td>权重许可（以模型卡为准）</td></tr>
+        <tr><td>S9</td><td>Krita / GIMP / Noto Sans SC / Godot NinePatchRect</td><td>修图/字体/九宫格</td></tr>
+        <tr><td>S10</td><td><code>docs/design/gameplay-innovation-research.md</code>（T-033）</td><td>“换皮 ≠ 玩法创新”的依据</td></tr>
+        <tr><td>S11</td><td><code>godot-inventory-ui/docs/PORTABLE_ASSETS.md</code>、<code>export/ui_layout.json</code>、<code>export/asset_manifest.json</code></td><td>dry-run 数字/资产</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">许可证与价格会变化；正式商用前以官方最新页面/模型卡/合同为准。第三方资料只作线索，不作授权依据。</p>
+</section>
+
+</main>
+
+<footer>
+  <p>制作：T-20261121-036 · general-purpose 调研 worker · 2026-11-21<br>
+  所有交互图形为原创 CSS/SVG；不复制案例游戏素材/界面。<a href="reskin-pipeline-teardown.md">查看 Markdown 完整版</a></p>
+</footer>
+
+</div>
+
+<div class="fab">
+  <button id="themeBtn" type="button">切换明暗</button>
+  <button id="printBtn" type="button">打印 / PDF</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* progress + TOC */
+  const progress = document.getElementById('progress');
+  const tocLinks = Array.from(document.querySelectorAll('nav.toc a'));
+  const sections = tocLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  function onScroll(){
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+    let current = sections[0];
+    for (const s of sections){
+      if (s.getBoundingClientRect().top <= 120) current = s;
+    }
+    tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + (current ? current.id : '')));
+  }
+  document.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* theme toggle */
+  const themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click', () => {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  });
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+  /* copy buttons */
+  function copyText(text, btn){
+    const done = () => {
+      if (!btn) return;
+      const old = btn.textContent;
+      btn.textContent = '已复制';
+      setTimeout(() => { btn.textContent = old; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(() => fallback());
+    } else { fallback(); }
+    function fallback(){
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){}
+      document.body.removeChild(ta);
+    }
+  }
+  document.querySelectorAll('.copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-copy');
+      const el = id ? document.getElementById(id) : null;
+      const pre = btn.closest('pre');
+      const text = el ? el.textContent : (pre ? pre.textContent.replace('复制','') : '');
+      copyText(text, btn);
+    });
+  });
+
+  /* ===== lab ===== */
+  const phone = document.getElementById('phone');
+  const strength = document.getElementById('strength');
+  const strengthOut = document.getElementById('strengthOut');
+  const rec = document.getElementById('rec');
+  const riskLayout = document.getElementById('riskLayout');
+  const riskText = document.getElementById('riskText');
+  const riskLayoutOut = document.getElementById('riskLayoutOut');
+  const riskTextOut = document.getElementById('riskTextOut');
+  const statusLine = document.getElementById('statusLine');
+  const pWave = document.getElementById('pWave');
+  const pMsg = document.getElementById('pMsg');
+  const pTitle = document.getElementById('pTitle');
+  const pItem = document.getElementById('pItem');
+  const pDesc = document.getElementById('pDesc');
+  const pFoot = document.getElementById('pFoot');
+  let mode = 'battle';
+  let theme = 'ink';
+
+  function fillGrid(){
+    const grid = document.getElementById('pGrid');
+    if (grid.childElementCount) return;
+    for (let i=0;i<25;i++){
+      const c = document.createElement('span');
+      c.className = 'p-cell';
+      grid.appendChild(c);
+    }
+  }
+  fillGrid();
+
+  function setMode(next, autoRec){
+    mode = next;
+    phone.dataset.mode = mode;
+    document.querySelectorAll('[data-mode-btn]').forEach(b => b.classList.toggle('on', b.dataset.modeBtn === mode));
+    rec.textContent = mode === 'battle' ? '0.30' : '0.25';
+    if (autoRec) strength.value = mode === 'battle' ? 30 : 25;
+    if (mode === 'lobby'){
+      pTitle.textContent = '云璃背包';
+      pItem.textContent = '回春丹';
+      pDesc.textContent = '千年灵芝配晨露炼成。服用后回复 500 气血。';
+      pMsg.textContent = '背包容量 35 / 216 · 第 1 / 5 页 · 可交易 · 120 银两/件';
+      pFoot.textContent = '良品 · 消耗 · 未绑定';
+    } else {
+      pFoot.textContent = '2× 速度';
+    }
+    update();
+  }
+
+  function setTheme(next, btn){
+    theme = next;
+    phone.dataset.theme = theme;
+    document.querySelectorAll('[data-theme-btn]').forEach(b => b.classList.toggle('on', b.dataset.themeBtn === theme));
+    update();
+  }
+
+  function garbleText(on){
+    [pWave, pMsg, pTitle, pItem, pDesc].forEach(el => el.classList.toggle('garble', on));
+    if (!on){
+      pWave.textContent = strength.value >= 55 ? '第 ? 波 / 1O' : '第 3 / 10 波';
+      pMsg.textContent = mode === 'lobby' ? '背包容量 35 / 216 · 第 1 / 5 页 · 可交易 · 120 银两/件' : pMsg.textContent;
+      pTitle.textContent = '云璃背包';
+      pItem.textContent = '回春丹';
+      pDesc.textContent = '千年灵芝配晨露炼成。服用后回复 500 气血。';
+    } else {
+      pWave.textContent = '第 ? 波 / 1O';
+      pMsg.textContent = '背包容量 3? / 2?6 · 第 ? / ? 页 · 可交易 ? 12O 银两/件';
+      pTitle.textContent = '云?背包';
+      pItem.textContent = '回?丹';
+      pDesc.textContent = '千年灵?配晨露炼成。服用后回复 ?OO 气血。';
+    }
+  }
+
+  function update(){
+    const s = Number(strength.value) / 100;
+    strengthOut.textContent = s.toFixed(2);
+    phone.dataset.strength = String(strength.value);
+    const layoutRisk = Math.max(0, Math.min(1, (s - 0.30) / 0.35));
+    const textRisk = Math.max(0, Math.min(1, (s - 0.25) / 0.40));
+    riskLayout.style.width = (layoutRisk * 100).toFixed(0) + '%';
+    riskText.style.width = (textRisk * 100).toFixed(0) + '%';
+    riskLayoutOut.textContent = (layoutRisk * 100).toFixed(0) + '%';
+    riskTextOut.textContent = (textRisk * 100).toFixed(0) + '%';
+    phone.classList.remove('drift-1','drift-2','recompose');
+    if (s >= 0.60) phone.classList.add('recompose');
+    else if (s >= 0.40) phone.classList.add('drift-2');
+    else if (s >= 0.33) phone.classList.add('drift-1');
+    garbleText(s >= 0.55);
+    statusLine.className = 'statusline';
+    if (s < 0.20){ statusLine.textContent = '过轻：风格没洗进去，画面还是旧皮。'; }
+    else if (s <= 0.31){ statusLine.textContent = '推荐区：0.25–0.30，能洗风格且布局基本不动。'; }
+    else if (s <= 0.39){ statusLine.textContent = '偏重：开始位移按钮，文本密集界面建议回到 0.25。'; statusLine.classList.add('warn'); }
+    else if (s <= 0.54){ statusLine.textContent = '危险：HUD/页签开始漂，文字开始花；生产禁用。'; statusLine.classList.add('warn'); }
+    else { statusLine.textContent = '反例：0.65 整图重画 = 变成别人的游戏；不要上线。'; statusLine.classList.add('bad'); }
+  }
+
+  strength.addEventListener('input', update);
+  document.querySelectorAll('[data-theme-btn]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeBtn, b)));
+  document.querySelectorAll('[data-mode-btn]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.modeBtn, true)));
+  document.getElementById('btnRec').addEventListener('click', () => { strength.value = mode === 'battle' ? 30 : 25; update(); });
+  document.getElementById('btnDanger').addEventListener('click', () => { strength.value = 65; update(); });
+  document.getElementById('btnReset').addEventListener('click', () => { setMode('battle', true); setTheme('ink'); strength.value = 30; update(); });
+  setMode('battle', false);
+  setTheme('ink');
+  update();
+
+  /* ===== manifest ===== */
+  const parts = [
+    {id:'bg_night_palace', src:'assets/bg/night_palace.png', type:'scene', out:'textures/bg/night_palace.png', slice:'—', display:'1280×720'},
+    {id:'char_cloud_fox', src:'assets/char/cloud_fox.svg', type:'scene', out:'textures/char/cloud_fox.png', slice:'—', display:'160×204'},
+    {id:'icon_sword', src:'assets/icons/icon_sword.svg', type:'icon', out:'textures/icons/icon_sword.png', slice:'—', display:'78×78'},
+    {id:'icon_armor', src:'assets/icons/icon_armor.svg', type:'icon', out:'textures/icons/icon_armor.png', slice:'—', display:'78×78'},
+    {id:'icon_potion_red', src:'assets/icons/icon_potion_red.svg', type:'icon', out:'textures/icons/icon_potion_red.png', slice:'—', display:'78×78'},
+    {id:'icon_gem', src:'assets/icons/icon_gem.svg', type:'icon', out:'textures/icons/icon_gem.png', slice:'—', display:'78×78'},
+    {id:'icon_scroll', src:'assets/icons/icon_scroll.svg', type:'icon', out:'textures/icons/icon_scroll.png', slice:'—', display:'78×78'},
+    {id:'panel', src:'assets/ui/panel.png', type:'ui', out:'textures/ui/panel.png', slice:'120', display:'1193×659'},
+    {id:'close', src:'assets/ui/close.png', type:'ui', out:'textures/ui/close.png', slice:'—', display:'72×72'},
+    {id:'glow', src:'assets/ui/glow.png', type:'ui', out:'textures/ui/glow.png', slice:'—', display:'96–520'},
+    {id:'vignette', src:'assets/ui/vignette.png', type:'ui', out:'textures/ui/vignette.png', slice:'—', display:'1280×720'},
+    {id:'tab_idle', src:'runtime gradient (bake)', type:'component', out:'textures/ui/tab_idle.png', slice:'16', display:'103×54'},
+    {id:'tab_active', src:'runtime gradient (bake)', type:'component', out:'textures/ui/tab_active.png', slice:'16', display:'103×54'},
+    {id:'btn_primary', src:'runtime gradient (bake)', type:'component', out:'textures/ui/btn_primary.png', slice:'24', display:'182×61'},
+    {id:'btn_danger', src:'runtime gradient (bake)', type:'component', out:'textures/ui/btn_danger.png', slice:'24', display:'70×34'},
+    {id:'cell_normal', src:'runtime gradient (bake)', type:'component', out:'textures/ui/cell_normal.png', slice:'12', display:'102×85'}
+  ];
+  const manifestBody = document.getElementById('manifestBody');
+  const manifestSummary = document.getElementById('manifestSummary');
+  const simulateBad = document.getElementById('simulateBad');
+  let filter = 'all';
+
+  function renderManifest(){
+    manifestBody.innerHTML = '';
+    let n = 0;
+    parts.forEach((p, i) => {
+      const tr = document.createElement('tr');
+      tr.dataset.type = p.type;
+      tr.dataset.id = p.id;
+      tr.innerHTML = '<td>' + (i+1) + '</td>' +
+        '<td class="id">' + p.id + '</td>' +
+        '<td>' + p.src + '</td>' +
+        '<td>' + ({scene:'场景',icon:'图标',ui:'UI',component:'组件'}[p.type] || p.type) + '</td>' +
+        '<td>' + p.out + '</td>' +
+        '<td>' + p.slice + '</td>' +
+        '<td class="st ok">待校验</td>';
+      manifestBody.appendChild(tr);
+      n++;
+    });
+    applyFilter();
+    manifestSummary.textContent = '示例 ' + n + ' / 全量 32 · 等待校验';
+  }
+  function applyFilter(){
+    manifestBody.querySelectorAll('tr').forEach(tr => {
+      tr.hidden = filter !== 'all' && tr.dataset.type !== filter;
+    });
+  }
+  document.querySelectorAll('[data-filter]').forEach(b => {
+    b.addEventListener('click', () => {
+      filter = b.dataset.filter;
+      document.querySelectorAll('[data-filter]').forEach(x => x.classList.toggle('on', x === b));
+      applyFilter();
+    });
+  });
+  document.getElementById('validateBtn').addEventListener('click', () => {
+    const bad = simulateBad.checked;
+    let mismatches = 0;
+    manifestBody.querySelectorAll('tr').forEach((tr, i) => {
+      const st = tr.querySelector('.st');
+      tr.classList.remove('badrow');
+      if (bad && i === 3){
+        st.textContent = '缺失 / 错名';
+        st.className = 'st bad';
+        tr.classList.add('badrow');
+        mismatches = 1;
+      } else {
+        st.textContent = 'PASS';
+        st.className = 'st ok';
+      }
+    });
+    if (mismatches){
+      manifestSummary.innerHTML = '示例 16 / 全量 32 · <span class="fail">FAIL：1 个错名/漏切，manifest diff = 1</span>';
+    } else {
+      manifestSummary.innerHTML = '示例 16 / 全量 32 · <span class="pass">PASS：manifest diff = 0</span>';
+    }
+  });
+  simulateBad.addEventListener('change', () => {
+    if (!simulateBad.checked){
+      manifestBody.querySelectorAll('tr').forEach(tr => {
+        tr.classList.remove('badrow');
+        const st = tr.querySelector('.st');
+        st.textContent = '待校验';
+        st.className = 'st ok';
+      });
+      manifestSummary.textContent = '示例 16 / 全量 32 · 等待校验';
+    }
+  });
+  renderManifest();
+
+  /* ===== steps ===== */
+  const stepList = document.getElementById('stepList');
+  const stepBar = document.getElementById('stepBar');
+  const stepCount = document.getElementById('stepCount');
+  function updateSteps(){
+    const boxes = Array.from(stepList.querySelectorAll('input[type=checkbox]'));
+    const done = boxes.filter(b => b.checked).length;
+    stepBar.style.width = (done / boxes.length * 100) + '%';
+    stepCount.textContent = done + ' / ' + boxes.length;
+    boxes.forEach(b => b.closest('.step').classList.toggle('done', b.checked));
+  }
+  stepList.addEventListener('change', updateSteps);
+  document.getElementById('resetSteps').addEventListener('click', () => {
+    stepList.querySelectorAll('input[type=checkbox]').forEach(b => b.checked = false);
+    updateSteps();
+  });
+  updateSteps();
+})();
+</script>
+</body>
+</html>
