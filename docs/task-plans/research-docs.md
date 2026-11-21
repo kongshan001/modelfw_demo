@@ -27,7 +27,7 @@
 - 交付: `docs/motion-stage-and-ai-3d-game-teardown.md`（结论先行 + 流程/坑 + MotionStage 技术/许可/导出 + 接入方案 + IP 边界 + 来源）+ 工具截图/证据；媒体
 - 约束: 只研究，不复制鬼灭 IP/游戏素材/角色；MotionStage 为 MIT，可研究/试用但保留许可；不改游戏代码；区分作者自述与验证
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261121-030 · 调研 · Blender 二次元女性角色管线（供美术 Agent 能力建设）
 - 来源: 飞书消息（2026-11-21，“如果不具备，调研怎么把这个能力补全到美术 agent，持续迭代到接近原神品质”）
@@ -47,7 +47,7 @@
 - 交付: `docs/ai-half-finished-rescue-playbook.md` + 交互 HTML（triage 向导/否决清单/裁判 rubric）+ `docs/templates/` 模板 + 截图；来源
 - 约束: 只调研/写模板，不改代码；不复制《烬谷盗火录》素材；区分视频观点与验证；模板要能直接用于 dispatcher/worker prompt
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: failed
 
 ## T-20261121-027 · 调研 · 独立开发者 10 个开源游戏工具链（B 站 BV11D4j64Eh3）
 - 来源: 飞书消息（B 站《一个人做游戏：引擎、美术、3D、配音、NPC，10 个开源工具全覆盖》，https://b23.tv/AYWbnRR，2026-11-21）
@@ -56,7 +56,9 @@
 - 交付: `docs/open-source-solo-gamedev-toolkit.md`（结论先行 + 工具对比表 + 采用矩阵 + 风险/许可 + 来源）+ 交互 HTML（工具筛选/管线图）+ 截图；媒体
 - 约束: 只调研不安装/不改造；以官方仓库/文档核实版本与许可；区分视频 claim 与已验证事实；AI 语音/美术注意版权与肖像/声音授权；中文
 - 指派: general-purpose worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-027/result.md
+- 结论: 本仓库主线 Godot + Blender；Whisper/OpenVoice/TripoSR/ComfyUI/SB3/Ren'Py 值得按需评估；ML-Agents（锁 Unity 6）与 RVC（声音授权风险）不进主线；ComfyUI/TripoSR 在本机 Intel Mac 需云端 GPU。视频 claim “TripoSR A100 <0.5s”“OpenVoice V2 MIT 免费商用”已用官方 README 核实。
 
 ## T-20261121-020 · 调研 · Godot 程序化地图生成技术方案与优秀案例
 - 来源: 飞书消息（2026-11-21，“godot在程序化地图生成这块有哪些技术方案，以及优秀效果案例然后复刻”）
