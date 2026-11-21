@@ -38,7 +38,7 @@
 - 交付: `godot-wfc/` 可运行 Godot 4.6 demo（控制面板/步进/速度/种子/尺寸/算法视图）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创瓦片/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；确定性种子；不改其他项目
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261121-004 · 外部参考对标 · 美术质量差距量化（Art Director）
 - 来源: 飞书消息（2026-11-21，“美术去外部拿参考图对比看一下，究竟我们的美术质量差异有多大”）
