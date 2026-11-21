@@ -10,7 +10,7 @@
 - 交付: 可运行 `godot-flowfield/`；README/TECH/迭代记录/CREDITS；smoke `FLOWFIELD_SMOKE_OK`；1920×1080 截图 ≥4 + 10s GIF/MP4；200/500/1000 智能体 FPS
 - 约束: 不复制视频素材；Godot 4.6 GL Compatibility；不穿墙、流场单调、同地图可重复；commit_paths 必须包含 `godot-flowfield/`，完成后确认已在 git 历史中
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261121-008 · 复刻 Flow Field 流场寻路群体寻路 Demo
 - 来源: 飞书消息（B 站 BV12bzZY2EfA《〈群体寻路与避障〉Flow Field 流场寻路算法如何实现群体寻路》，3:53，2026-11-21）
