@@ -42,8 +42,8 @@
 - 约束: 原创角色，不复制原神/任何 IP；Blender 3.4.1/4.2.9；时间盒 1–2h；如实记录失败；不用付费资产
 - 建模管线: 原创参考图 → Tripo 图生 3D → Blender 清理/重拓扑/绑骨/贴图/toon → GLB/VRM（用户 2026-11-21 指定）
 - 指派: game-artist worker（dispatcher）
-- 状态: done（2026-11-21；Blender-only 基线完成；Tripo 无 key 未测，401 已记录）
-- 产出: `docs/agent-capabilities/blender-anime-probe.md`；`agent-probes/blender-anime-girl/`（qinghe.blend / qinghe.glb / 构建·渲染·校验脚本 / 贴图 / 四视图+角色卡+剪影）；实测 3.4.1 EEVEE 可用，4.2.9 Workbench/EEVEE Next 崩溃（含默认立方体），Cycles CPU toon 不可用
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-029/result.md
 - 后续: T-20261121-031（能力建设）
 
 ## T-20261121-031 · 美术 Agent Blender 二次元能力建设（T-029 follow-up）
