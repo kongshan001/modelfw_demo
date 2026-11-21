@@ -1,0 +1,111 @@
+{
+  "schema": "modelfw.portable.manifest/1",
+  "package": "flowfield-reference",
+  "version": "1.0.0",
+  "generated": "2026-11-21",
+  "producer": {
+    "task": "T-20261121-012",
+    "thread": "T-20261121-009",
+    "repo": "modelfw_demo",
+    "branch": "feat/ai-slice",
+    "source_project": "godot-flowfield"
+  },
+  "coordinate_contract": {
+    "space": "grid",
+    "origin": "top-left",
+    "x": "right",
+    "y": "down",
+    "index": "y * cols + x",
+    "cell_anchor": "center",
+    "y_axis_note": "Godot 2D matches this directly. Unity 2D and Three.js are Y-up: negate y at the render adapter boundary. Unreal is left-handed with Z-up: use (X = x, Y = -y, Z = 0) for a top-down plane and convert centimetres.",
+    "unit_note": "All parameters are expressed relative to cell_size. Choose one metric per engine and keep ratios exact: radius = 0.17 cell, speed = 2.9 cell/s, separation radius = 0.391 cell (radius x 2.3)."
+  },
+  "depth_contract": {
+    "draw_order": ["background", "cell fills", "grid lines", "flow arrows", "trails", "agent glow (additive)", "agent core", "goal pulse / hover overlay"],
+    "rule": "Keep this order explicitly; never rely on insertion order or texture streaming order across engines."
+  },
+  "time_contract": {
+    "logic_hz": 30,
+    "fixed_dt_seconds": 0.0333333333,
+    "render_interpolation": "alpha = clamp((now - last_logic_step) / fixed_dt, 0, 1); position = lerp(prev, current, alpha)",
+    "decimation": "above 700 agents refresh direction/separation/trails every 3rd tick, movement every tick",
+    "determinism": "never use wall-clock time or frame delta for logic decisions"
+  },
+  "files": [
+    {
+      "path": "flowfield_params.json",
+      "role": "engine-neutral parameters, schemas and acceptance defaults",
+      "bytes": 6902,
+      "sha256": "4eac6017040bcbcfb501e086b792b3e03b284148056381c1ac84dca7d98bee3e"
+    },
+    {
+      "path": "flowfield_sample_medium.json",
+      "role": "verified 36x24 C-corridor field export (cost, integration, flow)",
+      "bytes": 6794,
+      "sha256": "c7be8530c455d5d37edeea4cb2e14879081958d4c8cfcbfd5dcbd9eb3c7ae382"
+    },
+    {
+      "path": "../perf/ablation_1280x720.csv",
+      "role": "raw audit data, 1280x720",
+      "bytes": 14920,
+      "sha256": "1d3c18cf0d4e5f146f9c595a36f934eb60d4667af98a30197e3e0afcd17b0398"
+    },
+    {
+      "path": "../perf/ablation_1920x1080.csv",
+      "role": "raw audit data, 1920x1080",
+      "bytes": 8575,
+      "sha256": "caa311803a4a7f26a351e0ef7ce3536d040f5c58328dd3c8610e0f03eed655c6"
+    },
+    {
+      "path": "../perf/REPORT.md",
+      "role": "audit report and methodology",
+      "bytes": 35365,
+      "sha256": "f2bae7067e1abc3d1f5e1bfd5495ff9c23718d772e14a30ebf642c22c4998b9d"
+    }
+  ],
+  "sample_checks": {
+    "map": "medium 36x24, seed 421, C-shaped corridor, goal (5,12)",
+    "open_cells": 835,
+    "reachable_cells": 835,
+    "max_integration": 31,
+    "bad_monotonic_cells": 0,
+    "bad_corner_cut_cells": 0,
+    "zero_flow_reachable_non_goal_cells": 0,
+    "verified_against": "godot-flowfield/tools/smoke_flowfield.gd reports 835 reachable cells for the same sample"
+  },
+  "acceptance": {
+    "data": [
+      "integration is int32 and uses the same INF sentinel",
+      "flow is a direction index 0..7 or 255 for none",
+      "all arrays are length cols*rows in y*cols+x order",
+      "goals are in bounds, walkable and unique"
+    ],
+    "algorithm": [
+      "for every reachable non-goal cell, flow points to a walkable neighbor with strictly smaller integration",
+      "diagonal moves require both orthogonal side cells to be walkable",
+      "unreachable cells keep INF and flow=none",
+      "same seed and same edit sequence produce bit-identical fields"
+    ],
+    "simulation": [
+      "no NaN in position/velocity over 600 fixed steps",
+      "no agent circle penetrates a blocked cell",
+      "same seed and same 90-step input sequence produce the same positions (tolerance 0 in the reference engine; document float tolerance per engine)"
+    ],
+    "performance": [
+      "record harness version, engine version, CPU/GPU, resolution, vsync state and load",
+      "report P50/P95/P99, worst and hitch counts, not just average FPS",
+      "use same-round normalisation when the machine is shared",
+      "relative gate example: optimised/baseline FPS >= 1.8 and P95 ratio <= 0.7"
+    ]
+  },
+  "provenance": {
+    "public_references": [
+      "https://docs.godotengine.org/en/stable/classes/class_multimeshinstance2d.html (accessed 2026-11-21)",
+      "https://docs.godotengine.org/en/stable/classes/class_canvasitem.html (accessed 2026-11-21)",
+      "https://en.wikipedia.org/wiki/Breadth-first_search (accessed 2026-11-21)",
+      "https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm (accessed 2026-11-21)"
+    ],
+    "measurement_source": "godot-flowfield/docs/perf/REPORT.md (T-20261121-011)",
+    "do_not_mix": "Absolute FPS from T-20261121-009, T-20261121-011, godot-wfc and godot-steering were captured in different sessions and load conditions; only same-round relative results and engine counters are comparable."
+  }
+}

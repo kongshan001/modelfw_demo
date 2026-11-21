@@ -1,0 +1,165 @@
+{
+  "schema": "modelfw.flowfield.params/1",
+  "package": "flowfield-reference",
+  "version": "1.0.0",
+  "generated": "2026-11-21",
+  "source": {
+    "project": "godot-flowfield",
+    "task": "T-20261121-012 (thread T-20261121-009)",
+    "implementation": "scripts/flow_field_grid.gd + scripts/flow_sim.gd + scripts/flow_view.gd",
+    "engine": "Godot 4.6 / GDScript / GL Compatibility"
+  },
+  "coordinate_contract": {
+    "grid_origin": "top-left of the play area",
+    "x_axis": "right",
+    "y_axis": "down",
+    "indexing": "idx = y * cols + x",
+    "cell_anchor": "cell center is (x + 0.5, y + 0.5) * cell_size",
+    "world_to_cell": "floor((world - origin) / cell_size)",
+    "units": "world units are pixels in the reference project; cell_size is the only scale that must be preserved when porting"
+  },
+  "field": {
+    "presets": {
+      "small": { "cols": 24, "rows": 16, "cell_size": 36.0 },
+      "medium": { "cols": 36, "rows": 24, "cell_size": 24.0 },
+      "large": { "cols": 48, "rows": 32, "cell_size": 18.0 }
+    },
+    "cell_size_rule": "cell = max(8, floor(min(play_rect_width / cols, play_rect_height / rows)))",
+    "play_rect_px": [28.0, 96.0, 884.0, 596.0],
+    "cost_encoding": { "blocked": 0, "walkable": 1 },
+    "integration_encoding": { "goal": 0, "unreachable": 1073741824 },
+    "flow_encoding": { "direction_index": "0..7", "none": 255 }
+  },
+  "neighbors": {
+    "order_is_part_of_the_result": true,
+    "offsets": [[1, 0], [0, -1], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, -1], [-1, 1]],
+    "unit_directions": [[1.0, 0.0], [0.0, -1.0], [0.0, 1.0], [-1.0, 0.0], [0.70710678, -0.70710678], [0.70710678, 0.70710678], [-0.70710678, -0.70710678], [-0.70710678, 0.70710678]],
+    "diagonal_rule": "k >= 4 is diagonal; both orthogonal side cells (x+dx, y) and (x, y+dy) must be walkable, otherwise the diagonal is skipped (no corner cutting)"
+  },
+  "build": {
+    "algorithm": "multi-source breadth-first search from all goals",
+    "queue": "FIFO, goals enqueued in the goals[] order",
+    "cost_model": "uniform step cost 1; replace BFS with Dijkstra (binary heap) to support weighted terrain without changing the flow-field output format",
+    "flow_rule": "for every reachable non-goal cell, choose the walkable neighbor with the strictly smallest integration value; first minimum in neighbor order wins ties",
+    "goals_max": 8
+  },
+  "simulation": {
+    "fixed_dt_seconds": 0.0333333333,
+    "logic_hz": 30,
+    "max_agents": 1200,
+    "agent_radius_rule": "clamp(cell_size * 0.17, 2.6, 7.0)",
+    "agent_speed_rule": "cell_size * 2.9",
+    "speed_scale_range": [0.86, 1.14],
+    "steering": {
+      "velocity_gain": 5.0,
+      "separation_gain": 2.8,
+      "wall_push_gain": 3.2,
+      "max_force_multiplier": 8.0,
+      "speed_clamp": "each agent's own speed = cell_size * 2.9 * speed_scale[i]"
+    },
+    "separation": {
+      "radius_multiplier": 2.3,
+      "hash_cell_size_multiplier": 2.3,
+      "hash_cell_size_min": 4.0,
+      "pair_rule": "5 offsets (self + right + right-up + right-down + down) so each pair is accumulated once",
+      "vector_clamp": 3.0,
+      "refresh_every_ticks": 2,
+      "refresh_every_ticks_large": 3,
+      "large_group_threshold": 700
+    },
+    "wall": {
+      "influence_radius_multiplier": 2.1,
+      "push_clamp": 2.0
+    },
+    "collision": {
+      "shape": "circle vs grid cells",
+      "iterations": 3,
+      "margin_cell_fraction": "radius / cell_size"
+    },
+    "goal": {
+      "arrival_radius_fraction": 0.8,
+      "respawn_min_integration_steps": 12,
+      "respawn_fade_seconds": 0.18,
+      "spawn_attempts": 40,
+      "spawn_jitter_fraction": 0.32
+    },
+    "decimation": {
+      "default_enabled": true,
+      "refresh_every_ticks": 2,
+      "refresh_every_ticks_large": 3,
+      "movement_always_hz": 30
+    }
+  },
+  "sampling": {
+    "method": "bilinear interpolation over the four cell centers around the agent, then normalize",
+    "weights": "w00=(1-fx)(1-fy), w10=fx(1-fy), w01=(1-fx)fy, w11=fx*fy",
+    "valid_corners": "only open and reachable corners participate; weight_sum must exceed 0.0001",
+    "fallback": "use the flow vector of the cell containing the agent",
+    "normalization": "normalize the mixed vector; zero-length result falls back"
+  },
+  "rendering": {
+    "layer_order": ["background grid", "cell heat colors", "grid lines", "flow arrows", "trails", "agent glow", "agent core", "goal pulse / hover overlay"],
+    "arrows": {
+      "segments_per_arrow": 3,
+      "half_length_cell_fraction": 0.30,
+      "head_length_cell_fraction": 0.19,
+      "width_rule": "max(1.5, cell_size * 0.10)",
+      "antialias": true,
+      "color": "#54FFC6 (teal)"
+    },
+    "agents": {
+      "mode": "two MultiMeshInstance2D layers (additive glow + core)",
+      "quad_px": 64,
+      "glow_scale": "radius * 4.6 / 64",
+      "core_scale": "radius * 1.9 / 64",
+      "glow_alpha": 0.42,
+      "core_alpha": 0.92
+    },
+    "trails": {
+      "points_per_agent": 6,
+      "segments_per_agent": 5,
+      "width_px": 1.1,
+      "color_rgba": [0.973, 0.259, 0.553, 0.115],
+      "antialias_default": false,
+      "half_sampling_default": true,
+      "half_sampling_threshold": 700,
+      "max_jump_cell_fraction": 2.4
+    },
+    "heat_ramp": ["#14F1F9", "#3F9CFF", "#7A4FD6", "#D13F8E"]
+  },
+  "audit": {
+    "reference_scenario": {
+      "map": "medium",
+      "seed": 421,
+      "agents": [500, 1000],
+      "view": "flow",
+      "warmup_frames": 60,
+      "sample_frames": 300,
+      "rounds": 5,
+      "vsync": "disabled"
+    },
+    "metrics": ["avg_fps", "p50_ms", "p95_ms", "p99_ms", "worst_ms", "hitch_33ms", "hitch_50ms", "logic_step_ms", "logic_budget_pct", "build_ms", "draw_calls", "objects", "primitives"],
+    "relative_gate_example": {
+      "fps_vs_baseline_min": 1.8,
+      "p95_vs_baseline_max": 0.7,
+      "note": "relative gates are for shared/loaded machines; absolute gates require a clean machine"
+    }
+  },
+  "porting": {
+    "canonical_layers": ["A data protocol", "B algorithm", "C rendering", "D toolchain"],
+    "determinism_rules": [
+      "keep the neighbor order table above unchanged",
+      "keep BFS FIFO order and goals[] order",
+      "keep the strict '<' tie-break when choosing the flow neighbor",
+      "seed every RNG explicitly; never use process time or frame delta in logic",
+      "iterate arrays in index order; do not use unordered maps in the hot path",
+      "use the same INF sentinel and the same int32 integration field"
+    ],
+    "unit_mapping": {
+      "godot_2d": "1 unit = 1 px (reference)",
+      "unity_2d": "1 unit = 1 m; multiply cell_size by 0.01 for a 24 px cell to become 0.24 m, or keep 1 cell = 1 unit",
+      "unreal": "1 uu = 1 cm; multiply reference px by 2.54 using 96 dpi, or define 1 cell = 100 uu and scale agent radius/speed accordingly",
+      "three_js": "1 unit = 1 m; define cell = 1.0 and scale all lengths by cell size"
+    }
+  }
+}

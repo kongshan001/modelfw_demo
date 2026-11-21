@@ -55,7 +55,7 @@
 - 交付: `docs/art-review/gridbound-art-review.md`（证据/分数/参数/APPROVE|CONCERNS|REJECT）+ 代表图；不改代码/资产；媒体
 - 约束: 独立评审，不复用实现者自评；不改 `godot-card-tactics/`；CC0 资产与 Duelyst 商标边界按 CREDITS
 - 指派: game-art-director worker（dispatcher）
-- 状态: blocked（等 T-013 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-013
 
 ## T-20261121-019 · 格间牌战美术整改（T-018 follow-up）
@@ -77,7 +77,7 @@
 - 交付: `godot-card-tactics/docs/DEVELOPMENT.md`、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（图集 schema/帧名/锚点/许可）、`export/asset_manifest.json`、`export/slice_atlas.py` + 联系表截图
 - 约束: 只读代码/资产，不改玩法；CC0 许可与来源保留；不复制 Duelyst 商标/版权外素材
 - 指派: general-purpose worker（dispatcher）
-- 状态: blocked（等 T-013 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-013
 
 ## T-20261121-011 · Flow Field 审计级性能复测与优化消融（T-009 follow-up）
@@ -101,7 +101,8 @@
 - 交付: `godot-flowfield/docs/TECHNICAL_PRINCIPLES.md` + 单文件交互 HTML + 更新 `godot-flowfield/docs/TECH.md` §6 + `docs/algorithm-demos-index.md` + Godot/Unity/Unreal/Three.js 映射表/移植契约/验收清单 + 截图
 - 约束: 只读代码/docs，不改游戏代码/资产；原创图表；来源与访问日期；区分公开事实/推断；结论先行；中文
 - 指派: general-purpose worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-012/result.md
 - depends_on: T-20261121-011
 
 ## T-20261121-009 · 续跑 Flow Field 流场寻路 Demo（T-008 重试）

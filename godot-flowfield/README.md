@@ -48,7 +48,7 @@ godot --path godot-flowfield --resolution 1280x720
 4. **采样与移动**：对单位所在格四角的流向量做双线性插值并归一化（平滑转弯）；速度朝目标方向加速，叠加空间哈希分离力与障碍软斥力，最大力/最大速度限幅。
 5. **碰撞**：圆形单位 vs 格子障碍精确推出（最多 3 次迭代），网格边界夹紧；目标到达半径 0.8 格，到达后从距目标 ≥12 步的格重生。
 
-详细推导、数据结构与性能取舍见 [docs/TECH.md](docs/TECH.md)。
+详细推导、数据结构与性能取舍见 [docs/TECH.md](docs/TECH.md)；原理、选型、T-011 性能因果链与跨引擎移植见 [docs/TECHNICAL_PRINCIPLES.md](docs/TECHNICAL_PRINCIPLES.md)（[交互版](docs/TECHNICAL_PRINCIPLES-交互版.html)，单文件无外部依赖）。
 
 ## 验证
 
@@ -77,6 +77,8 @@ godot --path godot-flowfield --resolution 1280x720 -s tools/capture_flowfield.gd
 | 1000 | 47.0 | 45.1 ms | 7.89 ms |
 
 1000 智能体时方向/分离/拖尾自动降到 10Hz 刷新、拖尾隔一个取样，移动仍按 30Hz 积分。三次实测均 ≥30 FPS；帧率会随机器负载波动，完整日志见 [docs/迭代记录.md](docs/迭代记录.md)。
+
+> 审计级复测（T-011，5 轮、P95/hitch、720p/1080p）见 [docs/perf/REPORT.md](docs/perf/REPORT.md)：高负载环境下默认 ALL 中位 26.4 FPS、P95 57.9 ms，**绝对数不可与上表单次 47.0 直接比较**；同轮归一 2.17×，成本排序与原因见 [docs/TECHNICAL_PRINCIPLES.md](docs/TECHNICAL_PRINCIPLES.md) §4。
 
 ## 目录
 
