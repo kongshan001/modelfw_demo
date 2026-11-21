@@ -205,7 +205,31 @@ dispatcher 会以 `claude -p --agent <agent>` 启动，worker 的系统提示就
 - **follow-up**：如果原任务还在运行，建一个带 `parent` / `followup_of` / `root_task` / `context_paths` 的后续任务排队；沿用父任务 `plan_file`，把上下文注入交给 dispatcher；避免两个 worker 同时改同一批文件。
 - **安全边界**：worker 使用 `bypassPermissions`，只应处理受信任的飞书消息；提示词中保留原创素材/版权/验收约束。
 
-## 7. 版权与素材
+## 7. 定时巡检（task_monitor）
+
+`tools/task_monitor.py` 是独立的**脚本级**巡检器（不是常驻 LLM agent）：
+
+- **检查项**：running 的 pid/子进程/CPU 停滞/超时、pending 依赖失败或长时间阻塞、done 的 Git 发布、计划状态与实际不一致、dispatcher/git_publisher daemon、近期失败/完成/状态变化。
+- **降噪**：默认静默；仅在状态变化、异常或 24h 心跳时输出；异常有 cooldown，避免每 15 分钟重复刷屏。
+- **为什么不常驻 agent**：常驻 LLM 循环成本高，且 cc-connect cron 的会话在 turn 结束后只有约 2 分钟宽限期；状态巡检用脚本，异常时再由 dispatcher 拉起独立 agent 诊断/QA。
+- **状态文件**：`~/.cc-connect/tasks/monitor_state.json`（用于去重/基线）。
+- **手动**：
+  ```bash
+  python3 tools/task_monitor.py --force    # 立即输出快照
+  python3 tools/task_monitor.py --reset-state
+  python3 tools/task_monitor.py --json
+  ```
+- **已配置（15 分钟）**：
+  ```bash
+  cc-connect cron add --cron "*/15 * * * *" \
+    --exec "cd /Users/ks_128/Documents/modelfw_demo && python3 tools/task_monitor.py" \
+    --desc "任务巡检（15min）" --timeout-mins 5 --silent
+  ```
+  查看/删除：`cc-connect cron list` / `cc-connect cron del <id>`。
+- **阈值**：`--cpu-stall-min 30`、`--max-run-min 120`、`--blocked-min 180`；可按机器负载调整。
+- **边界**：巡检只覆盖状态/生命周期，不替代 QA；质量验收仍由独立 `game-qa-lead` 按角色执行。
+
+## 8. 版权与素材
 
 - 参考图/视频只用于研究**机制与视觉语言**；subagent 必须使用原创素材/代码。
 - 不 1:1 复刻版权角色、游戏美术、UI 文案；需要近似效果时做原创设计。
