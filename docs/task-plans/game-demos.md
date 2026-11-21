@@ -2,6 +2,16 @@
 
 ## 进行中
 
+## T-20261121-009 · 续跑 Flow Field 流场寻路 Demo（T-008 重试）
+- 来源: 飞书反馈（2026-11-21，“相关 demo 工程注意提交 git repo”；T-008 worker API 中断，遗留未完成的 `godot-flowfield/`）
+- 父任务: T-20261121-008（failed，API Error: Connection closed mid-response）
+- 类型: game-demo（AI 寻路算法复刻 · 续跑）
+- 目标: 在现有 `godot-flowfield/` 半成品上续跑，完成 Flow Field demo 全部交付与验证，并确保工程提交入库
+- 交付: 可运行 `godot-flowfield/`；README/TECH/迭代记录/CREDITS；smoke `FLOWFIELD_SMOKE_OK`；1920×1080 截图 ≥4 + 10s GIF/MP4；200/500/1000 智能体 FPS
+- 约束: 不复制视频素材；Godot 4.6 GL Compatibility；不穿墙、流场单调、同地图可重复；commit_paths 必须包含 `godot-flowfield/`，完成后确认已在 git 历史中
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
 ## T-20261121-008 · 复刻 Flow Field 流场寻路群体寻路 Demo
 - 来源: 飞书消息（B 站 BV12bzZY2EfA《〈群体寻路与避障〉Flow Field 流场寻路算法如何实现群体寻路》，3:53，2026-11-21）
 - 类型: game-demo（AI 寻路算法复刻）
@@ -9,7 +19,7 @@
 - 交付: `godot-flowfield/` 可运行 Godot 4.6 demo（地图/目标/障碍编辑、智能体数量、三视图切换、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创场景/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；不穿墙、流场单调、同地图可重复；独立项目避免与 T-006 文件冲突
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: failed
 
 ## T-20261121-007 · 材质与特效专项整改（Game Artist）
 - 来源: 飞书消息（2026-11-21，“那就补充下材质和特效”，承接 T-20261121-004 外部对标 G1/G5）

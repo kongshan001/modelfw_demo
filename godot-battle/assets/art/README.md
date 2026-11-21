@@ -1,15 +1,21 @@
 # 美术资源与 AI 美术接入
 
-当前版本（Plan 2B）的战场、角色、图标全部由 GDScript 程序化绘制：没有外部位图、
-没有第三方素材、没有版权风险。程序化绘制始终可用，是任何缺失资源的兜底。
+当前版本的**角色、战场背景、面板与战斗特效**仍由 GDScript 程序化绘制；
+指令/状态图标使用 game-icons.net（CC BY 3.0）。程序化绘制始终可用，是任何
+缺失资源的兜底。
 
-## 为什么还是程序化美术
+## 当前素材状态
 
-Seedream / 方舟生图在本机被 403 / SSO 阻断（详见 `CREDITS.md`），无法产出 AI 立绘。
-因此本任务把“风格统一”和“未来可替换”拆开：
+2026-10-27：SSO 已恢复，Seedream 5.0 Flash 接入点可用。主角选择的凌霄、
+霜岚立绘已生成并抠像，放在 `assets/visuals/heroes/`；青鸾、玄烛、白术、
+紫苏待账号充值后补齐。战斗内角色与背景仍为程序化绘制。
 
-1. 先做出统一风格的 Q 版程序化角色 + 竹林黎明日景；
-2. 再用 `assets/visuals/visual_catalog.json` 预留 AI 美术的 drop-in 接口。
+1. 主角选择立绘：透明 PNG，缺图自动回退程序化；
+2. 指令/状态图标：game-icons.net（CC BY 3.0，见 `CREDITS.md`）；
+3. `assets/visuals/visual_catalog.json` 继续保留战斗角色/背景的 drop-in 接口。
+
+> 已试过免费商用「竹林の神社」背景，但与程序化角色在地面落点、光照和透视上
+> 互相架空，已回退。背景与角色应作为同一风格套件一起替换。
 
 ## 目录
 
@@ -34,8 +40,8 @@ assets/
    `_back` 后缀，例如 `hero_swordsman_back.png`。
 2. 以 **设计高度 300px** 为基准换算缩放：`scale = 300 / 图片像素高度`
    （例如 1024px 高的原图填 `scale: 0.293`）。小妖等矮单位可在目标高度
-   基础上再乘 0.8–0.9。UnitView 会再乘全局 `BASE_ART_SCALE=0.75`
-   与阵型 depth，因此 300px 的设计高度在屏上约 225px。
+   基础上再乘 0.8–0.9。UnitView 会再乘全局 `BASE_ART_SCALE=0.66`
+   与阵型 depth，因此 300px 的设计高度在屏上约 198px。
 3. 编辑 `assets/visuals/visual_catalog.json`，按视图分别提供贴图：
 
 ```json
@@ -105,5 +111,6 @@ UnitView 会把图片底边对齐到角色脚底（`y = 0`），并让名字 / �
   godot-battle --editor --quit`）；未导入的 res:// 图片会尝试用
   `Image.load_from_file` 直接加载，但正式发布请走导入管线。
 - 新增美术文件不会改变 `res://data/**` 的内容哈希，因此不会影响黄金回放与核心门禁。
-- 请只接入自有或明确授权（如 CC0）的素材，并同步更新 `CREDITS.md`
-  （canonical 路径：`assets/art/CREDITS.md`）。
+- 请只接入自有或明确授权（CC0 / CC BY / 明确免费商用）的素材，并同步更新
+  `CREDITS.md`（canonical 路径：`assets/art/CREDITS.md`）。标注「再配布禁止」
+  的素材需在公开发布时从源码包排除，只保留游戏内嵌入形式。

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"swordsman_shuanglan"
+display_name = "霜岚"
+title = "雪原孤狼"
+hero_class = "剑客"
+gender = "女"
+race = "妖族"
+accent = Color(0.62, 0.85, 1, 1)
+quote = "雪原孤狼，刀比风快。"
+description = "北境雪原的孤狼妖，银发间藏着旧族的耳骨。她不爱说话，刀却比风先到。下山只为寻找失踪的狼群，却在试炼入口闻到了同族的血腥味。"
+hp_bar = 74
+atk_bar = 96
+mag_bar = 12
+spd_bar = 86
+skills = Array[String](["横扫千军", "破甲击", "剑心通明"])
+portrait_path = "res://assets/visuals/heroes/swordsman_shuanglan.png"
+sort_order = 1

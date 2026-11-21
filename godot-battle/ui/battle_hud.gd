@@ -575,7 +575,9 @@ func _new_button(text: String, danger := false, badge := "", command_id := "") -
 		var icon := VisualCatalog.command_icon(StringName(command_id))
 		if icon != null:
 			button.icon = icon
-			button.expand_icon = false
+			# expand_icon=true 让按钮最小尺寸不含图标原始像素，避免 512px SVG 把面板撑开；
+			# icon_max_width 再把绘制尺寸钳到 26px。
+			button.expand_icon = true
 			button.add_theme_constant_override("icon_max_width", 26)
 			button.add_theme_constant_override("h_separation", 10)
 		elif not badge.is_empty():

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"healer_zisu"
+display_name = "紫苏"
+title = "草木之灵"
+hero_class = "医师"
+gender = "女"
+race = "妖族"
+accent = Color(0.88, 0.55, 1, 1)
+quote = "草木有灵，我亦有脾气。"
+description = "紫苏草化形的药灵，脾气比药性还烈。她能把断骨接好，也能把欺负草药的人骂到抬不起头。听说试炼深处有一株将死的灵草，她背起药葫芦就下了山。"
+hp_bar = 62
+atk_bar = 34
+mag_bar = 88
+spd_bar = 72
+skills = Array[String](["回春术", "清心咒", "灵雨"])
+portrait_path = ""
+sort_order = 5

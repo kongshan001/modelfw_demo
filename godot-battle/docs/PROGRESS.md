@@ -180,3 +180,69 @@ RESULT: 786 assertions, 0 failures
 - 点击/目标：前排单尖端、后排允许视觉重叠；HUD 单一目标箭头 + `1–4`/`QWE` 目标键位，鼠标点尖端补充。
 - 验证：核心 `RESULT: 989 assertions, 0 failures`；`HUD_INPUT_OK`（12 回合、数字键 + 箭头 + 尖端点击）；表现/故事/调试冒烟；1920×1080 截图与 GIF。
 - 提交：`ef3fcae feat(presentation): 单尖端+扇形后排阵型`；GIF `/tmp/fan.gif`（7.5MB，未入库）。
+
+## 2026-10-25 · 敌我距离 / 角色比例 / 竖屏构图
+
+- 反馈：双方阵型中心太近；要求参考梦幻实机量站位距离与战场大小；角色仍偏大，希望站位更偏竖屏。同日追加：同阵营各单位站位仍太近，需要拉开同侧间距。
+- 参考测量（`/tmp/fwj_ref2/b_0/b_1/b_2/b_3` + 手游阵法图 f1/f2/f3，仅分析构图，未复制素材）：角色高约占屏高 10–14%；同侧相邻单位约 0.7–1.0 个角色高（个别 0.6/1.4），5 人阵横向约 3 个角色高；宝宝落后主人约一格、行间错开半格；双方阵型中心相距约 4–5 个角色高；中间是一整块空出来的圆形战场；PvE 中心线约 45–60°，PK 约 8–25°。
+- 完成：
+  - `UnitView.BASE_ART_SCALE` 0.75→0.66（角色约 146–200px，主要角色约 170px）。
+  - 阵型拉开：我方剑客尖端 (1100,830)，法师 (1265,870)、医师 (1190,1000)；敌方妖将尖端 (660,560)，妖兵甲 (520,520)、乙 (470,400)、狐妖 (610,415) 组成 2×2 交错块。中心 (1185,900)/(565,474)，中心距 752px（≈4.4 个角色高），中心线 34°；尖端距 516px（旧 368px），尖端中点 (880,695)。同侧相邻 130–192px（0.76–1.13 个角色高），对齐参考资料。
+  - 背景：空地远缘整体抬高 140px（`GROUND_TOP` 458→300，`CLEARING_EDGE` 上移），山体/雾带/敌侧暖光随动；石环移到 (880,695)、放大到 320×105，两军尖端都在环外，中间保持空置。
+  - 点击/HUD：命中区与信息带仍为屏幕常量；后排重叠仍用数字键 + 单一目标箭头。
+- 验证：核心 `RESULT: 989 assertions, 0 failures`（formation 197）；`HUD_INPUT_OK`（12 回合、outcome=2）；`PRESENTATION_SMOKE_OK`、`STORY_PROBE_OK`、`DEBUG_SMOKE_OK`；1920×1080 `plan2b_art_full/scene` 重截。
+- 遗留：16:9 下“更竖”与“中心更远”存在几何权衡（纯竖排中心距最多约 600px）；当前取 34° 斜轴 + 加深地面。HUD 面板占掉约 45% 屏宽，可用交锋带仅约 1024px，是同侧间距的主要上限；若还要更接近梦幻的舒朗感，需要收窄指令面板/战斗记录或再缩角色。若要走真竖屏，需要改视口比例与整套 HUD。
+- 提交：未提交（等待视觉确认）。
+
+## 2026-10-26 · 美术资产迭代启动（免费图标/背景 + ARK 待登录）
+
+- 反馈：过往美术资源是 MVP 临时占位，开始推进美术资产迭代。
+- 现状：ARK 数据面 EP 403、裸模型 404、SSO refresh_token 失效；`arkcli +gen` 无法解析 endpoint，角色生成需一次性 SSO 授权。
+- 先落地零成本素材：
+  - 指令/状态图标：game-icons.net（CC BY 3.0，Lorc / Delapouite / Sbed），SVG 按 HUD 配色改色，放 `assets/visuals/commands|status/` 并接入 `visual_catalog.json`。按钮改 `expand_icon=true` + `icon_max_width=26`，SVG 导入 `svg/scale=0.125`，避免 512px 原图把面板撑开。
+  - 战斗背景：free-anime-materials.com「竹林の神社」1920×1080（免费商用、禁止再配布），放 `assets/visuals/background/bamboo_shrine.png` 并接入 catalog；程序化光柱/地面光斑/薄雾/暗角仍叠加。
+  - 授权登记：`assets/art/CREDITS.md`；README 与 `assets/art/README.md` 同步当前素材状态。
+- 验证：核心 `RESULT: 989 assertions, 0 failures`；`HUD_INPUT_OK`（12 回合）；1920×1080 截图确认指令图标、状态图标、面板尺寸与背景叠加正常。
+- 遗留：角色立绘仍为程序化；ARK 登录后生成风格锚点（剑客正/背 + 背景）再批量出其余角色，预算约 2.4 元（11 张 × 0.22）。背景素材「再配布禁止」，公开仓库发布时需从源码包排除。
+- 提交：未提交。
+
+## 2026-10-26 · 免费背景回退（风格架空）
+
+- 反馈：免费竹林神社背景不如原程序化背景，角色与地图有“架空”感；ARK 403/404 是模型/端点本身的问题，不只是登录。
+- 处理：`visual_catalog.json` 的 background 路径置空，删除 `bamboo_shrine.png` 与其 `.import`；回退程序化竹林晨光。保留 game-icons.net 指令/状态图标。
+- 原因：写实/动画背景与程序化角色在地面落点、光照、透视上不统一；背景与角色必须作为同一风格套件一起替换。
+- 验证：核心 `RESULT: 989 assertions, 0 failures`；`HUD_INPUT_OK`；表现/剧情/调试冒烟；1920×1080 截图确认程序化背景与图标正常。
+- 遗留：角色/背景 AI 生成需先修复模型或重建 endpoint；恢复后先出「剑客 + 同风格背景」配对样片，确认落地融合再批量。
+- 提交：未提交。
+
+## 2026-10-27 · 主角选择界面（6 名预设主角）
+
+- 目标：新增高品质主角选择系统，含职业/性别/种族/描述/语录/四维/技能；确认后进入现有战斗。
+- 设计：`docs/superpowers/specs/2026-10-27-character-select-design.md`；计划 `docs/superpowers/plans/2026-10-27-character-select.md`。
+- 完成：
+  - 数据：`roster/hero_profile.gd` + `roster/hero_roster.gd` + 6 份 `.tres`；放 `roster/` 避开 `ContentDB` 内容哈希；选择写入 `user://character_select.cfg`。
+  - 界面：`scenes/character_select.tscn` 设为项目主场景；舞台式布局（程序化山海晨雾、约 720px 全身立绘、底部 6 卡、右侧卷轴详情）；切换/朱印/入场动效；键盘 `←→`/`A D`/`1–6`/`Enter` 与鼠标。
+  - 立绘：Seedream 5.0 Flash（`ep-20261027232001-j8hg2`）生成凌霄、霜岚，绿幕抠像为 1024×1536 透明 PNG；其余 4 人暂用程序化兜底。
+  - 测试：`test_hero_roster.gd` 81 断言；`smoke_character_select.gd`；`screenshot_character_select.gd`（1920×1080 ×3）。
+- 验证：核心 `RESULT: 1070 assertions, 0 failures`（黄金回放不变）；`CHARACTER_SELECT_SMOKE_OK`；`ENTER_BATTLE_OK`（确认后切到战斗场景）；`PRESENTATION_SMOKE_OK`；角色选择截图 3 张（凌霄/青鸾/确认朱印）。
+- 遗留：
+  - Seedream 账号 `2125305885` 欠费，青鸾/玄烛/白术/紫苏 4 张立绘待充值后生成；程序化兜底可用。
+  - 确认主角只落盘并进入现有战斗，本期不替换战斗阵容/数值。
+- 提交：未提交。
+
+## 2026-11-07 · 屏幕空间画风后处理（卡通 / 水墨）
+
+- 参考：B 站《Shader 如何改变画面的风格》——同一片海只改片元着色器，切换五种画风。按项目既定方向不引入像素风/低多边形；油画 Kuwahara 成本高，本期不引入，只做卡通渲染与水墨两种。
+- 方案：屏幕空间后处理，不改角色/背景绘制。`StyleFX`（CanvasLayer layer 1）→ `BackBufferCopy(COPY_MODE_VIEWPORT)` → 全屏 `ColorRect` + `shaders/style_post.gdshader`；`UILayer` 提到 layer 2，HUD/日志/对白保持原样。`F2` 循环 原画 → 卡通渲染 → 水墨，切换 0.22s 强度渐入。
+- 实现：
+  - 卡通渲染：亮度 5 色阶（保留色相）+ 冷色阴影/暖高光 + Sobel 墨线；阈值抬高避免草地细节变噪点。
+  - 水墨：中间调提亮后 5 档墨色、冷青暗部、宣纸颗粒/纤维、Sobel 墨线；朱砂只取“极亮且偏暖”的太阳本体，避免整条天空变红。
+  - 节点：`battle/views/style_post_process.gd`；`battle_scene.gd` 挂载 `StyleFX`；`shaders/style_post.gdshader`。
+  - 工具：`tools/smoke_style.gd`（挂载/层级/三模式/F2 输入链路）、`tools/screenshot_style.gd`（同一帧三风格 1920×1080）。
+- 验证：核心 `RESULT: 1070 assertions, 0 failures`；`STYLE_SMOKE_OK`；`HUD_INPUT_OK`（12 回合真实鼠标/键盘）；`PRESENTATION_SMOKE_OK`；三张截图同帧确认。
+- 踩坑：`canvas_item` shader 没有 `SCREEN_PIXEL_SIZE`，改为脚本注入 `screen_pixel_size`；2D 屏幕纹理必须配 `BackBufferCopy`；底部提示 Label 在 CanvasLayer 下锚点不生效，改为按视口尺寸显式定位。
+- 遗留：
+  - 角色头顶名字/血条在世界层，会被一起风格化，水墨下可读性下降；后续把信息带迁到 UILayer 或加保护遮罩。
+  - 未做帧率基准；全屏 Sobel 约 9 次采样，Intel HD 6000 截图运行正常，但需在目标机上量。
+  - 默认仍是“原画”，不改变现有验收观感；若要默认某风格，改 `StylePostProcess` 初始 index。
+- 提交：未提交（等待视觉确认）。

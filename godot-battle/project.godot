@@ -4,7 +4,7 @@ config_version=5
 [application]
 config/name="山海试炼"
 config/features=PackedStringArray("4.6", "GL Compatibility")
-run/main_scene="res://scenes/battle_scene.tscn"
+run/main_scene="res://scenes/character_select.tscn"
 
 [autoload]
 

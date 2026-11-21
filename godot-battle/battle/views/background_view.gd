@@ -5,32 +5,34 @@ extends Node2D
 # 叠加雾带、光柱、飘叶与轻暗角。所有元素由 draw_* 原语与确定性程序纹理生成，
 # 不依赖外部素材。
 #
-# 地面是一块从敌侧远端（左缘 y≈480）铺到近景的**林间空地**：
+# 地面是一块从敌侧远端（左缘 y≈400）铺到近景的**林间空地**：
 #   远侧雾草 → 中央受光泥地/苔藓/石径 → 近景深草；
 # 边缘由插值曲线 + 噪声扰动 + 草须 + 薄雾软收，没有矩形石台、描金边框或均匀网格。
-# 空地中央只保留一圈半埋的石环作为阵型锚点（非方形棋盘）。
-# 若 visual_catalog.json 提供了背景图，则天空/竹林/地面替换为 Sprite2D，
-# 但光柱、地面光斑、地面薄雾、暗角与雾/叶层仍叠加在贴图之上。
+# 远缘整体抬高约 140px，让镜头更“竖”：天空只留上 1/3，空地纵深增大，敌阵可以站得更远。
+# 空地中央只保留一圈半埋的石环作为空场锚点（非方形棋盘）；石环比旧版更大，
+# 两军尖端都在环外，环内保持空置。若 visual_catalog.json 提供了背景图，
+# 则天空/竹林/地面替换为 Sprite2D，但光柱、地面光斑、地面薄雾、暗角与雾/叶层仍叠加在贴图之上。
 
 const W := 1920.0
 const H := 1080.0
 const HORIZON := 612.0
-const GROUND_TOP := 458.0
+const GROUND_TOP := 300.0
 const GROUND_H := H - GROUND_TOP
 const OUTLINE := Color(0.09, 0.1, 0.08, 0.55)
 
 # 空地远缘：左（敌侧）更高、右（我侧）略低；插值后为平滑草坡，再叠噪声扰动。
 const CLEARING_EDGE := [
-	Vector2(0, 492), Vector2(120, 480), Vector2(250, 486), Vector2(390, 502),
-	Vector2(540, 524), Vector2(700, 548), Vector2(860, 572), Vector2(1040, 592),
-	Vector2(1230, 602), Vector2(1430, 600), Vector2(1640, 588), Vector2(1800, 578),
-	Vector2(1920, 574),
+	Vector2(0, 352), Vector2(120, 340), Vector2(250, 346), Vector2(390, 362),
+	Vector2(540, 384), Vector2(700, 408), Vector2(860, 432), Vector2(1040, 452),
+	Vector2(1230, 462), Vector2(1430, 460), Vector2(1640, 448), Vector2(1800, 438),
+	Vector2(1920, 434),
 ]
 
-# 空地中央的石环锚点（很淡、非网格），落在双方菱形尖端之间 (925,750)。
-const RING_CENTER := Vector2(925, 750)
-const RING_RX := 300.0
-const RING_RY := 92.0
+# 空地中央的石环锚点（很淡、非网格），落在双方尖端中点 (880,695)。
+# 两军各自站在环外，环内不摆单位，读成一块空出来的交锋场。
+const RING_CENTER := Vector2(880, 695)
+const RING_RX := 320.0
+const RING_RY := 105.0
 
 var _fog: GPUParticles2D
 var _mist: GPUParticles2D
@@ -111,32 +113,32 @@ func _draw_sky() -> void:
 func _draw_mountains() -> void:
 	# 远山（蓝灰雾色）
 	var far := PackedVector2Array([
-		Vector2(0, 448), Vector2(150, 372), Vector2(290, 424), Vector2(430, 326),
-		Vector2(560, 410), Vector2(700, 356), Vector2(840, 432), Vector2(980, 340),
-		Vector2(1120, 416), Vector2(1270, 364), Vector2(1420, 430), Vector2(1570, 358),
-		Vector2(1730, 426), Vector2(1920, 378), Vector2(1920, 700), Vector2(0, 700),
+		Vector2(0, 348), Vector2(150, 272), Vector2(290, 324), Vector2(430, 226),
+		Vector2(560, 310), Vector2(700, 256), Vector2(840, 332), Vector2(980, 240),
+		Vector2(1120, 316), Vector2(1270, 264), Vector2(1420, 330), Vector2(1570, 258),
+		Vector2(1730, 326), Vector2(1920, 278), Vector2(1920, 700), Vector2(0, 700),
 	])
 	draw_colored_polygon(far, Color(0.51, 0.58, 0.7, 0.52))
 	draw_polyline(far.slice(0, 14), Color(1.0, 0.9, 0.72, 0.18), 2.5, true)
 	# 近山（青绿），山脊带一条暖色逆光
 	var near := PackedVector2Array([
-		Vector2(0, 536), Vector2(190, 452), Vector2(360, 514), Vector2(540, 430),
-		Vector2(730, 520), Vector2(910, 456), Vector2(1090, 526), Vector2(1270, 442),
-		Vector2(1460, 518), Vector2(1640, 466), Vector2(1820, 524), Vector2(1920, 484),
+		Vector2(0, 416), Vector2(190, 332), Vector2(360, 394), Vector2(540, 310),
+		Vector2(730, 400), Vector2(910, 336), Vector2(1090, 406), Vector2(1270, 322),
+		Vector2(1460, 398), Vector2(1640, 346), Vector2(1820, 404), Vector2(1920, 364),
 		Vector2(1920, 716), Vector2(0, 716),
 	])
 	draw_colored_polygon(near, Color(0.32, 0.53, 0.39, 0.8))
 	draw_polyline(near.slice(0, 12), Color(1.0, 0.88, 0.66, 0.24), 2.0, true)
 	# 山脚薄雾
-	_ellipse(Vector2(960, 556), 1050, 56, Color(1.0, 0.92, 0.79, 0.14))
-	_ellipse(Vector2(420, 592), 620, 42, Color(1.0, 0.9, 0.76, 0.09))
-	_ellipse(Vector2(1520, 596), 560, 40, Color(1.0, 0.9, 0.76, 0.08))
+	_ellipse(Vector2(960, 436), 1050, 56, Color(1.0, 0.92, 0.79, 0.14))
+	_ellipse(Vector2(420, 472), 620, 42, Color(1.0, 0.9, 0.76, 0.09))
+	_ellipse(Vector2(1520, 476), 560, 40, Color(1.0, 0.9, 0.76, 0.08))
 
 func _draw_horizon_mist() -> void:
 	# 林缘暖雾：位于空地远缘之上，帮助山脚、竹林与草坡过渡。
-	_ellipse(Vector2(960, 548), 1080, 42, Color(1.0, 0.93, 0.78, 0.09))
-	_ellipse(Vector2(420, 574), 640, 34, Color(1.0, 0.92, 0.78, 0.07))
-	_ellipse(Vector2(1530, 580), 580, 32, Color(1.0, 0.92, 0.78, 0.06))
+	_ellipse(Vector2(960, 428), 1080, 42, Color(1.0, 0.93, 0.78, 0.09))
+	_ellipse(Vector2(420, 454), 640, 34, Color(1.0, 0.92, 0.78, 0.07))
+	_ellipse(Vector2(1530, 460), 580, 32, Color(1.0, 0.92, 0.78, 0.06))
 
 func _draw_canopies() -> void:
 	# 画面上缘的竹林冠层：把天空与中景压到一起，形成剧场式框景（敌侧略透光）。
@@ -334,11 +336,11 @@ static func _get_clearing_texture() -> ImageTexture:
 			g = lerpf(g, 0.545, near_mix)
 			b = lerpf(b, 0.23, near_mix)
 			# 敌侧后方一束暖光 + 中央受光空地
-			var ex := (wx - 500.0) / 450.0
-			var ey := (wy - 575.0) / 300.0
+			var ex := (wx - 550.0) / 450.0
+			var ey := (wy - 455.0) / 260.0
 			var sun := maxf(0.0, 1.0 - ex * ex - ey * ey) * 0.17
-			var cx := (wx - 690.0) / 620.0
-			var cy := (wy - 750.0) / 360.0
+			var cx := (wx - 860.0) / 620.0
+			var cy := (wy - 720.0) / 360.0
 			sun += maxf(0.0, 1.0 - cx * cx - cy * cy) * 0.13
 			r = lerpf(r, 1.0, sun)
 			g = lerpf(g, 0.9, sun)
@@ -458,7 +460,7 @@ func _draw_ground_props() -> void:
 	_painted_rock(Vector2(1782, 966), 54.0, 0.9)
 	_painted_rock(Vector2(724, 1042), 17.0, 0.65)
 	_painted_rock(Vector2(1092, 1018), 19.0, 0.65)
-	_bamboo_stump(Vector2(1038, 712), 24.0)
+	_bamboo_stump(Vector2(690, 862), 24.0)
 	_bamboo_stump(Vector2(1648, 1012), 30.0)
 	_bamboo_stump(Vector2(706, 986), 20.0)
 	_draw_meadow_grass()
@@ -580,16 +582,16 @@ func _flower(origin: Vector2, size: float, palette: int) -> void:
 # ---------------------------------------------------------------- 光、雾、前景
 
 func _draw_ground_light() -> void:
-	# 左上敌群背后 (500,560) 补一层暖光地斑，避免敌方后排落在竹林暗带里；
+	# 左上敌群背后 (550,465) 补一层暖光地斑，避免敌方后排落在竹林暗带里；
 	# 其余为中央受光空地、右中与近景的晨光衰减。
-	_soft_ellipse(Vector2(500, 560), 460.0, 200.0, Color(1.0, 0.84, 0.5, 0.14), 5)
-	_soft_ellipse(Vector2(500, 566), 300.0, 130.0, Color(1.0, 0.9, 0.6, 0.06), 4)
-	_soft_ellipse(Vector2(760, 792), 650.0, 230.0, Color(1.0, 0.86, 0.55, 0.09), 5)
+	_soft_ellipse(Vector2(550, 465), 460.0, 200.0, Color(1.0, 0.84, 0.5, 0.14), 5)
+	_soft_ellipse(Vector2(550, 471), 300.0, 130.0, Color(1.0, 0.9, 0.6, 0.06), 4)
+	_soft_ellipse(Vector2(800, 770), 650.0, 230.0, Color(1.0, 0.86, 0.55, 0.09), 5)
 	_soft_ellipse(Vector2(1120, 850), 480.0, 160.0, Color(1.0, 0.87, 0.58, 0.05), 4)
 	_soft_ellipse(Vector2(1450, 700), 320.0, 110.0, Color(1.0, 0.89, 0.62, 0.04), 3)
 	_soft_ellipse(Vector2(960, 1010), 620.0, 120.0, Color(1.0, 0.89, 0.62, 0.035), 3)
 	# 一层很淡的整体暖光，把空地收成同一块受光面（仍低于单位与 HUD 的对比）。
-	_soft_ellipse(Vector2(900, 780), 1050.0, 360.0, Color(1.0, 0.83, 0.48, 0.065), 4)
+	_soft_ellipse(Vector2(900, 760), 1050.0, 360.0, Color(1.0, 0.83, 0.48, 0.065), 4)
 
 func _draw_light_shafts() -> void:
 	# 从右上破晓处斜射进竹林的光柱，宽面低透明度 + 亮芯
@@ -616,11 +618,11 @@ func _light_beam(a: Vector2, b: Vector2, c: Vector2, d: Vector2, color: Color) -
 	]), Color(color.r, color.g, color.b, color.a * 0.7))
 
 func _draw_ground_mist() -> void:
-	_ellipse(Vector2(960, 700), 1150, 40, Color(1.0, 0.93, 0.8, 0.05))
-	_ellipse(Vector2(520, 748), 560, 28, Color(1.0, 0.91, 0.78, 0.035))
+	_ellipse(Vector2(950, 690), 1150, 40, Color(1.0, 0.93, 0.8, 0.05))
+	_ellipse(Vector2(520, 690), 560, 28, Color(1.0, 0.91, 0.78, 0.035))
 	_ellipse(Vector2(1470, 772), 500, 26, Color(1.0, 0.91, 0.78, 0.035))
 	# 远端林缘薄雾：压住空地远缘，让敌群读起来在雾光里而不在暗带里。
-	_soft_ellipse(Vector2(470, 556), 600.0, 36.0, Color(1.0, 0.95, 0.86, 0.06), 3)
+	_soft_ellipse(Vector2(550, 465), 600.0, 36.0, Color(1.0, 0.95, 0.86, 0.06), 3)
 
 func _draw_foreground() -> void:
 	var rng := RandomNumberGenerator.new()

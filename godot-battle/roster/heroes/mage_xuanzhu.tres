@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"mage_xuanzhu"
+display_name = "玄烛"
+title = "钦天监术士"
+hero_class = "法师"
+gender = "男"
+race = "人族"
+accent = Color(0.73, 0.55, 1, 1)
+quote = "以符为烛，以身为灯。"
+description = "出身钦天监的年轻术士，以符为烛、以身为灯。他算出山海试炼有一场大劫，却算不出劫中是否包括自己。于是收起卦盘，亲自走进了雾里。"
+hp_bar = 58
+atk_bar = 32
+mag_bar = 97
+spd_bar = 68
+skills = Array[String](["烈火咒", "雷霆万钧", "定身符"])
+portrait_path = ""
+sort_order = 3

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"mage_qingluan"
+display_name = "青鸾"
+title = "青鸟衔火"
+hero_class = "法师"
+gender = "女"
+race = "仙族"
+accent = Color(0.31, 0.88, 0.75, 1)
+quote = "青鸟衔火，照破长夜。"
+description = "青鸟化形的仙族少女，羽冠上燃着一缕不灭的南明火。她奉命看守山海火种，却总忍不住偷看人间的灯火。试炼对她而言，是第一次真正的远行。"
+hp_bar = 52
+atk_bar = 26
+mag_bar = 100
+spd_bar = 74
+skills = Array[String](["烈火咒", "雷霆万钧", "定身符"])
+portrait_path = ""
+sort_order = 2

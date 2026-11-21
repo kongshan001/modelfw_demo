@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"swordsman_lingxiao"
+display_name = "凌霄"
+title = "山门少年"
+hero_class = "剑客"
+gender = "男"
+race = "人族"
+accent = Color(0.31, 0.76, 0.97, 1)
+quote = "剑出如山，少年意气。"
+description = "山门外长大的少年剑客，一柄「照夜」从不离身。师父说他剑意太直，他偏信直剑才能斩断山雾。如今山海试炼开启，他要以凡人之身，问一问山巅的答案。"
+hp_bar = 78
+atk_bar = 92
+mag_bar = 18
+spd_bar = 80
+skills = Array[String](["横扫千军", "破甲击", "剑心通明"])
+portrait_path = "res://assets/visuals/heroes/swordsman_lingxiao.png"
+sort_order = 0

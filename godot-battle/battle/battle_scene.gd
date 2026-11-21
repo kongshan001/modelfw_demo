@@ -30,8 +30,14 @@ func _ready() -> void:
 	vfx_layer.name = "VFXLayer"
 	add_child(vfx_layer)
 
+	# 屏幕空间画风后处理：只作用于战场画面，HUD 在 layer 2 不受影响。
+	var style_fx := StylePostProcess.new()
+	style_fx.name = "StyleFX"
+	add_child(style_fx)
+
 	var ui_layer := CanvasLayer.new()
 	ui_layer.name = "UILayer"
+	ui_layer.layer = 2
 	add_child(ui_layer)
 
 	var session := BattleSession.new()

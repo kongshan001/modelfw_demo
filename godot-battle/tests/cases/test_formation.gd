@@ -1,7 +1,9 @@
 extends RefCounted
 
 # 紧凑菱形/箭头阵型：每侧 1 个前排尖端（我方剑客 / 敌方妖将），其余为后排，
-# 两尖端是全场最近的一对，并被中央石环托住；中心线约 36°。
+# 两尖端是全场最近的一对，并被中央石环托住；中心线约 34°。
+# 参考梦幻比例：角色高 ~170px，双方中心距 ~750px（≈4.4 个角色高），
+# 同侧相邻单位 0.73–1.13 个角色高；中间留出完整空场。
 # 镜头在我方背后：我方 view=back（背影），敌方 view=front（正面）。
 # 命中区允许屏幕空间重叠（参考作亦然），不再断言 x 区间互不相交；
 # 只要求尖端中心点击点不被其他命中区抢走，且所有命中区/信息带避开 HUD 面板。
@@ -33,15 +35,15 @@ func run(t: TestContext) -> void:
 
 	# 表驱动期望：脚底坐标 / 行 / 深度 / 美术朝向 / 视图。
 	var expected_ally := [
-		[Vector2(1000, 800), 1, 0.98, -1, "back"],
-		[Vector2(1200, 880), 0, 1.06, -1, "back"],
-		[Vector2(930, 900), 0, 1.10, -1, "back"],
+		[Vector2(1100, 830), 1, 0.98, -1, "back"],
+		[Vector2(1265, 870), 0, 1.06, -1, "back"],
+		[Vector2(1190, 1000), 0, 1.10, -1, "back"],
 	]
 	var expected_enemy := [
-		[Vector2(700, 640), 0, 0.90, 1, "front"],
-		[Vector2(540, 600), 0, 0.88, 1, "front"],
-		[Vector2(850, 700), 1, 0.94, 1, "front"],
-		[Vector2(460, 540), 0, 0.86, 1, "front"],
+		[Vector2(520, 520), 0, 0.90, 1, "front"],
+		[Vector2(470, 400), 0, 0.88, 1, "front"],
+		[Vector2(660, 560), 1, 0.94, 1, "front"],
+		[Vector2(610, 415), 0, 0.86, 1, "front"],
 	]
 	for index in allies.size():
 		_check_slot(t, allies[index], expected_ally[index], "ally[%d]" % index)

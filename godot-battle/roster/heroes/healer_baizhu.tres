@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="HeroProfile" format=3]
+
+[ext_resource type="Script" path="res://roster/hero_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+id = &"healer_baizhu"
+display_name = "白术"
+title = "山野医师"
+hero_class = "医师"
+gender = "男"
+race = "人族"
+accent = Color(0.56, 0.88, 0.42, 1)
+quote = "一篓草药，半卷仁心。"
+description = "背着药篓行走山野的年轻医师，针法比刀法更准。他救过妖，也救过人，只不肯救自己。试炼里没有他要找的药，但他还是来了——因为有人需要他。"
+hp_bar = 66
+atk_bar = 38
+mag_bar = 84
+spd_bar = 66
+skills = Array[String](["回春术", "清心咒", "灵雨"])
+portrait_path = ""
+sort_order = 4

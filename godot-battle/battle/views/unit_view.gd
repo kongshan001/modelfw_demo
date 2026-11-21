@@ -9,10 +9,10 @@ signal hovered(view: UnitView)
 # 设计坐标系：脚底 y=0，向上为负；普通角色身体约 250–270px、含武器约 300px，
 # 小妖约 225px，妖将约 300px（draw_set_transform 缩放；名字/血条文字不缩放，
 # 只随剪影高度移动锚点，命中区按缩小后的身体调整）。
-# 全局 BASE_ART_SCALE 把角色压到约 3/4；阵型 depth 再乘在美术层上。
+# 全局 BASE_ART_SCALE 把角色压到约 2/3（170px 上下，贴合梦幻 10–14% 屏高）；阵型 depth 再乘在美术层上。
 # 镜头位于我方背后：我方 view=back 叠加后脑/袍背，敌方 view=front 保持正面。
 
-const BASE_ART_SCALE := 0.75
+const BASE_ART_SCALE := 0.66
 const BAR_WIDTH := 96.0
 const BAR_HEIGHT := 8.0
 const HP_Y := -225.0
