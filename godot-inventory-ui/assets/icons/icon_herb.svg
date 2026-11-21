@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dcffb5"/><stop offset="0.5" stop-color="#7cd96e"/><stop offset="1" stop-color="#2e8448"/>
+    </linearGradient>
+    <linearGradient id="leaf2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b0f5c0"/><stop offset="1" stop-color="#3b9b63"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="110" rx="28" ry="6" fill="#2b1d3a" opacity="0.16"/>
+  <path d="M64 60 Q60 30 42 18 Q36 38 48 56 Q56 66 64 60" fill="url(#leaf)" stroke="#332744" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M64 60 Q70 26 92 18 Q96 40 82 56 Q74 64 64 60" fill="url(#leaf2)" stroke="#332744" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M64 58 Q64 34 64 18 Q80 26 82 44 Q78 58 64 66" fill="url(#leaf)" stroke="#332744" stroke-width="3.2" stroke-linejoin="round" opacity="0.9"/>
+  <path d="M58 62 Q44 48 30 52 Q34 68 50 72 Q60 72 62 66" fill="url(#leaf2)" stroke="#332744" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M70 64 Q84 50 98 56 Q94 72 78 74 Q68 74 68 68" fill="url(#leaf)" stroke="#332744" stroke-width="2.8" stroke-linejoin="round"/>
+  <g fill="none" stroke="#eaffd8" stroke-width="1.8" opacity="0.55" stroke-linecap="round">
+    <path d="M46 26 Q54 40 58 54"/><path d="M82 26 Q74 42 70 54"/>
+    <path d="M40 56 Q50 60 58 64"/><path d="M88 60 Q78 64 70 66"/>
+  </g>
+  <path d="M60 88 L68 88 L70 104 Q64 110 58 104 Z" fill="url(#leaf)" stroke="#332744" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M56 82 L72 82 L71 92 L57 92 Z" fill="url(#gold)" stroke="#332744" stroke-width="2.6"/>
+  <path d="M58 86 L70 86 M57 89 L71 89" stroke="#7a4a12" stroke-width="1.4" opacity="0.7"/>
+  <path d="M50 92 q10 8 28 0" fill="none" stroke="#b83845" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M62 108 q-2 8 4 10 q-7 2 -6 8 q6 0 10 -7 q1 -6 -4 -11" fill="#b83845" stroke="#332744" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M94 30 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 z" fill="#f6ffd8" opacity="0.8"/>
+</svg>

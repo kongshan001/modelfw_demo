@@ -1,0 +1,391 @@
+{
+  "schema": 1,
+  "player": {
+    "name": "云璃",
+    "title": "青丘灵狐",
+    "level": 68,
+    "hp": 2086,
+    "hp_max": 2586,
+    "mp": 1969,
+    "mp_max": 2769,
+    "attack": 1730,
+    "spirit": 757,
+    "defense": 1040,
+    "speed": 464,
+    "gold": 1972284,
+    "silver": 208548,
+    "capacity": 216
+  },
+  "equipment_slots": [
+    {
+      "slot": "artifact",
+      "name": "九霄玄典",
+      "icon": "tome",
+      "level": 8,
+      "quality": 3,
+      "enchant": "灵蕴 +18",
+      "desc": "记载云海阵法的玄典，翻阅时纸页间有星屑流动。",
+      "stats": {"灵力": 128, "气血": 260}
+    },
+    {
+      "slot": "boots",
+      "name": "踏云靴",
+      "icon": "boots",
+      "level": 8,
+      "quality": 2,
+      "enchant": "未附魔",
+      "desc": "鞋底绣着流云纹，踏上石阶时几乎没有声音。",
+      "stats": {"速度": 30, "防御": 18}
+    },
+    {
+      "slot": "armor",
+      "name": "玄冰甲",
+      "icon": "armor",
+      "level": 8,
+      "quality": 2,
+      "enchant": "未附魔",
+      "desc": "北海寒晶织入甲叶，触手生凉，刀剑难入。",
+      "stats": {"防御": 96, "气血": 220}
+    },
+    {
+      "slot": "helmet",
+      "name": "流云冠",
+      "icon": "helmet",
+      "level": 8,
+      "quality": 1,
+      "enchant": null,
+      "desc": "以银丝编成的轻冠，冠心缀着一枚青玉。",
+      "stats": {"防御": 52, "灵力": 24}
+    },
+    {
+      "slot": "necklace",
+      "name": "璎珞佩",
+      "icon": "necklace",
+      "level": 8,
+      "quality": 2,
+      "enchant": null,
+      "desc": "金链串起的玉璎珞，走动时会发出细碎的轻响。",
+      "stats": {"灵力": 66, "速度": 12}
+    },
+    {
+      "slot": "ring_left",
+      "name": "碧玉戒",
+      "icon": "ring",
+      "level": 9,
+      "quality": 2,
+      "enchant": null,
+      "desc": "碧玉戒面里封着一线灵光，握剑时格外沉稳。",
+      "stats": {"攻击": 60, "灵力": 20}
+    },
+    {
+      "slot": "ring_right",
+      "name": "赤金戒",
+      "icon": "ring",
+      "level": 9,
+      "quality": 1,
+      "enchant": null,
+      "desc": "赤金打制的护身戒，朴素却十分耐用。",
+      "stats": {"攻击": 45, "防御": 16}
+    },
+    {
+      "slot": "weapon",
+      "name": "青锋剑",
+      "icon": "sword",
+      "level": 9,
+      "quality": 3,
+      "enchant": "剑心 +3",
+      "desc": "寒铁为骨，青霜为锋。剑鸣如风过松梢。",
+      "stats": {"攻击": 186, "速度": 34}
+    }
+  ],
+  "items": [
+    {
+      "id": "qingfeng_sword", "name": "青锋剑", "icon": "sword", "category": "装备",
+      "quality": 2, "level": 48, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "寒铁为骨，青霜为锋。剑鸣如风过松梢。",
+      "stats": {"攻击": 120, "速度": 20},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "xuanbing_armor", "name": "玄冰甲", "icon": "armor", "category": "装备",
+      "quality": 2, "level": 46, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "北海寒晶织入甲叶，触手生凉，刀剑难入。",
+      "stats": {"防御": 96, "气血": 220},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "liuyun_crown", "name": "流云冠", "icon": "helmet", "category": "装备",
+      "quality": 1, "level": 42, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "以银丝编成的轻冠，冠心缀着一枚青玉。",
+      "stats": {"防御": 52, "灵力": 24},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "yingluo_pearl", "name": "璎珞佩", "icon": "necklace", "category": "装备",
+      "quality": 1, "level": 40, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "金链串起的玉璎珞，走动时会发出细碎的轻响。",
+      "stats": {"灵力": 36},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "biyu_ring", "name": "碧玉戒", "icon": "ring", "category": "装备",
+      "quality": 2, "level": 45, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "碧玉戒面里封着一线灵光，握剑时格外沉稳。",
+      "stats": {"攻击": 60},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "chijin_ring", "name": "赤金戒", "icon": "ring", "category": "装备",
+      "quality": 1, "level": 41, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "赤金打制的护身戒，朴素却十分耐用。",
+      "stats": {"攻击": 45},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "tayun_boots", "name": "踏云靴", "icon": "boots", "category": "装备",
+      "quality": 1, "level": 40, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "鞋底绣着流云纹，踏上石阶时几乎没有声音。",
+      "stats": {"速度": 30},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "zidian_talisman", "name": "紫电符", "icon": "bell", "category": "装备",
+      "quality": 2, "level": 44, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "符心封着一缕紫电，摇动时铃声清越如雷。",
+      "stats": {"灵力": 88},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "huichun_pill", "name": "回春丹", "icon": "potion_red", "category": "消耗",
+      "quality": 1, "level": 1, "stack": 12, "max_stack": 99, "page": 1,
+      "desc": "千年灵芝配晨露炼成。服用后回复 500 气血。",
+      "stats": {},
+      "use": {"hp": 500, "text": "气血回复 500"},
+      "bindable": true, "sellable": true, "price": 120,
+      "discardable": true
+    },
+    {
+      "id": "ningshen_dew", "name": "凝神露", "icon": "potion_blue", "category": "消耗",
+      "quality": 2, "level": 1, "stack": 8, "max_stack": 99, "page": 1,
+      "desc": "月下凝取的清露，入口如冰雪化开，回复 350 魔法。",
+      "stats": {},
+      "use": {"mp": 350, "text": "魔法回复 350"},
+      "bindable": true, "sellable": true, "price": 220,
+      "discardable": true
+    },
+    {
+      "id": "jiuzhuan_pill", "name": "九转还魂丹", "icon": "potion_red", "category": "消耗",
+      "quality": 3, "level": 1, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "九转丹成，可自重伤中唤回一线生机。",
+      "stats": {},
+      "use": {"hp": 1200, "text": "气血回复 1200"},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "baicao_dew", "name": "百草露", "icon": "potion_green", "category": "消耗",
+      "quality": 0, "level": 1, "stack": 5, "max_stack": 99, "page": 1,
+      "desc": "百草熬成的淡绿药露，回复 180 气血。",
+      "stats": {},
+      "use": {"hp": 180, "text": "气血回复 180"},
+      "bindable": true, "sellable": true, "price": 60,
+      "discardable": true
+    },
+    {
+      "id": "spirit_food", "name": "灵兽口粮", "icon": "peach", "category": "消耗",
+      "quality": 1, "level": 1, "stack": 20, "max_stack": 99, "page": 1,
+      "desc": "以蟠桃蜜渍的灵兽点心，闻着就让人心情变好。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 40,
+      "discardable": true
+    },
+    {
+      "id": "xuantie_ore", "name": "玄铁矿石", "icon": "ore", "category": "材料",
+      "quality": 1, "level": 1, "stack": 37, "max_stack": 99, "page": 1,
+      "desc": "深山矿脉采出的玄铁原矿，锻造师的心头好。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 80,
+      "discardable": true
+    },
+    {
+      "id": "hanjing_stone", "name": "寒晶石", "icon": "gem", "category": "材料",
+      "quality": 2, "level": 1, "stack": 9, "max_stack": 99, "page": 1,
+      "desc": "凝结于冰泉深处的晶石，内里似有雪光流转。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 260,
+      "discardable": true
+    },
+    {
+      "id": "qiannian_lingzhi", "name": "千年灵芝", "icon": "herb", "category": "材料",
+      "quality": 3, "level": 1, "stack": 2, "max_stack": 99, "page": 1,
+      "desc": "生于古木背阴处的灵芝，药香清冽，百年难遇。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 1800,
+      "discardable": true
+    },
+    {
+      "id": "pantao", "name": "瑶池蟠桃", "icon": "peach", "category": "材料",
+      "quality": 2, "level": 1, "stack": 4, "max_stack": 99, "page": 1,
+      "desc": "瑶池边结下的蟠桃，果肉如蜜，可直接服用。",
+      "stats": {},
+      "use": {"hp": 300, "text": "气血回复 300"},
+      "bindable": true, "sellable": true, "price": 600,
+      "discardable": true
+    },
+    {
+      "id": "jinli", "name": "锦鲤", "icon": "fish", "category": "材料",
+      "quality": 1, "level": 1, "stack": 6, "max_stack": 99, "page": 1,
+      "desc": "通体赤金的水中灵物，据说能带来好运。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 90,
+      "discardable": true
+    },
+    {
+      "id": "fengyu", "name": "凤羽", "icon": "feather", "category": "材料",
+      "quality": 2, "level": 1, "stack": 5, "max_stack": 99, "page": 1,
+      "desc": "不知从何处飘落的赤金凤羽，触之温热。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 420,
+      "discardable": true
+    },
+    {
+      "id": "gujuan_scrap", "name": "古卷残页", "icon": "scroll", "category": "任务",
+      "quality": 2, "level": 1, "stack": 3, "max_stack": 9, "page": 1,
+      "desc": "字迹残缺的古卷，记录着九州旧事。",
+      "stats": {},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": false
+    },
+    {
+      "id": "shanshen_token", "name": "山神信物", "icon": "bell", "category": "任务",
+      "quality": 3, "level": 1, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "山神祠中的清心铃，摇动时群山回应。",
+      "stats": {},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": false
+    },
+    {
+      "id": "treasure_map", "name": "藏宝图", "icon": "scroll", "category": "任务",
+      "quality": 1, "level": 1, "stack": 2, "max_stack": 9, "page": 1,
+      "desc": "墨迹褪色的藏宝图，边角画着一只小狐狸。",
+      "stats": {},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": false
+    },
+    {
+      "id": "brocade_pouch", "name": "锦囊", "icon": "pouch", "category": "杂项",
+      "quality": 1, "level": 1, "stack": 2, "max_stack": 9, "page": 1,
+      "desc": "绣着云纹的锦囊，里面不知装着谁的嘱托。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 150,
+      "discardable": true
+    },
+    {
+      "id": "gilded_chest", "name": "鎏金宝箱", "icon": "chest", "category": "杂项",
+      "quality": 3, "level": 1, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "鎏金锁扣的宝箱，隐隐透出珠光。",
+      "stats": {},
+      "use": {"text": "宝箱开启，获得 888 银两", "silver": 888},
+      "bindable": true, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "tianshu_fragment", "name": "天书残卷", "icon": "tome", "category": "装备",
+      "quality": 2, "level": 50, "stack": 1, "max_stack": 1, "page": 1,
+      "desc": "残缺的天书，翻开时字迹会自行游动。",
+      "stats": {"灵力": 96},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "xingyun_sword", "name": "星陨剑", "icon": "sword", "category": "装备",
+      "quality": 3, "level": 60, "stack": 1, "max_stack": 1, "page": 2,
+      "desc": "以陨星铁铸成，夜深时剑身会泛起微光。",
+      "stats": {"攻击": 188, "灵力": 40},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "yufeng_robe", "name": "御风袍", "icon": "armor", "category": "装备",
+      "quality": 2, "level": 55, "stack": 1, "max_stack": 1, "page": 2,
+      "desc": "轻若流云的护袍，行走时衣袂不沾尘土。",
+      "stats": {"防御": 88, "速度": 36},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": true
+    },
+    {
+      "id": "qingxin_bell", "name": "清心铃", "icon": "bell", "category": "装备",
+      "quality": 1, "level": 50, "stack": 1, "max_stack": 1, "page": 2,
+      "desc": "铃声清越，能使人心神安宁。",
+      "stats": {"灵力": 52},
+      "bindable": true, "sellable": true, "price": 800,
+      "discardable": true
+    },
+    {
+      "id": "zuixian_wine", "name": "醉仙酿", "icon": "potion_green", "category": "消耗",
+      "quality": 2, "level": 1, "stack": 3, "max_stack": 99, "page": 2,
+      "desc": "酿了三百年的花酒，喝一口便忘了归途。",
+      "stats": {},
+      "use": {"mp": 500, "text": "魔法回复 500"},
+      "bindable": true, "sellable": true, "price": 480,
+      "discardable": true
+    },
+    {
+      "id": "baihua_honey", "name": "百花蜜", "icon": "potion_green", "category": "消耗",
+      "quality": 1, "level": 1, "stack": 7, "max_stack": 99, "page": 2,
+      "desc": "百花酿成的蜂蜜，甜而不腻。",
+      "stats": {},
+      "use": {"hp": 240, "text": "气血回复 240"},
+      "bindable": true, "sellable": true, "price": 150,
+      "discardable": true
+    },
+    {
+      "id": "moonlight_stone", "name": "月光石", "icon": "gem", "category": "材料",
+      "quality": 3, "level": 1, "stack": 5, "max_stack": 99, "page": 2,
+      "desc": "月华落入石中凝成，夜里会发出柔光。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 900,
+      "discardable": true
+    },
+    {
+      "id": "youlan_grass", "name": "幽兰草", "icon": "herb", "category": "材料",
+      "quality": 1, "level": 1, "stack": 10, "max_stack": 99, "page": 2,
+      "desc": "生在幽谷的兰草，叶脉如碧玉。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 70,
+      "discardable": true
+    },
+    {
+      "id": "dragon_scale", "name": "龙鳞", "icon": "feather", "category": "材料",
+      "quality": 3, "level": 1, "stack": 2, "max_stack": 99, "page": 3,
+      "desc": "一片流光溢彩的龙鳞，坚逾精钢。",
+      "stats": {},
+      "bindable": true, "sellable": true, "price": 2400,
+      "discardable": true
+    },
+    {
+      "id": "ancient_runes", "name": "上古符箓", "icon": "scroll", "category": "任务",
+      "quality": 3, "level": 1, "stack": 1, "max_stack": 1, "page": 3,
+      "desc": "上古流传的符箓，朱砂纹路仍泛着微光。",
+      "stats": {},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": false
+    },
+    {
+      "id": "trial_token", "name": "试炼凭证", "icon": "scroll", "category": "任务",
+      "quality": 1, "level": 1, "stack": 3, "max_stack": 9, "page": 5,
+      "desc": "通往云台试炼的凭证，纸角印着云纹。",
+      "stats": {},
+      "bindable": false, "sellable": false, "price": 0,
+      "discardable": false
+    }
+  ]
+}

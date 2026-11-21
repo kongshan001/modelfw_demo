@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="cloth" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#fbffff"/><stop offset="0.55" stop-color="#cfe6f4"/><stop offset="1" stop-color="#86aecb"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fe8ee"/><stop offset="1" stop-color="#267f9e"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="110" rx="40" ry="7" fill="#2b1d3a" opacity="0.16"/>
+  <g transform="rotate(-8 50 70)">
+    <path d="M38 26 Q56 20 60 38 L62 70 Q62 82 52 88 L28 96 Q20 96 22 88 Q28 76 32 62 Z"
+          fill="url(#cloth)" stroke="#332744" stroke-width="3.4" stroke-linejoin="round"/>
+    <path d="M38 28 Q50 24 54 38 L55 68" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8"/>
+    <path d="M26 92 Q42 84 60 78" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M30 84 Q38 76 46 78 Q54 80 58 74" fill="none" stroke="url(#blue)" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="46" cy="40" r="4" fill="url(#gold)" stroke="#332744" stroke-width="2.2"/>
+  </g>
+  <g transform="rotate(8 82 70)">
+    <path d="M76 20 Q94 16 98 32 L100 64 Q102 78 92 84 L70 94 Q62 94 64 86 Q70 76 72 60 Z"
+          fill="url(#cloth)" stroke="#332744" stroke-width="3.4" stroke-linejoin="round"/>
+    <path d="M78 22 Q90 20 92 32 L93 62" fill="none" stroke="#ffffff" stroke-width="2.2" opacity="0.8"/>
+    <path d="M68 88 Q82 82 100 76" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+    <path d="M72 80 Q80 72 88 74 Q96 76 100 70" fill="none" stroke="url(#blue)" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="86" cy="36" r="4" fill="url(#gold)" stroke="#332744" stroke-width="2.2"/>
+    <path d="M94 24 q8 -4 10 4 q-1 8 -9 8" fill="none" stroke="#9fe8ee" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+  <path d="M18 56 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 z" fill="#fff7d2" opacity="0.8"/>
+</svg>

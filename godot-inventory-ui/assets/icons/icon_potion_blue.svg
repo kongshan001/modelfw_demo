@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c2f0ff"/><stop offset="0.4" stop-color="#57b8f2"/><stop offset="1" stop-color="#1d5ca8"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#effbff" stop-opacity="0.85"/><stop offset="0.5" stop-color="#bedcea" stop-opacity="0.3"/><stop offset="1" stop-color="#effbff" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="110" rx="30" ry="6" fill="#2b1d3a" opacity="0.18"/>
+  <path d="M56 24 L72 24 L72 42 Q92 50 96 70 Q100 94 80 104 Q64 112 48 104 Q28 94 32 70 Q36 50 56 42 Z"
+        fill="url(#glass)" stroke="#332744" stroke-width="3.4" stroke-linejoin="round"/>
+  <path d="M40 72 Q38 90 54 99 Q70 107 84 96 Q94 86 90 70 Q88 60 82 58 Q88 78 78 88 Q64 98 52 88 Q44 80 48 60 Q43 63 40 72 Z"
+        fill="url(#blue)" stroke="#332744" stroke-width="2.6" stroke-linejoin="round"/>
+  <ellipse cx="64" cy="70" rx="22" ry="7" fill="#1e5a9b" opacity="0.5"/>
+  <path d="M44 52 Q50 44 58 42" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" opacity="0.8"/>
+  <rect x="52" y="16" width="24" height="12" rx="4" fill="url(#gold)" stroke="#332744" stroke-width="3"/>
+  <path d="M56 16 Q56 6 66 6 Q74 8 70 16" fill="#7a4a2a" stroke="#332744" stroke-width="2.6"/>
+  <g fill="#d3f6ff">
+    <circle cx="56" cy="82" r="2.4"/><circle cx="72" cy="88" r="1.8"/><circle cx="66" cy="76" r="1.6"/>
+    <circle cx="78" cy="70" r="1.2"/><circle cx="50" cy="92" r="1.2"/>
+  </g>
+  <path d="M90 36 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 z" fill="#eafcff" opacity="0.85"/>
+</svg>

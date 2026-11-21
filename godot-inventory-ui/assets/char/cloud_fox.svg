@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="900" viewBox="0 0 720 900">
+  <defs>
+    <linearGradient id="hair" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fbf8ff"/><stop offset="0.45" stop-color="#ddd3ff"/><stop offset="1" stop-color="#a996dd"/>
+    </linearGradient>
+    <linearGradient id="hairBack" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#d9cef8"/><stop offset="0.6" stop-color="#b3a2e2"/><stop offset="1" stop-color="#8c78c4"/>
+    </linearGradient>
+    <linearGradient id="tail" x1="0.1" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.45" stop-color="#f2edff"/><stop offset="0.8" stop-color="#d4c6f3"/><stop offset="1" stop-color="#b19fe1"/>
+    </linearGradient>
+    <linearGradient id="robe" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.55" stop-color="#f1efff"/><stop offset="1" stop-color="#cdd2f2"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#c7aaf0"/><stop offset="0.55" stop-color="#9675ce"/><stop offset="1" stop-color="#6a4a9d"/>
+    </linearGradient>
+    <linearGradient id="violetSoft" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#ded0ff"/><stop offset="1" stop-color="#a288d6"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fffaff"/><stop offset="0.6" stop-color="#ffefe2"/><stop offset="1" stop-color="#f3cdc0"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fff3c4"/><stop offset="0.45" stop-color="#edc371"/><stop offset="1" stop-color="#b77a27"/>
+    </linearGradient>
+    <linearGradient id="jade" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#d6fff3"/><stop offset="0.5" stop-color="#6be3c8"/><stop offset="1" stop-color="#1d8f7d"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#9fe8e0"/><stop offset="0.5" stop-color="#4bb8b8"/><stop offset="1" stop-color="#1f677c"/>
+    </linearGradient>
+    <linearGradient id="staff" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a9762b"/><stop offset="0.3" stop-color="#f4d691"/><stop offset="0.6" stop-color="#c79040"/><stop offset="1" stop-color="#7d4e18"/>
+    </linearGradient>
+    <linearGradient id="innerEar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd4dd"/><stop offset="1" stop-color="#e9a6ba"/>
+    </linearGradient>
+    <radialGradient id="orbGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#b8fff1" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#5de3d2" stop-opacity="0.05"/>
+    </radialGradient>
+  </defs>
+
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <!-- fluffy tail -->
+    <path d="M466 552 C498 482 590 458 650 506 C712 556 704 650 656 716 C622 762 566 792 518 776 C556 742 600 700 610 646 C622 584 576 552 522 558 C496 562 478 558 466 552 Z"
+          fill="url(#tail)" stroke="#6b5596" stroke-width="4"/>
+    <path d="M520 570 C568 542 628 556 646 604 C666 656 630 706 590 742" fill="none" stroke="#ffffff" stroke-width="7" opacity="0.65"/>
+    <path d="M556 600 C596 586 626 606 632 640 C638 678 612 708 584 728" fill="none" stroke="#c5b3ee" stroke-width="5" opacity="0.55"/>
+    <path d="M610 530 C650 556 668 600 660 644 C654 682 632 712 604 736 C642 700 664 652 650 604 C640 566 630 546 610 530 Z" fill="url(#violetSoft)" opacity="0.45"/>
+    <path d="M652 508 C668 520 680 540 686 562" fill="none" stroke="#fff8ff" stroke-width="4" opacity="0.7"/>
+
+    <!-- back hair -->
+    <path d="M300 244 C262 330 250 470 264 592 C272 664 238 712 198 744 C278 764 338 712 356 634 C378 532 394 408 392 320 Z"
+          fill="url(#hairBack)" stroke="#6b5596" stroke-width="3.6"/>
+    <path d="M420 244 C456 330 474 478 458 608 C452 676 486 724 528 752 C456 776 388 724 372 646 C352 548 342 402 348 312 Z"
+          fill="url(#hairBack)" stroke="#6b5596" stroke-width="3.6"/>
+    <path d="M280 360 C272 470 280 560 300 636" fill="none" stroke="#f6f1ff" stroke-width="5" opacity="0.6"/>
+    <path d="M444 380 C462 486 456 580 438 654" fill="none" stroke="#f6f1ff" stroke-width="5" opacity="0.55"/>
+    <path d="M384 330 C398 450 408 560 392 660" fill="none" stroke="#a08ccc" stroke-width="3" opacity="0.6"/>
+
+    <!-- staff shaft behind arm -->
+    <path d="M564 146 L512 832" stroke="#4a3560" stroke-width="17" stroke-linecap="round"/>
+    <path d="M564 146 L512 832" stroke="url(#staff)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M558 220 L532 470 M545 540 L524 720" stroke="#fff0bf" stroke-width="2.6" opacity="0.65"/>
+    <path d="M560 300 C530 330 530 370 548 398 C518 428 518 468 538 496" fill="none" stroke="url(#teal)" stroke-width="8" opacity="0.95"/>
+    <path d="M554 424 C588 424 604 448 600 470" fill="none" stroke="#f3d998" stroke-width="5"/>
+    <circle cx="604" cy="474" r="7" fill="url(#gold)" stroke="#6b4a1c" stroke-width="2.4"/>
+
+    <!-- skirt back layer (violet) -->
+    <path d="M276 470 C250 574 238 674 222 774 C270 808 430 818 520 782 C500 682 486 576 478 470 Z"
+          fill="url(#violet)" stroke="#4a3560" stroke-width="3.6"/>
+    <path d="M280 520 C268 620 260 700 248 772 M500 520 C512 622 516 700 524 774" stroke="#4a3560" stroke-width="2.2" opacity="0.35" fill="none"/>
+
+    <!-- torso / robe -->
+    <path d="M318 330 Q360 316 402 330 L438 396 L432 474 Q360 494 288 474 L282 396 Z"
+          fill="url(#robe)" stroke="#4a3560" stroke-width="3.6"/>
+    <!-- crossed collar -->
+    <path d="M330 330 Q354 356 360 392 Q382 360 396 332 L412 344 Q392 386 366 414 L354 420 Q330 386 316 346 Z"
+          fill="#ffffff" stroke="#4a3560" stroke-width="3"/>
+    <path d="M332 332 L360 388 L356 416" fill="none" stroke="url(#violet)" stroke-width="7" opacity="0.9"/>
+    <path d="M386 334 L366 382" fill="none" stroke="url(#teal)" stroke-width="4" opacity="0.9"/>
+    <path d="M320 344 Q360 372 402 344" fill="none" stroke="url(#gold)" stroke-width="2.6" opacity="0.85"/>
+
+    <!-- outer white skirt layer -->
+    <path d="M286 474 C268 580 250 676 228 776 C314 814 472 812 536 776 C514 676 500 578 482 474 Q384 506 286 474 Z"
+          fill="url(#robe)" stroke="#4a3560" stroke-width="3.6"/>
+    <path d="M300 498 C286 602 270 694 252 768 M466 500 C480 600 494 694 514 770" fill="none" stroke="#a9a2cf" stroke-width="2.6" opacity="0.5"/>
+    <path d="M246 748 C330 786 456 786 520 748" fill="none" stroke="url(#gold)" stroke-width="6"/>
+    <path d="M252 760 C332 796 458 796 514 760" fill="none" stroke="url(#gold)" stroke-width="2.4" opacity="0.8"/>
+    <!-- side panels violet -->
+    <path d="M286 486 C276 582 258 684 238 768 C214 776 198 768 200 752 C214 652 236 550 262 478 Z"
+          fill="url(#violetSoft)" stroke="#4a3560" stroke-width="2.6" opacity="0.92"/>
+    <path d="M482 486 C494 582 510 684 528 768 C552 776 566 768 564 752 C550 652 526 550 502 478 Z"
+          fill="url(#violetSoft)" stroke="#4a3560" stroke-width="2.6" opacity="0.92"/>
+    <!-- cloud embroidery on skirt -->
+    <g fill="none" stroke="#ffffff" stroke-width="3.2" opacity="0.85">
+      <path d="M300 620 q26 -30 52 -6 q22 20 -4 38 q-28 16 -40 -10"/>
+      <path d="M418 660 q24 -26 46 -4 q18 18 -4 34 q-24 14 -34 -8"/>
+      <path d="M332 706 q20 -20 40 -4 q14 14 -4 26"/>
+    </g>
+    <g fill="none" stroke="url(#gold)" stroke-width="1.6" opacity="0.8">
+      <path d="M310 606 q22 -20 40 -2"/><path d="M428 648 q18 -18 32 -2"/>
+    </g>
+    <g fill="url(#jade)" opacity="0.8">
+      <circle cx="344" cy="646" r="3.4"/><circle cx="444" cy="700" r="3"/><circle cx="360" cy="738" r="2.6"/>
+    </g>
+
+    <!-- waist sash -->
+    <path d="M288 450 Q360 476 434 450 L438 492 Q360 518 284 492 Z" fill="url(#teal)" stroke="#4a3560" stroke-width="3.2"/>
+    <path d="M288 456 Q360 482 434 456" fill="none" stroke="url(#gold)" stroke-width="3.4"/>
+    <path d="M286 486 Q360 512 436 486" fill="none" stroke="url(#gold)" stroke-width="2.6"/>
+    <circle cx="360" cy="484" r="13" fill="url(#jade)" stroke="#4a3560" stroke-width="2.8"/>
+    <path d="M354 480 q3 -5 8 -3 q5 2 3 7 q-2 4 -7 3" fill="none" stroke="#effffa" stroke-width="2" opacity="0.9"/>
+    <path d="M360 498 q-4 24 4 34" fill="none" stroke="#b83845" stroke-width="4"/>
+    <path d="M360 532 q-10 8 -6 16 q8 2 12 -6 q2 -8 -6 -10" fill="#b83845" stroke="#4a3560" stroke-width="2"/>
+    <path d="M428 486 q16 26 8 52 q-10 8 -18 -2" fill="url(#violetSoft)" stroke="#4a3560" stroke-width="2.4"/>
+
+    <!-- left arm / wide sleeve (viewer left) -->
+    <path d="M304 346 Q272 386 260 424 Q244 460 206 480 Q182 492 186 512 Q194 530 222 524 Q286 508 318 464 Q336 438 334 400 Z"
+          fill="url(#robe)" stroke="#4a3560" stroke-width="3.4"/>
+    <path d="M304 352 Q276 390 266 426 Q256 456 224 476 Q204 488 208 504 Q216 516 236 510 Q288 494 314 456 Q328 432 326 402 Z"
+          fill="none" stroke="#ffffff" stroke-width="3" opacity="0.8"/>
+    <path d="M194 492 Q222 512 268 494" fill="none" stroke="url(#gold)" stroke-width="4"/>
+    <path d="M218 512 Q230 526 250 520 Q244 536 224 536 Q208 532 206 520 Z" fill="url(#violetSoft)" stroke="#4a3560" stroke-width="2.4"/>
+    <path d="M232 500 q10 12 22 14 q-2 18 -18 20 q-14 0 -18 -12" fill="url(#skin)" stroke="#4a3560" stroke-width="2.6"/>
+    <path d="M236 508 q8 4 12 10" fill="none" stroke="#e8b7a9" stroke-width="2"/>
+    <path d="M230 486 q-4 10 4 16" fill="none" stroke="url(#gold)" stroke-width="2.4"/>
+    <circle cx="228" cy="486" r="4" fill="url(#jade)" stroke="#4a3560" stroke-width="1.6"/>
+
+    <!-- right arm / sleeve holding staff (viewer right) -->
+    <path d="M412 344 Q446 370 472 404 Q492 430 520 438 Q540 442 542 458 Q540 474 518 474 Q478 470 448 444 Q418 418 400 386 Z"
+          fill="url(#robe)" stroke="#4a3560" stroke-width="3.4"/>
+    <path d="M444 420 Q470 454 500 474 Q480 500 446 518 Q424 530 414 516 Q426 482 430 450 Z"
+          fill="url(#violetSoft)" stroke="#4a3560" stroke-width="3"/>
+    <path d="M448 430 Q468 462 490 480" fill="none" stroke="#e3d7ff" stroke-width="4" opacity="0.7"/>
+    <path d="M418 516 Q446 528 474 516" fill="none" stroke="url(#gold)" stroke-width="3.6"/>
+    <!-- hand gripping staff -->
+    <path d="M512 402 Q536 396 544 414 Q548 430 532 438 Q514 442 506 428 Z" fill="url(#skin)" stroke="#4a3560" stroke-width="2.8"/>
+    <path d="M514 412 q10 -6 20 -1 M512 420 q10 -6 22 -1" fill="none" stroke="#e8b7a9" stroke-width="2.2"/>
+    <path d="M508 400 q-6 -10 4 -14" fill="none" stroke="url(#gold)" stroke-width="3"/>
+    <circle cx="510" cy="384" r="4.4" fill="url(#jade)" stroke="#4a3560" stroke-width="1.8"/>
+
+    <!-- neck & shoulders -->
+    <path d="M336 300 L336 330 Q360 344 384 330 L384 300 Z" fill="url(#skin)" stroke="#4a3560" stroke-width="2.4"/>
+    <path d="M322 332 Q360 322 398 332" fill="none" stroke="#4a3560" stroke-width="2.4" opacity="0.5"/>
+
+    <!-- head back hair cap -->
+    <path d="M286 236 C276 158 316 112 362 112 C412 112 446 156 436 234 C426 210 412 190 392 178 L386 210 L356 186 L330 212 L322 182 C306 198 294 214 286 236 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3.4"/>
+
+    <!-- fox ears -->
+    <path d="M290 190 C266 150 262 104 292 88 C318 82 340 110 344 150 Q320 170 304 196 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3.4"/>
+    <path d="M300 168 C288 142 288 112 300 102 C314 104 324 126 326 150 Z" fill="url(#innerEar)" opacity="0.95"/>
+    <path d="M298 112 C300 98 314 94 322 106" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.7"/>
+    <path d="M430 190 C454 150 458 104 428 88 C402 82 380 110 376 150 Q400 170 416 196 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3.4"/>
+    <path d="M420 168 C432 142 432 112 420 102 C406 104 396 126 394 150 Z" fill="url(#innerEar)" opacity="0.95"/>
+    <path d="M422 112 C420 98 406 94 398 106" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.7"/>
+
+    <!-- face -->
+    <path d="M300 214 C300 170 326 150 360 150 C394 150 418 172 418 214 C418 258 392 302 360 306 C326 302 300 258 300 214 Z"
+          fill="url(#skin)" stroke="#4a3560" stroke-width="2.6"/>
+    <ellipse cx="320" cy="262" rx="14" ry="7" fill="#ffb3bf" opacity="0.38"/>
+    <ellipse cx="400" cy="262" rx="14" ry="7" fill="#ffb3bf" opacity="0.38"/>
+
+    <!-- eyes -->
+    <g>
+      <path d="M316 238 Q332 224 348 240" fill="none" stroke="#4a3560" stroke-width="4.2"/>
+      <path d="M316 238 Q330 230 346 240 Q342 252 330 253 Q320 250 316 238 Z" fill="#ffffff" opacity="0.94"/>
+      <circle cx="332" cy="241" r="8.4" fill="#2d7e96"/>
+      <circle cx="332" cy="242" r="6" fill="#77dfe6"/>
+      <circle cx="330" cy="239" r="2.6" fill="#ffffff"/>
+      <circle cx="335" cy="245" r="1.4" fill="#124355"/>
+      <path d="M320 235 Q330 228 342 235" fill="none" stroke="#3a2b4e" stroke-width="2" opacity="0.7"/>
+    </g>
+    <g>
+      <path d="M372 240 Q388 224 404 238" fill="none" stroke="#4a3560" stroke-width="4.2"/>
+      <path d="M374 240 Q390 230 404 238 Q400 250 388 253 Q378 250 374 240 Z" fill="#ffffff" opacity="0.94"/>
+      <circle cx="388" cy="241" r="8.4" fill="#2d7e96"/>
+      <circle cx="388" cy="242" r="6" fill="#77dfe6"/>
+      <circle cx="386" cy="239" r="2.6" fill="#ffffff"/>
+      <circle cx="391" cy="245" r="1.4" fill="#124355"/>
+      <path d="M378 237 Q388 229 400 235" fill="none" stroke="#3a2b4e" stroke-width="2" opacity="0.7"/>
+    </g>
+    <path d="M314 218 Q328 210 344 216" fill="none" stroke="#8e78ad" stroke-width="2.6" opacity="0.8"/>
+    <path d="M378 216 Q394 210 408 218" fill="none" stroke="#8e78ad" stroke-width="2.6" opacity="0.8"/>
+    <path d="M356 262 q4 2 8 0" fill="none" stroke="#d2958c" stroke-width="2.2"/>
+    <path d="M348 278 Q360 286 372 277" fill="none" stroke="#b05f6a" stroke-width="2.6"/>
+    <path d="M352 280 Q360 283 368 279" fill="#ffd9d0" opacity="0.5"/>
+
+    <!-- front bangs -->
+    <path d="M286 226 C280 158 320 120 362 120 C406 120 438 152 434 224 C424 194 410 172 390 158 L384 204 L362 172 L344 206 L330 160 C312 174 296 198 286 226 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3.2"/>
+    <path d="M302 208 Q298 160 330 140" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.75"/>
+    <path d="M420 208 Q424 162 396 142" fill="none" stroke="#ffffff" stroke-width="3.4" opacity="0.6"/>
+    <path d="M330 130 Q360 116 394 128" fill="none" stroke="#fff6ff" stroke-width="3" opacity="0.7"/>
+
+    <!-- side locks -->
+    <path d="M292 220 C276 286 272 348 284 402 C298 436 292 458 278 472 C310 466 326 432 320 396 C314 342 312 280 316 244 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3"/>
+    <path d="M428 220 C444 286 448 348 438 398 C430 430 438 456 452 468 C422 464 404 430 410 396 C416 342 416 282 414 246 Z"
+          fill="url(#hair)" stroke="#6b5596" stroke-width="3"/>
+    <path d="M300 258 C290 324 290 372 298 412" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.55"/>
+    <path d="M420 258 C428 322 426 372 418 410" fill="none" stroke="#ffffff" stroke-width="2.6" opacity="0.5"/>
+
+    <!-- hair ornaments -->
+    <path d="M290 172 Q276 168 274 178 Q276 190 292 190" fill="none" stroke="url(#gold)" stroke-width="4"/>
+    <path d="M280 180 q-8 -8 -16 -2 q-4 8 6 12 q8 2 12 -6" fill="url(#gold)" stroke="#6b4a1c" stroke-width="2"/>
+    <circle cx="266" cy="178" r="5.4" fill="url(#jade)" stroke="#4a3560" stroke-width="2"/>
+    <path d="M264 186 q-2 22 4 30" fill="none" stroke="#b83845" stroke-width="3.4"/>
+    <path d="M266 218 q-8 8 -4 16 q8 0 10 -8 q0 -6 -6 -8" fill="#b83845" stroke="#4a3560" stroke-width="1.8"/>
+    <path d="M424 170 q14 -6 18 4 q-4 12 -18 10" fill="none" stroke="url(#gold)" stroke-width="3"/>
+    <circle cx="438" cy="180" r="4.6" fill="url(#jade)" stroke="#4a3560" stroke-width="1.8"/>
+    <path d="M438 186 q4 16 -2 24" fill="none" stroke="#b83845" stroke-width="2.6"/>
+    <!-- forehead chain -->
+    <path d="M334 190 Q360 204 386 190" fill="none" stroke="url(#gold)" stroke-width="2.4"/>
+    <path d="M358 194 l7 8 l-7 10 l-7 -10 Z" fill="url(#jade)" stroke="#4a3560" stroke-width="2"/>
+    <path d="M354 198 l4 4 l-4 5 l-4 -5 Z" fill="#effffa" opacity="0.9"/>
+    <!-- earrings -->
+    <circle cx="300" cy="288" r="4.6" fill="url(#gold)" stroke="#6b4a1c" stroke-width="1.8"/>
+    <path d="M300 294 q-4 12 2 18" fill="none" stroke="url(#gold)" stroke-width="2"/>
+    <circle cx="302" cy="314" r="4" fill="url(#jade)" stroke="#4a3560" stroke-width="1.6"/>
+    <circle cx="420" cy="288" r="4.6" fill="url(#gold)" stroke="#6b4a1c" stroke-width="1.8"/>
+    <path d="M420 294 q4 12 -2 18" fill="none" stroke="url(#gold)" stroke-width="2"/>
+    <circle cx="418" cy="314" r="4" fill="url(#jade)" stroke="#4a3560" stroke-width="1.6"/>
+
+    <!-- staff head: jade lotus orb -->
+    <circle cx="566" cy="122" r="66" fill="url(#orbGlow)" opacity="0.8"/>
+    <path d="M566 62 C596 82 608 108 600 138 C594 162 570 172 546 158 C526 146 524 118 540 98 C548 88 556 74 566 62 Z"
+          fill="url(#jade)" stroke="#4a3560" stroke-width="3.4"/>
+    <path d="M566 76 C580 92 586 108 582 128 C578 146 562 154 550 146 C538 138 540 122 550 112 C558 102 562 90 566 76 Z" fill="#eafffa" opacity="0.5"/>
+    <g fill="url(#gold)" stroke="#6b4a1c" stroke-width="2">
+      <path d="M566 42 l8 16 l-8 8 l-8 -8 Z"/>
+      <path d="M516 108 l16 -8 l8 8 l-8 16 Z"/>
+      <path d="M616 108 l-16 -8 l-8 8 l8 16 Z"/>
+    </g>
+    <path d="M566 62 Q548 100 556 140" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.7"/>
+    <circle cx="552" cy="108" r="6" fill="#ffffff" opacity="0.75"/>
+    <path d="M544 154 q18 14 38 0" fill="none" stroke="url(#gold)" stroke-width="4"/>
+    <!-- staff rings -->
+    <ellipse cx="562" cy="186" rx="20" ry="7" fill="none" stroke="url(#gold)" stroke-width="3.4"/>
+
+    <!-- sparkles -->
+    <g fill="#e9fff9" opacity="0.9">
+      <path d="M634 250 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 Z"/>
+      <path d="M472 170 l3 -6 l3 6 l6 3 l-6 3 l-3 6 l-3 -6 l-6 -3 Z"/>
+      <path d="M240 330 l3 -6 l3 6 l6 3 l-6 3 l-3 6 l-3 -6 l-6 -3 Z"/>
+    </g>
+    <g fill="#fff3c2" opacity="0.9">
+      <path d="M618 336 l3 -6 l3 6 l6 3 l-6 3 l-3 6 l-3 -6 l-6 -3 Z"/>
+      <path d="M286 82 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 Z"/>
+    </g>
+  </g>
+</svg>

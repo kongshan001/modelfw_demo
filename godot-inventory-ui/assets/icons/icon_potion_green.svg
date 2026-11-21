@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8ffc2"/><stop offset="0.4" stop-color="#79df7a"/><stop offset="1" stop-color="#2a8a52"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#c7f8a8"/><stop offset="1" stop-color="#3d8f45"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="110" rx="24" ry="6" fill="#2b1d3a" opacity="0.16"/>
+  <path d="M54 30 L74 30 L74 44 Q90 52 92 72 Q94 96 76 104 Q64 110 52 104 Q34 96 36 72 Q38 52 54 44 Z"
+        fill="url(#green)" stroke="#332744" stroke-width="3.4" stroke-linejoin="round" opacity="0.95"/>
+  <path d="M44 56 Q40 76 50 92 Q58 102 72 100 Q86 96 88 78 Q90 66 82 58" fill="none" stroke="#f1ffd9" stroke-width="2.4" opacity="0.55" stroke-linecap="round"/>
+  <path d="M56 32 Q56 42 64 46 Q72 42 72 32" fill="#1e6b4a" opacity="0.4"/>
+  <rect x="50" y="18" width="28" height="11" rx="4" fill="url(#gold)" stroke="#332744" stroke-width="3"/>
+  <path d="M64 18 Q58 6 68 2 Q76 6 70 18" fill="url(#grass)" stroke="#332744" stroke-width="2.6"/>
+  <path d="M68 16 Q76 8 84 12 Q80 20 70 20" fill="url(#grass)" stroke="#332744" stroke-width="2.4"/>
+  <path d="M58 22 Q46 16 42 24 Q50 28 58 26" fill="url(#grass)" stroke="#332744" stroke-width="2.2"/>
+  <path d="M58 72 q4 -6 10 -2 q4 6 -2 10 q-8 0 -8 -8" fill="#efffe0" opacity="0.4"/>
+  <circle cx="88" cy="44" r="2.2" fill="#efffe0" opacity="0.8"/>
+  <circle cx="42" cy="82" r="1.6" fill="#efffe0" opacity="0.6"/>
+</svg>

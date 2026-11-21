@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0c6"/><stop offset="0.35" stop-color="#ffbe63"/><stop offset="1" stop-color="#d95d2e"/>
+    </linearGradient>
+    <linearGradient id="fin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc8b2" stop-opacity="0.95"/><stop offset="1" stop-color="#e77b52" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a5f2ff" stop-opacity="0"/><stop offset="0.5" stop-color="#a5f2ff" stop-opacity="0.8"/><stop offset="1" stop-color="#a5f2ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="108" rx="38" ry="7" fill="#2b1d3a" opacity="0.16"/>
+  <path d="M22 70 Q30 40 64 36 Q92 34 108 54 Q116 64 104 72 Q92 82 86 92 Q76 102 66 88 Q44 94 30 86 Q18 81 22 70 Z"
+        fill="url(#body)" stroke="#332744" stroke-width="3.4" stroke-linejoin="round"/>
+  <path d="M28 72 Q36 56 56 50 Q74 46 88 54 Q76 64 50 68 Q38 70 28 72" fill="#fff4d8" opacity="0.55"/>
+  <path d="M58 38 Q54 22 70 18 Q76 30 68 40" fill="url(#fin)" stroke="#332744" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M46 84 Q40 100 56 102 Q64 92 58 84" fill="url(#fin)" stroke="#332744" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M90 62 Q104 54 114 58 Q108 68 96 70" fill="url(#fin)" stroke="#332744" stroke-width="2.4" stroke-linejoin="round"/>
+  <g fill="none" stroke="#b84e2e" stroke-width="2.2" opacity="0.65" stroke-linecap="round">
+    <path d="M44 58 Q54 52 66 54"/><path d="M52 72 Q62 68 74 68"/><path d="M38 80 Q46 78 54 74"/>
+  </g>
+  <circle cx="88" cy="58" r="5.4" fill="#2b1d3a" stroke="#332744" stroke-width="1.6"/>
+  <circle cx="89.5" cy="56.5" r="1.8" fill="#fffbe8"/>
+  <path d="M30 44 Q52 20 78 28" fill="none" stroke="url(#water)" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="28" cy="34" r="4" fill="none" stroke="#a5f2ff" stroke-width="2" opacity="0.7"/>
+  <circle cx="38" cy="24" r="2" fill="#a5f2ff" opacity="0.7"/>
+  <path d="M102 28 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 z" fill="#fff7d2" opacity="0.85"/>
+</svg>

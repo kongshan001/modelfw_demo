@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="leather" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#d7a66b"/><stop offset="0.5" stop-color="#9b6239"/><stop offset="1" stop-color="#5b3520"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="108" rx="34" ry="7" fill="#2b1d3a" opacity="0.18"/>
+  <path d="M44 36 Q32 32 30 44 Q28 52 38 56 Q30 66 30 78 Q32 100 64 104 Q96 100 98 78 Q98 66 90 56 Q100 52 98 44 Q96 32 84 36 Q76 40 64 40 Q52 40 44 36 Z"
+        fill="url(#leather)" stroke="#332744" stroke-width="3.6" stroke-linejoin="round"/>
+  <path d="M38 56 Q28 80 40 94 Q48 102 64 104" fill="none" stroke="#e5b57a" stroke-width="2.6" opacity="0.5" stroke-linecap="round"/>
+  <path d="M40 46 Q64 56 88 46" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M44 38 Q64 48 84 38" fill="none" stroke="#4a2a17" stroke-width="2" opacity="0.65"/>
+  <circle cx="64" cy="76" r="19" fill="url(#gold)" stroke="#332744" stroke-width="3.2"/>
+  <rect x="57" y="69" width="14" height="14" rx="2" fill="#7a4a2a" stroke="#332744" stroke-width="2.2"/>
+  <path d="M57 69 L71 83 M71 69 L57 83" stroke="#c98d4a" stroke-width="1.4" opacity="0.6"/>
+  <path d="M88 26 Q100 18 108 26 Q112 34 102 38 Q94 40 90 32" fill="url(#gold)" stroke="#332744" stroke-width="2.6" stroke-linejoin="round"/>
+  <circle cx="102" cy="42" r="2" fill="#fff3c6" opacity="0.9"/>
+  <path d="M28 24 l3 -5 l3 5 l5 3 l-5 3 l-3 5 l-3 -5 l-5 -3 z" fill="#fff7d2" opacity="0.8"/>
+</svg>

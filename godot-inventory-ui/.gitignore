@@ -1,0 +1,5 @@
+.godot/
+docs/media/frames/
+*.log
+__pycache__/
+.DS_Store

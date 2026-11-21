@@ -2,6 +2,18 @@
 
 ## 进行中
 
+## T-20261121-021 · Godot 程序化地图生成优秀案例复刻（T-020 follow-up）
+- 来源: 飞书消息（2026-11-21，“godot在程序化地图生成这块有哪些技术方案，以及优秀效果案例然后复刻”）
+- 线程: T-20261121-020（调研 → 实现，跨类型 follow-up）
+- 父任务: T-20261121-020；依赖: T-20261121-020（done + Git 发布）
+- 类型: game-demo（程序化生成/案例复刻）
+- 目标: 按调研 brief 在 Godot 4.6 复刻 2–3 个优秀程序化地图效果（统一查看器：种子/算法切换/步进/调试叠加/统计），视觉质量优先
+- 交付: `godot-proc-map/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/许可合规
+- 约束: 只复刻算法与视觉语言，不复制案例素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性种子；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: blocked（等 T-020 done + Git 发布）
+- depends_on: T-20261121-020
+
 ## T-20261121-014 · 复刻《幻唐志》手游道具背包界面（Godot UI）
 - 来源: 飞书消息（2026-11-21，“帮我用godot来复刻幻唐志手游的道具背包界面”）
 - 类型: game-demo（Godot UI / 界面复刻）
@@ -9,7 +21,7 @@
 - 交付: `godot-inventory-ui/` 可运行项目；30–40 件示例道具数据；中文 UI；交互（切页/选中/悬停/使用/整理/筛选/丢弃确认/键鼠）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke `INVENTORY_UI_SMOKE_OK`
 - 约束: 只参考布局/配色/交互，**不复制幻唐志截图/图标/Logo/UI 素材**；原创面板/图标/背景；不用游戏名做品牌；1280×720 逻辑 + 1920×1080 截图，GL Compatibility，Intel 30fps+
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
 - 后续: T-20261121-015（1:1 复刻校正，等本任务完成后启动）
 
 ## T-20261121-015 · 背包界面 1:1 复刻校正（T-014 follow-up）

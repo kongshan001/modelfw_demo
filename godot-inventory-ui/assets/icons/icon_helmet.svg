@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="0.75" y2="1">
+      <stop offset="0" stop-color="#f4fcff"/><stop offset="0.4" stop-color="#c2dbec"/><stop offset="1" stop-color="#6f93b3"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#e7b95c"/><stop offset="1" stop-color="#a96e21"/>
+    </linearGradient>
+    <linearGradient id="jade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c4fff0"/><stop offset="1" stop-color="#21947f"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="112" rx="34" ry="7" fill="#2b1d3a" opacity="0.18"/>
+  <path d="M65 22 Q77 8 92 12 Q82 20 80 32" fill="url(#jade)" stroke="#332744" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M62 24 Q64 12 78 9" fill="none" stroke="#ffe9a8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M64 26 Q94 26 100 58 Q102 76 88 88 L40 88 Q26 76 28 58 Q34 26 64 26 Z"
+        fill="url(#silver)" stroke="#332744" stroke-width="3.6"/>
+  <path d="M64 30 Q88 30 93 58" fill="none" stroke="#ffffff" stroke-width="2.4" opacity="0.8" stroke-linecap="round"/>
+  <path d="M34 54 Q64 44 94 54" fill="none" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M38 67 Q64 58 90 67 L88 84 Q64 94 40 84 Z" fill="#40688b" opacity="0.55" stroke="#332744" stroke-width="3"/>
+  <path d="M64 28 L71 42 L64 52 L57 42 Z" fill="url(#jade)" stroke="#332744" stroke-width="2.6"/>
+  <path d="M64 34 L67 42 L64 47 L61 42 Z" fill="#e9fff9" opacity="0.9"/>
+  <path d="M38 62 Q28 70 30 86 Q36 92 44 88 L46 74" fill="url(#gold)" stroke="#332744" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M90 62 Q100 70 98 86 Q92 92 84 88 L82 74" fill="url(#gold)" stroke="#332744" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M44 100 q-4 8 1 14 m7 -14 q-4 8 1 14" stroke="#b83845" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M78 98 q4 8 -1 12 m-6 -12 q4 8 -1 12" stroke="#b83845" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>
