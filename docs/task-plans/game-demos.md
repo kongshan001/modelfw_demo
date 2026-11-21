@@ -2,6 +2,25 @@
 
 ## 进行中
 
+## T-20261121-008 · 复刻 Flow Field 流场寻路群体寻路 Demo
+- 来源: 飞书消息（B 站 BV12bzZY2EfA《〈群体寻路与避障〉Flow Field 流场寻路算法如何实现群体寻路》，3:53，2026-11-21）
+- 类型: game-demo（AI 寻路算法复刻）
+- 目标: 按视频实际内容复刻 Flow Field：代价场 → 积分场（Dijkstra）→ 流场方向；群体沿流场移动 + 局部避让；动态障碍/多目标；代价/积分/流向可视化
+- 交付: `godot-flowfield/` 可运行 Godot 4.6 demo（地图/目标/障碍编辑、智能体数量、三视图切换、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创场景/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；不穿墙、流场单调、同地图可重复；独立项目避免与 T-006 文件冲突
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261121-007 · 材质与特效专项整改（Game Artist）
+- 来源: 飞书消息（2026-11-21，“那就补充下材质和特效”，承接 T-20261121-004 外部对标 G1/G5）
+- 父任务: T-20261121-004（对标：材质 3.5 / VFX 3.7，差两档+）
+- 类型: game-demo（美术实现：材质/光照/VFX）
+- 目标: 按对标 brief 落地 G1 材质/色阶管线 + G5 舞台光照/VFX；本轮不做 G2 动作、G3/G4 UI 重构
+- 交付: 更新 `godot-paper-doll/`；同机位 before/after（100%/25%/640×360 命中帧）+ 指标（L* 分箱、阴影色相、墨占比、舞台层数、斩击 ROI）+ GIF/MP4；README/TECH/迭代记录；媒体
+- 约束: 只改视觉层/材质/光照/VFX；保留 17 槽/8 向/4 动作/16 预设；不降 AA/超采样；原创素材；FPS 不回退；外部参考图不入库
+- 指派: game-artist worker（dispatcher）
+- 状态: running
+
 ## T-20261121-006 · 复刻《群体寻路与避障》Steering Behavior 可交互 Demo
 - 来源: 飞书消息（B 站 BV1yCqfYuEh1《〈群体寻路与避障〉Steering Behavior 转向行为如何实现避障智能体》，4:03，2026-11-21）
 - 类型: game-demo（AI/转向行为复刻）
@@ -9,7 +28,8 @@
 - 交付: `godot-steering/` 可运行 Godot 4.6 demo（行为开关/权重、智能体数量、场景预设、力/射线/邻居可视化、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创场景/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；不穿墙、无 NaN/爆炸；不改其他项目
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-006/result.md
 
 ## T-20261121-005 · 复刻《地图随机生成》波函数坍缩（WFC）可交互 Demo
 - 来源: 飞书消息（B 站 BV1Br421M7Vm《〈地图随机生成〉波函数坍缩算法是如何实现的》，4:50，2026-11-21）
