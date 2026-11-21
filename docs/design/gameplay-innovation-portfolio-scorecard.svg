@@ -1,0 +1,244 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">玩法创新 Portfolio 样片 · 30 seeds / top 3 / 五项评分</title>
+  <desc id="desc">T-20261121-034 评分一览：30 个 idea seeds 覆盖卡牌战棋、搜打撤、3D 动作；top 3 为 A1 地形即手牌 19 分、B2 背包即护甲 19 分、C1 灯是武器 18 分；均走 fast track L1，待 T-035 红队独立评审。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f16"/>
+      <stop offset="1" stop-color="#111823"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2c879"/>
+      <stop offset="1" stop-color="#c98f35"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#73e0cf"/>
+      <stop offset="1" stop-color="#2c9c90"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .title{font:700 42px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#eef3fa}
+      .sub{font:400 17px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#93a1b5}
+      .h2{font:700 20px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#eef3fa}
+      .h3{font:600 16px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#dbe5f1}
+      .body{font:400 14px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#aebccd}
+      .small{font:400 12px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#8594a8}
+      .mono{font:600 13px "SFMono-Regular",Consolas,monospace;fill:#c7d3e2}
+      .gold{fill:#e8b45a}
+      .teal{fill:#54c7b8}
+      .warn{fill:#e06c75}
+      .panel{fill:#141b26;stroke:#263243;stroke-width:1}
+      .card{fill:#18212e;stroke:#2c3a4d;stroke-width:1}
+      .divider{stroke:#263243;stroke-width:1}
+      .node{fill:#18212e;stroke:#324359;stroke-width:1}
+      .arrow{stroke:#4b5f78;stroke-width:2;fill:none}
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <g opacity="0.35">
+    <circle cx="1430" cy="120" r="260" fill="#e8b45a" opacity="0.06"/>
+    <circle cx="220" cy="880" r="300" fill="#54c7b8" opacity="0.05"/>
+  </g>
+
+  <!-- Header -->
+  <text x="60" y="68" class="title">玩法创新 Portfolio · 样片 v1.0</text>
+  <text x="60" y="101" class="sub">30 个 idea seeds · 五项评分 · top 3 一页 brief · 5 人 × 2 轮 playtest 计划 · 8 条否决</text>
+  <g transform="translate(1250,44)">
+    <rect x="0" y="0" width="290" height="46" rx="9" fill="#1a2330" stroke="#33455c"/>
+    <text x="16" y="21" class="small">T-20261121-034 · 2026-11-21</text>
+    <text x="16" y="37" class="mono gold">提案 / 待 T-035 独立评审</text>
+  </g>
+  <line x1="60" y1="126" x2="1540" y2="126" class="divider"/>
+
+  <!-- Pipeline -->
+  <g transform="translate(60,148)">
+    <rect x="0" y="0" width="230" height="54" rx="8" class="node"/>
+    <text x="16" y="22" class="small">步 1 · 发散</text>
+    <text x="16" y="41" class="h3">30 个 seeds</text>
+
+    <path d="M240 27 H270" class="arrow"/><path d="M270 27 l-8 -4 v8 z" fill="#4b5f78"/>
+    <rect x="278" y="0" width="230" height="54" rx="8" class="node"/>
+    <text x="294" y="22" class="small">步 2 · 评分</text>
+    <text x="294" y="41" class="h3">N/D/C/F/A 1–5</text>
+
+    <path d="M518 27 H548" class="arrow"/><path d="M548 27 l-8 -4 v8 z" fill="#4b5f78"/>
+    <rect x="556" y="0" width="230" height="54" rx="8" class="node"/>
+    <text x="572" y="22" class="small">步 3 · 收敛</text>
+    <text x="572" y="41" class="h3">Top 3 brief</text>
+
+    <path d="M796 27 H826" class="arrow"/><path d="M826 27 l-8 -4 v8 z" fill="#4b5f78"/>
+    <rect x="834" y="0" width="230" height="54" rx="8" class="node"/>
+    <text x="850" y="22" class="small">步 4 · 原型</text>
+    <text x="850" y="41" class="h3">L1 灰盒 3–7 天</text>
+
+    <path d="M1074 27 H1104" class="arrow"/><path d="M1104 27 l-8 -4 v8 z" fill="#4b5f78"/>
+    <rect x="1112" y="0" width="230" height="54" rx="8" class="node"/>
+    <text x="1128" y="22" class="small">步 5 · 验证</text>
+    <text x="1128" y="41" class="h3">5 人 × 2 轮</text>
+
+    <path d="M1352 27 H1382" class="arrow"/><path d="M1382 27 l-8 -4 v8 z" fill="#4b5f78"/>
+    <rect x="1390" y="0" width="150" height="54" rx="8" fill="#221d15" stroke="#6b5426"/>
+    <text x="1406" y="22" class="small">步 6 · 决策</text>
+    <text x="1406" y="41" class="h3 gold">kill / iterate</text>
+  </g>
+
+  <!-- Left panel: seed distribution -->
+  <g transform="translate(60,232)">
+    <rect x="0" y="0" width="700" height="520" rx="12" class="panel"/>
+    <text x="24" y="34" class="h2">30 seeds × 3 类型</text>
+    <text x="24" y="56" class="small">覆盖当前项目：每个 idea 一行，含动词/约束/参考模式/五项分/风险</text>
+
+    <!-- project counts -->
+    <g transform="translate(24,82)">
+      <rect x="0" y="0" width="200" height="78" rx="8" class="card"/>
+      <text x="14" y="22" class="small">回合制卡牌战棋</text>
+      <text x="14" y="52" class="h2 gold">10</text>
+      <text x="56" y="52" class="small">seeds · top A1</text>
+
+      <rect x="212" y="0" width="200" height="78" rx="8" class="card"/>
+      <text x="226" y="22" class="small">俯视角搜打撤</text>
+      <text x="226" y="52" class="h2 teal">10</text>
+      <text x="268" y="52" class="small">seeds · top B2</text>
+
+      <rect x="424" y="0" width="228" height="78" rx="8" class="card"/>
+      <text x="438" y="22" class="small">3D 动作</text>
+      <text x="438" y="52" class="h2 gold">10</text>
+      <text x="480" y="52" class="small">seeds · top C1</text>
+    </g>
+
+    <!-- score bands -->
+    <text x="24" y="196" class="h3">总分分布（五项相加 / 25）</text>
+    <g transform="translate(24,214)">
+      <text x="0" y="18" class="mono">19</text>
+      <rect x="44" y="6" width="170" height="16" rx="4" fill="#3a2e18"/>
+      <rect x="44" y="6" width="170" height="16" rx="4" fill="url(#gold)"/>
+      <text x="228" y="19" class="small">5 个 · A1 / A2 / B2 / B8 / B9</text>
+
+      <text x="0" y="52" class="mono">18</text>
+      <rect x="44" y="40" width="374" height="16" rx="4" fill="#18302c"/>
+      <rect x="44" y="40" width="374" height="16" rx="4" fill="url(#teal)"/>
+      <text x="432" y="53" class="small">11 个 · 含 C1 / C8 / C9 / C10</text>
+
+      <text x="0" y="86" class="mono">17</text>
+      <rect x="44" y="74" width="238" height="16" rx="4" fill="#283648"/>
+      <text x="296" y="87" class="small">7 个 · L0 / 待补</text>
+
+      <text x="0" y="120" class="mono">16</text>
+      <rect x="44" y="108" width="204" height="16" rx="4" fill="#283648"/>
+      <text x="262" y="121" class="small">6 个 · 低优先</text>
+
+      <text x="0" y="154" class="mono">15</text>
+      <rect x="44" y="142" width="34" height="16" rx="4" fill="#3a2328"/>
+      <text x="92" y="155" class="small">1 个 · C6 暂缓（clarity 2）</text>
+    </g>
+
+    <line x1="24" y1="292" x2="676" y2="292" class="divider"/>
+    <text x="24" y="320" class="h3">本轮决策</text>
+    <g transform="translate(24,334)">
+      <rect x="0" y="0" width="150" height="70" rx="8" fill="#1d2b26" stroke="#2f5a4c"/>
+      <text x="14" y="24" class="small">Fast track L1</text>
+      <text x="14" y="55" class="h2 teal">3</text>
+
+      <rect x="162" y="0" width="150" height="70" rx="8" class="card"/>
+      <text x="176" y="24" class="small">备选 / 第二波</text>
+      <text x="176" y="55" class="h2">6</text>
+
+      <rect x="324" y="0" width="150" height="70" rx="8" class="card"/>
+      <text x="338" y="24" class="small">L0 / 补证据</text>
+      <text x="338" y="55" class="h2">21</text>
+
+      <rect x="486" y="0" width="166" height="70" rx="8" fill="#2a1b1f" stroke="#5c3038"/>
+      <text x="500" y="24" class="small">已否决（taste）</text>
+      <text x="500" y="55" class="h2 warn">8</text>
+    </g>
+    <text x="24" y="446" class="small">没有 ≥20 的方案：top 3 均走 18–19 分 fast track，条件是 10 秒可演示 + 复用现有系统 + 无 ≤2。</text>
+    <text x="24" y="468" class="small">分数是 pre-prototype 粗评分，不是实测；未做原型/playtest 前不得写成“已验证”。</text>
+    <text x="24" y="495" class="small">24 个 seed 沿用 T-033；6 个新增：A9 / A10 / B9 / B10 / C9 / C10。</text>
+  </g>
+
+  <!-- Right panel: top 3 -->
+  <g transform="translate(786,232)">
+    <rect x="0" y="0" width="754" height="520" rx="12" class="panel"/>
+    <text x="24" y="34" class="h2">Top 3 · 一页 brief → L1 灰盒</text>
+    <text x="24" y="56" class="small">选择逻辑：novelty ≥4 + 无 ≤2 + 10 秒可演示 + 复用现有系统 + 三项目各一</text>
+
+    <!-- A1 -->
+    <g transform="translate(24,78)">
+      <rect x="0" y="0" width="706" height="126" rx="9" class="card"/>
+      <text x="18" y="26" class="h3">A1 · 地形即手牌</text>
+      <rect x="574" y="12" width="112" height="30" rx="6" fill="#2a2415" stroke="#6b5426"/>
+      <text x="590" y="32" class="mono gold">19 / 25</text>
+      <text x="18" y="50" class="small">卡牌战棋 · 手牌可铺草丛/火墙/高地，与随从抢资源</text>
+      <g transform="translate(18,64)">
+        <text x="0" y="12" class="small">N</text><rect x="18" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="18" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="72" y="12" class="small">D</text><rect x="90" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="90" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="144" y="12" class="small">C</text><rect x="162" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="162" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="216" y="12" class="small">F</text><rect x="234" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="234" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="288" y="12" class="small">A</text><rect x="306" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="306" y="2" width="24" height="10" rx="3" fill="#c98f35"/>
+      </g>
+      <text x="18" y="104" class="small">L1 3–5 天 · 复用 9×5 棋盘/视线 · H1：≥4/5 为地形放弃召唤</text>
+      <text x="470" y="104" class="small warn">风险：AI 不会用 / 棋盘不可读</text>
+    </g>
+
+    <!-- B2 -->
+    <g transform="translate(24,216)">
+      <rect x="0" y="0" width="706" height="126" rx="9" class="card"/>
+      <text x="18" y="26" class="h3">B2 · 背包即护甲</text>
+      <rect x="574" y="12" width="112" height="30" rx="6" fill="#2a2415" stroke="#6b5426"/>
+      <text x="590" y="32" class="mono gold">19 / 25</text>
+      <text x="18" y="50" class="small">搜打撤 · 6×4 背包物品真实阻挡子弹/决定受击部位</text>
+      <g transform="translate(18,64)">
+        <text x="0" y="12" class="small">N</text><rect x="18" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="18" y="2" width="40" height="10" rx="3" fill="#e8b45a"/>
+        <text x="72" y="12" class="small">D</text><rect x="90" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="90" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="144" y="12" class="small">C</text><rect x="162" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="162" y="2" width="24" height="10" rx="3" fill="#c98f35"/>
+        <text x="216" y="12" class="small">F</text><rect x="234" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="234" y="2" width="24" height="10" rx="3" fill="#c98f35"/>
+        <text x="288" y="12" class="small">A</text><rect x="306" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="306" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+      </g>
+      <text x="18" y="104" class="small">L1 5–7 天 · 复用 6×4 背包/弹道 · H1：≥4/5 为挡弹调整背包</text>
+      <text x="470" y="104" class="small warn">风险：判定可读性 / 调参</text>
+    </g>
+
+    <!-- C1 -->
+    <g transform="translate(24,354)">
+      <rect x="0" y="0" width="706" height="126" rx="9" class="card"/>
+      <text x="18" y="26" class="h3">C1 · 灯是武器</text>
+      <rect x="574" y="12" width="112" height="30" rx="6" fill="#18302c" stroke="#2f6b60"/>
+      <text x="590" y="32" class="mono teal">18 / 25</text>
+      <text x="18" y="50" class="small">3D 动作 · 灯笼可举/掷/灭，光照范围=攻防资源，灯油有限</text>
+      <g transform="translate(18,64)">
+        <text x="0" y="12" class="small">N</text><rect x="18" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="18" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="72" y="12" class="small">D</text><rect x="90" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="90" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+        <text x="144" y="12" class="small">C</text><rect x="162" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="162" y="2" width="24" height="10" rx="3" fill="#c98f35"/>
+        <text x="216" y="12" class="small">F</text><rect x="234" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="234" y="2" width="24" height="10" rx="3" fill="#c98f35"/>
+        <text x="288" y="12" class="small">A</text><rect x="306" y="2" width="40" height="10" rx="3" fill="#3a2e18"/><rect x="306" y="2" width="32" height="10" rx="3" fill="#e8b45a"/>
+      </g>
+      <text x="18" y="104" class="small">L1 5–7 天 · 复用灯笼/光照/拳脚 · H1：≥4/5 主动灭灯/掷灯</text>
+      <text x="470" y="104" class="small warn">风险：<30 FPS / 黑暗不可读</text>
+    </g>
+
+    <text x="24" y="502" class="small">fast track 条件：18–19 分 + 无 ≤2 + 10 秒可演示 + 复用现有系统 + 书面理由；不跳过评分门槛。</text>
+  </g>
+
+  <!-- Bottom strip -->
+  <g transform="translate(60,776)">
+    <rect x="0" y="0" width="1480" height="150" rx="12" class="panel"/>
+    <text x="24" y="30" class="h2">评分是假设，不是结论</text>
+    <text x="24" y="56" class="body">· 创新单位 = 新动词 / 新约束 / 新信息结构；不是题材、美术或内容量。</text>
+    <text x="24" y="80" class="body">· 任何一项 ≤2 必须书面解释；总分 &lt;16 直接 kill；没有 kill 条件的方案不进入原型。</text>
+    <text x="24" y="104" class="body">· 5 人 × 2 轮 playtest：首操作 ≤60 秒、说得出核心动词 ≥4/5、有意义取舍 ≥4/5、想再来 ≥3/5。</text>
+    <text x="24" y="128" class="small">未自我批准：T-035 红队独立评审后再决定 L1；未做原型/真人测试前不写“已验证”。</text>
+
+    <g transform="translate(1000,18)">
+      <rect x="0" y="0" width="456" height="112" rx="9" fill="#101720" stroke="#2a384b"/>
+      <text x="18" y="27" class="small">配套文件</text>
+      <text x="18" y="50" class="mono">docs/design/gameplay-innovation-portfolio.md</text>
+      <text x="18" y="72" class="mono">.claude/skills/gameplay-innovation/SKILL.md</text>
+      <text x="18" y="94" class="mono">docs/templates/gameplay-*.md（4 个）</text>
+    </g>
+  </g>
+
+  <text x="60" y="972" class="small">原创设计样片 · 不复制任何作品的角色/UI/素材/商标/数值表达 · 评分口径见 portfolio §1 与 T-033 报告 §3</text>
+</svg>

@@ -9,7 +9,7 @@
 - 交付: `godot-magic-vfx/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创粒子/材质/贴图，不复制视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；粒子预算/清理；不改其他项目
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261121-034 · Game Designer 玩法创新能力建设（T-033 follow-up）
 - 线程: T-20261121-033（玩法创新研究 → 能力建设，跨类型 follow-up）
@@ -19,7 +19,7 @@
 - 交付: `.claude/agents/game-designer.md`、`.claude/skills/gameplay-innovation/SKILL.md`、`docs/design/gameplay-innovation-portfolio.md`、`docs/templates/` + 截图；不改游戏代码
 - 约束: 原创；评分可复现；必须有多方案/否决清单/kill criteria；不复制 IP；不接受实现者自评
 - 指派: game-designer worker（dispatcher）
-- 状态: blocked（等 T-033）
+- 状态: done
 - depends_on: T-20261121-033
 - 后续: T-20261121-035（红队评审）
 
@@ -55,7 +55,7 @@
 - 约束: 原创；保留 agent 角色边界；不复制 IP/付费资产；只改工具/skill/文档；真实可跑
 - 管线: Tripo 初模 → Blender 清理/重拓扑/绑骨/toon → GLB；工具从 `TRIPO_API_KEY` 读 key（用户 2026-11-21 指定）
 - 指派: game-artist worker（dispatcher）
-- 状态: blocked（等 T-029/T-030）
+- 状态: running
 - depends_on: T-20261121-029, T-20261121-030
 
 ## T-20261121-026 · 复刻《雾港撤离》式俯视角搜打撤 Demo
