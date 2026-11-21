@@ -44,8 +44,30 @@
 - 约束: 资产来自 open-duelyst（CC0 1.0），保留许可与来源；**不使用 Duelyst 名称/Logo 作为游戏品牌**（商标不在 CC0 内），用原创标题/UI；不复制 Duelyst II/Steam 素材；原创 GDScript 实现；不改其他项目
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-card-tactics/`（9×5 棋盘、玩家 vs AI、16 卡池、20 张套牌、嘲讽/远程/疾行/登场治疗、胜负/重开、固定 seed 可复现）；CC0 资产子集 60 源文件/约 1.1MB（LICENSE/SOURCE/CREDITS）；`CARD_TACTICS_SMOKE_OK`（65 checks）；5 张 1920×1080 截图 + 10.43s MP4/GIF；Intel HD 6000 实测待机 avg 117.2 FPS / AI 行动 avg 100.0 FPS；README/TECH/迭代记录
-- 后续: T-20261121-016（开发文档 + 跨引擎资产包）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-013/result.md
+- 后续: T-20261121-016（开发文档+跨引擎资产）、T-20261121-018（独立美术评审）→ T-20261121-019（美术整改）
+
+## T-20261121-018 · 格间牌战独立美术评审（T-013 follow-up）
+- 线程: T-20261121-013（Duelyst 式卡牌战棋）
+- 父任务: T-20261121-013；依赖: T-20261121-013（done + Git 发布）
+- 类型: game-demo（独立美术评审）
+- 目标: 按 target 尺寸与 25% 缩略独立评审卡面可读性、棋盘/单位对比与层级、UI 信息结构、字体/间距、VFX、风格一致性；给 P0–P2 参数与 verdict
+- 交付: `docs/art-review/gridbound-art-review.md`（证据/分数/参数/APPROVE|CONCERNS|REJECT）+ 代表图；不改代码/资产；媒体
+- 约束: 独立评审，不复用实现者自评；不改 `godot-card-tactics/`；CC0 资产与 Duelyst 商标边界按 CREDITS
+- 指派: game-art-director worker（dispatcher）
+- 状态: blocked（等 T-013 done + Git 发布）
+- depends_on: T-20261121-013
+
+## T-20261121-019 · 格间牌战美术整改（T-018 follow-up）
+- 线程: T-20261121-013（Duelyst 式卡牌战棋）
+- 父任务: T-20261121-018；依赖: T-20261121-018（done + Git 发布）
+- 类型: game-demo（美术实现）
+- 目标: 按 T-018 评审 brief 落地 P0 + 优先 P1：卡面层级/字号/对比、棋盘与单位可读性、UI 皮肤与间距、VFX；不改玩法/规则
+- 交付: 更新 `godot-card-tactics/`；同机位 before/after（100%/25% + 命中帧）+ 指标 + GIF/MP4；README/TECH/迭代记录；媒体；smoke 通过
+- 约束: 保留 CC0 资产与许可/来源；不引入版权素材；不使用 Duelyst 品牌；只改视觉/UI/VFX；保留规则与 AI
+- 指派: game-artist worker（dispatcher）
+- 状态: blocked（等 T-018 done + Git 发布）
+- depends_on: T-20261121-018
 
 ## T-20261121-016 · Duelyst 复刻开发文档 + 跨引擎资产包（T-013 follow-up）
 - 线程: T-20261121-013（Duelyst 式卡牌战棋）
@@ -79,7 +101,7 @@
 - 交付: `godot-flowfield/docs/TECHNICAL_PRINCIPLES.md` + 单文件交互 HTML + 更新 `godot-flowfield/docs/TECH.md` §6 + `docs/algorithm-demos-index.md` + Godot/Unity/Unreal/Three.js 映射表/移植契约/验收清单 + 截图
 - 约束: 只读代码/docs，不改游戏代码/资产；原创图表；来源与访问日期；区分公开事实/推断；结论先行；中文
 - 指派: general-purpose worker（dispatcher）
-- 状态: blocked（等 T-011 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-011
 
 ## T-20261121-009 · 续跑 Flow Field 流场寻路 Demo（T-008 重试）

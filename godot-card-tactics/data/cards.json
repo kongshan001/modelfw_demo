@@ -1,0 +1,239 @@
+{
+  "generals": {
+    "f1": {
+      "name": "晨光将军",
+      "title": "晨光军团",
+      "faction": "f1",
+      "hp": 20,
+      "atk": 2,
+      "sprite": "f1_general"
+    },
+    "f2": {
+      "name": "风间将军",
+      "title": "风间流",
+      "faction": "f2",
+      "hp": 20,
+      "atk": 2,
+      "sprite": "f2_general"
+    }
+  },
+  "cards": [
+    {
+      "id": "f1_silverguardsquire",
+      "name": "白银侍从",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 2,
+      "atk": 2,
+      "hp": 2,
+      "keywords": [],
+      "sprite": "f1_silverguardsquire",
+      "desc": "朴实可靠的前排。"
+    },
+    {
+      "id": "f1_backlinearcher",
+      "name": "前阵弓手",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 2,
+      "atk": 1,
+      "hp": 3,
+      "keywords": ["ranged"],
+      "sprite": "f1_backlinearcher",
+      "desc": "远程：同一行或列 2 格内攻击，视线不可被阻挡。"
+    },
+    {
+      "id": "f1_sunstonetemplar",
+      "name": "日石骑士",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 3,
+      "atk": 3,
+      "hp": 3,
+      "keywords": [],
+      "sprite": "f1_sunstonetemplar",
+      "desc": "攻守均衡的中坚。"
+    },
+    {
+      "id": "f1_windbladecommander",
+      "name": "风刃指挥官",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 4,
+      "atk": 3,
+      "hp": 4,
+      "keywords": ["provoke"],
+      "sprite": "f1_windbladecommander",
+      "desc": "嘲讽：相邻的敌人必须先攻击它。"
+    },
+    {
+      "id": "f1_ironcliffeguardian",
+      "name": "铁崖守卫",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 5,
+      "atk": 3,
+      "hp": 7,
+      "keywords": ["provoke"],
+      "sprite": "f1_ironcliffeguardian",
+      "desc": "嘲讽：厚实的墙。"
+    },
+    {
+      "id": "f2_onyxjaguar",
+      "name": "猛虎刺客",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 3,
+      "atk": 3,
+      "hp": 3,
+      "keywords": ["rush"],
+      "sprite": "f2_onyxjaguar",
+      "desc": "疾行：召唤当回合即可攻击。"
+    },
+    {
+      "id": "f2_sparrowhawk",
+      "name": "雀鹰",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 2,
+      "atk": 2,
+      "hp": 1,
+      "keywords": ["ranged"],
+      "sprite": "f2_sparrowhawk",
+      "desc": "远程：同一行或列 2 格内攻击。"
+    },
+    {
+      "id": "f2_lanternfox",
+      "name": "灯笼狐",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 3,
+      "atk": 2,
+      "hp": 3,
+      "keywords": [],
+      "sprite": "f2_lanternfox",
+      "desc": "轻盈的灵兽。"
+    },
+    {
+      "id": "f2_mage4winds",
+      "name": "四方法师",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 4,
+      "atk": 2,
+      "hp": 4,
+      "keywords": ["ranged"],
+      "sprite": "f2_mage4winds",
+      "desc": "远程：同一行或列 2 格内攻击。"
+    },
+    {
+      "id": "f2_heartofthesonghai",
+      "name": "心之侍",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 5,
+      "atk": 4,
+      "hp": 5,
+      "keywords": [],
+      "sprite": "f2_heartofthesonghai",
+      "desc": "高攻高血的大将。"
+    },
+    {
+      "id": "neutral_healingmystic",
+      "name": "疗愈秘术师",
+      "type": "unit",
+      "faction": "neutral",
+      "cost": 3,
+      "atk": 2,
+      "hp": 3,
+      "keywords": [],
+      "opening_heal": 2,
+      "sprite": "neutral_healingmystic",
+      "desc": "登场：为己方将军恢复 2 点生命。"
+    },
+    {
+      "id": "neutral_bonereaper",
+      "name": "骸骨收割者",
+      "type": "unit",
+      "faction": "neutral",
+      "cost": 4,
+      "atk": 3,
+      "hp": 4,
+      "keywords": [],
+      "sprite": "neutral_bonereaper",
+      "desc": "中立的稳健打手。"
+    },
+    {
+      "id": "f1_sundropelixir",
+      "name": "阳光药水",
+      "type": "spell",
+      "faction": "f1",
+      "cost": 1,
+      "effect": "heal",
+      "amount": 4,
+      "target": "friendly_any",
+      "icon": "icon_f1_sundropelixir",
+      "desc": "为一个友方单位或己方将军恢复 4 点生命。"
+    },
+    {
+      "id": "f1_truestrike",
+      "name": "破魔箭",
+      "type": "spell",
+      "faction": "f1",
+      "cost": 2,
+      "effect": "damage",
+      "amount": 3,
+      "target": "enemy_minion",
+      "icon": "icon_f1_truestrike",
+      "desc": "对一个敌方随从造成 3 点伤害。"
+    },
+    {
+      "id": "f2_phoenixfire",
+      "name": "凤火",
+      "type": "spell",
+      "faction": "f2",
+      "cost": 3,
+      "effect": "damage",
+      "amount": 3,
+      "target": "enemy_any",
+      "icon": "icon_f2_phoenixfire",
+      "desc": "对一个敌方目标造成 3 点伤害。"
+    },
+    {
+      "id": "f2_cobrastrike",
+      "name": "眼镜蛇击",
+      "type": "spell",
+      "faction": "f2",
+      "cost": 2,
+      "effect": "buff_attack",
+      "amount": 2,
+      "target": "friendly_minion",
+      "icon": "icon_f2_cobrastrike",
+      "desc": "使一个友方随从永久获得 +2 攻击。"
+    }
+  ],
+  "decks": {
+    "player": [
+      "f1_silverguardsquire", "f1_silverguardsquire", "f1_silverguardsquire",
+      "f1_backlinearcher", "f1_backlinearcher",
+      "f1_sunstonetemplar", "f1_sunstonetemplar", "f1_sunstonetemplar",
+      "f1_windbladecommander", "f1_windbladecommander",
+      "f1_ironcliffeguardian", "f1_ironcliffeguardian",
+      "neutral_healingmystic", "neutral_healingmystic",
+      "neutral_bonereaper",
+      "f1_sundropelixir", "f1_sundropelixir",
+      "f1_truestrike", "f1_truestrike", "f1_truestrike"
+    ],
+    "ai": [
+      "f2_onyxjaguar", "f2_onyxjaguar", "f2_onyxjaguar",
+      "f2_sparrowhawk", "f2_sparrowhawk", "f2_sparrowhawk",
+      "f2_lanternfox", "f2_lanternfox", "f2_lanternfox",
+      "f2_mage4winds", "f2_mage4winds",
+      "f2_heartofthesonghai", "f2_heartofthesonghai",
+      "neutral_healingmystic", "neutral_healingmystic",
+      "neutral_bonereaper",
+      "f2_phoenixfire", "f2_phoenixfire",
+      "f2_cobrastrike", "f2_cobrastrike"
+    ]
+  }
+}
