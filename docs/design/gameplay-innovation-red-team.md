@@ -584,11 +584,13 @@ per project: {'A': 10, 'B': 10, 'C': 10}
 ### 8.2 C1 与现有代码冲突（实际 grep/sed 输出）
 
 ```text
-$ grep -n "try_lamp_break\|street_lights_lit\|extinguish_duration" godot-changan-action/scripts/player.gd godot-changan-action/scripts/main.gd
+$ grep -n "func try_lamp_break\|func extinguish_duration\|var street_lights_lit" godot-changan-action/scripts/player.gd godot-changan-action/scripts/main.gd
 player.gd:583:func try_lamp_break() -> bool:
 main.gd:31:var street_lights_lit := 0
-main.gd:815:	toast("灯数决定他能熄掉多少光 · 已点亮 %d/3" % street_lights_lit, 4.0)
-main.gd:836:	return 20.0 - 5.0 * float(street_lights_lit)
+main.gd:838:func extinguish_duration() -> float:
+
+$ sed -n '839p' godot-changan-action/scripts/main.gd
+	return 20.0 - 5.0 * float(street_lights_lit)
 ```
 
 - `player.gd:84` 声明 `_lamp_light: OmniLight3D`，但 `grep -n "_lamp_light"` 只命中声明和 `_update_lamp_light`；没有 `OmniLight3D.new()` 赋给它。玩家灯是 `_lamp_glow` 发光网格（`player.gd:206-220`）。
