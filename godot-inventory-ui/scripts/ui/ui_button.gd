@@ -98,15 +98,15 @@ func _apply_style() -> void:
 	var gloss := 0.75
 	match kind:
 		Kind.GOLD:
-			top = Color("ffefae")
-			bottom = Color("ffc531")
-			border = Color("a86f19")
+			top = Color("ffe27a")
+			bottom = Color("e8b92a")
+			border = Color("9c6a1c")
 			text_col = ThemeKit.BUTTON_TEXT
 		Kind.SLATE:
-			top = Color("e2f0fa")
-			bottom = Color("a9c8de")
-			border = Color("678ca5")
-			text_col = Color("17384c")
+			top = Color("cfe9fb")
+			bottom = Color("8fb9da")
+			border = Color("5f8fb0")
+			text_col = Color("113b58")
 			gloss = 0.55
 		Kind.DANGER:
 			top = Color("ffb8ae")
@@ -115,10 +115,10 @@ func _apply_style() -> void:
 			text_col = Color("4c120f")
 			gloss = 0.6
 		Kind.ICE:
-			top = Color("c7f6ee")
-			bottom = Color("63d4c3")
-			border = Color("2f8b7d")
-			text_col = Color("104f48")
+			top = Color("8fd4ff")
+			bottom = Color("3d9fdd")
+			border = Color("2a6f9e")
+			text_col = Color("0d3f5c")
 			gloss = 0.65
 		Kind.GHOST:
 			top = Color(0.12, 0.28, 0.38, 0.35)

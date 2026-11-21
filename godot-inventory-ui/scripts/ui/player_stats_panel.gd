@@ -1,6 +1,9 @@
 class_name PlayerStatsPanel
 extends Control
 
+# Re-measured from the reference (see docs/fidelity-1to1.md):
+#   HP bar x 92..242 @ y 253..267 -> 223..586 @ 512..540
+#   stats rows y 300..317 / 322..339 -> 607..641 / 651..686
 var _state: InventoryState
 var _hp_fill: GradientRect
 var _mp_fill: GradientRect
@@ -11,61 +14,70 @@ var _mp_track: GradientRect
 var _hp_tween: Tween
 var _mp_tween: Tween
 var _stat_values: Dictionary = {}
-const BAR_W := 300.0
-const BAR_H := 22.0
+const BAR_W := 358.0
+const BAR_H := 30.0
+const BAR_X := 165.0
+const INK := Color("2f5c86")
 
 
 func setup(state: InventoryState) -> void:
 	_state = state
-	size = Vector2(560, 178)
+	size = Vector2(600, 178)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hp_track = GradientRect.new()
-	_hp_track.position = Vector2(126, 5)
-	_hp_track.setup(Vector2(BAR_W, BAR_H), 11.0, Color(0.10, 0.22, 0.32, 0.30), Color(0.08, 0.18, 0.27, 0.38),
-		Color(0.95, 0.99, 1.0, 0.35), 1.5, 0.0)
+	_hp_track.position = Vector2(BAR_X, 8)
+	_hp_track.setup(Vector2(BAR_W, BAR_H), 15.0, Color(0.14, 0.28, 0.40, 0.32), Color(0.10, 0.22, 0.33, 0.40),
+		Color(0.90, 0.98, 1.0, 0.42), 1.4, 0.0)
 	add_child(_hp_track)
 	_hp_fill = GradientRect.new()
-	_hp_fill.position = Vector2(126, 5)
-	_hp_fill.setup(Vector2(240, BAR_H), 11.0, ThemeKit.HP_TOP, ThemeKit.HP_BOTTOM,
-		Color("a83934"), 1.6, 0.75)
+	_hp_fill.position = Vector2(BAR_X, 8)
+	_hp_fill.setup(Vector2(240, BAR_H), 15.0, ThemeKit.HP_TOP, ThemeKit.HP_BOTTOM,
+		Color("b84848"), 1.6, 0.65)
 	add_child(_hp_fill)
-	_hp_label = ThemeKit.make_label(self, "2086 / 2586", 14, ThemeKit.TEXT_LIGHT,
-		Vector2(126, 5), Vector2(BAR_W, BAR_H), HORIZONTAL_ALIGNMENT_CENTER,
-		ThemeKit.body_font(), 3, Color(0.35, 0.05, 0.05, 0.9))
+	_hp_label = ThemeKit.make_label(self, "2086 / 2586", 20, ThemeKit.TEXT_LIGHT,
+		Vector2(BAR_X, 8), Vector2(BAR_W, BAR_H), HORIZONTAL_ALIGNMENT_CENTER,
+		ThemeKit.body_font(), 3, Color(0.30, 0.10, 0.10, 0.9))
 
 	_mp_track = GradientRect.new()
-	_mp_track.position = Vector2(126, 41)
-	_mp_track.setup(Vector2(BAR_W, BAR_H), 11.0, Color(0.10, 0.22, 0.32, 0.30), Color(0.08, 0.18, 0.27, 0.38),
-		Color(0.95, 0.99, 1.0, 0.35), 1.5, 0.0)
+	_mp_track.position = Vector2(BAR_X, 46)
+	_mp_track.setup(Vector2(BAR_W, BAR_H), 15.0, Color(0.14, 0.28, 0.40, 0.32), Color(0.10, 0.22, 0.33, 0.40),
+		Color(0.90, 0.98, 1.0, 0.42), 1.4, 0.0)
 	add_child(_mp_track)
 	_mp_fill = GradientRect.new()
-	_mp_fill.position = Vector2(126, 41)
-	_mp_fill.setup(Vector2(210, BAR_H), 11.0, ThemeKit.MP_TOP, ThemeKit.MP_BOTTOM,
-		Color("2a5f9e"), 1.6, 0.75)
+	_mp_fill.position = Vector2(BAR_X, 46)
+	_mp_fill.setup(Vector2(210, BAR_H), 15.0, ThemeKit.MP_TOP, ThemeKit.MP_BOTTOM,
+		Color("2f6fae"), 1.6, 0.65)
 	add_child(_mp_fill)
-	_mp_label = ThemeKit.make_label(self, "1969 / 2769", 14, ThemeKit.TEXT_LIGHT,
-		Vector2(126, 41), Vector2(BAR_W, BAR_H), HORIZONTAL_ALIGNMENT_CENTER,
-		ThemeKit.body_font(), 3, Color(0.03, 0.13, 0.27, 0.9))
+	_mp_label = ThemeKit.make_label(self, "1969 / 2769", 20, ThemeKit.TEXT_LIGHT,
+		Vector2(BAR_X, 46), Vector2(BAR_W, BAR_H), HORIZONTAL_ALIGNMENT_CENTER,
+		ThemeKit.body_font(), 3, Color(0.06, 0.18, 0.32, 0.9))
 
-	ThemeKit.make_label(self, "气血", 19, ThemeKit.TEXT_LIGHT, Vector2(38, 0), Vector2(76, 30),
-		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 3, Color(0.12, 0.27, 0.37, 0.85))
-	ThemeKit.make_label(self, "魔法", 19, ThemeKit.TEXT_LIGHT, Vector2(38, 36), Vector2(76, 30),
-		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 3, Color(0.12, 0.27, 0.37, 0.85))
+	ThemeKit.make_label(self, "气血", 26, INK, Vector2(44, 7), Vector2(112, 32),
+		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(1, 1, 1, 0.45))
+	ThemeKit.make_label(self, "魔法", 26, INK, Vector2(44, 45), Vector2(112, 32),
+		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(1, 1, 1, 0.45))
 
-	_add_stat("攻击", "attack", Vector2(8, 78))
-	_add_stat("灵力", "spirit", Vector2(278, 78))
-	_add_stat("防御", "defense", Vector2(8, 116))
-	_add_stat("速度", "speed", Vector2(278, 116))
+	_add_stat("攻击", "attack", Vector2(60, 92), Vector2(160, 92), Vector2(32, 109))
+	_add_stat("灵力", "spirit", Vector2(346, 92), Vector2(438, 92), Vector2(308, 109))
+	_add_stat("防御", "defense", Vector2(60, 136), Vector2(160, 136), Vector2(32, 153))
+	_add_stat("速度", "speed", Vector2(346, 136), Vector2(438, 136), Vector2(308, 153))
 
 	update_values(false)
 
 
-func _add_stat(label_text: String, key: String, pos: Vector2) -> void:
-	ThemeKit.make_label(self, label_text, 17, ThemeKit.TEXT_LIGHT, pos + Vector2(30, 0), Vector2(70, 28),
-		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 3, Color(0.12, 0.27, 0.37, 0.85))
-	var value_label := ThemeKit.make_label(self, "0", 21, ThemeKit.TEXT_LIGHT, pos + Vector2(96, 0), Vector2(120, 28),
-		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 3, Color(0.12, 0.27, 0.37, 0.85))
+func _add_stat(label_text: String, key: String, label_pos: Vector2, value_pos: Vector2, _icon_pos: Vector2) -> void:
+	ThemeKit.make_label(self, label_text, 24, INK, label_pos, Vector2(100, 34),
+		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(1, 1, 1, 0.42))
+	var value_label := ThemeKit.make_label(self, "0", 28, INK, value_pos, Vector2(130, 34),
+		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(1, 1, 1, 0.42))
 	_stat_values[key] = value_label
+
+
+func bar_rects() -> Dictionary:
+	return {
+		"hp": Rect2(position + _hp_track.position, _hp_track.size),
+		"mp": Rect2(position + _mp_track.position, _mp_track.size),
+	}
 
 
 func update_values(animate: bool = false) -> void:
@@ -97,12 +109,30 @@ func update_values(animate: bool = false) -> void:
 
 
 func _draw() -> void:
-	_draw_heart(Vector2(17, 17), Color("ff9c9c"))
-	_draw_drop(Vector2(17, 53), Color("83d8ff"))
-	_draw_badge(Vector2(22, 94), Color("ffd36b"), 0)
-	_draw_badge(Vector2(292, 94), Color("f2a1d9"), 1)
-	_draw_badge(Vector2(22, 132), Color("ffb36b"), 2)
-	_draw_badge(Vector2(292, 132), Color("7fe0a6"), 3)
+	_draw_scaled(Vector2(25, 21), 1.35, 0)
+	_draw_scaled(Vector2(25, 59), 1.35, 1)
+	_draw_scaled(Vector2(32, 109), 1.15, 2)
+	_draw_scaled(Vector2(308, 109), 1.15, 3)
+	_draw_scaled(Vector2(32, 153), 1.15, 4)
+	_draw_scaled(Vector2(308, 153), 1.15, 5)
+
+
+func _draw_scaled(c: Vector2, scale: float, kind: int) -> void:
+	draw_set_transform(c, 0.0, Vector2(scale, scale))
+	match kind:
+		0:
+			_draw_heart(Vector2.ZERO, Color("ff9c9c"))
+		1:
+			_draw_drop(Vector2.ZERO, Color("83d8ff"))
+		2:
+			_draw_badge(Vector2.ZERO, Color("ffd36b"), 0)
+		3:
+			_draw_badge(Vector2.ZERO, Color("f2a1d9"), 1)
+		4:
+			_draw_badge(Vector2.ZERO, Color("ffb36b"), 2)
+		5:
+			_draw_badge(Vector2.ZERO, Color("7fe0a6"), 3)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _draw_heart(c: Vector2, col: Color) -> void:
@@ -135,7 +165,6 @@ func _draw_badge(c: Vector2, col: Color, kind: int) -> void:
 	var pts := PackedVector2Array([c + Vector2(0, -12), c + Vector2(12, 0), c + Vector2(0, 12), c + Vector2(-12, 0)])
 	draw_colored_polygon(pts, col.darkened(0.06))
 	draw_polyline(pts + PackedVector2Array([pts[0]]), Color(1, 1, 1, 0.65), 1.2)
-	var ink := Color(0.36, 0.25, 0.12, 0.9)
 	match kind:
 		0:  # up arrow
 			draw_colored_polygon(PackedVector2Array([

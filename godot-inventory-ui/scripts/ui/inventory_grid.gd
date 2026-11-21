@@ -9,11 +9,13 @@ signal selection_changed(index, item)
 signal page_step(delta)
 signal page_requested(page)
 
+# Reference grid (529x356): x 270..497, y 60..284, 5x5, pitch 45.4x44.8,
+# cell 42x42 -> 1280x720: 102x85 cells, pitch 110x91.
 const COLS := 5
 const ROWS := 5
-const COL_W := 112
+const COL_W := 110
 const ROW_H := 91
-const CELL := Vector2(104, 84)
+const CELL := Vector2(102, 85)
 
 var _cells: Array = []
 var _state: InventoryState
@@ -24,13 +26,20 @@ var _selected := -1
 var _empty_root: Control
 var _empty_title: Label
 var _empty_sub: Label
+var _backing: GradientRect
 var scroll: PageScroll
 var _fade_tween: Tween
 
 
 func setup() -> void:
-	size = Vector2(566, 448)
+	size = Vector2(551, 455)
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	_backing = GradientRect.new()
+	_backing.position = Vector2(-6, -6)
+	_backing.setup(Vector2(555, 461), 10.0, ThemeKit.GRID_BACK_TOP, ThemeKit.GRID_BACK_BOTTOM,
+		Color(0.66, 0.83, 0.95, 0.30), 1.2, 0.18)
+	_backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_backing)
 	for i in range(COLS * ROWS):
 		var cell := ItemCell.new()
 		cell.allocate(CELL)
@@ -44,8 +53,8 @@ func setup() -> void:
 
 	_build_empty()
 	scroll = PageScroll.new()
-	scroll.position = Vector2(553, 0)
-	scroll.size = Vector2(13, 448)
+	scroll.position = Vector2(535, 2)
+	scroll.size = Vector2(10, 445)
 	add_child(scroll)
 	scroll.page_requested.connect(func(p: int) -> void: page_requested.emit(p))
 
@@ -53,26 +62,28 @@ func setup() -> void:
 func _build_empty() -> void:
 	_empty_root = Control.new()
 	_empty_root.position = Vector2.ZERO
-	_empty_root.size = Vector2(552, 448)
+	_empty_root.size = Vector2(543, 449)
 	_empty_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_empty_root)
-	var glow := ThemeKit.glow_texture_rect("glow", Color(0.7, 0.9, 1.0, 0.20))
-	glow.position = Vector2(200, 92)
-	glow.size = Vector2(170, 170)
+	var glow := ThemeKit.glow_texture_rect("glow", Color(0.8, 0.95, 1.0, 0.42))
+	glow.position = Vector2(176, 74)
+	glow.size = Vector2(198, 198)
 	_empty_root.add_child(glow)
 	var ic := TextureRect.new()
 	ic.texture = ThemeKit.icon("pouch")
 	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	ic.position = Vector2(226, 108)
+	ic.position = Vector2(215, 104)
 	ic.size = Vector2(112, 112)
-	ic.modulate = Color(1, 1, 1, 0.75)
+	ic.modulate = Color(1, 1, 1, 0.98)
 	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_empty_root.add_child(ic)
-	_empty_title = ThemeKit.make_label(_empty_root, "这一页空空如也", 20, ThemeKit.TEXT_INK,
-		Vector2(0, 236), Vector2(552, 30), HORIZONTAL_ALIGNMENT_CENTER)
-	_empty_sub = ThemeKit.make_label(_empty_root, "试试切换页签，或调整上方分类", 14, ThemeKit.TEXT_INK_SOFT,
-		Vector2(0, 268), Vector2(552, 26), HORIZONTAL_ALIGNMENT_CENTER)
+	_empty_title = ThemeKit.make_label(_empty_root, "这一页空空如也", 22, Color("f2fbff"),
+		Vector2(0, 234), Vector2(543, 30), HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.body_font(), 3,
+		Color(0.06, 0.16, 0.24, 0.92))
+	_empty_sub = ThemeKit.make_label(_empty_root, "试试切换页签，或调整下方筛选", 15, Color("d9ecf8"),
+		Vector2(0, 266), Vector2(543, 26), HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.body_font(), 2,
+		Color(0.06, 0.16, 0.24, 0.8))
 	_empty_root.visible = false
 
 
@@ -90,14 +101,16 @@ func refresh(
 	var n: int = mini(_items.size(), _cells.size())
 	for i in range(_cells.size()):
 		var cell: ItemCell = _cells[i]
+		cell.visible = true
+		var target := Vector2((i % COLS) * COL_W, (i / COLS) * ROW_H)
 		if i >= n:
-			cell.visible = false
-			cell.set_selected(false)
+			# Keep all 25 slot frames visible, exactly like the reference;
+			# empty frames are inert and only show the cell bevel.
+			cell.set_empty(i)
+			cell.position = target
 			continue
 		var it: Dictionary = _items[i]
-		cell.visible = true
 		cell.set_item(it, i)
-		var target := Vector2((i % COLS) * COL_W, (i / COLS) * ROW_H)
 		if animate_map.has(str(it["id"])):
 			cell.position = animate_map[str(it["id"])]
 			var tw := cell.create_tween()
@@ -270,42 +283,36 @@ class PageScroll extends Control:
 		queue_redraw()
 
 	func _thumb_rect() -> Rect2:
-		var h: float = maxf(64.0, size.y / float(pages))
+		var h: float = maxf(52.0, size.y / float(pages))
 		var usable: float = maxf(1.0, size.y - h)
 		var t: float = float(page - 1) / float(maxi(1, pages - 1))
-		return Rect2(0, t * usable, size.x, h)
+		return Rect2(1, t * usable, size.x - 2, h)
 
 	func _draw() -> void:
+		# deliberately low-contrast: the reference has no visible scrollbar
 		var track := StyleBoxFlat.new()
-		track.bg_color = Color(0.06, 0.17, 0.26, 0.42)
-		track.border_color = Color(0.78, 0.93, 1.0, 0.28)
+		track.bg_color = Color(0.10, 0.24, 0.36, 0.10 if not _hover else 0.18)
+		track.border_color = Color(0.85, 0.96, 1.0, 0.16)
 		track.set_border_width_all(1)
-		track.corner_radius_top_left = 5
-		track.corner_radius_top_right = 5
-		track.corner_radius_bottom_left = 5
-		track.corner_radius_bottom_right = 5
+		track.corner_radius_top_left = 4
+		track.corner_radius_top_right = 4
+		track.corner_radius_bottom_left = 4
+		track.corner_radius_bottom_right = 4
 		track.anti_aliasing = true
 		draw_style_box(track, Rect2(1, 0, size.x - 2, size.y))
 		for i in range(1, pages):
 			var ty: float = size.y * float(i) / float(pages)
-			draw_line(Vector2(4, ty), Vector2(size.x - 4, ty), Color(0.86, 0.96, 1.0, 0.22), 1.0)
+			draw_line(Vector2(2, ty), Vector2(size.x - 2, ty), Color(0.90, 0.98, 1.0, 0.14), 1.0)
 		var thumb := StyleBoxFlat.new()
-		thumb.bg_color = Color(0.99, 0.99, 1.0, 0.98) if _hover else Color(0.89, 0.97, 1.0, 0.92)
-		thumb.border_color = Color(0.89, 0.70, 0.36, 0.95)
-		thumb.set_border_width_all(2)
-		thumb.corner_radius_top_left = 6
-		thumb.corner_radius_top_right = 5
-		thumb.corner_radius_bottom_left = 5
-		thumb.corner_radius_bottom_right = 5
+		thumb.bg_color = Color(0.92, 0.98, 1.0, 0.16 if not _hover else 0.45)
+		thumb.border_color = Color(0.95, 0.78, 0.42, 0.28 if not _hover else 0.65)
+		thumb.set_border_width_all(1)
+		thumb.corner_radius_top_left = 4
+		thumb.corner_radius_top_right = 4
+		thumb.corner_radius_bottom_left = 4
+		thumb.corner_radius_bottom_right = 4
 		thumb.anti_aliasing = true
-		var tr := _thumb_rect()
-		draw_style_box(thumb, tr)
-		var mid := Vector2(size.x * 0.5, tr.position.y + tr.size.y * 0.5)
-		draw_colored_polygon(PackedVector2Array([
-			mid + Vector2(0, -4), mid + Vector2(3, 0), mid + Vector2(0, 4), mid + Vector2(-3, 0),
-		]), Color(0.82, 0.62, 0.28, 0.85))
-		draw_circle(Vector2(size.x * 0.5, 4), 2.2, Color(0.96, 0.85, 0.55, 0.9))
-		draw_circle(Vector2(size.x * 0.5, size.y - 4), 2.2, Color(0.96, 0.85, 0.55, 0.9))
+		draw_style_box(thumb, _thumb_rect())
 
 	func _gui_input(event: InputEvent) -> void:
 		if event is InputEventMouseButton:
@@ -324,7 +331,7 @@ class PageScroll extends Control:
 			accept_event()
 
 	func _set_from_y(y: float) -> void:
-		var h: float = maxf(64.0, size.y / float(pages))
+		var h: float = maxf(52.0, size.y / float(pages))
 		var usable: float = maxf(1.0, size.y - h)
 		var t: float = clampf((y - h * 0.5) / usable, 0.0, 1.0)
 		var np: int = int(round(t * float(pages - 1))) + 1

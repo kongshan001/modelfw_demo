@@ -1,12 +1,9 @@
 capture: SubViewport 1920x1080, 2D canvas 1280x720 (1.5x)
-renderer: GL Compatibility / OpenGL 4.1
+renderer: GL Compatibility / OpenGL
 gpu: Intel(R) HD Graphics 6000
 cpu: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
-samples_fps: [47.0, 47.0, 45.0, 45.0, 43.0, 43.0]
-avg_fps: 45.0
-min_fps: 43.0
-second_sample_fps: avg 36.0 / min 27.0 (parallel worker load on the shared host)
-draw_calls: 401
+samples_fps: [35.0, 16.0, 13.0, 17.0, 18.0, 18.0]
+avg_fps: 19.50
+min_fps: 13.00
+draw_calls: 344
 measured_after: 1.5s warmup, 3s sampling, backpack open, idle
-note: per-frame JPEG readback in the video pass adds overhead (host sampled ~20-33fps);
-      interactive rendering sampled 36-45fps. F3 toggles the in-game FPS meter.

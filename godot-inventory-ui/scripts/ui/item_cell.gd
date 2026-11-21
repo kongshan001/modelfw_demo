@@ -20,7 +20,7 @@ var _icon: TextureRect
 var _count: Label
 var _decor: Control
 var _time := 0.0
-var _cell_size := Vector2(104, 84)
+var _cell_size := Vector2(102, 85)
 
 
 func allocate(size_px: Vector2) -> void:
@@ -36,15 +36,15 @@ func allocate(size_px: Vector2) -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	set_process(false)
 
-	_sel_glow = ThemeKit.glow_texture_rect("glow", Color(1.0, 0.74, 1.0, 0.0))
-	_sel_glow.position = Vector2(-20, -20)
-	_sel_glow.size = size_px + Vector2(40, 40)
+	_sel_glow = ThemeKit.glow_texture_rect("glow", Color(1.0, 0.82, 1.0, 0.0))
+	_sel_glow.position = Vector2(-18, -18)
+	_sel_glow.size = size_px + Vector2(36, 36)
 	_sel_glow.visible = false
 	add_child(_sel_glow)
 
 	_glow = ThemeKit.glow_texture_rect("glow", Color(1.0, 0.92, 0.68, 0.0))
-	_glow.position = Vector2(-14, -14)
-	_glow.size = size_px + Vector2(28, 28)
+	_glow.position = Vector2(-12, -12)
+	_glow.size = size_px + Vector2(24, 24)
 	_glow.visible = false
 	add_child(_glow)
 
@@ -56,27 +56,27 @@ func allocate(size_px: Vector2) -> void:
 
 	_bg = GradientRect.new()
 	_content.add_child(_bg)
-	_bg.setup(size_px, 9.0, ThemeKit.CELL_TOP, ThemeKit.CELL_BOTTOM,
-		ThemeKit.quality_color(0), 2.4, 0.5)
+	_bg.setup(size_px, 6.0, ThemeKit.CELL_TOP, ThemeKit.CELL_BOTTOM,
+		ThemeKit.quality_color(0), 2.4, 0.4)
 
 	_icon = TextureRect.new()
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_icon.position = Vector2(18, 5)
-	_icon.size = Vector2(68, 68)
+	_icon.position = Vector2(12, 3)
+	_icon.size = Vector2(78, 78)
 	_icon.pivot_offset = _icon.size * 0.5
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_content.add_child(_icon)
 
 	_count = Label.new()
-	_count.position = Vector2(52, 57)
-	_count.size = Vector2(46, 22)
+	_count.position = Vector2(54, 57)
+	_count.size = Vector2(42, 24)
 	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_count.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var ls := LabelSettings.new()
 	ls.font = ThemeKit.body_font()
-	ls.font_size = 15
+	ls.font_size = 19
 	ls.font_color = ThemeKit.TEXT_LIGHT
 	ls.outline_size = 4
 	ls.outline_color = Color(0.06, 0.16, 0.24, 0.92)
@@ -97,12 +97,36 @@ func set_item(new_item: Dictionary, new_index: int) -> void:
 		allocate(_cell_size)
 	item = new_item
 	index = new_index
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	_icon.visible = true
 	_icon.texture = ThemeKit.icon(str(item.get("icon", "pouch")))
 	var stack := int(item.get("stack", 1))
 	_count.text = str(stack)
 	_count.visible = stack > 1
 	_decor.setup(int(item.get("quality", 0)), not bool(item.get("bindable", true)),
 		str(item.get("category", "")) == "装备")
+	_apply_frame()
+
+
+func set_empty(new_index: int) -> void:
+	if not _built:
+		allocate(_cell_size)
+	item = {}
+	index = new_index
+	hovered_state = false
+	set_selected(false)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _icon != null:
+		_icon.texture = null
+		_icon.visible = false
+	if _count != null:
+		_count.visible = false
+	if _decor != null:
+		_decor.setup(0, false, false)
+	if _content != null:
+		_content.position = Vector2.ZERO
+	if _glow != null:
+		_glow.visible = false
 	_apply_frame()
 
 
@@ -122,7 +146,9 @@ func _apply_frame() -> void:
 	var q := int(item.get("quality", 0))
 	var top := ThemeKit.CELL_TOP_HOT if hovered_state else ThemeKit.CELL_TOP
 	var bottom := ThemeKit.CELL_BOTTOM_HOT if hovered_state else ThemeKit.CELL_BOTTOM
-	var border := ThemeKit.quality_color(q)
+	# Reference grid borders are mostly pale ice-blue; quality hues stay
+	# subtle here and are strongest on the equipment slots.
+	var border := ThemeKit.quality_color(q).lerp(Color("cfe6f8"), 0.42)
 	var bw := 2.4
 	if q >= 2:
 		bw = 2.8
@@ -131,7 +157,7 @@ func _apply_frame() -> void:
 		bw = 3.2
 	elif hovered_state:
 		border = ThemeKit.quality_color(q).lightened(0.2)
-	_bg.setup(_cell_size, 9.0, top, bottom, border, bw, 0.55)
+	_bg.setup(_cell_size, 6.0, top, bottom, border, bw, 0.46)
 	_decor.queue_redraw()
 
 
@@ -147,7 +173,7 @@ func _on_mouse_enter() -> void:
 	if _content != null:
 		var tw := create_tween()
 		tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		tw.tween_property(_content, "position", Vector2(0, -4), 0.12)
+		tw.tween_property(_content, "position", Vector2(0, -3), 0.12)
 	hovered.emit(self, item, get_global_rect().position + Vector2(size.x - 4, 6))
 
 
@@ -230,16 +256,12 @@ class Decor extends Control:
 		queue_redraw()
 
 	func _draw() -> void:
-		var qc: Color = ThemeKit.quality_color(quality)
-		var c := Vector2(11, 12)
-		var pts := PackedVector2Array([
-			c + Vector2(0, -6), c + Vector2(6, 0), c + Vector2(0, 6), c + Vector2(-6, 0),
-		])
-		draw_colored_polygon(pts, qc)
-		draw_polyline(pts + PackedVector2Array([pts[0]]), Color(1, 1, 1, 0.75), 1.2)
-		draw_circle(c + Vector2(-1.2, -1.4), 1.4, Color(1, 1, 1, 0.9))
+		# No quality diamond: the reference conveys quality through the cell
+		# border only. Bound items keep the small silver lock in the top-right.
 		if bound:
-			var lc := Color(0.96, 0.85, 0.58, 0.95)
-			draw_rect(Rect2(size.x - 19, 9, 9, 8), lc, false, 1.4)
-			draw_arc(Vector2(size.x - 14.5, 9), 3.2, PI, TAU, 10, lc, 1.4)
-			draw_rect(Rect2(size.x - 17, 13, 5, 2), Color(0.2, 0.3, 0.4, 0.9))
+			var lc := Color(0.90, 0.95, 1.0, 0.92)
+			var lc2 := Color(0.42, 0.55, 0.66, 0.95)
+			draw_rect(Rect2(size.x - 20, 8, 11, 9), lc, true)
+			draw_rect(Rect2(size.x - 20, 8, 11, 9), lc2, false, 1.0)
+			draw_arc(Vector2(size.x - 14.5, 8), 3.6, PI, TAU, 12, lc, 1.6)
+			draw_rect(Rect2(size.x - 17, 12.5, 5, 2), lc2)

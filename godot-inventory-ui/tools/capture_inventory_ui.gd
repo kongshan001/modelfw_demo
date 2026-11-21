@@ -9,7 +9,7 @@ extends SceneTree
 
 const SHOT_DIR := "res://docs/media/screenshots"
 const FRAME_DIR := "/tmp/inv_ui_frames"
-const VIDEO_FRAMES := 360
+const VIDEO_FRAMES := 300
 
 var vp: SubViewport
 var main_scene: Control
@@ -87,6 +87,12 @@ func _run() -> void:
 func _capture_shots() -> void:
 	await _save_shot("01_overview_1920x1080.png")
 
+	ui.set_align_overlay_visible(true)
+	await create_timer(0.3).timeout
+	await _save_shot("13_alignment_overlay_1920x1080.png")
+	ui.set_align_overlay_visible(false)
+	await create_timer(0.2).timeout
+
 	ui.hover_index(8)
 	await create_timer(0.28).timeout
 	await _save_shot("02_tooltip_1920x1080.png")
@@ -137,7 +143,7 @@ func _capture_shots() -> void:
 	ui.select_item_by_id("huichun_pill", true)
 	await create_timer(0.15).timeout
 	ui.sort_current_page()
-	await create_timer(0.45).timeout
+	await create_timer(1.65).timeout
 	ui.detail.close_card()
 	await create_timer(0.2).timeout
 	await _save_shot("10_sorted_1920x1080.png")
@@ -168,26 +174,26 @@ func _capture_video() -> void:
 		old.list_dir_end()
 
 	var events := {
-		12: func() -> void: ui.hover_index(8),
-		46: func() -> void: ui.hover_index(9),
-		76: func() -> void:
+		10: func() -> void: ui.hover_index(8),
+		40: func() -> void: ui.hover_index(9),
+		66: func() -> void:
 			ui.clear_hover()
 			ui.select_item_by_id("huichun_pill", true),
-		116: func() -> void:
+		104: func() -> void:
 			ui.detail.close_card()
 			ui.switch_page(2),
-		150: func() -> void:
+		138: func() -> void:
 			ui.switch_page(1)
 			ui.set_category("装备"),
-		186: func() -> void:
+		172: func() -> void:
 			ui.set_category("全部"),
-		200: func() -> void: ui.select_item_by_id("huichun_pill", true),
-		228: func() -> void: ui.use_current(),
-		258: func() -> void: ui.sort_current_page(),
-		292: func() -> void: ui.switch_page(4),
-		316: func() -> void: ui.switch_page(1),
-		330: func() -> void: ui.close_panel(),
-		346: func() -> void: ui.open_panel(true),
+		190: func() -> void: ui.select_item_by_id("huichun_pill", true),
+		216: func() -> void: ui.use_current(),
+		240: func() -> void: ui.sort_current_page(),
+		266: func() -> void: ui.switch_page(4),
+		280: func() -> void: ui.switch_page(1),
+		288: func() -> void: ui.close_panel(),
+		296: func() -> void: ui.open_panel(true),
 	}
 	var frame := 0
 	while frame < VIDEO_FRAMES:

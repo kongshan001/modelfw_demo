@@ -1,10 +1,12 @@
 class_name BackpackUI
 extends Control
 
-const PANEL_POS := Vector2(44, 52)
-const PANEL_SIZE := Vector2(1172, 654)
-const TABS_POS := Vector2(636, 74)
-const GRID_POS := Vector2(636, 150)
+# 1:1 remap of the 529x356 reference onto 1280x720 (see docs/fidelity-1to1.md).
+const PANEL_POS := Vector2(17, 47)
+const PANEL_SIZE := Vector2(1193, 659)
+const TABS_POS := Vector2(653, 59)
+const GRID_POS := Vector2(653, 121)
+const SPLIT_X := 653.0
 
 var state: InventoryState
 var panel_root: Control
@@ -28,6 +30,8 @@ var confirm: ConfirmDialog
 var filter_popup: FilterPopup
 var placeholder: PlaceholderOverlay
 var reopen_root: Control
+var align_overlay: AlignOverlay
+var title_label: Label
 
 var current_page := 1
 var current_category := "全部"
@@ -38,6 +42,7 @@ var panel_open := false
 var _panel_tween: Tween
 var _close_tween: Tween
 var _initialized := false
+var _overlay_accum := 0.0
 
 
 func _ready() -> void:
@@ -52,6 +57,80 @@ func _ready() -> void:
 func _initial_open() -> void:
 	open_panel(true)
 	_switch_page_internal(1, false)
+
+
+func _process(delta: float) -> void:
+	if align_overlay != null and align_overlay.visible:
+		_overlay_accum += delta
+		if _overlay_accum >= 0.20:
+			_overlay_accum = 0.0
+			_refresh_align_entries()
+
+
+# ---------------------------------------------------------------- F1 alignment check
+
+func set_align_overlay_visible(on: bool) -> void:
+	if align_overlay == null:
+		return
+	align_overlay.visible = on and panel_open
+	if align_overlay.visible:
+		_refresh_align_entries()
+
+
+func is_align_overlay_visible() -> bool:
+	return align_overlay != null and align_overlay.visible
+
+
+func align_report() -> Dictionary:
+	if align_overlay == null:
+		return {"rows": [], "max_dev_pct": 999.0, "count": 0}
+	return align_overlay.report()
+
+
+func _refresh_align_entries() -> void:
+	if align_overlay == null:
+		return
+	var list: Array = []
+	var rr := AlignOverlay.REF_RECTS
+	list.append({"name": "面板", "target": AlignOverlay.ref_rect_to_target(rr["panel"]),
+		"actual": Rect2(panel_art.position, panel_art.size)})
+	list.append({"name": "标题", "target": AlignOverlay.ref_rect_to_target(rr["title"]),
+		"actual": Rect2(title_label.position, title_label.size), "anchor": true})
+	list.append({"name": "关闭钮", "target": AlignOverlay.ref_rect_to_target(rr["close"]),
+		"actual": Rect2(close_button.position, close_button.size), "anchor": true})
+	list.append({"name": "页签", "target": AlignOverlay.ref_rect_to_target(rr["tabs"]),
+		"actual": Rect2(tabs.position, tabs.size)})
+	list.append({"name": "网格", "target": AlignOverlay.ref_rect_to_target(rr["grid"]),
+		"actual": Rect2(grid.position, Vector2(542, 449))})
+	list.append({"name": "侧导航", "target": AlignOverlay.ref_rect_to_target(rr["nav"]),
+		"actual": Rect2(side_nav.position + Vector2(-8, 0), Vector2(78, SideNav.TAB_H))})
+	var bars := stats_panel.bar_rects()
+	list.append({"name": "气血条", "target": AlignOverlay.ref_rect_to_target(rr["hp"]),
+		"actual": bars["hp"]})
+	list.append({"name": "魔法条", "target": AlignOverlay.ref_rect_to_target(rr["mp"]),
+		"actual": bars["mp"], "label": false})
+	list.append({"name": "铜币", "target": AlignOverlay.ref_rect_to_target(rr["coin_gold"]),
+		"actual": coin_gold.pill_rect()})
+	list.append({"name": "银两", "target": AlignOverlay.ref_rect_to_target(rr["coin_silver"]),
+		"actual": coin_silver.pill_rect(), "label": false})
+	list.append({"name": "整理", "target": AlignOverlay.ref_rect_to_target(rr["sort"]),
+		"actual": Rect2(sort_button.position, sort_button.size)})
+	var slot_names := ["法宝", "鞋履", "衣甲", "头冠", "项链", "戒指", "戒指", "武器"]
+	for i in range(PaperDoll.SLOT_KEYS.size()):
+		list.append({
+			"name": "槽·" + slot_names[i],
+			"target": AlignOverlay.ref_slot_target(i),
+			"actual": paper_doll.slot_rect(PaperDoll.SLOT_KEYS[i]),
+			"label": i == 0,
+		})
+	# Added controls (not in the reference): flagged magenta and excluded from max.
+	var cap_rect := Rect2(capacity_label.position, capacity_label.size)
+	var filter_rect := Rect2(filter_button.position, filter_button.size)
+	list.append({"name": "容量(新增)", "target": cap_rect, "actual": cap_rect,
+		"added": true, "counted": false})
+	list.append({"name": "筛选(新增)", "target": filter_rect, "actual": filter_rect,
+		"added": true, "counted": false, "label": false})
+	align_overlay.set_entries(list)
 
 
 func _build() -> void:
@@ -84,12 +163,12 @@ func _build() -> void:
 
 	paper_doll = PaperDoll.new()
 	paper_doll.setup(state)
-	paper_doll.position = Vector2(60, 82)
+	paper_doll.position = Vector2(60, 47)
 	panel_root.add_child(paper_doll)
 
 	stats_panel = PlayerStatsPanel.new()
 	stats_panel.setup(state)
-	stats_panel.position = Vector2(60, 500)
+	stats_panel.position = Vector2(60, 505)
 	panel_root.add_child(stats_panel)
 
 	tabs = TabBarUI.new()
@@ -97,16 +176,16 @@ func _build() -> void:
 	tabs.position = TABS_POS
 	panel_root.add_child(tabs)
 
-	capacity_label = ThemeKit.make_label(panel_root, "背包容量 35 / 216 · 第 1 / 5 页", 13, ThemeKit.TEXT_INK,
-		Vector2(636, 118), Vector2(280, 22), HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 0)
-	capacity_label.modulate = Color(1, 1, 1, 0.9)
-
-	ThemeKit.make_label(panel_root, "Tab 切页 · 滚轮翻页 · Enter 使用", 10, Color(0.27, 0.44, 0.54, 0.72),
-		Vector2(894, 118), Vector2(228, 22), HORIZONTAL_ALIGNMENT_RIGHT, ThemeKit.body_font(), 0)
+	# The reference has no capacity bar above the grid; keep the functional
+	# text + filter as a low-profile auxiliary strip at the bottom-left.
+	capacity_label = ThemeKit.make_label(panel_root, "背包容量 35 / 216 · 第 1 / 5 页", 11, Color("2f5c86"),
+		Vector2(653, 578), Vector2(340, 20), HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 1,
+		Color(1, 1, 1, 0.35))
+	capacity_label.modulate = Color(1, 1, 1, 0.90)
 
 	filter_button = UIButton.new()
-	filter_button.setup("全部  ▾", UIButton.Kind.SLATE, Vector2(68, 26), 12)
-	filter_button.position = Vector2(1134, 116)
+	filter_button.setup("筛选 全部 ▾", UIButton.Kind.SLATE, Vector2(124, 20), 11)
+	filter_button.position = Vector2(1066, 578)
 	panel_root.add_child(filter_button)
 
 	grid = InventoryGrid.new()
@@ -116,16 +195,16 @@ func _build() -> void:
 
 	coin_gold = CoinRow.new()
 	coin_gold.setup("gold", int(state.player["gold"]))
-	coin_gold.position = Vector2(636, 616)
+	coin_gold.position = Vector2(656, 604)
 	panel_root.add_child(coin_gold)
 	coin_silver = CoinRow.new()
 	coin_silver.setup("silver", int(state.player["silver"]))
-	coin_silver.position = Vector2(636, 650)
+	coin_silver.position = Vector2(656, 656)
 	panel_root.add_child(coin_silver)
 
 	sort_button = UIButton.new()
-	sort_button.setup("整 理", UIButton.Kind.GOLD, Vector2(164, 80), 26)
-	sort_button.position = Vector2(1024, 612)
+	sort_button.setup("整 理", UIButton.Kind.GOLD, Vector2(182, 61), 28)
+	sort_button.position = Vector2(994, 613)
 	panel_root.add_child(sort_button)
 
 	_build_title()
@@ -135,6 +214,10 @@ func _build() -> void:
 	detail = DetailCard.new()
 	detail.setup(state)
 	panel_root.add_child(detail)
+
+	align_overlay = AlignOverlay.new()
+	align_overlay.setup()
+	panel_root.add_child(align_overlay)
 
 	_build_reopen()
 
@@ -169,32 +252,29 @@ func _build() -> void:
 
 
 func _build_title() -> void:
-	var ribbon := TextureRect.new()
-	ribbon.texture = ThemeKit.ui_tex("ribbon")
-	ribbon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	ribbon.stretch_mode = TextureRect.STRETCH_SCALE
-	ribbon.position = Vector2(120, 2)
-	ribbon.size = Vector2(260, 90)
-	ribbon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel_root.add_child(ribbon)
-	ThemeKit.make_label(panel_root, "物品", 36, ThemeKit.GOLD_BRIGHT, Vector2(130, 8), Vector2(240, 46),
-		HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.title_font(), 5, Color("4a230c"))
-	ThemeKit.make_label(panel_root, "背 包", 12, ThemeKit.GOLD, Vector2(130, 50), Vector2(240, 22),
-		HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.title_font(), 3, Color("4a230c"))
+	# Reference title: pale ice calligraphy directly over the scene, no plaque.
+	var glow := ThemeKit.glow_texture_rect("glow", Color(0.60, 0.92, 1.0, 0.10))
+	glow.position = Vector2(140, -22)
+	glow.size = Vector2(170, 96)
+	panel_root.add_child(glow)
+	title_label = ThemeKit.make_label(panel_root, "物品", 38, Color("eaf8ff"),
+		Vector2(160, -3), Vector2(104, 46), HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.title_font(),
+		5, Color("123a5a"))
+	title_label.modulate = Color(1, 1, 1, 0.98)
 
 
 func _build_close() -> void:
 	var glow := ThemeKit.glow_texture_rect("glow", Color(1.0, 0.84, 0.5, 0.22))
-	glow.position = Vector2(1164, -10)
-	glow.size = Vector2(90, 90)
+	glow.position = Vector2(1186, -10)
+	glow.size = Vector2(96, 96)
 	panel_root.add_child(glow)
 	close_button = TextureButton.new()
 	close_button.texture_normal = ThemeKit.ui_tex("close")
 	close_button.ignore_texture_size = true
 	close_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-	close_button.position = Vector2(1178, 4)
-	close_button.size = Vector2(62, 62)
-	close_button.pivot_offset = Vector2(31, 31)
+	close_button.position = Vector2(1198, 6)
+	close_button.size = Vector2(72, 72)
+	close_button.pivot_offset = Vector2(36, 36)
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	panel_root.add_child(close_button)
@@ -214,7 +294,7 @@ func _build_close() -> void:
 func _build_side_nav() -> void:
 	side_nav = SideNav.new()
 	side_nav.setup()
-	side_nav.position = Vector2(1218, 140)
+	side_nav.position = Vector2(1198, 87)
 	panel_root.add_child(side_nav)
 
 
@@ -304,6 +384,8 @@ func close_panel() -> void:
 	if not panel_open:
 		return
 	panel_open = false
+	if align_overlay != null:
+		align_overlay.visible = false
 	tooltip.hide_tooltip()
 	toast.clear()
 	detail.close_card()
@@ -358,7 +440,7 @@ func set_category(cat: String) -> void:
 	if not InventoryState.CATEGORIES.has(cat):
 		return
 	current_category = cat
-	filter_button.set_text(cat + "  ▾")
+	filter_button.set_text("筛选 " + cat + " ▾")
 	grid.refresh(state, current_page, current_category)
 	detail.close_card()
 	tooltip.hide_tooltip()
@@ -592,6 +674,9 @@ func handle_key(ev: InputEventKey) -> bool:
 	if not ev.pressed or ev.echo:
 		return false
 	var key := ev.keycode
+	if key == KEY_F1:
+		set_align_overlay_visible(not is_align_overlay_visible())
+		return true
 	if confirm.is_open():
 		if key == KEY_ESCAPE:
 			confirm.cancel()
@@ -708,3 +793,7 @@ func is_empty_state_visible() -> bool:
 
 func is_filter_open() -> bool:
 	return filter_popup.is_open()
+
+
+func get_align_report() -> Dictionary:
+	return align_report()

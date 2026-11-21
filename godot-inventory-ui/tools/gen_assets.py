@@ -352,35 +352,42 @@ def make_background():
 # ---------------------------------------------------------------- panel
 
 def make_panel():
-    LW, LH = 1172, 654
+    """1193x659 ice-blue panel matching the reference's 1:1 proportion study.
+
+    Palette sampled from the reference: top #9DC4EC -> bottom #6CA0D6,
+    thin gold frame (dark base + gold + pale highlight), small corner cloud
+    flourishes. Geometry and pixels are our own; the reference is not embedded.
+    """
+    LW, LH = 1193, 659
     k = 3  # draw scale, downsample to 2x
     W, H = LW * k, LH * k
     out_scale = 2
     OUT = (LW * out_scale, LH * out_scale)
+    radius = 15 * k
 
-    # base gradient (ice blue, brighter toward the paper-doll side)
-    base = linear_gradient((W, H), (238, 250, 255, 248), (168, 203, 228, 246), 104)
+    # base gradient, slightly brighter on the paper-doll (left) side
+    base = linear_gradient((W, H), (158, 196, 236, 250), (105, 157, 208, 248), 100)
     arr = np.array(base).astype(np.float32)
     yy, xx = np.mgrid[0:H, 0:W]
-    # radial halo behind character
-    cxp, cyp = int(W * 0.265), int(H * 0.42)
-    rad = np.sqrt((xx - cxp) ** 2 + (yy - cyp) ** 2) / (W * 0.38)
-    halo = np.clip(1 - rad, 0, 1) ** 1.7
+    cxp, cyp = int(W * 0.25), int(H * 0.34)
+    rad = np.sqrt(((xx - cxp) / (W * 0.46)) ** 2 + ((yy - cyp) / (H * 0.46)) ** 2)
+    halo = np.clip(1 - rad, 0, 1) ** 1.6
     for i in range(3):
-        arr[..., i] += halo * 22
-    # cool corner tint
-    for i, col in enumerate((200, 224, 240)):
-        arr[..., i] = arr[..., i] * 0.97 + col * 0.03
+        arr[..., i] += halo * 20
+    # vertical sheen: brighter top, deeper bottom (reference sampled 153/191/233 -> 112/160/209)
+    yy01 = (yy / max(1, H - 1)).astype(np.float32)
+    arr[..., 0] -= yy01 * 14
+    arr[..., 1] -= yy01 * 8
+    arr[..., 2] -= yy01 * 4
     base = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGBA")
-    base.putalpha(247)
+    base.putalpha(250)
 
-    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     # clip everything to the panel silhouette
-    silhouette = rounded_mask((W, H), 34 * k)
+    silhouette = rounded_mask((W, H), radius)
     content = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     content.alpha_composite(base)
 
-    # faint cloud curls
+    # very faint cloud curls (original geometry)
     clouds = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     cd = ImageDraw.Draw(clouds)
 
@@ -388,85 +395,49 @@ def make_panel():
         for i in range(3):
             rr = r * (1 - i * 0.28)
             cd.arc([cx - rr, cy - rr, cx + rr, cy + rr], 25 + i * 25, 300 + i * 20,
-                   fill=(255, 255, 255, alpha - i * 6), width=int(3.2 * k))
+                   fill=(255, 255, 255, alpha - i * 4), width=int(2.2 * k))
         cd.arc([cx - r * 1.9, cy - r * 0.5, cx + r * 1.4, cy + r * 1.4], 200, 340,
-               fill=(255, 255, 255, alpha - 10), width=int(2.2 * k))
+               fill=(255, 255, 255, alpha - 6), width=int(1.6 * k))
     for cx, cy, r, a in [
-        (W * 0.78, H * 0.12, 90 * k, 22),
-        (W * 0.9, H * 0.55, 130 * k, 16),
-        (W * 0.12, H * 0.8, 110 * k, 18),
-        (W * 0.52, H * 0.93, 120 * k, 14),
-        (W * 0.4, H * 0.08, 70 * k, 18),
+        (W * 0.82, H * 0.16, 70 * k, 13),
+        (W * 0.90, H * 0.62, 90 * k, 10),
+        (W * 0.12, H * 0.86, 80 * k, 11),
+        (W * 0.52, H * 0.94, 90 * k, 8),
     ]:
         cloud_curl(cx, cy, r, a)
-    clouds = clouds.filter(ImageFilter.GaussianBlur(6 * k))
+    clouds = clouds.filter(ImageFilter.GaussianBlur(5 * k))
     content.alpha_composite(clouds)
 
-    # icy light streaks
-    streak = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(streak)
-    for i in range(7):
-        x = W * (0.36 + 0.09 * i)
-        sd.polygon([(x, 0), (x + 50 * k, 0), (x - 160 * k, H), (x - 240 * k, H)],
-                   fill=(255, 255, 255, 8))
-    streak = streak.filter(ImageFilter.GaussianBlur(9 * k))
-    content.alpha_composite(streak)
-
-    # inner rim + bevel
+    # thin gold frame (sampled: dark base, gold, pale highlight) — reference
+    # border is ~2 px at 529 wide -> ~5 px at 1280.
     d = ImageDraw.Draw(content)
-    for r, wd, col in [
-        (30 * k, int(2.2 * k), (255, 255, 255, 170)),
-        (37 * k, int(1.4 * k), (126, 166, 193, 140)),
-        (42 * k, int(1.0 * k), (255, 255, 255, 90)),
-    ]:
-        d.rounded_rectangle([r, r, W - r, H - r], radius=22 * k, outline=col, width=wd)
+    d.rounded_rectangle([4 * k, 4 * k, W - 4 * k, H - 4 * k], radius=radius,
+                        outline=(68, 47, 20, 255), width=int(4 * k))
+    d.rounded_rectangle([7 * k, 7 * k, W - 7 * k, H - 7 * k], radius=13 * k,
+                        outline=(168, 124, 58, 255), width=int(2.2 * k))
+    d.rounded_rectangle([10 * k, 10 * k, W - 10 * k, H - 10 * k], radius=12 * k,
+                        outline=(240, 214, 150, 235), width=max(1, int(1.2 * k)))
+    d.rounded_rectangle([12 * k, 12 * k, W - 12 * k, H - 12 * k], radius=11 * k,
+                        outline=(255, 255, 255, 55), width=max(1, int(0.8 * k)))
 
-    # gold frame
-    d.rounded_rectangle([3 * k, 3 * k, W - 3 * k, H - 3 * k], radius=34 * k,
-                        outline=(66, 44, 16, 255), width=int(9 * k))
-    d.rounded_rectangle([7 * k, 7 * k, W - 7 * k, H - 7 * k], radius=31 * k,
-                        outline=(152, 104, 38, 255), width=int(8 * k))
-    d.rounded_rectangle([11 * k, 11 * k, W - 11 * k, H - 11 * k], radius=28 * k,
-                        outline=(231, 190, 105, 255), width=int(4 * k))
-    d.rounded_rectangle([15 * k, 15 * k, W - 15 * k, H - 15 * k], radius=25 * k,
-                        outline=(255, 240, 186, 220), width=max(1, int(1.6 * k)))
-    d.rounded_rectangle([19 * k, 19 * k, W - 19 * k, H - 19 * k], radius=22 * k,
-                        outline=(118, 82, 30, 170), width=max(1, int(1.2 * k)))
-
-    # gold studs along the top/bottom edge
-    for x in np.linspace(W * 0.07, W * 0.93, 15):
-        for y in (9 * k, H - 9 * k):
-            d.ellipse([x - 2.4 * k, y - 2.4 * k, x + 2.4 * k, y + 2.4 * k],
-                      fill=(255, 236, 176, 235), outline=(120, 80, 28, 220))
-
-    # corner filigree, drawn once and mirrored
+    # small corner cloud flourishes (16px logical), lower contrast than v1
     orn = Image.new("RGBA", (300 * k, 300 * k), (0, 0, 0, 0))
     od = ImageDraw.Draw(orn)
-    # main vine along the two edges
-    vine_a = qbez((26 * k, 260 * k), (24 * k, 95 * k), (92 * k, 26 * k), 56) + \
-        qbez((92 * k, 26 * k), (170 * k, 24 * k), (252 * k, 24 * k), 40)[1:]
-    gold_layered_path(od, vine_a, width=int(3.4 * k), alpha=235)
-    vine_b = qbez((48 * k, 250 * k), (46 * k, 118 * k), (118 * k, 48 * k), 54) + \
-        qbez((118 * k, 48 * k), (180 * k, 46 * k), (244 * k, 46 * k), 36)[1:]
-    gold_layered_path(od, vine_b, width=int(1.7 * k), alpha=190)
-    # cloud spiral
+    vine_a = qbez((26 * k, 250 * k), (24 * k, 100 * k), (100 * k, 26 * k), 56) + \
+        qbez((100 * k, 26 * k), (170 * k, 24 * k), (250 * k, 24 * k), 40)[1:]
+    gold_layered_path(od, vine_a, width=int(3.0 * k), alpha=170)
     for i in range(3):
-        rr = (34 - i * 9) * k
-        od.arc([58 * k - rr, 58 * k - rr, 58 * k + rr, 58 * k + rr], 40 + i * 30, 330 + i * 20,
-               fill=(236, 196, 116, 230), width=int(2.4 * k))
-    # leaves / studs
-    for cx, cy, a in [(120 * k, 32 * k, 0), (32 * k, 120 * k, 0), (154 * k, 54 * k, 20), (54 * k, 154 * k, 20)]:
-        od.ellipse([cx - 9 * k, cy - 4 * k, cx + 9 * k, cy + 4 * k], fill=(222, 176, 87, 210))
-        od.ellipse([cx - 4 * k, cy - 2.2 * k, cx + 4 * k, cy + 2.2 * k], fill=(255, 236, 174, 240))
-    # small diamond at the corner
+        rr = (30 - i * 8) * k
+        od.arc([60 * k - rr, 60 * k - rr, 60 * k + rr, 60 * k + rr], 40 + i * 30, 330 + i * 20,
+               fill=(238, 200, 126, 180), width=int(1.8 * k))
     cx, cy = 52 * k, 52 * k
-    od.polygon([(cx, cy - 13 * k), (cx + 13 * k, cy), (cx, cy + 13 * k), (cx - 13 * k, cy)],
-               fill=(196, 143, 54, 245), outline=(86, 56, 17, 255))
-    od.polygon([(cx, cy - 7 * k), (cx + 7 * k, cy), (cx, cy + 7 * k), (cx - 7 * k, cy)],
-               fill=(255, 231, 160, 250))
+    od.polygon([(cx, cy - 10 * k), (cx + 10 * k, cy), (cx, cy + 10 * k), (cx - 10 * k, cy)],
+               fill=(206, 158, 74, 210), outline=(86, 56, 17, 220))
+    od.polygon([(cx, cy - 5 * k), (cx + 5 * k, cy), (cx, cy + 5 * k), (cx - 5 * k, cy)],
+               fill=(255, 235, 172, 230))
     orn = orn.filter(ImageFilter.GaussianBlur(0.35 * k))
-
-    orn = orn.resize((int(300 * k * 0.30), int(300 * k * 0.30)), Image.LANCZOS)
+    orn = orn.resize((int(300 * k * 0.17), int(300 * k * 0.17)), Image.LANCZOS)
+    orn.putalpha(orn.getchannel("A").point(lambda a: int(a * 0.72)))
     ow, oh = orn.size
     positions = [
         (0, 0, 0),  # tl
@@ -476,12 +447,9 @@ def make_panel():
     ]
     for x, y, rot in positions:
         o = orn.rotate(rot, expand=True) if rot else orn
-        if rot:
-            content.alpha_composite(o, (x, y))
-        else:
-            content.alpha_composite(o, (x, y))
+        content.alpha_composite(o, (x, y))
 
-    # apply silhouette + gold frame stays inside
+    # keep the gold frame inside the silhouette
     content.putalpha(Image.composite(content.getchannel("A"), Image.new("L", (W, H), 0), silhouette))
     content = content.resize(OUT, Image.LANCZOS)
     content.save(UI_DIR / "panel.png", optimize=True)
@@ -568,9 +536,9 @@ def make_close_button():
              (21.0, (196, 143, 63)), (18.0, (111, 74, 26))]
     for r, col in radii:
         d.ellipse([cx - r * k, cy - r * k, cx + r * k, cy + r * k], fill=col)
-    # inner red jewel disc
+    # inner bronze disc (reference close button: gold rim + bronze face)
     disc = Image.new("RGBA", (int(34 * k), int(34 * k)), (0, 0, 0, 0))
-    grad = linear_gradient(disc.size, (143, 48, 48, 255), (66, 20, 26, 255), 90)
+    grad = linear_gradient(disc.size, (128, 92, 54, 255), (62, 42, 24, 255), 90)
     mask = Image.new("L", disc.size, 0)
     ImageDraw.Draw(mask).ellipse([0, 0, disc.size[0] - 1, disc.size[1] - 1], fill=255)
     disc.alpha_composite(Image.composite(grad, Image.new("RGBA", disc.size, (0, 0, 0, 0)), mask))

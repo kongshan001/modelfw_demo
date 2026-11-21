@@ -1,16 +1,18 @@
 class_name ThemeKit
 extends RefCounted
 
-# ---- palette (original, inspired only by the reference's "ice blue + gold + red ribbon" language)
-const PANEL_LIGHT := Color("ecf9ff")
-const PANEL_ICE := Color("c6e0f0")
-const PANEL_DEEP := Color("a7c8e0")
-const CELL_TOP := Color("c8e1f2")
-const CELL_BOTTOM := Color("9fc0db")
-const CELL_TOP_HOT := Color("e2f4ff")
-const CELL_BOTTOM_HOT := Color("b6d8ea")
-const TEXT_LIGHT := Color("f4fdff")
-const TEXT_INK := Color("1d4259")
+# ---- palette (sampled from the 529x356 reference, re-authored as original flat colors)
+const PANEL_LIGHT := Color("9dc4ec")
+const PANEL_ICE := Color("7fa9d3")
+const PANEL_DEEP := Color("6ca0d2")
+const CELL_TOP := Color("5f8fbd")
+const CELL_BOTTOM := Color("4f7cab")
+const CELL_TOP_HOT := Color("79a7cf")
+const CELL_BOTTOM_HOT := Color("6090bb")
+const GRID_BACK_TOP := Color("517dab")
+const GRID_BACK_BOTTOM := Color("406b9b")
+const TEXT_LIGHT := Color("f2fbff")
+const TEXT_INK := Color("123b56")
 const TEXT_INK_SOFT := Color("3f6b84")
 const TEXT_MUTED := Color("7f9fb2")
 const GOLD := Color("e8c778")
@@ -19,30 +21,31 @@ const GOLD_DEEP := Color("a87527")
 const GOLD_DARK := Color("6f4a16")
 const RED_PLAQUE := Color("8f1d29")
 const RED_RIBBON := Color("a92c35")
-const MINT := Color("72d8c6")
+const MINT := Color("5fdfc9")
 const MINT_BRIGHT := Color("b5f5e9")
 const NAVY_GLASS := Color("122f44")
 const NAVY_GLASS_DEEP := Color("0a1e2e")
-const HP_TOP := Color("ff9c8d")
-const HP_BOTTOM := Color("e85049")
-const MP_TOP := Color("8bd8ff")
-const MP_BOTTOM := Color("2f8fe0")
+const HP_TOP := Color("ff9a9a")
+const HP_BOTTOM := Color("ec6a6a")
+const MP_TOP := Color("8fd2ff")
+const MP_BOTTOM := Color("58aaf2")
+const BAR_INK := Color("23486b")
 const BUTTON_TEXT := Color("5a3410")
 const DISABLED_TOP := Color("b9c6cf")
 const DISABLED_BOTTOM := Color("94a5b1")
 
 const QUALITY_NAMES := ["凡品", "良品", "珍品", "绝品"]
 const QUALITY_COLORS := [
-	Color("e8f0f5"),
-	Color("74d99e"),
-	Color("68adff"),
-	Color("c48bff"),
+	Color("d9ecfb"),
+	Color("7fc7ff"),
+	Color("bd88f0"),
+	Color("ffb35f"),
 ]
 const QUALITY_DARK := [
-	Color("aabac6"),
-	Color("3b9e68"),
-	Color("346fbb"),
-	Color("7c4bb8"),
+	Color("8aa6bb"),
+	Color("3f7fb8"),
+	Color("7a4ab8"),
+	Color("b87320"),
 ]
 
 static var _body_font: Font

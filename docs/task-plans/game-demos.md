@@ -2,6 +2,52 @@
 
 ## 进行中
 
+## T-20261121-034 · Game Designer 玩法创新能力建设（T-033 follow-up）
+- 线程: T-20261121-033（玩法创新研究 → 能力建设，跨类型 follow-up）
+- 父任务: T-20261121-033；依赖: T-20261121-033（done + Git 发布）
+- 类型: game-demo（设计能力 / agent tooling）
+- 目标: 把玩法创新方法接进 game-designer：更新 agent + skill + 模板，产出 20 个 idea seeds、评分、top 3 一页 brief 与 playtest 计划
+- 交付: `.claude/agents/game-designer.md`、`.claude/skills/gameplay-innovation/SKILL.md`、`docs/design/gameplay-innovation-portfolio.md`、`docs/templates/` + 截图；不改游戏代码
+- 约束: 原创；评分可复现；必须有多方案/否决清单/kill criteria；不复制 IP；不接受实现者自评
+- 指派: game-designer worker（dispatcher）
+- 状态: blocked（等 T-033）
+- depends_on: T-20261121-033
+- 后续: T-20261121-035（红队评审）
+
+## T-20261121-035 · 玩法创新方案红队评审（T-034 follow-up）
+- 线程: T-20261121-033（玩法创新能力）
+- 父任务: T-20261121-034；依赖: T-20261121-034（done + Git 发布）
+- 类型: game-demo（对抗评审）
+- 目标: 独立攻击 T-034 的方法与 top 3：是否只是换皮/堆功能、决策深度/可教性/可行性/受众，给 kill/iterate 建议
+- 交付: `docs/design/gameplay-innovation-red-team.md`（证据/评分/verdict/下一轮问题）+ 代表图；不改代码/agent
+- 约束: 独立红队，不看实现者自评；可查证案例；不复制 IP；中文
+- 指派: game-red-team worker（dispatcher）
+- 状态: blocked（等 T-034）
+- depends_on: T-20261121-034
+
+## T-20261121-029 · 美术 Agent Blender 二次元角色能力探针
+- 来源: 飞书消息（2026-11-21，“探索当前美术 Agent 是否具备用 Blender 建模二次元可爱女性角色+贴图的能力”）
+- 类型: game-demo（Agent 能力探针）
+- 目标: 实际用 Blender 建一个原创可爱二次元女性角色（含贴图/基础绑定/GLB）并渲染，验证当前 agent 与本机管线到底能做什么、卡在哪
+- 交付: `docs/agent-capabilities/blender-anime-probe.md`（能力/步骤/瓶颈/差距）+ `agent-probes/blender-anime-girl/`（blend/GLB/渲染/脚本）+ 媒体；不改 agent 定义
+- 约束: 原创角色，不复制原神/任何 IP；Blender 3.4.1/4.2.9；时间盒 1–2h；如实记录失败；不用付费资产
+- 建模管线: 原创参考图 → Tripo 图生 3D → Blender 清理/重拓扑/绑骨/贴图/toon → GLB/VRM（用户 2026-11-21 指定）
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+- 后续: T-20261121-031（能力建设）
+
+## T-20261121-031 · 美术 Agent Blender 二次元能力建设（T-029 follow-up）
+- 线程: T-20261121-029（Blender 二次元能力）
+- 父任务: T-20261121-029；依赖: T-20261121-029 + T-20261121-030
+- 类型: game-demo（Agent tooling / skill）
+- 目标: 按探针与调研补齐 Blender 二次元角色管线：可复用 toolkit + skill + agent prompt + v0.1 样片；形成可持续迭代的验收门
+- 交付: `tools/blender_anime/`；更新 `.claude/agents/game-artist.md`；`docs/agent-capabilities/blender-anime-skill.md`；`agent-probes/blender-anime-girl/v0.1/`；`BLENDER_ANIME_OK`；渲染/媒体
+- 约束: 原创；保留 agent 角色边界；不复制 IP/付费资产；只改工具/skill/文档；真实可跑
+- 管线: Tripo 初模 → Blender 清理/重拓扑/绑骨/toon → GLB；工具从 `TRIPO_API_KEY` 读 key（用户 2026-11-21 指定）
+- 指派: game-artist worker（dispatcher）
+- 状态: blocked（等 T-029/T-030）
+- depends_on: T-20261121-029, T-20261121-030
+
 ## T-20261121-026 · 复刻《雾港撤离》式俯视角搜打撤 Demo
 - 来源: 飞书消息（今日头条视频《GPT-6上线后，没有游戏经验的我做出了第二个游戏 GPT-6 Astra…》，https://m.toutiao.com/is/cYC_w2DNGpQ/，2026-11-21）
 - 类型: game-demo（2D 俯视角 / 搜打撤）
@@ -18,6 +64,7 @@
 - 目标: 基于原帖/报道定义原创致敬版 vertical slice 的玩法、战斗、剧情、关卡、MVP/优先级与验收；不复刻原作者角色/素材/品牌
 - 交付: `docs/design/changan-action-remake-spec.md` + 一页核心循环/优先级图（SVG/PNG）+ 媒体；来源表
 - 约束: 只设计不改代码/资产；区分作者自述与已验证事实；原创角色/故事；面向 Godot 4.6 GL Compatibility / Intel HD；不复制原游戏素材
+- 资产策略: 原创参考图 → Tripo → Blender 清理/绑骨/toon → GLB（用户 2026-11-21 指定）
 - 指派: game-designer worker（dispatcher）
 - 状态: queued
 - 后续: T-20261121-025（实现）
@@ -29,6 +76,7 @@
 - 目标: 按 T-024 规格实现 3D 第三人称动作 vertical slice：长安风夜街、1 可玩角色、2–3 敌人 archetype、刺拳/踢击/翻滚/击倒/起身、短剧情与 Boss/结算
 - 交付: `godot-changan-action/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/许可合规
 - 约束: 只复刻玩法/体验，不复制原作者角色/名字/素材/品牌；优先复用仓库内原创系统与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
+- 资产管线: 原创参考图 → Tripo 图生 3D → Blender 清理/绑骨/toon → GLB（用户 2026-11-21 指定）
 - 指派: game-engineer worker（dispatcher）
 - 状态: blocked（等 T-024 done + Git 发布）
 - depends_on: T-20261121-024
@@ -40,7 +88,7 @@
 - 交付: `godot-pixel-vfx/` 可运行项目；4 组特效 sprite sheet + JSON；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；MIT 许可与来源
 - 约束: 仅使用 PixelFX（MIT）与原创场景/角色/UI；不复制其他游戏素材；字体若单独授权则不打包；1280×720/1920×1080，GL Compatibility，Intel 30fps+；像素完美（nearest/无 AA）
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261121-021 · Godot 程序化地图生成优秀案例复刻（T-020 follow-up）
 - 来源: 飞书消息（2026-11-21，“godot在程序化地图生成这块有哪些技术方案，以及优秀效果案例然后复刻”）
@@ -73,7 +121,7 @@
 - 交付: 更新 `godot-inventory-ui/`；`docs/fidelity-1to1.md`（参考 vs 实现测量表、误差、例外）；同尺寸对照图（参考图不入库）；新截图/GIF/MP4；smoke 通过
 - 约束: 1:1 指布局/比例/配色/交互；**不复制参考截图/图标/Logo/受版权素材**，用原创重绘；不用幻唐志品牌；不改其他项目
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
 - depends_on: T-20261121-014
 - 后续: T-20261121-017（开发文档 + 跨引擎资产包）
 
@@ -120,7 +168,7 @@
 - 交付: 更新 `godot-card-tactics/`；同机位 before/after（100%/25% + 命中帧）+ 指标 + GIF/MP4；README/TECH/迭代记录；媒体；smoke 通过
 - 约束: 保留 CC0 资产与许可/来源；不引入版权素材；不使用 Duelyst 品牌；只改视觉/UI/VFX；保留规则与 AI
 - 指派: game-artist worker（dispatcher）
-- 状态: blocked（等 T-018 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-018
 
 ## T-20261121-016 · Duelyst 复刻开发文档 + 跨引擎资产包（T-013 follow-up）

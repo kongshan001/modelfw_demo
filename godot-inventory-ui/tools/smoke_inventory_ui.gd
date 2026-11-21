@@ -44,6 +44,21 @@ func _run() -> void:
 	check(ui.state.items.size() == 35, "data has 35 item stacks")
 	check(ui.state.equipment.size() == 8, "eight equipment slots")
 
+	# ---- F1 alignment overlay + 1:1 geometry report
+	ui.set_align_overlay_visible(true)
+	await create_timer(0.25).timeout
+	check(ui.is_align_overlay_visible(), "alignment overlay opens")
+	var report := ui.get_align_report()
+	check(int(report["count"]) >= 20, "alignment report covers key elements and 8 slots")
+	check(float(report["max_dev_pct"]) <= 3.0, "key geometry within 3%% of the reference target (max %.2f%%)" % float(report["max_dev_pct"]))
+	ui.set_align_overlay_visible(false)
+	check(not ui.is_align_overlay_visible(), "alignment overlay closes")
+	check(ui.handle_key(key_event(KEY_F1)), "F1 is handled")
+	check(ui.is_align_overlay_visible(), "F1 toggles the alignment overlay on")
+	ui.handle_key(key_event(KEY_F1))
+	await process_frame
+	check(not ui.is_align_overlay_visible(), "F1 toggles the alignment overlay off")
+
 	# ---- pages
 	ui.switch_page(2)
 	await create_timer(0.2).timeout
@@ -195,10 +210,10 @@ func _run() -> void:
 	check(not ui.is_confirm_open(), "quest items cannot be discarded")
 	check(not ui.state.item_by_id("gujuan_scrap").is_empty(), "quest item remains in the bag")
 
-	# ---- filter popup API
-	ui.filter_popup.show_popup("全部")
+	# ---- filter button path (moved to the strip under the grid in T-015)
+	ui.filter_button.click_for_test()
 	await create_timer(0.1).timeout
-	check(ui.is_filter_open(), "filter popup opens")
+	check(ui.is_filter_open(), "filter button opens the popup")
 	ui.filter_popup.category_selected.emit("任务")
 	await create_timer(0.2).timeout
 	check(ui.get_category() == "任务", "filter popup applies a category")

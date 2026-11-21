@@ -6,8 +6,8 @@ signal discard_requested(item)
 signal sell_requested(item)
 signal closed
 
-const CARD_SIZE := Vector2(282, 446)
-const BASE_POS := Vector2(908, 146)
+const CARD_SIZE := Vector2(290, 440)
+const BASE_POS := Vector2(898, 132)
 
 var _state: InventoryState
 var _item: Dictionary = {}
@@ -51,13 +51,13 @@ func setup(state: InventoryState) -> void:
 	_inner.position = Vector2(5, 5)
 	add_child(_inner)
 
-	_name = ThemeKit.make_label(self, "", 22, ThemeKit.GOLD_BRIGHT, Vector2(16, 10), Vector2(208, 30),
+	_name = ThemeKit.make_label(self, "", 22, ThemeKit.GOLD_BRIGHT, Vector2(16, 10), Vector2(216, 30),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 3, Color(0.02, 0.06, 0.1, 0.9))
 	_quality = ThemeKit.make_label(self, "", 11, ThemeKit.TEXT_LIGHT, Vector2(18, 44), Vector2(110, 18),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(0.02, 0.06, 0.1, 0.8))
 	_close = UIButton.new()
 	_close.setup("✕", UIButton.Kind.GHOST, Vector2(26, 26), 13)
-	_close.position = Vector2(244, 10)
+	_close.position = Vector2(252, 10)
 	add_child(_close)
 	_close.pressed.connect(func() -> void: close_card())
 
@@ -74,52 +74,52 @@ func setup(state: InventoryState) -> void:
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
 
-	_type = ThemeKit.make_label(self, "", 13, Color("d2e6f1"), Vector2(116, 70), Vector2(150, 20),
+	_type = ThemeKit.make_label(self, "", 13, Color("d2e6f1"), Vector2(116, 70), Vector2(158, 20),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(0.02, 0.06, 0.1, 0.8))
-	_level = ThemeKit.make_label(self, "", 12, Color("a9c8d9"), Vector2(116, 92), Vector2(150, 18),
+	_level = ThemeKit.make_label(self, "", 12, Color("a9c8d9"), Vector2(116, 92), Vector2(158, 18),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(0.02, 0.06, 0.1, 0.8))
-	_amount = ThemeKit.make_label(self, "", 12, Color("f3d99b"), Vector2(116, 112), Vector2(150, 18),
+	_amount = ThemeKit.make_label(self, "", 12, Color("f3d99b"), Vector2(116, 112), Vector2(158, 18),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(0.02, 0.06, 0.1, 0.8))
-	_bind = ThemeKit.make_label(self, "", 11, Color("a9c8d9"), Vector2(116, 132), Vector2(150, 18),
+	_bind = ThemeKit.make_label(self, "", 11, Color("a9c8d9"), Vector2(116, 132), Vector2(158, 18),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 2, Color(0.02, 0.06, 0.1, 0.8))
 
 	var divider := GradientRect.new()
 	divider.position = Vector2(16, 168)
-	divider.setup(Vector2(250, 1.5), 0.7, Color(0.91, 0.77, 0.46, 0.55), Color(0.91, 0.77, 0.46, 0.25),
+	divider.setup(Vector2(258, 1.5), 0.7, Color(0.91, 0.77, 0.46, 0.55), Color(0.91, 0.77, 0.46, 0.25),
 		Color.TRANSPARENT, 0.0, 0.0)
 	add_child(divider)
 
-	_desc = ThemeKit.make_label(self, "", 13, Color("d5e7f1"), Vector2(16, 178), Vector2(250, 72),
+	_desc = ThemeKit.make_label(self, "", 13, Color("d5e7f1"), Vector2(16, 178), Vector2(258, 72),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 1, Color(0.02, 0.06, 0.1, 0.7))
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_stats = ThemeKit.make_label(self, "", 13, Color("f2dca4"), Vector2(16, 254), Vector2(250, 48),
+	_stats = ThemeKit.make_label(self, "", 13, Color("f2dca4"), Vector2(16, 254), Vector2(258, 48),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 1, Color(0.02, 0.06, 0.1, 0.7))
 	_stats.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_tags = ThemeKit.make_label(self, "", 10, Color("93b0c2"), Vector2(16, 306), Vector2(250, 18),
+	_tags = ThemeKit.make_label(self, "", 10, Color("93b0c2"), Vector2(16, 306), Vector2(258, 18),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 1, Color(0.02, 0.06, 0.1, 0.6))
-	_reason = ThemeKit.make_label(self, "", 10, Color("ffb3a6"), Vector2(16, 328), Vector2(250, 30),
+	_reason = ThemeKit.make_label(self, "", 10, Color("ffb3a6"), Vector2(16, 328), Vector2(258, 30),
 		HORIZONTAL_ALIGNMENT_LEFT, ThemeKit.body_font(), 1, Color(0.02, 0.06, 0.1, 0.6))
 	_reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	_btn_use = UIButton.new()
 	_btn_use.setup("使用", UIButton.Kind.GOLD, Vector2(76, 38), 15)
-	_btn_use.position = Vector2(16, 372)
+	_btn_use.position = Vector2(16, 366)
 	add_child(_btn_use)
 	_btn_use.pressed.connect(func() -> void: use_requested.emit(_item))
 	_btn_discard = UIButton.new()
 	_btn_discard.setup("丢弃", UIButton.Kind.DANGER, Vector2(76, 38), 15)
-	_btn_discard.position = Vector2(100, 372)
+	_btn_discard.position = Vector2(100, 366)
 	add_child(_btn_discard)
 	_btn_discard.pressed.connect(func() -> void: discard_requested.emit(_item))
 	_btn_sell = UIButton.new()
 	_btn_sell.setup("出售", UIButton.Kind.SLATE, Vector2(82, 38), 15)
-	_btn_sell.position = Vector2(184, 372)
+	_btn_sell.position = Vector2(184, 366)
 	add_child(_btn_sell)
 	_btn_sell.pressed.connect(func() -> void: sell_requested.emit(_item))
 
 	ThemeKit.make_label(self, "Esc 关闭背包 · 空格切换详情", 9, Color(0.8, 0.9, 0.96, 0.38),
-		Vector2(16, 418), Vector2(250, 16), HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.body_font(), 0)
+		Vector2(16, 412), Vector2(258, 16), HORIZONTAL_ALIGNMENT_CENTER, ThemeKit.body_font(), 0)
 
 
 func show_for(item: Dictionary, mode: String = "bag") -> void:

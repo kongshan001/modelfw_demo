@@ -5,7 +5,9 @@ signal hovered(slot, data, screen_pos)
 signal unhovered(slot)
 signal clicked(slot, data)
 
-const SLOT_SIZE := 96.0
+# Reference slot = 44x44 at 529x356 -> 106x89 at 1280x720; 104x90 keeps the
+# square read and stays inside the <=2-3% tolerance on both axes.
+const SLOT_SIZE := Vector2(104, 90)
 
 var data: Dictionary = {}
 var _built := false
@@ -22,7 +24,7 @@ var _time := 0.0
 
 func setup(slot_data: Dictionary) -> void:
 	data = slot_data
-	size = Vector2(SLOT_SIZE, SLOT_SIZE)
+	size = SLOT_SIZE
 	custom_minimum_size = size
 	pivot_offset = size * 0.5
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -33,8 +35,8 @@ func setup(slot_data: Dictionary) -> void:
 		return
 	_built = true
 	_glow = ThemeKit.glow_texture_rect("glow", Color(1.0, 0.93, 0.7, 0.0))
-	_glow.position = Vector2(-18, -18)
-	_glow.size = Vector2(SLOT_SIZE + 36, SLOT_SIZE + 36)
+	_glow.position = Vector2(-16, -16)
+	_glow.size = SLOT_SIZE + Vector2(32, 32)
 	_glow.visible = false
 	add_child(_glow)
 
@@ -45,44 +47,46 @@ func setup(slot_data: Dictionary) -> void:
 	_icon = TextureRect.new()
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_icon.position = Vector2(10, 8)
-	_icon.size = Vector2(76, 76)
+	_icon.position = Vector2(13, 3)
+	_icon.size = Vector2(78, 78)
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
 
 	var pill := GradientRect.new()
-	pill.position = Vector2(4, 73)
-	pill.setup(Vector2(42, 18), 9.0, Color(0.09, 0.22, 0.32, 0.92), Color(0.04, 0.13, 0.20, 0.95),
-		Color(0.91, 0.76, 0.44, 0.8), 1.0, 0.0)
+	pill.position = Vector2(4, 65)
+	pill.setup(Vector2(60, 20), 10.0, Color(0.07, 0.20, 0.30, 0.92), Color(0.03, 0.11, 0.18, 0.95),
+		Color(0.91, 0.76, 0.44, 0.85), 1.0, 0.0)
 	add_child(pill)
 	_level = Label.new()
-	_level.position = Vector2(4, 73)
-	_level.size = Vector2(42, 18)
+	_level.position = Vector2(4, 65)
+	_level.size = Vector2(60, 20)
 	_level.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_level.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_level.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var ls := LabelSettings.new()
 	ls.font = ThemeKit.body_font()
-	ls.font_size = 10
+	ls.font_size = 12
 	ls.font_color = ThemeKit.GOLD_BRIGHT
+	ls.outline_size = 2
+	ls.outline_color = Color(0.05, 0.13, 0.20, 0.9)
 	_level.label_settings = ls
 	add_child(_level)
 
 	_enchant_chip = GradientRect.new()
-	_enchant_chip.position = Vector2(-7, 98)
-	_enchant_chip.setup(Vector2(110, 17), 8.0, Color(0.08, 0.2, 0.29, 0.55), Color(0.04, 0.12, 0.19, 0.65),
+	_enchant_chip.position = Vector2(-4, 91)
+	_enchant_chip.setup(Vector2(96, 20), 9.0, Color(0.08, 0.20, 0.29, 0.62), Color(0.04, 0.12, 0.19, 0.72),
 		Color(0.72, 0.88, 0.96, 0.35), 1.0, 0.0)
 	add_child(_enchant_chip)
 	_enchant = Label.new()
-	_enchant.position = Vector2(-6, 98)
-	_enchant.size = Vector2(100, 17)
+	_enchant.position = Vector2(-4, 91)
+	_enchant.size = Vector2(78, 20)
 	_enchant.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_enchant.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_enchant.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var es := LabelSettings.new()
 	es.font = ThemeKit.body_font()
-	es.font_size = 10
-	es.font_color = Color(0.87, 0.96, 1.0)
+	es.font_size = 11
+	es.font_color = Color(0.90, 0.97, 1.0)
 	es.outline_size = 2
 	es.outline_color = Color(0.06, 0.16, 0.23, 0.9)
 	_enchant.label_settings = es
@@ -90,14 +94,14 @@ func setup(slot_data: Dictionary) -> void:
 
 	_plus = Label.new()
 	_plus.text = "+"
-	_plus.position = Vector2(84, 98)
-	_plus.size = Vector2(16, 17)
+	_plus.position = Vector2(74, 90)
+	_plus.size = Vector2(20, 20)
 	_plus.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var ps := LabelSettings.new()
 	ps.font = ThemeKit.body_font()
-	ps.font_size = 12
+	ps.font_size = 15
 	ps.font_color = ThemeKit.GOLD_BRIGHT
 	ps.outline_size = 2
 	ps.outline_color = Color(0.08, 0.2, 0.28, 0.9)
@@ -114,11 +118,11 @@ func _refresh() -> void:
 	if _bg == null:
 		return
 	var q := int(data.get("quality", 0))
-	_bg.setup(Vector2(SLOT_SIZE, SLOT_SIZE), 11.0,
-		ThemeKit.CELL_TOP_HOT if _hover else ThemeKit.CELL_TOP,
-		ThemeKit.CELL_BOTTOM_HOT if _hover else ThemeKit.CELL_BOTTOM,
+	_bg.setup(SLOT_SIZE, 9.0,
+		Color("a4c9e8") if _hover else Color("8fb8da"),
+		Color("82abd2") if _hover else Color("6f9cc7"),
 		ThemeKit.quality_color(q).lightened(0.12) if _hover else ThemeKit.quality_color(q),
-		3.0, 0.5)
+		4.0, 0.45)
 	_icon.texture = ThemeKit.icon(str(data.get("icon", "pouch")))
 	_level.text = "%d级" % int(data.get("level", 1))
 	var enchant := str(data.get("enchant", ""))
@@ -147,7 +151,7 @@ func _on_enter() -> void:
 		_glow.modulate = Color(1.0, 0.93, 0.7, 0.45)
 	var tw := create_tween()
 	tw.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "scale", Vector2(1.055, 1.055), 0.12)
+	tw.tween_property(self, "scale", Vector2(1.045, 1.045), 0.12)
 	hovered.emit(self, data, get_global_rect().position + Vector2(size.x + 8, 0))
 
 

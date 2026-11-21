@@ -4,9 +4,9 @@ extends Control
 signal category_selected(category: String)
 signal closed
 
-const PANEL_POS := Vector2(1084, 150)
-const PANEL_W := 118.0
-const ROW_H := 30.0
+const PANEL_POS := Vector2(1054, 418)
+const PANEL_W := 128.0
+const ROW_H := 28.0
 
 var categories: Array = []
 var _rows: Array = []

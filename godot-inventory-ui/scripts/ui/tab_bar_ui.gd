@@ -3,10 +3,11 @@ extends Control
 
 signal page_changed(index: int)
 
+# Reference tabs: 42.5x27 px at 529x356 -> 103x54 at 1280x720; pitch 45.5 -> 110.
 const LABELS := ["一", "二", "三", "四", "临时"]
-const TAB_W := 104.0
-const TAB_H := 40.0
-const GAP := 8.0
+const TAB_W := 103.0
+const TAB_H := 54.0
+const GAP := 7.0
 
 var active_index := 0
 var _hover_index := -1
@@ -15,19 +16,17 @@ var _bgs: Array = []
 var _labels: Array = []
 var _built := false
 var _glow: TextureRect
-var _underline: GradientRect
-var _underline_tween: Tween
 
 
 func setup() -> void:
-	size = Vector2(552, TAB_H)
+	size = Vector2(5 * TAB_W + 4 * GAP, TAB_H)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	if _built:
 		return
 	_built = true
-	_glow = ThemeKit.glow_texture_rect("glow", Color(0.55, 1.0, 0.90, 0.22))
-	_glow.size = Vector2(160, 74)
-	_glow.position = Vector2(-28, -18)
+	_glow = ThemeKit.glow_texture_rect("glow", Color(0.55, 1.0, 0.90, 0.10))
+	_glow.size = Vector2(170, 90)
+	_glow.position = Vector2(-32, -20)
 	add_child(_glow)
 	for i in range(5):
 		var tab := Control.new()
@@ -37,8 +36,8 @@ func setup() -> void:
 		add_child(tab)
 		var bg := GradientRect.new()
 		bg.position = Vector2.ZERO
-		bg.setup(Vector2(TAB_W, TAB_H), 9.0, Color("d9edfa"), Color("a4c6df"),
-			Color("e9f8ff"), 2.0, 0.7)
+		bg.setup(Vector2(TAB_W, TAB_H), 9.0, Color("96c0df"), Color("5a96c6"),
+			Color("d8efff"), 2.0, 0.62)
 		tab.add_child(bg)
 		var label := Label.new()
 		label.text = LABELS[i]
@@ -49,19 +48,15 @@ func setup() -> void:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var ls := LabelSettings.new()
 		ls.font = ThemeKit.body_font()
-		ls.font_size = 20
-		ls.font_color = ThemeKit.TEXT_INK
-		ls.outline_size = 2
-		ls.outline_color = Color(0.92, 1.0, 1.0, 0.4)
+		ls.font_size = 26
+		ls.font_color = Color("eefaff")
+		ls.outline_size = 3
+		ls.outline_color = Color(0.06, 0.24, 0.36, 0.85)
 		label.label_settings = ls
 		tab.add_child(label)
 		_tabs.append(tab)
 		_bgs.append(bg)
 		_labels.append(label)
-	_underline = GradientRect.new()
-	_underline.setup(Vector2(84, 4), 2.0, Color("fff5ce"), Color("f0bd5c"), Color("9a6a24"), 1.0, 0.7)
-	_underline.position = Vector2(_tab_center(0) - 42, TAB_H - 5)
-	add_child(_underline)
 	mouse_entered.connect(func() -> void: pass)
 	mouse_exited.connect(_on_mouse_exit)
 	_apply_colors(false)
@@ -71,39 +66,34 @@ func _tab_center(i: int) -> float:
 	return i * (TAB_W + GAP) + TAB_W * 0.5
 
 
+func tab_rect(i: int) -> Rect2:
+	return Rect2(i * (TAB_W + GAP), 0, TAB_W, TAB_H)
+
+
 func set_active(index: int, animate: bool = true) -> void:
 	active_index = clampi(index, 0, 4)
 	_apply_colors(false)
-	_glow.position = Vector2(_tab_center(active_index) - 80, -18)
-	if _underline_tween != null and _underline_tween.is_valid():
-		_underline_tween.kill()
-	var target_x := _tab_center(active_index) - 42
-	if animate:
-		_underline_tween = create_tween()
-		_underline_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		_underline_tween.tween_property(_underline, "position:x", target_x, 0.16)
-	else:
-		_underline.position.x = target_x
+	if _glow != null:
+		_glow.position = Vector2(_tab_center(active_index) - 85, -18)
 
 
-func _apply_colors(animated: bool) -> void:
+func _apply_colors(_animated: bool) -> void:
 	for i in range(5):
 		var active := i == active_index
 		var hovered := i == _hover_index and not active
-		var top := Color("c9fbf1") if active else (Color("eaf8ff") if hovered else Color("d9eefb"))
-		var bottom := Color("58cdbd") if active else (Color("b9daee") if hovered else Color("a4c9e2"))
-		var border := Color("f4fffd") if active else Color("e9f8ff")
-		_bgs[i].setup(Vector2(TAB_W, TAB_H), 9.0, top, bottom, border, 2.2, 0.76)
-		_labels[i].label_settings.font_color = Color("ffffff") if active else Color(0.93, 0.99, 1.0)
-		_labels[i].label_settings.outline_size = 3 if active else 3
-		_labels[i].label_settings.outline_color = Color(0.06, 0.32, 0.30, 0.95) if active else Color(0.08, 0.26, 0.38, 0.85)
-		_labels[i].label_settings.font_size = 20
+		var top := Color("83dfe0") if active else (Color("a9cfe9") if hovered else Color("96c0df"))
+		var bottom := Color("4fd8c6") if active else (Color("6da6d3") if hovered else Color("5a96c6"))
+		var border := Color("eaffff") if active else (Color("e6f6ff") if hovered else Color("d8efff"))
+		_bgs[i].setup(Vector2(TAB_W, TAB_H), 9.0, top, bottom, border, 2.0, 0.66)
+		_labels[i].label_settings.font_color = Color("ffffff") if active else Color("e8f7ff")
+		_labels[i].label_settings.outline_size = 3
+		_labels[i].label_settings.outline_color = Color(0.05, 0.28, 0.28, 0.9) if active else Color(0.06, 0.24, 0.36, 0.85)
+		_labels[i].label_settings.font_size = 26
 
 
 func _hit_tab(pos: Vector2) -> int:
 	for i in range(5):
-		var r := Rect2(i * (TAB_W + GAP), 0, TAB_W, TAB_H)
-		if r.has_point(pos):
+		if Rect2(i * (TAB_W + GAP), 0, TAB_W, TAB_H).has_point(pos):
 			return i
 	return -1
 
