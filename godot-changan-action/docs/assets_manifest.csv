@@ -1,0 +1,11 @@
+asset,type,source,author,license,url_or_path,date,modifications,tripo_job_id
+Rogue.glb,character mesh, KayKit Adventurers, Kay Lousberg, CC0 1.0, https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0, 2026-11-21, "hue-tint shader; hidden props; procedural lamp/scarf/mantle/belt; 0.80 scale", none
+Rogue_Hooded.glb,character mesh, KayKit Adventurers, Kay Lousberg, CC0 1.0, same, 2026-11-21, "hue-tint (thug rust / Wen Jiu indigo); scarf/gong/beard; 0.78-0.80 scale", none
+Mage.glb,character mesh, KayKit Adventurers, Kay Lousberg, CC0 1.0, same, 2026-11-21, "hue-tint (oil vendor jade / Ahe vermilion); bottle/apron/bun/chopsticks; 0.76-0.78 scale", none
+Knight.glb,character mesh, KayKit Adventurers, Kay Lousberg, CC0 1.0, same, 2026-11-21, "hue-tint (brute steel) / dark boss material; plates; mask/horns/ruler/robe; 0.90-1.02 scale", none
+character_tint.gdshader,shader, original code, this project, original, godot-changan-action/shaders/character_tint.gdshader, 2026-11-21, none, none
+world.gd,procedural scene, original code, this project, original, godot-changan-action/scripts/world.gd, 2026-11-21, none, none
+player.gd / enemy.gd / main.gd / npc.gd / hud.gd,game code, original code, this project, original, godot-changan-action/scripts/, 2026-11-21, "engineering patterns referenced from repo-internal godot-wukong-ultimate; no assets copied", none
+CJK UI font,system font, OS (PingFang SC / Hiragino / Noto Sans CJK / Microsoft YaHei), OS vendor, not redistributed, system, 2026-11-21, "used at runtime only; no font file in repo", none
+story / characters,creative text, original, this project, original, docs/design/changan-action-remake-spec.md + game scripts, 2026-11-21, none, none
+gameplay.gif / gameplay.mp4,recorded media, real build capture, this project, original, docs/, 2026-11-21, "scripted camera capture of real runtime", none

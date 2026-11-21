@@ -1,0 +1,28 @@
+; 灯下客 · 长安一夜 — 3D action vertical slice.
+; Godot 4.6 / GL Compatibility / 1280x720. Original story, scene and UI.
+; Character meshes: KayKit Adventurers (CC0 1.0), restyled. See CREDITS.md.
+
+config_version=5
+
+[application]
+
+config/name="灯下客 · 长安一夜"
+config/description="10–15 分钟长安风夜街 3D 动作 vertical slice：三盏街灯改变 Boss 战。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.012, 0.018, 0.045, 1)
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+scaling_3d/scale=0.65

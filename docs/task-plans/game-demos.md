@@ -32,7 +32,7 @@
 - 约束: 独立红队，不看实现者自评；可查证案例；不复制 IP；中文
 - 指派: game-red-team worker（dispatcher）
 - 状态: done
-- 产出: `docs/design/gameplay-innovation-red-team.md` + `.png`（1600×1000 判定卡）；结论：需修复，不放行 L1（A1 KEEP 条件式 / B2 ITERATE 先 L0 / C1 KILL 作为 top 3 创新）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-035/result.md
 - depends_on: T-20261121-034
 
 ## T-20261121-029 · 美术 Agent Blender 二次元角色能力探针
@@ -89,7 +89,7 @@
 - 约束: 只复刻玩法/体验，不复制原作者角色/名字/素材/品牌；优先复用仓库内原创系统与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
 - 资产管线: 原创参考图 → Tripo 图生 3D → Blender 清理/绑骨/toon → GLB（用户 2026-11-21 指定）
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 - depends_on: T-20261121-024
 
 ## T-20261121-023 · 复刻 PixelFX 像素特效（挥剑/火球/冰冻/捡金币）Godot Demo

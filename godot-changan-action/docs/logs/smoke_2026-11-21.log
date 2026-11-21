@@ -1,0 +1,120 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+CHANGAN_ACTION_SMOKE start
+CHANGAN_WORLD_READY lanterns=36 lamps=3
+CHANGAN_ACTION_READY bones=41 clips=76 lanterns=36 lamps=3
+  ok   world built
+  ok   player model + AnimationPlayer
+  ok   player has KayKit clip set
+  ok   >=30 hanging lanterns
+  ok   3 street lamps
+  ok   boots into title
+  ok   title hides player model
+  ok   initial objective points to Ahe
+CHANGAN_START
+  ok   title -> playing
+  ok   start shows player model
+  ok   controls enabled after start
+  ok   Move: demo input moves player (2.03m)
+  ok   Move: locomotion state=move
+  ok   Idle: stops back to idle
+CHANGAN_WAVE_START n=1 count=2
+  ok   Attack: jab accepted
+  ok   Attack: jab registers damage
+  ok   Combo: hit increments combo
+  ok   Attack: state entered
+  ok   Combo: second jab accepted
+  ok   Combo: second hit is jab2
+  ok   Combo: third hit accepted
+  ok   Combo: third hit resolves to finisher
+  ok   Combo: finisher knocks down/kills
+CHANGAN_WAVE_CLEAR n=1
+  ok   Roll: accepted
+  ok   Roll: inside i-frame window 0.08–0.30s
+  ok   Roll: damage ignored during i-frames
+  ok   Roll: i-frames ended
+  ok   Roll: damage lands after i-frames
+  ok   Oil fire: standing in fire deals damage
+  ok   Hit: state=hit
+  ok   Knockdown: state=knockdown
+  ok   GetUp: enters getup after lie
+  ok   GetUp: returns to locomotion
+  ok   Victory: player victory state
+CHANGAN_WAVE_START n=1 count=2
+  ok   EnemyAI: at least one attack telegraphed (1)
+  ok   EnemyAI: attack token keeps 1v1 (max=1)
+CHANGAN_WAVE_CLEAR n=1
+CHANGAN_RESTART_RUN
+CHANGAN_DIALOGUE speaker=阿禾 lines=3
+  ok   Story: Ahe dialogue opens
+  ok   Story: 2–4 dialogue lines
+CHANGAN_WAVE_START n=1 count=2
+CHANGAN_BEAT B1
+CHANGAN_DIALOGUE_END
+  ok   Story: dialogue closes back to play
+  ok   Encounter 1: spawns after Ahe
+  ok   Encounter 1: two thug archetype
+  ok   Story beat B1 reached
+  ok   Objective: defeat thugs
+CHANGAN_WAVE_CLEAR n=1
+  ok   Encounter 1: cleared
+  ok   Story: stage light_street
+  ok   Objective: light street lamps
+CHANGAN_LAMP lit=1
+CHANGAN_LAMP lit=2
+CHANGAN_LAMP lit=3
+  ok   Street lamps: 3/3 lit
+CHANGAN_BEAT B2
+CHANGAN_WAVE_START n=2 count=2
+  ok   Encounter 2: triggered at Z=44
+  ok   Story beat B2 reached
+  ok   Encounter 2: oil vendor + brute
+  ok   Encounter 2: ranged oil archetype
+  ok   Encounter 2: elite brute archetype
+CHANGAN_WAVE_CLEAR n=2
+  ok   Encounter 2: cleared
+  ok   Story: stage find_wenjiu
+CHANGAN_DIALOGUE speaker=闻九 lines=3
+  ok   Story: Wen Jiu dialogue opens
+CHANGAN_DIALOGUE_END
+  ok   Story: boss_ready after Wen Jiu
+  ok   Objective: go to drum tower
+  ok   Boss: 3 lit lamps -> 5s darkness
+  ok   Boss: 0 lit lamps -> 20s darkness
+  ok   Boss arena: plaza lantern light exists
+CHANGAN_BEAT B3
+CHANGAN_BOSS_START
+  ok   Boss: spawns at plaza trigger
+  ok   Story beat B3 reached
+CHANGAN_BOSS_FIGHT
+  ok   Boss: alive and active
+  ok   Boss: archetype/name
+  ok   Boss: phase 1
+CHANGAN_BOSS_PHASE2 lit=3 dark=5.0
+  ok   Boss: phase 2 at 50%
+  ok   Boss: extinguish fired
+  ok   Boss: world darkened by extinguish
+  ok   Boss: darkness duration = 20 - 5*3
+CHANGAN_BOSS_DEFEATED elapsed=1.4 max_combo=0
+  ok   Victory: choice state after boss
+  ok   Victory: player victory animation
+CHANGAN_ENDING choice=mercy time=1.4 lights=3 max_combo=0 hits_taken=0
+  ok   Ending: results screen
+  ok   Ending: mercy choice recorded
+  ok   Ending: ending text present
+  ok   Story: 3 beats reached
+  ok   Results: stats include 3 lamps
+CHANGAN_RESTART_RUN
+  ok   Restart: back to play
+  ok   Restart: story reset
+  ok   Restart: lamps reset
+  ok   Restart: player full HP
+CHANGAN_WAVE_START n=1 count=2
+CHANGAN_DEFEAT wave=1
+  ok   Defeat: overlay state
+CHANGAN_WAVE_START n=1 count=2
+CHANGAN_RETRY wave=1
+  ok   Retry: back to play
+  ok   Retry: full HP, current fight
+CHANGAN_ACTION_SMOKE checks=83 failures=0
+CHANGAN_ACTION_SMOKE_OK

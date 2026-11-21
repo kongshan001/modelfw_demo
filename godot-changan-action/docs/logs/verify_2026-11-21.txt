@@ -1,0 +1,7 @@
+# verify.sh run 2026-11-21 (final)
+== 1/4 headless boot (600 frames) ==  0 SCRIPT ERROR / Parse Error
+== 2/4 headless smoke ==              CHANGAN_ACTION_SMOKE checks=83 failures=0 / CHANGAN_ACTION_SMOKE_OK
+== 3/4 screenshots (1920x1080) ==     CHANGAN_SCREENSHOTS_OK 9 shots
+== 4/4 real-GPU FPS probe ==          CHANGAN_FPS avg=37.4 min=25.0 samples=24 lights=3 draws=198 tris=56592
+                                      CHANGAN_FPS_OK
+CHANGAN_VERIFY_OK

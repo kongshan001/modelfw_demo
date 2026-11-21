@@ -1,0 +1,9 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+CHANGAN_WORLD_READY lanterns=36 lamps=3
+CHANGAN_ACTION_READY bones=41 clips=76 lanterns=36 lamps=3
+CHANGAN_START
+CHANGAN_WAVE_START n=1 count=2
+CHANGAN_FPS avg=37.4 min=25.0 samples=24 lights=3 draws=198 tris=56592
+CHANGAN_FPS_OK

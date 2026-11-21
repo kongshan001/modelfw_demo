@@ -1,0 +1,30 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+CHANGAN_WORLD_READY lanterns=36 lamps=3
+CHANGAN_ACTION_READY bones=41 clips=76 lanterns=36 lamps=3
+SHOT 01_title
+CHANGAN_START
+CHANGAN_LAMP lit=1
+SHOT 02_street_night
+CHANGAN_DIALOGUE speaker=阿禾 lines=3
+SHOT 03_dialogue_ahe
+CHANGAN_WAVE_START n=1 count=2
+CHANGAN_BEAT B1
+CHANGAN_DIALOGUE_END
+CHANGAN_WAVE_START n=1 count=2
+SHOT 04_combat1
+SHOT 05_combo_finisher
+CHANGAN_WAVE_CLEAR n=1
+SHOT 06_roll_iframes
+SHOT 07_street_lamps
+CHANGAN_BEAT B3
+CHANGAN_BOSS_START
+CHANGAN_BEAT B2
+CHANGAN_BOSS_FIGHT
+CHANGAN_BOSS_PHASE2 lit=3 dark=5.0
+SHOT 08_boss_phase2
+CHANGAN_BOSS_DEFEATED elapsed=7.1 max_combo=3
+CHANGAN_ENDING choice=mercy time=612.0 lights=3 max_combo=7 hits_taken=3
+SHOT 09_results
+CHANGAN_SCREENSHOTS_OK 9 shots
