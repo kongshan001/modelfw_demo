@@ -16,17 +16,24 @@ signal ai_turn_finished
 
 const DESIGN_SIZE := Vector2(1280, 720)
 const BOARD_POS := Vector2(236, 104)
-const HAND_BASE_Y := 564.0
+const HAND_BASE_Y := 546.0
 const PLAYER := BattleCoreScript.PLAYER
 const AI := BattleCoreScript.AI
 
+# T-019：手牌基线 564→546（悬停 1.24 时不再裁出屏幕）；
+# 凤火/召唤按动作节奏裁剪时长，避免叠到下一次行动。
 const FX_VISUAL_SCALE := {
 	"fx_impact": 2.3,
-	"fx_slashfrenzy": 0.95,
+	"fx_slashfrenzy": 0.92,
 	"fx_heal": 1.15,
 	"fx_buff": 1.8,
-	"fx_summonlegendary": 0.62,
-	"fx_f2_phoenixfire": 0.95,
+	"fx_summonlegendary": 0.70,
+	"fx_f2_phoenixfire": 0.85,
+}
+const FX_DURATION_LIMIT := {
+	"fx_slashfrenzy": 0.34,
+	"fx_summonlegendary": 0.60,
+	"fx_f2_phoenixfire": 1.10,
 }
 
 var db: CardDBScript
@@ -53,7 +60,6 @@ var _hint_override := ""
 var _title: Label
 var _subtitle: Label
 var _turn_label: Label
-var _turn_sub: Label
 var _player_title: Label
 var _player_hp_bar: ProgressBar
 var _player_hp_label: Label
@@ -66,18 +72,15 @@ var _log: RichTextLabel
 var _mana_bar: ManaBarScript
 var _mana_label: Label
 var _replace_button: Button
-var _seed_label: Label
-var _deck_info: Label
 var _end_turn_button: Button
-var _turn_status: Label
-var _round_label: Label
-var _ai_state_label: Label
+var _help: RichTextLabel
 var _status_label: Label
 var _overlay: Control
 var _overlay_title: Label
 var _overlay_sub: Label
 var _overlay_seed: Label
 var _overlay_button: Button
+var _active_fx: Array[Node] = []
 
 
 func _ready() -> void:
@@ -130,7 +133,8 @@ func _build_board() -> void:
 
 	_fx_layer = Node2D.new()
 	_fx_layer.position = BOARD_POS
-	_fx_layer.z_index = 20
+	# 单位 z 最高约 250（徽章层），FX 必须整体压在其上；飘字/残影再相对 +55/+60。
+	_fx_layer.z_index = 300
 	add_child(_fx_layer)
 
 
@@ -140,15 +144,13 @@ func _build_header() -> void:
 	_title.add_theme_constant_override("outline_size", 4)
 	_title.add_theme_color_override("font_outline_color", Color(0.03, 0.04, 0.05, 0.9))
 
+	# 回合数只出现在这里；法力只在左下，牌库/手牌只在双方面板，各数据一次。
 	_subtitle = _make_label(self, Vector2(24, 45), Vector2(420, 18),
-		"GRIDBOUND · 9×5 卡牌战棋 · 原创 vertical slice", 10, Color(0.62, 0.7, 0.7, 0.9))
+		"", 12, Color(0.68, 0.76, 0.78, 0.92))
 
-	_turn_label = _make_label(self, Vector2(470, 8), Vector2(340, 34), "你的回合", 23, Color("#f2dfb0"))
+	_turn_label = _make_label(self, Vector2(470, 2), Vector2(340, 32), "你的回合", 26, Color("#f2dfb0"))
 	_turn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_turn_label.add_theme_font_override("font", _bold_font)
-
-	_turn_sub = _make_label(self, Vector2(470, 43), Vector2(340, 18), "", 10, Color(0.68, 0.76, 0.78, 0.92))
-	_turn_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
 func _build_left_panel() -> void:
@@ -160,19 +162,21 @@ func _build_left_panel() -> void:
 	_player_hp_bar = hp["bar"]
 	_player_hp_label = hp["label"]
 
-	_player_deck_label = _make_label(panel, Vector2(10, 58), Vector2(188, 18), "", 10, Color(0.7, 0.78, 0.78, 0.9))
+	_player_deck_label = _make_label(panel, Vector2(10, 58), Vector2(188, 18), "", 11, Color(0.7, 0.78, 0.78, 0.9))
 	_make_divider(panel, Vector2(10, 82), Vector2(188, 1))
-	_make_label(panel, Vector2(10, 88), Vector2(188, 20), "战斗记录", 11, Color(0.75, 0.82, 0.82, 0.95))
+	var log_title := _make_label(panel, Vector2(10, 87), Vector2(188, 20), "战斗记录", 12, Color(0.75, 0.82, 0.82, 0.95))
+	log_title.add_theme_font_override("font", _bold_font)
 
 	_log = RichTextLabel.new()
-	_log.position = Vector2(10, 110)
-	_log.size = Vector2(188, 320)
+	_log.position = Vector2(10, 108)
+	_log.size = Vector2(188, 322)
 	_log.bbcode_enabled = false
 	_log.scroll_active = true
 	_log.scroll_following = true
 	_log.mouse_filter = Control.MOUSE_FILTER_STOP
-	_log.add_theme_font_size_override("normal_font_size", 10)
-	_log.add_theme_color_override("default_color", Color(0.75, 0.8, 0.78, 0.92))
+	_log.add_theme_font_size_override("normal_font_size", 12)
+	_log.add_theme_constant_override("line_separation", 3)
+	_log.add_theme_color_override("default_color", Color(0.78, 0.83, 0.80, 0.95))
 	panel.add_child(_log)
 
 
@@ -185,19 +189,21 @@ func _build_right_panel() -> void:
 	_ai_hp_bar = hp["bar"]
 	_ai_hp_label = hp["label"]
 
-	_ai_deck_label = _make_label(panel, Vector2(10, 58), Vector2(204, 18), "", 10, Color(0.78, 0.7, 0.72, 0.9))
+	_ai_deck_label = _make_label(panel, Vector2(10, 58), Vector2(204, 18), "", 11, Color(0.78, 0.7, 0.72, 0.9))
 	_make_divider(panel, Vector2(10, 82), Vector2(204, 1))
 
-	_turn_status = _make_label(panel, Vector2(10, 90), Vector2(204, 26), "你的回合", 16, Color("#f2dfb0"))
-	_turn_status.add_theme_font_override("font", _bold_font)
-	_round_label = _make_label(panel, Vector2(10, 116), Vector2(204, 18), "", 10, Color(0.68, 0.76, 0.78, 0.9))
-
-	_ai_state_label = _make_label(panel, Vector2(10, 140), Vector2(204, 20), "对手正在行动…", 11, Color("#e7a0a8"))
-	_ai_state_label.visible = false
-
-	var help := _make_label(panel, Vector2(10, 166), Vector2(204, 176),
-		"点击手牌选择\n金色格 = 召唤位置\n青色格 = 移动一格\n红圈敌人 = 攻击目标\n蓝圈 = 法术目标\n\n空格 结束回合\nR 重新开始\nEsc 取消选择", 10, Color(0.66, 0.73, 0.74, 0.9))
-	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var help_title := _make_label(panel, Vector2(10, 89), Vector2(204, 20), "操作与图例", 12, Color(0.82, 0.86, 0.86, 0.95))
+	help_title.add_theme_font_override("font", _bold_font)
+	_help = RichTextLabel.new()
+	_help.position = Vector2(10, 110)
+	_help.size = Vector2(204, 238)
+	_help.bbcode_enabled = true
+	_help.scroll_active = false
+	_help.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_help.add_theme_font_size_override("normal_font_size", 11)
+	_help.add_theme_constant_override("line_separation", 5)
+	_help.text = "[color=#6ff2cf]■[/color] 青框 · 移动一格\n[color=#e5484d]■[/color] 红环 · 攻击目标\n[color=#7aa2ff]◆[/color] 蓝虚 · 法术目标\n[color=#e8c56a]○[/color] 金圈 · 召唤位置\n[color=#f7f2df]◎[/color] 白环 · 当前选中\n\n[color=#d4657a]━[/color] 上绯 = 敌方阵地\n[color=#e8c56a]━[/color] 下金 = 己方阵地\n\n空格 结束回合\nR 重开 · Esc 取消"
+	panel.add_child(_help)
 
 	_end_turn_button = _make_button(panel, Vector2(10, 356), Vector2(204, 54), "结束回合", 19)
 	_end_turn_button.pressed.connect(_on_end_turn_pressed)
@@ -210,16 +216,16 @@ func _build_bottom_panels() -> void:
 	_mana_bar.position = Vector2(10, 26)
 	_mana_bar.size = Vector2(188, 30)
 	left.add_child(_mana_bar)
-	_mana_label = _make_label(left, Vector2(10, 58), Vector2(188, 18), "1 / 1", 10, Color(0.62, 0.82, 0.9, 0.95))
+	_mana_label = _make_label(left, Vector2(10, 58), Vector2(188, 18), "1 / 1", 11, Color(0.62, 0.82, 0.9, 0.95))
 	_replace_button = _make_button(left, Vector2(10, 86), Vector2(188, 44), "换一张手牌", 13)
 	_replace_button.pressed.connect(_on_replace_pressed)
 
 	var right := _make_panel(self, Vector2(1042, 560), Vector2(224, 146), Color(0.075, 0.055, 0.085, 0.9), Color(0.56, 0.42, 0.48, 0.42))
-	_seed_label = _make_label(right, Vector2(12, 8), Vector2(200, 18), "", 10, Color(0.72, 0.68, 0.6, 0.9))
-	_deck_info = _make_label(right, Vector2(12, 30), Vector2(200, 18), "", 10, Color(0.7, 0.76, 0.76, 0.9))
-	_make_label(right, Vector2(12, 54), Vector2(200, 18), "卡牌/战棋 · 固定 seed 可复现", 9, Color(0.65, 0.68, 0.66, 0.85))
-	var restart := _make_button(right, Vector2(12, 88), Vector2(200, 42), "重新开始", 13)
+	var control_title := _make_label(right, Vector2(12, 10), Vector2(200, 18), "对局控制", 12, Color(0.82, 0.8, 0.84, 0.95))
+	control_title.add_theme_font_override("font", _bold_font)
+	var restart := _make_button(right, Vector2(12, 42), Vector2(200, 46), "重新开始", 15)
 	restart.pressed.connect(_on_restart_pressed)
+	_make_label(right, Vector2(12, 102), Vector2(200, 18), "R 键 · 随时开新局", 10, Color(0.70, 0.68, 0.72, 0.9))
 
 
 func _build_hand_layer() -> void:
@@ -230,7 +236,8 @@ func _build_hand_layer() -> void:
 
 
 func _build_status() -> void:
-	_status_label = _make_label(self, Vector2(BOARD_POS.x, 545), Vector2(792, 16), "", 11, Color(0.72, 0.85, 0.84, 0.95))
+	# 状态提示从手牌上方 (236,545) 移到顶栏底部 y=62，任何悬停/选中卡都不会遮住它。
+	_status_label = _make_label(self, Vector2(BOARD_POS.x, 62), Vector2(792, 16), "", 12, Color(0.72, 0.90, 0.87, 0.95))
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 
@@ -286,11 +293,10 @@ func start_new_game(seed_in := -1) -> void:
 	_hand_signature = ""
 	for child in _fx_layer.get_children():
 		child.queue_free()
+	_active_fx.clear()
 	_overlay.visible = false
 	board.set_core(core)
 	refresh_all()
-	if _seed_label:
-		_seed_label.text = "Seed %d" % core.seed_value
 
 
 func refresh_all(skip_pos_uid := -1) -> void:
@@ -380,19 +386,42 @@ func _update_texts() -> void:
 		core.decks[PLAYER].size(), core.hands[PLAYER].size(), BattleCoreScript.HAND_LIMIT]
 	_ai_deck_label.text = "牌库 %d · 手牌 %d / %d" % [
 		core.decks[AI].size(), core.hands[AI].size(), BattleCoreScript.HAND_LIMIT]
-	_deck_info.text = "牌库 %d · 手牌 %d" % [core.decks[PLAYER].size(), core.hands[PLAYER].size()]
 	_mana_bar.set_values(core.mana[PLAYER], core.max_mana[PLAYER])
 	_mana_label.text = "法力 %d / %d" % [core.mana[PLAYER], core.max_mana[PLAYER]]
-	_turn_status.text = "你的回合" if core.turn_owner == PLAYER else "对手回合"
-	_turn_label.text = _turn_status.text
-	_round_label.text = "第 %d 回合 · 先手 你" % maxi(1, core.started_turns[PLAYER])
-	_turn_sub.text = "法力 %d/%d · 牌库 %d · 已换牌 %s" % [
-		core.mana[PLAYER], core.max_mana[PLAYER], core.decks[PLAYER].size(),
-		"是" if core.replace_used[PLAYER] else "否"]
-	_ai_state_label.visible = _awaiting_ai
+	_subtitle.text = "第 %d 回合 · 先手 你" % maxi(1, core.started_turns[PLAYER])
+
+	# 顶栏是回合状态的唯一来源：玩家金 / 对手绯 / 结束后“对局结束”。
+	var player_turn := core.turn_owner == PLAYER and not _awaiting_ai
+	if _game_over:
+		_turn_label.text = "对局结束"
+		_turn_label.add_theme_color_override("font_color", Color("#d8d2c2"))
+	elif player_turn:
+		_turn_label.text = "你的回合"
+		_turn_label.add_theme_color_override("font_color", Color("#f2dfb0"))
+	else:
+		_turn_label.text = "对手回合"
+		_turn_label.add_theme_color_override("font_color", Color("#ecc9cc"))
+
+	# 胜负覆盖层期间隐藏顶栏状态，避免“对局已结束”与“你的回合”同屏。
+	_turn_label.visible = not _game_over
+	_subtitle.visible = not _game_over
+	_status_label.visible = not _game_over
+
+	# AI 回合手牌降亮 + 不可点，和“对手正在行动”保持一致。
+	var hand_dim := _awaiting_ai or core.turn_owner != PLAYER or _game_over
+	_hand_layer.modulate = Color(0.60, 0.60, 0.64, 1.0) if hand_dim else Color.WHITE
+	for card in _hand_cards:
+		card.set_interactive(not hand_dim)
+
 	_end_turn_button.disabled = _awaiting_ai or _game_over or core.turn_owner != PLAYER
+	if _game_over:
+		_end_turn_button.text = "对局结束"
+	elif _awaiting_ai:
+		_end_turn_button.text = "对手行动中…"
+	else:
+		_end_turn_button.text = "结束回合"
 	_replace_button.disabled = _awaiting_ai or _game_over or core.turn_owner != PLAYER or core.replace_used[PLAYER] or core.hands[PLAYER].is_empty()
-	_log.text = "\n".join(core.log_lines.slice(maxi(0, core.log_lines.size() - 12)))
+	_log.text = "\n".join(core.log_lines.slice(maxi(0, core.log_lines.size() - 10)))
 	_update_status()
 
 
@@ -441,55 +470,66 @@ func _update_highlights() -> void:
 						attacks.append(Vector2i(target["x"], target["y"]))
 
 	board.set_highlights(moves, attacks, summons, spells, _selected_unit)
+	var can_act := not _awaiting_ai and not _game_over and core.turn_owner == PLAYER
 	for i in _hand_cards.size():
 		_hand_cards[i].set_selected(i == _selected_hand)
+		var data := core.hand_card(PLAYER, i)
+		var affordable := (not can_act) or int(data.get("cost", 99)) <= core.mana[PLAYER]
+		_hand_cards[i].set_affordable(affordable)
+
+
+const STATUS_HINT := Color("#b8e6df")
+const STATUS_AI := Color("#e7a0a8")
+const STATUS_WARN := Color("#ffcf8a")
 
 
 func _update_status() -> void:
 	if _status_label == null:
 		return
 	if not _hint_override.is_empty():
-		_status_label.text = _hint_override
+		_set_status(_hint_override, STATUS_WARN)
 		return
 	if _game_over:
-		_status_label.text = "对局结束。点击「再来一局」重新开始。"
+		_set_status("", STATUS_HINT)
 		return
-	if _awaiting_ai:
-		_status_label.text = "对手正在行动…"
-		return
-	if core == null:
-		_status_label.text = ""
+	if _awaiting_ai or core == null:
+		_set_status("对手正在行动…" if _awaiting_ai else "", STATUS_AI)
 		return
 	if core.turn_owner != PLAYER:
-		_status_label.text = "对手回合"
+		_set_status("对手回合", STATUS_AI)
 		return
 	if _selected_hand >= 0:
 		var card := core.hand_card(PLAYER, _selected_hand)
 		if card.is_empty():
-			_status_label.text = "点击手牌出牌，或点击己方单位行动"
+			_set_status("点击手牌出牌，或点击己方单位行动", STATUS_HINT)
 		elif int(card.get("cost", 99)) > core.mana[PLAYER]:
-			_status_label.text = "法力不足：%s 需要 %d 点" % [card["name"], int(card["cost"])]
+			_set_status("法力不足：%s 需要 %d 点" % [card["name"], int(card["cost"])], STATUS_WARN)
 		elif card.get("type", "") == "unit":
-			_status_label.text = "点击金色高亮格召唤 %s" % card["name"]
+			_set_status("点击金圈格召唤 %s" % card["name"], STATUS_HINT)
 		else:
-			_status_label.text = "点击蓝圈目标施放 %s" % card["name"]
+			_set_status("点击蓝虚圈目标施放 %s" % card["name"], STATUS_HINT)
 		return
 	if _selected_unit >= 0:
 		var unit := core.find_unit(_selected_unit)
 		if unit.is_empty():
-			_status_label.text = "点击手牌出牌，或点击己方单位行动"
+			_set_status("点击手牌出牌，或点击己方单位行动", STATUS_HINT)
 		elif not unit["can_move"] and not unit["can_attack"]:
-			_status_label.text = "%s 本回合已行动完毕" % unit["name"]
+			_set_status("%s 本回合已行动完毕" % unit["name"], STATUS_HINT)
 		elif unit["can_move"] and not core.get_move_tiles(_selected_unit).is_empty():
-			_status_label.text = "%s：青色格移动一格；红圈敌人可攻击" % unit["name"]
+			_set_status("%s：青框格移动一格；红环敌人可攻击" % unit["name"], STATUS_HINT)
 		else:
-			_status_label.text = "%s：红圈敌人可攻击" % unit["name"]
+			_set_status("%s：红环敌人可攻击" % unit["name"], STATUS_HINT)
 		return
-	_status_label.text = "点击手牌出牌，或点击己方单位行动"
+	_set_status("点击手牌出牌，或点击己方单位行动", STATUS_HINT)
+
+
+func _set_status(text: String, color: Color) -> void:
+	_status_label.text = text
+	_status_label.add_theme_color_override("font_color", color)
 
 
 func _on_card_clicked(index: int) -> void:
-	if _awaiting_ai or _game_over:
+	if _awaiting_ai or _game_over or core == null or core.turn_owner != PLAYER:
 		return
 	if _selected_hand == index:
 		_selected_hand = -1
@@ -645,11 +685,13 @@ func _run_ai_turn() -> void:
 
 
 func _action_delay(kind: String) -> float:
+	# 表现节奏（不是 AI 决策）：召唤/法术的 FX 已裁到 0.6 / 1.1s，
+	# 动作间隔同步放大，保证特效不与下一次行动首帧重叠。
 	match kind:
-		"summon": return 0.48
-		"move": return 0.34
-		"attack": return 0.58
-		"spell": return 0.68
+		"summon": return 0.66
+		"move": return 0.36
+		"attack": return 0.62
+		"spell": return 1.05
 		_: return 0.25
 
 
@@ -684,6 +726,10 @@ func _animate_attack(action: Dictionary) -> void:
 	if attacker and attacker.sprite and attacker.sprite.sheet_id == "f1_backlinearcher":
 		fx_id = "fx_impact"
 	_spawn_fx(fx_id, target_pos, float(FX_VISUAL_SCALE.get(fx_id, 1.0)))
+	if fx_id == "fx_slashfrenzy":
+		_spawn_hit_flash(target_pos, Color("#fff3d0"), Color("#ffb347"), 1.0)
+	else:
+		_spawn_hit_flash(target_pos, Color("#eaf2ff"), Color("#7aa2ff"), 0.72)
 	_float_text("-%d" % int(action["damage"]), Color("#ff7d72"), target_pos)
 
 
@@ -698,16 +744,19 @@ func _animate_spell(action: Dictionary) -> void:
 				_float_text("+%d" % int(action["healed"]), Color("#8ef0a5"), target_pos)
 		"f1_truestrike":
 			_spawn_fx("fx_impact", target_pos, float(FX_VISUAL_SCALE["fx_impact"]))
+			_spawn_hit_flash(target_pos, Color("#eaf2ff"), Color("#7aa2ff"), 0.72)
 			if target:
 				target.play_hit()
 			_float_text("-%d" % int(action.get("damage", 0)), Color("#ff7d72"), target_pos)
 		"f2_phoenixfire":
 			_spawn_fx("fx_f2_phoenixfire", target_pos, float(FX_VISUAL_SCALE["fx_f2_phoenixfire"]))
+			_spawn_hit_flash(target_pos, Color("#fff3d0"), Color("#ff8a4a"), 0.9)
 			if target:
 				target.play_hit()
 			_float_text("-%d" % int(action.get("damage", 0)), Color("#ff9a62"), target_pos)
 		"f2_cobrastrike":
 			_spawn_fx("fx_buff", target_pos, float(FX_VISUAL_SCALE["fx_buff"]))
+			_spawn_hit_flash(target_pos, Color("#fff3d0"), Color("#e8c56a"), 0.55)
 			_float_text("+2 攻", Color("#ffd36e"), target_pos)
 		_:
 			_spawn_fx("fx_buff", target_pos, 1.4)
@@ -728,24 +777,87 @@ func _spawn_deaths(deaths: Array) -> void:
 			ghost.queue_free()
 
 
-func _spawn_fx(anim_id: String, pos: Vector2i, visual_scale := 1.0) -> void:
+func _spawn_fx(anim_id: String, pos: Vector2i, visual_scale := 1.0, max_duration := -1.0, tint := Color.WHITE, fade := 0.12) -> void:
 	var fx := AtlasAnimScript.new()
 	fx.position = board.cell_center(pos)
 	fx.scale = Vector2(visual_scale, visual_scale)
 	fx.z_index = 60
+	fx.modulate = tint
 	_fx_layer.add_child(fx)
 	if fx.load_sheet(anim_id, "fx"):
-		fx.play("", 24.0, false)
-		fx.finished.connect(func(_name): _fade_free(fx))
+		var limit := max_duration
+		if limit <= 0.0:
+			limit = float(FX_DURATION_LIMIT.get(anim_id, 0.0))
+		var fps := 24.0
+		var frames := fx.frame_count("")
+		if limit > 0.0 and frames > 0:
+			fps = float(frames) / limit
+		fx.play("", fps, false)
+		fx.finished.connect(func(_name): _fade_free(fx, fade))
+		_track_fx(fx)
 	else:
 		fx.queue_free()
 
 
-func _fade_free(node: Node) -> void:
+# 原创程序化命中闪光：白热核心 + 暖色外焰，0.10s 展开、0.06s 停留后淡出；
+# 不引入新素材，弥补图集截击帧在高亮背景上的对比不足。
+func _spawn_hit_flash(pos: Vector2i, core_color: Color, outer_color: Color, size := 1.0) -> void:
+	var flash := Node2D.new()
+	flash.position = board.cell_center(pos)
+	flash.z_index = 70
+	_fx_layer.add_child(flash)
+
+	var outer := Polygon2D.new()
+	outer.polygon = _star_points(34.0 * size, 21.0 * size, 8)
+	outer.color = Color(outer_color.r, outer_color.g, outer_color.b, 0.72)
+	flash.add_child(outer)
+
+	var core := Polygon2D.new()
+	core.polygon = _star_points(20.0 * size, 11.0 * size, 8)
+	core.color = Color(core_color.r, core_color.g, core_color.b, 0.98)
+	flash.add_child(core)
+
+	flash.scale = Vector2(0.55, 0.55)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(flash, "scale", Vector2(1.12, 1.12), 0.10).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(flash, "modulate:a", 0.0, 0.16).set_delay(0.06)
+	tw.chain().tween_callback(flash.queue_free)
+	_track_fx(flash)
+
+
+func _star_points(outer: float, inner: float, spikes: int) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in spikes * 2:
+		var a := TAU * float(i) / float(spikes * 2) - PI * 0.5
+		var r := outer if i % 2 == 0 else inner
+		pts.append(Vector2(cos(a), sin(a)) * r)
+	return pts
+
+
+func _track_fx(node: Node) -> void:
+	_active_fx.append(node)
+	_prune_fx()
+	# 同屏最多 2 个 FX；更旧的一个立即进入 0.08s 淡出，防止叠到下一次行动。
+	while _active_fx.size() > 2:
+		var oldest: Node = _active_fx.pop_front()
+		if is_instance_valid(oldest):
+			_fade_free(oldest, 0.08)
+
+
+func _prune_fx() -> void:
+	var kept: Array[Node] = []
+	for node in _active_fx:
+		if is_instance_valid(node):
+			kept.append(node)
+	_active_fx = kept
+
+
+func _fade_free(node: Node, duration := 0.12) -> void:
 	if not is_instance_valid(node):
 		return
 	var tw := create_tween()
-	tw.tween_property(node, "modulate:a", 0.0, 0.18)
+	tw.tween_property(node, "modulate:a", 0.0, duration)
 	tw.finished.connect(node.queue_free)
 
 
@@ -754,6 +866,8 @@ func _float_text(text: String, color: Color, pos: Vector2i) -> void:
 	label.text = text
 	label.position = board.cell_center(pos) + Vector2(-30, -62)
 	label.size = Vector2(60, 26)
+	label.pivot_offset = Vector2(30, 13)
+	label.scale = Vector2(0.8, 0.8)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 19)
 	label.add_theme_font_override("font", _bold_font)
@@ -762,11 +876,17 @@ func _float_text(text: String, color: Color, pos: Vector2i) -> void:
 	label.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.03, 0.95))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fx_layer.add_child(label)
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(label, "position:y", label.position.y - 30.0, 0.72)
-	tw.tween_property(label, "modulate:a", 0.0, 0.72)
-	tw.chain().tween_callback(label.queue_free)
+	var move := create_tween()
+	move.set_parallel(true)
+	move.tween_property(label, "position:y", label.position.y - 34.0, 0.80).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	move.tween_property(label, "scale", Vector2(1.15, 1.15), 0.06)
+	var settle := create_tween()
+	settle.tween_interval(0.06)
+	settle.tween_property(label, "scale", Vector2.ONE, 0.10)
+	var fade := create_tween()
+	fade.tween_interval(0.42)
+	fade.tween_property(label, "modulate:a", 0.0, 0.38)
+	fade.tween_callback(label.queue_free)
 
 
 func _flash_hint(text: String) -> void:
@@ -892,9 +1012,12 @@ func demo_showcase() -> Dictionary:
 	core.mana = [9, 6]
 	core.max_mana = [9, 6]
 	core.log_lines.clear()
-	core.log_line("演示局面：双方在棋盘中部交火。")
-	core.log_line("—— 你的回合 · 法力 9/9 ——")
-	core.log_line("点击手牌选中，再点高亮格 / 目标。")
+	core.log_line("—— 第 9 回合 · 你的回合 ——")
+	core.log_line("你召唤了 白银侍从 与 日石骑士。")
+	core.log_line("对手召唤了 猛虎刺客、灯笼狐 与 四方法师。")
+	core.log_line("前阵弓手 对 雀鹰 造成 1 点伤害。")
+	core.log_line("风刃指挥官 对 猛虎刺客 造成 3 点伤害。")
+	core.log_line("—— 法力恢复到 9 / 9 ——")
 	core.started_turns = [9, 9]
 	while core.decks[PLAYER].size() > 14:
 		core.decks[PLAYER].pop_back()
@@ -995,7 +1118,7 @@ func demo_win(win_owner: int) -> void:
 	var general := core.general_unit(loser)
 	if general.is_empty():
 		return
-	core.damage_unit(int(general["uid"]), 999, "演示：将军倒下")
+	core.damage_unit(int(general["uid"]), 999, "将军倒下")
 	refresh_all()
 	_maybe_game_over()
 

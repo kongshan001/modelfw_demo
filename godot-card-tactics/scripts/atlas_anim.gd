@@ -81,6 +81,13 @@ func current_texture() -> AtlasTexture:
 	return _last_texture
 
 
+func frame_count(requested: String) -> int:
+	if _frames.is_empty():
+		return 0
+	var list: Array = _frames.get(_resolve_anim(requested), [])
+	return list.size()
+
+
 func _resolve_anim(requested: String) -> String:
 	if _frames.has(requested):
 		return requested

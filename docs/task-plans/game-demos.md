@@ -177,7 +177,9 @@
 - 交付: 更新 `godot-card-tactics/`；同机位 before/after（100%/25% + 命中帧）+ 指标 + GIF/MP4；README/TECH/迭代记录；媒体；smoke 通过
 - 约束: 保留 CC0 资产与许可/来源；不引入版权素材；不使用 Duelyst 品牌；只改视觉/UI/VFX；保留规则与 AI
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-019/result.md
+- 结论: P0-1 单位中位对比 2/11→11/11；P0-2 名称 1.83→10.20:1、描述 4.97→7.20:1、悬停 0 裁切；P0-3 攻击 ΔL* 0→+7.8（环+箭头+24%）、移动 +24.4→+13.5、选中改近白；P1-1 顶栏状态机/AI 手牌降亮/0 调试词；P1-2 凤火 1.10s、召唤 0.60s、命中白+红闪 0.13s。smoke 65 通过；FPS idle 85/action 51（load 10–24）。仍不足：`<1.5:1` 占比 2/11、系统字体未内置、未做 5 人盲测、悬停详情面板未实现。
 - depends_on: T-20261121-018
 
 ## T-20261121-016 · Duelyst 复刻开发文档 + 跨引擎资产包（T-013 follow-up）

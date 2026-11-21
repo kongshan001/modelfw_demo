@@ -24,9 +24,9 @@ godot --path godot-card-tactics
 
 | 操作 | 说明 |
 | --- | --- |
-| 点击手牌 | 选中卡牌；单位牌显示金色召唤格，法术牌显示蓝色目标圈 |
+| 点击手牌 | 选中卡牌；单位牌显示金圈召唤位，法术牌显示蓝色虚线目标圈 |
 | 点击高亮格 | 召唤随从 / 把已选单位移动一格 |
-| 点击红圈敌人 | 攻击 |
+| 点击红环敌人 | 攻击 |
 | 点击己方单位 | 选中该单位，查看移动/攻击范围 |
 | 悬停手牌 | 卡面放大 |
 | 「换一张手牌」 | 每回合 1 次，把选中的手牌洗回牌库底并抽 1 张 |
@@ -95,6 +95,24 @@ godot --path godot-card-tactics
 - 同 seed + 同玩家操作序列 ⇒ 完全相同的 `BattleCore.fingerprint()`（冒烟测试覆盖）。
 - 当前 AI 为单层贪心，不会做多回合组合规划，也不会使用“换牌”。
 
+## 视觉整改（T-019）
+
+按独立美术评审 [`docs/art-review/gridbound-art-review.md`](../docs/art-review/gridbound-art-review.md) 落地 P0 + 优先 P1。**只改视觉/UI/VFX，规则、AI、卡池与数值未变**；65 项冒烟仍为 `CARD_TACTICS_SMOKE_OK`。
+
+| 维度 | 评审问题 | T-019 整改 | 实测 before → after |
+| --- | --- | --- | --- |
+| 单位/格面 | 11 个单位中 9 个中位对比 <3:1；无阵营标记 | 格面明度 +3.5 L*；队伍色基座环（金/绯）；4 方向 2px 队伍色外轮廓；将军双基座 + 冠饰；稳定同行 z 序 | 中位 ≥3:1 **2/11 → 11/11** |
+| 攻血徽章 | 与精灵同层、被邻格遮挡；底色对比低 | 独立徽章层 `z+100`；亮琥珀/亮绿底 + 深色数字 + 2px 阴影；22px（将军 24px） | 徽章不再被精灵压住；单位中位提升约 +0.7～+1.0 |
+| 卡面 | 名称 1.62:1、描述 8px、亮斑 4.22:1；悬停裁切、提示被遮 | 名称带/规则区深色内衬；名称 12 / 类型 10 / 描述 10（≤16 字、最多 2 行）；手牌基线 546、悬停 1.24；选中近白描边；费用不足转红 | 名称 **1.83:1 → 10.20:1**；描述 **4.97:1 → 7.20:1**；悬停 0 裁切 |
+| 高亮 | 移动整格填充压过攻击；攻击/法术只靠色相 | 移动 2px 青框 + 刻度 + 12%；攻击 4px 红环 + 4 向内箭头 + 24% + 呼吸；法术虚线环 + 符心；选中近白双环；召唤金圈 + “+” | 移动 ΔL* 24.4→13.5；攻击 ΔL* 0.0→≈7.8，且结构区分 |
+| HUD | “你的回合”在 AI/胜利态仍显示；法力/牌库重复；调试文案 | 顶栏单一回合状态机（玩家金/对手绯/结束灰）+ 状态行 y=62；右栏帮助图例；日志 12px；AI 回合手牌 α0.60 + 不可点；移除“演示局面/vertical slice/已换牌/Seed”等调试文案（Seed 仅结束覆盖层） | 玩家/AI/胜利三态截图正确；0 调试词 |
+| VFX | 命中红闪 0.06s；凤火/召唤跨到下一次行动 | 凤火 1.10s、召唤 0.60s、斩击 0.34s；命中 0.03s 白闪 + 0.10s 红闪；20px 冲刺；白热+暖色程序化命中闪光；同屏最多 2 个 FX | 凤火 1.58s→1.10s；召唤 1.08s→0.60s |
+
+- 复测脚本：`python3 tools/measure_artfix.py`（Pillow；输入 `docs/shots/`，before 用 T-018 评审证据）。
+- 量化全文：`docs/shots/artfix/metrics.txt`；before/after 对照：`docs/shots/artfix/compare_{board,hand,highlight,attack,spell,win}_1920.png` 与对应 `_25pct.png`。
+- 25% 缩略：`docs/shots/thumb25/01..08.png`。
+- 仍不足：`<1.5:1` 像素占比仍未全部 ≤10%（2/11），剩余主要是 CC0 原画黑描边/缝隙、接触影与徽章深色数字；未内置字体；未做 5 人盲测。详见 metrics.txt 与下方“已知限制”。
+
 ## 项目结构
 
 ```
@@ -123,17 +141,18 @@ godot-card-tactics/
 │  └─ sample_contact_sheet.png   # 切片证据（2 个真实图集）
 ├─ tools/
 │  ├─ smoke_card_tactics.gd      # headless 冒烟测试（65 checks）
-│  ├─ screenshot_card_tactics.gd # 1920×1080 真实 GPU 截图
+│  ├─ screenshot_card_tactics.gd # 8×1920×1080 + 3×1280×720 真实 GPU 截图
 │  ├─ demo_card_tactics.gd       # 10 秒演示录制脚本
 │  ├─ record_card_tactics.sh     # AVI → MP4/GIF
-│  └─ perf_card_tactics.gd       # 真实 GPU FPS 采样
+│  ├─ perf_card_tactics.gd       # 真实 GPU FPS 采样
+│  └─ measure_artfix.py          # T-019 before/after 量化（单位/文字/高亮/VFX）
 ├─ docs/
 │  ├─ DEVELOPMENT.md             # 开发文档：规则/状态机/AI/确定性/重写清单
 │  ├─ CROSS_ENGINE.md            # 跨引擎四层拆分/映射表/移植契约/验收
 │  ├─ PORTABLE_ASSETS.md         # 资产清单/图集 schema/锚点/许可/导出
-│  ├─ TECH.md                    # 原实现：规则模型/图集/UI/资产管线
+│  ├─ TECH.md                    # 原实现：规则模型/图集/UI/资产管线 + T-019 视觉参数
 │  ├─ 迭代记录.md
-│  ├─ shots/                     # 5 张 1920×1080 截图
+│  ├─ shots/                     # 01–11 实机截图 + thumb25/ + artfix/ 对照与 metrics
 │  ├─ card_tactics.mp4           # 10.4s / 1280×720 / 30fps
 │  └─ card_tactics.gif           # 10.4s / 800px 宽
 ├─ README.md
@@ -191,15 +210,17 @@ godot --path godot-card-tactics --resolution 1280x720 -s tools/perf_card_tactics
 
 | 场景 | 平均 FPS | 最低 FPS | 最高 FPS |
 | --- | ---: | ---: | ---: |
-| 棋盘待机（11 个单位 + 6 张手牌） | 62.2 | 42 | 77 |
-| AI 行动/动画期间 | 55.7 | 40 | 74 |
+| T-018 基线：棋盘待机（11 个单位 + 6 张手牌） | 62.2 | 42 | 77 |
+| T-018 基线：AI 行动/动画期间 | 55.7 | 40 | 74 |
+| **T-019 最终（4 方向描边）**：棋盘待机 | **85.1** | 73 | 94 |
+| **T-019 最终（4 方向描边）**：AI 行动/动画期间 | **51.2** | 38 | 73 |
 
-> 最新一轮采样时系统 load average 约 9–13（同时有其他 worker 在跑）。更早的空闲复测曾达到待机 avg 118 / AI 行动 avg 92；要求是 30 FPS 以上，当前有充足余量。FPS 会受窗口遮挡/系统负载影响。
+> T-019 采样时系统 load average 10–24（并行 worker）；后续 load 25–52 时采样会跌到 15–30 FPS，与 T-018 记录的窗口遮挡/负载影响一致。8 方向描边（88 个额外精灵）在同等负载下最好 idle 77.8 / action 54.7，因此最终采用 4 方向描边（44 个额外精灵），待机明显更高。要求 ≥30 FPS 在中等负载下满足；完整数据见 `docs/shots/artfix/metrics.txt`。
 
 ### 4. 截图与视频
 
 ```bash
-# 5 张 1920×1080（SubViewport 1.5× 离屏渲染）
+# 8 张 1920×1080（SubViewport 1.5× 离屏渲染）+ 3 张 1280×720 原生
 godot --path godot-card-tactics -s tools/screenshot_card_tactics.gd
 
 # 10.4 秒 1280×720 / 30fps 演示 → MP4 + GIF
@@ -209,10 +230,17 @@ cd godot-card-tactics
 
 - [棋盘](docs/shots/01_board.png)
 - [手牌悬停 + 法术目标](docs/shots/02_hand.png)
-- [近战攻击](docs/shots/03_attack.png)
+- [近战攻击（白热命中闪光）](docs/shots/03_attack.png)
 - [凤火法术](docs/shots/04_spell.png)
 - [胜利 / 重开](docs/shots/05_win.png)
+- [AI 回合（顶栏/手牌/按钮状态）](docs/shots/06_ai_turn.png)
+- [单位选中：青框移动 + 红环攻击 + 白环选中](docs/shots/07_highlight_unit.png)
+- [召唤高亮（金圈 + “+”）](docs/shots/08_summon_highlight.png)
+- [1280 原生：手牌悬停](docs/shots/09_native_hover_1280.png)
+- [1280 原生：单位高亮](docs/shots/10_native_highlight_1280.png)
+- [1280 原生：法力不足/不可出牌](docs/shots/11_unaffordable_1280.png)
 - [演示 MP4](docs/card_tactics.mp4) / [演示 GIF](docs/card_tactics.gif)
+- 25% 缩略：[thumb25/](docs/shots/thumb25)；before/after 对照：[artfix/](docs/shots/artfix)
 
 > 截图使用 `demo_showcase()` 摆出的演示局面（双方各 5 个随从 + 6 张手牌）；手牌中特意放了一张风间法术以同时展示两阵营卡框，正常玩家套牌仍为晨光 + 中立。
 
@@ -231,5 +259,10 @@ cd godot-card-tactics
 - AI 为确定性单层贪心，能完整打一局但不会做长线组合规划。
 - 无音频；无卡组编辑器；无联网。
 - 贴图为源码运行时按 PNG 字节加载；若要导出 PCK，需把原始 PNG 加入导出过滤，或改回 Godot 导入资源加载。
-- 系统缺少 CJK 字体时，中文 UI 可能显示为方框。
+- 系统缺少 CJK 字体时，中文 UI 可能显示为方框；T-019 仍未内置 OFL 字体，换机/导出字宽可能变化。
+- T-019 后 11/11 单位中位对比 ≥3:1，但 `<1.5:1` 像素占比仅 2/11 达标；剩余主要来自 CC0 原画黑描边、接触影与徽章深色数字（徽章内部可读，但与格面的整体对比低），需要原创单位美术或更激进的去黑边才能彻底清掉。
+- 25% 缩略下卡面文字仍不可读（符合评审预期）；商店缩略图应单独构图，不能直接裁整屏。
+- 牌库/帮助信息已去重，但手牌悬停详情面板（评审 P0-2 可选项）未实现；卡面仍用 ≤16 字缩写。
+- P2 的面板金线/切角材质与区域色边线只完成了基础版（上绯下金 3px 边线），未做完整 UI 套件。
+- 未执行评审要求的 5 人盲测（本次为单人实机与量化复测）；外放前仍需真人任务测试。
 - 玩法/数值为可玩性优先的调整，不代表原版平衡。
