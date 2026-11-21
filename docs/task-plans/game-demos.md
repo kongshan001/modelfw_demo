@@ -2,6 +2,34 @@
 
 ## 进行中
 
+## T-20261121-006 · 复刻《群体寻路与避障》Steering Behavior 可交互 Demo
+- 来源: 飞书消息（B 站 BV1yCqfYuEh1《〈群体寻路与避障〉Steering Behavior 转向行为如何实现避障智能体》，4:03，2026-11-21）
+- 类型: game-demo（AI/转向行为复刻）
+- 目标: 按视频实际内容复刻 Steering Behaviors 群体移动与避障：seek/flee/arrive/pursue/evade/wander + separation/alignment/cohesion + 障碍物躲避/路径跟随；力向量与感知可视化
+- 交付: `godot-steering/` 可运行 Godot 4.6 demo（行为开关/权重、智能体数量、场景预设、力/射线/邻居可视化、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创场景/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；不穿墙、无 NaN/爆炸；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261121-005 · 复刻《地图随机生成》波函数坍缩（WFC）可交互 Demo
+- 来源: 飞书消息（B 站 BV1Br421M7Vm《〈地图随机生成〉波函数坍缩算法是如何实现的》，4:50，2026-11-21）
+- 类型: game-demo（程序化生成/算法复刻）
+- 目标: 按视频实际内容复刻 WFC 地图生成：叠加态/熵/坍缩/约束传播/回溯，逐步可视化 + 固定种子复现
+- 交付: `godot-wfc/` 可运行 Godot 4.6 demo（控制面板/步进/速度/种子/尺寸/算法视图）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创瓦片/UI/名字，不复制视频素材；Godot 4.6 GL Compatibility，1280×720，Intel 30fps+；确定性种子；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261121-004 · 外部参考对标 · 美术质量差距量化（Art Director）
+- 来源: 飞书消息（2026-11-21，“美术去外部拿参考图对比看一下，究竟我们的美术质量差异有多大”）
+- 类型: game-demo（美术对标/评估）
+- 目标: 以 `godot-paper-doll/` 当前 build 为基准，选 3–4 款同品类/同风格外部参考，同尺寸并排对比，量化各维度差距（0–10 分 + 档位），给出 P0–P2 整改 brief
+- 交付: `docs/art-review/external-benchmark.md`（参考清单+URL、评分表、差距结论、Top gaps、下一轮 brief）；2–3 张并排对比拼图（本地 /tmp，不入库）；媒体发送
+- 约束: 外部素材仅本地分析、不入库/不再分发，记录来源与版权；不改代码/资产；目标尺寸 + 25% 缩略双尺度评审；评分必须带证据与参数
+- 指派: game-art-director worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-004/result.md
+
 ## T-20261121-001 · 纸娃娃走路脚姿/滑步修复（Game Artist）
 - 来源: 飞书反馈（2026-11-21，“走路的脚的那个姿势特别奇怪”）
 - 父任务: T-20261120-012（独立复评 REJECT，R2-P0-2 walk 45.26px）
