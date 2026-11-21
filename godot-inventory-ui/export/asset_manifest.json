@@ -1,0 +1,1567 @@
+{
+  "schema": "modelfw.inventory.assets/1",
+  "name": "云璃背包 · 可移植 UI 资产清单",
+  "version": "1.0.0",
+  "date": "2026-11-21",
+  "language": "zh-CN",
+  "root": "godot-inventory-ui/",
+  "source": {
+    "project": "godot-inventory-ui",
+    "engine": "Godot 4.6 (GL Compatibility)",
+    "task": "T-20261121-017",
+    "parent_task": "T-20261121-015",
+    "design_resolution": [
+      1280,
+      720
+    ],
+    "layout_spec": "export/ui_layout.json",
+    "license_doc": "CREDITS.md"
+  },
+  "license": {
+    "default": "original",
+    "statement": "本清单内所有图像/矢量/数据均为本项目原创或程序化生成；未使用第三方游戏美术、图库素材、参考游戏截图/图标/Logo/UI 切图。参考截图仅用于数值测量，不入库、不随资产包分发。",
+    "reference_included": false,
+    "third_party_art": "none",
+    "project_license": "仓库未附独立 LICENSE 文件；对外分发前需由项目所有者确定授权条款（CREDITS.md 提供原创声明与来源说明）。",
+    "fonts": "未打包字体；运行时使用系统 CJK 字体。对外发布请替换为 OFL 字体并随包附带其许可。",
+    "trademark": "不使用《幻唐志》名称/Logo 作为产品名；demo 名为「云璃背包」，角色为原创「青丘灵狐·云璃」。"
+  },
+  "naming": {
+    "icons": "assets/icons/icon_<key>.svg；<key> 与 data/items.json 的 icon 字段一一对应",
+    "ui": "assets/ui/<name>.png；<name> 用 snake_case：panel/close/glow/sparkle/vignette",
+    "background": "assets/bg/<name>.png",
+    "character": "assets/char/<name>.svg",
+    "ids": "manifest id = 文件名去扩展名；item icon 的 icon_key = id 去掉 icon_ 前缀",
+    "case": "全小写 + 下划线；不使用空格/中文文件名"
+  },
+  "conventions": {
+    "design_px": [
+      1280,
+      720
+    ],
+    "ui_scale": "2× source for the panel; icons imported at 256×256 from a 128-unit viewBox; close at 232×232",
+    "filtering": "linear (not nearest); no pixel-art palette",
+    "alpha": "straight alpha (Godot import premultiplied=false)",
+    "mipmaps": false,
+    "color_space": "sRGB",
+    "atlas": "none in this build; batching is a known optimization (344 draw calls at 1920×1080)",
+    "nine_slice_policy": "本资产包没有为九宫格切图；panel 以整图拉伸，按钮/格子/页签由运行时渐变绘制。若移植侧必须用 9-slice 纹理，panel 建议源图 margin 120px，按钮建议设计 px margin 12（2× 源图 24px）。"
+  },
+  "assets": [
+    {
+      "id": "bg_night_palace",
+      "path": "assets/bg/night_palace.png",
+      "type": "image/png",
+      "role": "background",
+      "source_size_px": [
+        2560,
+        1440
+      ],
+      "display_size_px": [
+        1280,
+        720
+      ],
+      "alpha": false,
+      "size_bytes": 407547,
+      "generated_by": "tools/gen_assets.py",
+      "usage": "全屏夜景背景；面板关闭时可见，面板打开时从边缘/顶部露出。按 cover 适配 1280×720。",
+      "states": [
+        "normal"
+      ],
+      "nine_slice_note": "不需要九宫格；整图 cover 拉伸",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "char_cloud_fox",
+      "path": "assets/char/cloud_fox.svg",
+      "type": "image/svg+xml",
+      "role": "character",
+      "source_size_px": [
+        720,
+        900
+      ],
+      "view_box": "0 0 720 900",
+      "display_size_px": [
+        160,
+        204
+      ],
+      "alpha": true,
+      "size_bytes": 18433,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "原创「青丘灵狐·云璃」纸娃娃立绘；人物台中央，160×204 纹理框。",
+      "states": [
+        "normal"
+      ],
+      "nine_slice_note": "矢量立绘；不切片，按 keep-aspect 缩放",
+      "notes": "720×900 viewBox；底部由运行时绘制阴影/光环/符文环",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_panel",
+      "path": "assets/ui/panel.png",
+      "type": "image/png",
+      "source_size_px": [
+        2386,
+        1318
+      ],
+      "alpha": true,
+      "size_bytes": 175885,
+      "role": "panel",
+      "display_size_px": [
+        1193,
+        659
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "全屏冰蓝面板整图：渐变底、细金多层描边、小角饰。1193×659 设计尺寸，2× 源图。",
+      "states": [
+        "normal"
+      ],
+      "nine_slice_note": "不是九宫格设计；整图拉伸到 1193×659。若移植必须九宫格，建议源图四边各 120px margin（约 60 设计 px，覆盖 102px 角饰）。",
+      "nine_slice_recommended_px": [
+        120,
+        120,
+        120,
+        120
+      ],
+      "notes": "角饰约 102 source px；圆角 30 source px (15 design px)",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_close",
+      "path": "assets/ui/close.png",
+      "type": "image/png",
+      "source_size_px": [
+        232,
+        232
+      ],
+      "alpha": true,
+      "size_bytes": 63644,
+      "role": "close_button",
+      "display_size_px": [
+        72,
+        72
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "右上圆形关闭钮：金环 + 青铜面 + X 字形；72×72 显示。",
+      "states": [
+        "normal",
+        "hover(runtime scale 1.08 + glow)"
+      ],
+      "nine_slice_note": "圆形按钮，不适用九宫格",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_glow",
+      "path": "assets/ui/glow.png",
+      "type": "image/png",
+      "source_size_px": [
+        512,
+        512
+      ],
+      "alpha": true,
+      "size_bytes": 25267,
+      "role": "glow",
+      "display_size_px": null,
+      "display_range_px": [
+        96,
+        520
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "径向柔光贴图，运行时按 modulate 着色/缩放：标题底光、人物光环、按钮 hover、槽位发光、面板辉光、占位/确认卡底光。",
+      "usage_sizes_px": [
+        [
+          96,
+          96
+        ],
+        [
+          126,
+          109
+        ],
+        [
+          136,
+          122
+        ],
+        [
+          138,
+          121
+        ],
+        [
+          170,
+          96
+        ],
+        [
+          198,
+          198
+        ],
+        [
+          230,
+          230
+        ],
+        [
+          320,
+          320
+        ],
+        [
+          360,
+          360
+        ],
+        [
+          440,
+          330
+        ],
+        [
+          450,
+          400
+        ],
+        [
+          520,
+          316
+        ]
+      ],
+      "states": [
+        "tinted by runtime color/alpha"
+      ],
+      "nine_slice_note": "径向贴图；整图缩放，不切片",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_sparkle",
+      "path": "assets/ui/sparkle.png",
+      "type": "image/png",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "alpha": true,
+      "size_bytes": 46533,
+      "role": "fx_particle",
+      "display_size_px": null,
+      "display_range_px": [
+        34,
+        56
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "使用物品时的星芒粒子；FxLayer 以 34–56px 绘制 3 枚。",
+      "usage_sizes_px": [
+        [
+          34,
+          34
+        ],
+        [
+          56,
+          56
+        ]
+      ],
+      "states": [
+        "tinted by runtime color/alpha"
+      ],
+      "nine_slice_note": "粒子贴图；不切片",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_vignette",
+      "path": "assets/ui/vignette.png",
+      "type": "image/png",
+      "source_size_px": [
+        1280,
+        720
+      ],
+      "alpha": true,
+      "size_bytes": 42226,
+      "role": "vignette",
+      "display_size_px": [
+        1280,
+        720
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "全屏暗角叠加，压住背景四角。",
+      "states": [
+        "normal"
+      ],
+      "nine_slice_note": "全屏拉伸，不切片",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_ribbon",
+      "path": "assets/ui/ribbon.png",
+      "type": "image/png",
+      "source_size_px": [
+        520,
+        180
+      ],
+      "alpha": true,
+      "size_bytes": 34862,
+      "role": "legacy",
+      "display_size_px": [
+        260,
+        90
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "T-014 的红色标题绶带；T-015 1:1 校正后不再使用（参考图无绶带）。保留以便复现旧版本。",
+      "states": [
+        "unused"
+      ],
+      "nine_slice_note": "未使用",
+      "notes": "legacy / not referenced by current scripts",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "ui_rune_ring",
+      "path": "assets/ui/rune_ring.png",
+      "type": "image/png",
+      "source_size_px": [
+        1280,
+        1280
+      ],
+      "alpha": true,
+      "size_bytes": 305837,
+      "role": "legacy",
+      "display_size_px": [
+        1280,
+        1280
+      ],
+      "generated_by": "tools/gen_assets.py",
+      "usage": "T-014 的符文环纹理；T-015 改为运行时椭圆绘制后不再使用。",
+      "states": [
+        "unused"
+      ],
+      "nine_slice_note": "未使用",
+      "notes": "legacy / not referenced by current scripts",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_armor",
+      "path": "assets/icons/icon_armor.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "armor",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1990,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_bell",
+      "path": "assets/icons/icon_bell.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "bell",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1646,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_boots",
+      "path": "assets/icons/icon_boots.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "boots",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2282,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_chest",
+      "path": "assets/icons/icon_chest.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "chest",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1956,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_feather",
+      "path": "assets/icons/icon_feather.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "feather",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1911,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_fish",
+      "path": "assets/icons/icon_fish.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "fish",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2245,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_gem",
+      "path": "assets/icons/icon_gem.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "gem",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1956,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_helmet",
+      "path": "assets/icons/icon_helmet.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "helmet",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2165,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_herb",
+      "path": "assets/icons/icon_herb.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "herb",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2368,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_necklace",
+      "path": "assets/icons/icon_necklace.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "necklace",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1789,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_ore",
+      "path": "assets/icons/icon_ore.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "ore",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1946,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_peach",
+      "path": "assets/icons/icon_peach.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "peach",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1892,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_potion_blue",
+      "path": "assets/icons/icon_potion_blue.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "potion_blue",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1967,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_potion_green",
+      "path": "assets/icons/icon_potion_green.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "potion_green",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1840,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_potion_red",
+      "path": "assets/icons/icon_potion_red.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "potion_red",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2083,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_pouch",
+      "path": "assets/icons/icon_pouch.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "pouch",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1775,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_ring",
+      "path": "assets/icons/icon_ring.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "ring",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 1744,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_scroll",
+      "path": "assets/icons/icon_scroll.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "scroll",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2030,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_sword",
+      "path": "assets/icons/icon_sword.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "sword",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2000,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    },
+    {
+      "id": "icon_tome",
+      "path": "assets/icons/icon_tome.svg",
+      "type": "image/svg+xml",
+      "role": "item_icon",
+      "icon_key": "tome",
+      "source_size_px": [
+        256,
+        256
+      ],
+      "view_box": "0 0 128 128",
+      "display_size_px": [
+        78,
+        78
+      ],
+      "usage_sizes_px": [
+        [
+          78,
+          78
+        ],
+        [
+          72,
+          72
+        ],
+        [
+          112,
+          112
+        ],
+        [
+          146,
+          146
+        ],
+        [
+          70,
+          70
+        ]
+      ],
+      "alpha": true,
+      "size_bytes": 2000,
+      "generated_by": "hand-authored SVG (T-014)",
+      "usage": "物品/装备图标；网格与装备槽 78×78，详情卡 72×72，空态钱袋 112×112，占位卡 146×146，确认框 70×70。",
+      "states": [
+        "normal (quality is drawn by the frame, not the icon)"
+      ],
+      "nine_slice_note": "图标不切片；按 keep-aspect 缩放",
+      "notes": "256×256 导入尺寸，viewBox 0 0 128 128；统一 3–4px 深梅描边",
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "color_space": "sRGB",
+      "filter": "linear",
+      "nine_slice_margin_px": null
+    }
+  ],
+  "fonts": [
+    {
+      "id": "font_body",
+      "family_stack": [
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "Heiti SC",
+        "Noto Sans CJK SC",
+        "Source Han Sans SC",
+        "Microsoft YaHei",
+        "sans-serif"
+      ],
+      "weight": 500,
+      "bundled": false,
+      "path": null,
+      "license": "system font; not redistributed with this project",
+      "recommendation": "发布前换成 OFL 字体（Noto Sans SC / Source Han Sans SC）"
+    },
+    {
+      "id": "font_title",
+      "family_stack": [
+        "STKaiti",
+        "Kaiti SC",
+        "Songti SC",
+        "STSong",
+        "Noto Serif CJK SC",
+        "Source Han Serif SC",
+        "serif"
+      ],
+      "weight": 700,
+      "bundled": false,
+      "path": null,
+      "license": "system font; not redistributed with this project",
+      "recommendation": "发布前换成 OFL 字体（Noto Serif SC / Source Han Serif SC）"
+    }
+  ],
+  "data": [
+    {
+      "id": "inventory_items",
+      "path": "data/items.json",
+      "type": "application/json",
+      "role": "data",
+      "schema": 1,
+      "size_bytes": 15385,
+      "counts": {
+        "items": 35,
+        "equipment_slots": 8,
+        "pages": 5,
+        "page_counts": {
+          "1": 25,
+          "2": 7,
+          "3": 2,
+          "5": 1
+        },
+        "categories": {
+          "装备": 12,
+          "消耗": 7,
+          "材料": 9,
+          "任务": 5,
+          "杂项": 2
+        },
+        "capacity": 216
+      },
+      "license": "original",
+      "license_ref": "CREDITS.md",
+      "usage": "全部玩家/装备/物品数据；引擎无关 JSON，见 docs/CROSS_ENGINE.md §A"
+    }
+  ],
+  "runtime_drawn": [
+    {
+      "id": "gradient_rect",
+      "type": "shader/recipe",
+      "used_for": [
+        "panel fills",
+        "buttons",
+        "tabs",
+        "cells",
+        "bars",
+        "coins",
+        "cards",
+        "filter rows"
+      ],
+      "source": "shaders/rounded_gradient.gdshader",
+      "recipe": "rounded-rect SDF mask + vertical gradient + top gloss + diagonal sheen + inset border + 1px inner rim",
+      "nine_slice_margin_px": null,
+      "portable_equivalent": "CSS: linear-gradient + border-radius + box-shadow/inset; Unity: ShaderGraph/UI shader or baked 9-slice; UMG: material + Border; Three.js: CanvasTexture/CSS"
+    },
+    {
+      "id": "quality_frames",
+      "type": "runtime state",
+      "used_for": [
+        "item cells",
+        "equip slots",
+        "detail icon frame"
+      ],
+      "recipe": "border color = quality color (4 tiers); grid cells lerp 42% toward #CFE6F8; selected #FFEFC8 3.2px",
+      "nine_slice_margin_px": null,
+      "portable_equivalent": "runtime border color; no per-quality image needed"
+    },
+    {
+      "id": "paperdoll_ring",
+      "type": "runtime draw",
+      "used_for": [
+        "character stage halo/rings/sparkles"
+      ],
+      "recipe": "ellipse fill + 3 ellipse rings + 8 cardinal diamonds + 4 orbiting sparkles",
+      "nine_slice_margin_px": null,
+      "portable_equivalent": "UGUI custom Graphic / UMG OnPaint / Canvas 2D path"
+    },
+    {
+      "id": "icon_coin_silver",
+      "type": "runtime draw",
+      "used_for": [
+        "coin row silver ingot"
+      ],
+      "recipe": "7-point ingot polygon + highlight + rim line",
+      "nine_slice_margin_px": null,
+      "portable_equivalent": "tiny sprite or vector"
+    },
+    {
+      "id": "stat_icons",
+      "type": "runtime draw",
+      "used_for": [
+        "attack/spirit/defense/speed badges"
+      ],
+      "recipe": "diamond badge + arrow/flower/shield/lightning glyph",
+      "nine_slice_margin_px": null,
+      "portable_equivalent": "sprite atlas / SVG icons"
+    }
+  ],
+  "counts": {
+    "total_files": 29,
+    "png": 8,
+    "svg": 21,
+    "icons": 20,
+    "ui_textures": 7,
+    "legacy_unused": 2,
+    "runtime_recipes": 5,
+    "data_files": 1,
+    "fonts_bundled": 0
+  },
+  "self_check": {
+    "paths_must_exist": true,
+    "dimensions_must_match": true,
+    "icons_expected": 20,
+    "equipment_slot_icons_present": [
+      "sword",
+      "armor",
+      "helmet",
+      "necklace",
+      "ring",
+      "boots",
+      "bell",
+      "tome"
+    ],
+    "reference_assets_present": false,
+    "nine_slice_field_present_on_every_asset": true
+  }
+}

@@ -30,6 +30,10 @@
 - GIF：[docs/media/inventory_ui_demo.gif](docs/media/inventory_ui_demo.gif)（960 宽）
 - 全部截图：[docs/media/screenshots/](docs/media/screenshots/)
 - 测量表与误差：[docs/fidelity-1to1.md](docs/fidelity-1to1.md)
+- 开发文档/状态机：[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- 跨引擎移植指南：[docs/CROSS_ENGINE.md](docs/CROSS_ENGINE.md)
+- 可移植资产包：[docs/PORTABLE_ASSETS.md](docs/PORTABLE_ASSETS.md)
+- 布局/资产联系表：[docs/media/export/portable_layout_assets.png](docs/media/export/portable_layout_assets.png)
 - 性能与主机信息：[docs/media/fps.txt](docs/media/fps.txt)
 
 ## 运行
@@ -93,6 +97,21 @@ godot --path . --fixed-fps 30 -s tools/capture_inventory_ui.gd -- --video
 - 丢弃二次确认、出售加银两、使用扣减并播放金光粒子、整理重排动画、空页空状态。
 - 打开/关闭面板缩放+淡入、hover 抬升+柔光、选中描边呼吸、tooltip 淡入、页签薄荷高亮切换。
 
+## 文档与跨引擎资产
+
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 节点树、UI 状态机、数据 schema、交互流程、动效、资产管线、性能、维护。
+- [docs/CROSS_ENGINE.md](docs/CROSS_ENGINE.md) — A 数据 / B 算法 / C 渲染 / D 工具链四层拆分；Godot / Unity / Unreal / Three.js 映射；移植契约与验收清单。
+- [docs/PORTABLE_ASSETS.md](docs/PORTABLE_ASSETS.md) — 面板/按钮/图标/背景/字体清单、九宫格、色板、命名、状态、许可。
+- [export/README.md](export/README.md) — 导入 Unity/Unreal/Three.js 的最小步骤 + 伪节点树。
+- [export/ui_layout.json](export/ui_layout.json) — 139 个节点、归一化 rect、锚点、字号、动效、交互状态。
+- [export/asset_manifest.json](export/asset_manifest.json) — 29 个资产（20 图标 / 7 UI 纹理 / 背景 / 立绘）。
+- [联系表](docs/media/export/portable_layout_assets.png) — 布局规格 + 资产缩略图 + 色板。
+
+```bash
+python3 export/validate_export.py
+# EXPORT_LAYOUT_OK / EXPORT_MANIFEST_OK / EXPORT_LINKS_OK
+```
+
 ## 目录
 
 ```text
@@ -116,9 +135,17 @@ godot-inventory-ui/
 │   └── capture_inventory_ui.gd
 ├── docs/
 │   ├── TECH.md
+│   ├── DEVELOPMENT.md       # 节点树/状态机/数据/交互/动效/性能/维护
+│   ├── CROSS_ENGINE.md      # 四层拆分 + Unity/Unreal/Three.js 映射 + 移植契约
+│   ├── PORTABLE_ASSETS.md   # 资产包/九宫格/色板/命名/状态/许可
 │   ├── fidelity-1to1.md     # 参考测量表 / 误差 / 例外 / 颜色 / 回归
 │   ├── 迭代记录.md
 │   └── media/
+├── export/
+│   ├── ui_layout.json       # 引擎无关布局规格（139 节点）
+│   ├── asset_manifest.json  # 资产清单（29 文件）
+│   ├── validate_export.py   # 独立校验（仅标准库）
+│   └── README.md            # 导入步骤 + 伪节点树
 ├── CREDITS.md
 └── README.md
 ```

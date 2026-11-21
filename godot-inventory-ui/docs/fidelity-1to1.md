@@ -193,6 +193,8 @@ INVENTORY_UI_SMOKE_OK
 | 10s 视频 | `docs/media/inventory_ui_demo.mp4`（1920×1080 / 30fps / 10s） |
 | GIF | `docs/media/inventory_ui_demo.gif` |
 | 帧率 | `docs/media/fps.txt` |
+| 跨引擎布局/资产联系表 | `docs/media/export/portable_layout_assets.png` |
+| 布局/资产规格 | `export/ui_layout.json` / `export/asset_manifest.json` |
 | 同尺寸对照（参考 vs 实现） | `/tmp/compare_t015.png`（仅评审用，参考图不入库） |
 
 ## 10. 下一棒

@@ -2,6 +2,8 @@
 
 本文档面向后续工程师 / 美术 / QA：说明布局规格、节点树、数据 schema、交互状态机、动效参数、资产管线、参考差异与验证方法。所有素材均为原创，参考图只用于分析。
 
+> **T-017 更新（2026-11-21）**：新增 [DEVELOPMENT.md](DEVELOPMENT.md)（以源码为准）、[CROSS_ENGINE.md](CROSS_ENGINE.md)、[PORTABLE_ASSETS.md](PORTABLE_ASSETS.md) 和 `../export/` 规格包。本文的 §3 顶层浮层顺序、§6 页签切换 / hover 位移已按源码校正；冲突时以 DEVELOPMENT.md 为准。
+
 ## 1. 运行与渲染基线
 
 | 项 | 值 |
@@ -117,7 +119,7 @@ Main (Control, scripts/main.gd)
 └── FPS label（F3）；F1 切换对齐检查
 ```
 
-渲染顺序：panel_root 内先面板/格子再标题/关闭/侧导航/详情；上层依次 reopen → filter popup → placeholder → FX → toast → tooltip → confirm。这样确认框永远置顶，tooltip 不会被 toast 盖住。
+渲染顺序：panel_root 内先面板/格子再标题/关闭/侧导航/详情；顶层 `add_child` 顺序为 **reopen_root → tooltip → FxLayer → toast → filter_popup → placeholder → confirm**。同 z 时后者覆盖前者，所以确认框永远置顶；toast 会盖住 tooltip（可接受）。F1 覆盖层 `z_index=90`，仅诊断用。完整说明见 [DEVELOPMENT.md](DEVELOPMENT.md) §3。
 
 ## 4. 数据 schema（data/items.json）
 
@@ -198,9 +200,9 @@ Main (Control, scripts/main.gd)
 | --- | --- | --- |
 | 开面板 | panel_root scale .965→1 + alpha 0→1 | 200ms，Cubic/EaseOut |
 | 关面板 | scale 1→.94 + alpha 1→0，然后显示 reopen | 180ms，Sine/EaseOut |
-| 页签下划线 | GradientRect x tween | 160ms，Cubic/EaseOut |
+| 页签切换 | 颜色瞬时切换（T-015 已移除金色下划线） | 无补间 |
 | 页签/网格刷新 | 网格 alpha 0→1 | 140ms |
-| 物品 hover | 内容上抬 -4px + 光晕 + 描边提亮 | 120ms |
+| 物品 hover | 内容上抬 -3px + 光晕 + 描边提亮 | 120ms，Sine/EaseOut |
 | 选中呼吸 | `sin(time*4)` 驱动紫色柔光 alpha | 持续，周期 ~1.6s |
 | tooltip | alpha 0→1 / 1→0 | 140ms / 100ms |
 | 详情卡 | 右侧滑入 26px + alpha + scale .985→1 | 160ms |
@@ -267,6 +269,10 @@ $ godot --headless --path . -s tools/smoke_inventory_ui.gd
 ...
 checks=86 failures=0
 INVENTORY_UI_SMOKE_OK
+
+$ python3 export/validate_export.py
+...
+EXPORT_LAYOUT_OK / EXPORT_MANIFEST_OK / EXPORT_LINKS_OK
 ```
 
 真实 GPU 截图/视频（1920×1080）：

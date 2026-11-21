@@ -2,6 +2,15 @@
 
 ## 进行中
 
+## T-20261121-037 · 复刻 Godot Particles 魔法发射特效教程
+- 来源: 飞书消息（B 站《中配：Godot Particles 魔法发射特效教程！》，https://b23.tv/9gCDB4E，2026-11-21，21:21）
+- 类型: game-demo（Godot VFX）
+- 目标: 按视频教程复刻魔法发射特效：蓄力/发射/拖尾/命中/光效/粒子节奏；做成可交互 Godot 4.6 demo
+- 交付: `godot-magic-vfx/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创粒子/材质/贴图，不复制视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；粒子预算/清理；不改其他项目
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
 ## T-20261121-034 · Game Designer 玩法创新能力建设（T-033 follow-up）
 - 线程: T-20261121-033（玩法创新研究 → 能力建设，跨类型 follow-up）
 - 父任务: T-20261121-033；依赖: T-20261121-033（done + Git 发布）
@@ -55,7 +64,7 @@
 - 交付: `godot-fog-harbor/` 可运行 Godot 4.6 demo（1 张地图、3 敌型、8 类战利品、6×4 背包、撤离/死亡结算、仓库/3 项升级、存读）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 只复刻玩法/体验，不复制原作者游戏名/角色/素材/UI；用原创名称与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；可复用 `godot-inventory-ui/` 的数据 schema/九宫格思路（若已稳定）
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 - 后续: 视效果补美术评审/QA
 
 ## T-20261121-024 · 复刻 Opus 5.5 长安城动作游戏 · 设计规格（Game Designer）
@@ -133,7 +142,7 @@
 - 交付: `godot-inventory-ui/docs/DEVELOPMENT.md`（节点树/状态机/数据 schema/动效）、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（九宫格/图标/色板/命名/许可）、`export/ui_layout.json`、`export/asset_manifest.json` + 截图
 - 约束: 只读项目/资产，不改 UI 行为；原创素材；参考图不入库；不得复制幻唐志素材/Logo
 - 指派: general-purpose worker（dispatcher）
-- 状态: blocked（等 T-015 done + Git 发布）
+- 状态: done
 - depends_on: T-20261121-015
 
 ## T-20261121-013 · 复刻 Duelyst 式卡牌战棋（CC0 资产）可玩 Vertical Slice
