@@ -9,7 +9,8 @@
 - 交付: `godot-magic-vfx/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创粒子/材质/贴图，不复制视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；粒子预算/清理；不改其他项目
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-037/result.md
 
 ## T-20261121-034 · Game Designer 玩法创新能力建设（T-033 follow-up）
 - 线程: T-20261121-033（玩法创新研究 → 能力建设，跨类型 follow-up）

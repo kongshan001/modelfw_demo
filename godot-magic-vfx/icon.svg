@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#1a2340"/>
+      <stop offset="100%" stop-color="#060810"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff4d1a"/>
+      <stop offset="55%" stop-color="#ffb03a"/>
+      <stop offset="100%" stop-color="#fff2c0"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#bg)"/>
+  <circle cx="64" cy="64" r="42" fill="none" stroke="#8f7bff" stroke-opacity="0.35" stroke-width="1.5"/>
+  <circle cx="64" cy="64" r="33" fill="none" stroke="#8f7bff" stroke-opacity="0.2" stroke-width="1"/>
+  <path d="M38 76c10 2 16-6 20-16 3-8 5-14 12-19-1 8 3 12 8 16 8 6 10 14 6 21-4 8-14 12-24 11-8-1-16-6-22-13z" fill="url(#flame)"/>
+  <path d="M58 70c4-1 8-5 9-10 1 5 5 7 7 11 2 4 0 8-5 9-5 1-9-3-11-10z" fill="#fff8dc" opacity="0.9"/>
+  <path d="M92 30l2.6 7.4L102 40l-7.4 2.6L92 50l-2.6-7.4L82 40l7.4-2.6z" fill="#bfefff"/>
+  <path d="M28 34l1.6 4.4L34 40l-4.4 1.6L28 46l-1.6-4.4L22 40l4.4-1.6z" fill="#a98bff" opacity="0.9"/>
+</svg>

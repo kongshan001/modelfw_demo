@@ -1,0 +1,62 @@
+{
+  "generator": "tools/gen_assets.py",
+  "seed": 20261121,
+  "files": {
+    "contact_shadow.png": {
+      "sha256": "0a5111bbbea19158ea408bb62b837959215083e63c1f0fed473806b4ff722447",
+      "bytes": 2092
+    },
+    "dust.png": {
+      "sha256": "76890033189ee63ff1390ddf788f543831b474f5f2b88f7b5eb7b2c7cb274c8d",
+      "bytes": 803
+    },
+    "flame_strip.png": {
+      "sha256": "71cf9d345cf91033840a570de9f9b5975c2389f4c0564d04704017b7cafa495a",
+      "bytes": 64700
+    },
+    "flare.png": {
+      "sha256": "8a05d9e8e72238cdb48063fac9d1d5487dee38047b84de6f5f16140efc7ff6d7",
+      "bytes": 4160
+    },
+    "frost_strip.png": {
+      "sha256": "a1cf2b03ebdd10ac0da0d6e65c1e39e0434f342e62076ecaaa4ac489beaf9cf4",
+      "bytes": 51736
+    },
+    "glow.png": {
+      "sha256": "4a6b19355389a1badc8eb1c2eb774b1b76bb53cd28ffc7f1407230fc6146c993",
+      "bytes": 8752
+    },
+    "glow_wide.png": {
+      "sha256": "d92f3dd94d4ecc3362fcf9219263fc53d8db6e965942d436ab4a3b95459be72c",
+      "bytes": 10048
+    },
+    "noise.png": {
+      "sha256": "01eada4af347800a98cd0599d923c0546cf983b02a896d5cc08225cf45df2ab8",
+      "bytes": 85504
+    },
+    "ring.png": {
+      "sha256": "a502d7b7d01dde8ae006eff5dfb3f23a3168bf1cb021594fda64fd49e118db91",
+      "bytes": 17782
+    },
+    "rune.png": {
+      "sha256": "a042ec31ee5c4782b7d71417bd6ec03304aabc39052acd3cc0f8faf8dd1bbdb3",
+      "bytes": 105513
+    },
+    "shard.png": {
+      "sha256": "cec2766a5b78b3b4496aad9ebf2e49470b193ad5536a8ca482d52e1af6b4edd3",
+      "bytes": 2105
+    },
+    "smoke.png": {
+      "sha256": "cfc0a9d0a777b15ca7c6a2a23bb5ecf159edf7f61ad2bf01558ec1b4c2d8656c",
+      "bytes": 4904
+    },
+    "spark.png": {
+      "sha256": "ec983fb8ffe4448ed62e9cba90504970b2502ee1c6a269548b83835db7052cda",
+      "bytes": 2292
+    },
+    "spark_streak.png": {
+      "sha256": "ee9b2e0d25ebdfdfcc5512e5c50142bcef435b662ba7bb7dd75ee9eb6458c49b",
+      "bytes": 3416
+    }
+  }
+}
