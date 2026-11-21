@@ -107,7 +107,9 @@
 - 交付: `docs/art-review/gridbound-art-review.md`（证据/分数/参数/APPROVE|CONCERNS|REJECT）+ 代表图；不改代码/资产；媒体
 - 约束: 独立评审，不复用实现者自评；不改 `godot-card-tactics/`；CC0 资产与 Duelyst 商标边界按 CREDITS
 - 指派: game-art-director worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-018/result.md
+- 结论: 内部可玩成立；外放门槛 7.0 未达。P0=①单位/格面明度与阵营识别（9/11 单位中位对比 <3:1）②手牌 8px/亮斑 1.62–4.22:1/悬停裁切与提示遮挡 ③高亮层级（青移动 ΔL*+24.4 vs 红攻击 0.0）；P1=回合横幅状态文案、HUD 重复/调试词、VFX 时长与命中帧。T-019 按此 brief 整改。
 - depends_on: T-20261121-013
 
 ## T-20261121-019 · 格间牌战美术整改（T-018 follow-up）
