@@ -2,6 +2,46 @@
 
 ## 进行中
 
+## T-20261121-026 · 复刻《雾港撤离》式俯视角搜打撤 Demo
+- 来源: 飞书消息（今日头条视频《GPT-6上线后，没有游戏经验的我做出了第二个游戏 GPT-6 Astra…》，https://m.toutiao.com/is/cYC_w2DNGpQ/，2026-11-21）
+- 类型: game-demo（2D 俯视角 / 搜打撤）
+- 目标: 复刻公开描述的核心循环：雾港地图搜箱/射击 → 背包管理 → 撤离带出物资 → 入库/升级；死亡丢失当局背包，仓库与升级保留
+- 交付: `godot-fog-harbor/` 可运行 Godot 4.6 demo（1 张地图、3 敌型、8 类战利品、6×4 背包、撤离/死亡结算、仓库/3 项升级、存读）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 只复刻玩法/体验，不复制原作者游戏名/角色/素材/UI；用原创名称与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；可复用 `godot-inventory-ui/` 的数据 schema/九宫格思路（若已稳定）
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+- 后续: 视效果补美术评审/QA
+
+## T-20261121-024 · 复刻 Opus 5.5 长安城动作游戏 · 设计规格（Game Designer）
+- 来源: 飞书消息（今日头条视频《太疯狂了！用 Opus 5.5 做了一款有完整剧情的动作游戏，只花了一天》，https://m.toutiao.com/is/okzTCC-hX6g/，2026-11-21）
+- 类型: game-demo（设计/拆解）
+- 目标: 基于原帖/报道定义原创致敬版 vertical slice 的玩法、战斗、剧情、关卡、MVP/优先级与验收；不复刻原作者角色/素材/品牌
+- 交付: `docs/design/changan-action-remake-spec.md` + 一页核心循环/优先级图（SVG/PNG）+ 媒体；来源表
+- 约束: 只设计不改代码/资产；区分作者自述与已验证事实；原创角色/故事；面向 Godot 4.6 GL Compatibility / Intel HD；不复制原游戏素材
+- 指派: game-designer worker（dispatcher）
+- 状态: queued
+- 后续: T-20261121-025（实现）
+
+## T-20261121-025 · 复刻 Opus 5.5 长安城动作游戏 · 可玩 Vertical Slice（T-024 follow-up）
+- 线程: T-20261121-024（长安城动作游戏）
+- 父任务: T-20261121-024；依赖: T-20261121-024（done + Git 发布）
+- 类型: game-demo（3D 动作）
+- 目标: 按 T-024 规格实现 3D 第三人称动作 vertical slice：长安风夜街、1 可玩角色、2–3 敌人 archetype、刺拳/踢击/翻滚/击倒/起身、短剧情与 Boss/结算
+- 交付: `godot-changan-action/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/许可合规
+- 约束: 只复刻玩法/体验，不复制原作者角色/名字/素材/品牌；优先复用仓库内原创系统与资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
+- 指派: game-engineer worker（dispatcher）
+- 状态: blocked（等 T-024 done + Git 发布）
+- depends_on: T-20261121-024
+
+## T-20261121-023 · 复刻 PixelFX 像素特效（挥剑/火球/冰冻/捡金币）Godot Demo
+- 来源: 飞书消息（今日头条视频《做像素游戏，这些特效直接用 挥剑、火球、冰冻、捡金币，PixelFX》，https://m.toutiao.com/is/Mknvnb6nf9U/，2026-11-21）
+- 类型: game-demo（2D 像素 VFX）
+- 目标: 用 PixelFX（MIT）导出/复用四类特效，在 Godot 4.6 做可交互像素特效 playground：挥剑、火球、冰冻、捡金币；触发/速度/清理/计分
+- 交付: `godot-pixel-vfx/` 可运行项目；4 组特效 sprite sheet + JSON；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；MIT 许可与来源
+- 约束: 仅使用 PixelFX（MIT）与原创场景/角色/UI；不复制其他游戏素材；字体若单独授权则不打包；1280×720/1920×1080，GL Compatibility，Intel 30fps+；像素完美（nearest/无 AA）
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
 ## T-20261121-021 · Godot 程序化地图生成优秀案例复刻（T-020 follow-up）
 - 来源: 飞书消息（2026-11-21，“godot在程序化地图生成这块有哪些技术方案，以及优秀效果案例然后复刻”）
 - 线程: T-20261121-020（调研 → 实现，跨类型 follow-up）
@@ -33,7 +73,7 @@
 - 交付: 更新 `godot-inventory-ui/`；`docs/fidelity-1to1.md`（参考 vs 实现测量表、误差、例外）；同尺寸对照图（参考图不入库）；新截图/GIF/MP4；smoke 通过
 - 约束: 1:1 指布局/比例/配色/交互；**不复制参考截图/图标/Logo/受版权素材**，用原创重绘；不用幻唐志品牌；不改其他项目
 - 指派: game-artist worker（dispatcher）
-- 状态: blocked（等 T-014 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-014
 - 后续: T-20261121-017（开发文档 + 跨引擎资产包）
 
@@ -86,10 +126,11 @@
 - 父任务: T-20261121-013；依赖: T-20261121-013（done + Git 发布）
 - 类型: docs-research
 - 目标: 沉淀规则/状态机/AI/资产管线文档，导出引擎无关的资产 manifest 与图集切片工具，支持 Unity/Unreal/Three.js 复刻
-- 交付: `godot-card-tactics/docs/DEVELOPMENT.md`、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（图集 schema/帧名/锚点/许可）、`export/asset_manifest.json`、`export/slice_atlas.py` + 联系表截图
+- 交付: `godot-card-tactics/docs/DEVELOPMENT.md`、`CROSS_ENGINE.md`（四层拆分/映射表/移植契约/验收清单）、`PORTABLE_ASSETS.md`（图集 schema/帧名/锚点/许可）、`export/asset_manifest.json`、`export/cards.json`、`export/slice_atlas.py` + `export/README.md` + 联系表 `export/sample_contact_sheet.png`
 - 约束: 只读代码/资产，不改玩法；CC0 许可与来源保留；不复制 Duelyst 商标/版权外素材
 - 指派: general-purpose worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-016/result.md
 - depends_on: T-20261121-013
 
 ## T-20261121-011 · Flow Field 审计级性能复测与优化消融（T-009 follow-up）

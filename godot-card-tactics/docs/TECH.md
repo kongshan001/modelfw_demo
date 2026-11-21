@@ -2,6 +2,8 @@
 
 本文记录规则模型、状态机、AI、图集切帧、UI 渲染与 CC0 资产管线。目标读者是后续维护者或想移植到其他引擎的人。
 
+> **延伸文档（T-20261121-016）**：[DEVELOPMENT.md](DEVELOPMENT.md) 给出不读 GDScript 也能重写的完整规格与测试向量；[CROSS_ENGINE.md](CROSS_ENGINE.md) 给出 A 数据/B 算法/C 渲染/D 工具链四层拆分与四引擎映射；[PORTABLE_ASSETS.md](PORTABLE_ASSETS.md) 与 [`export/asset_manifest.json`](../export/asset_manifest.json) 给出逐资产清单、帧矩形与校验工具。
+
 ## 1. 总览
 
 ```

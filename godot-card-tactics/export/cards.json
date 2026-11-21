@@ -1,0 +1,519 @@
+{
+  "schema": "gridbound.cards/1",
+  "generated": {
+    "date": "2026-11-21",
+    "by": "export/build_exports.py"
+  },
+  "source": {
+    "path": "data/cards.json",
+    "sha256": "e0c8c201c17d54afaf9a915f2c0427c3f81567cd75ef1f804f4f58bad7115810",
+    "note": "Original data/cards.json is unchanged; this export is a normalized, engine-neutral view."
+  },
+  "license_note": "Card names, descriptions and rules are original to this project. Art assets are CC0-1.0; see export/asset_manifest.json and assets/duelyst_cc0/LICENSE.",
+  "board": {
+    "cols": 9,
+    "rows": 5,
+    "cell_px": 88,
+    "origin_px": [
+      236,
+      104
+    ],
+    "pixel_size_px": [
+      792,
+      440
+    ],
+    "player_general": [
+      4,
+      4
+    ],
+    "ai_general": [
+      4,
+      0
+    ],
+    "neighbors": "4-connected (left/right/up/down), no diagonals"
+  },
+  "rules": {
+    "players": 2,
+    "starting_hand": 3,
+    "draw_per_turn": 1,
+    "hand_limit": 6,
+    "mana_start": 1,
+    "mana_gain_per_turn": 1,
+    "mana_cap": 9,
+    "replace_per_turn": 1,
+    "move_per_turn": 1,
+    "attack_per_turn": 1,
+    "summon_adjacent_to_friendly_only": true,
+    "no_counterattack": true,
+    "ranged": {
+      "range": 2,
+      "same_row_or_col": true,
+      "requires_clear_mid_cell": true
+    },
+    "keywords": {
+      "ranged": "Attack a target 1-2 cells away in the same row/column; the middle cell must be empty at distance 2.",
+      "provoke": "If an enemy provoke unit is adjacent to the attacker, it must be attacked first.",
+      "rush": "Can attack on the turn it is summoned."
+    },
+    "spell_effects": {
+      "heal": "Restore amount HP, capped at max HP.",
+      "damage": "Deal amount damage; may kill the target and end the game if it is a general.",
+      "buff_attack": "Permanently add amount attack."
+    },
+    "spell_targets": {
+      "friendly_any": "Any friendly unit, including the general.",
+      "friendly_minion": "Friendly non-general unit.",
+      "enemy_minion": "Enemy non-general unit.",
+      "enemy_any": "Any enemy unit, including the general."
+    },
+    "win_condition": "A general at 0 HP is removed; the other side wins."
+  },
+  "generals": [
+    {
+      "id": "general_f1",
+      "faction": "f1",
+      "name": "晨光将军",
+      "title": "晨光军团",
+      "stats": {
+        "atk": 2,
+        "hp": 20
+      },
+      "art": {
+        "asset_id": "f1_general",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        }
+      }
+    },
+    {
+      "id": "general_f2",
+      "faction": "f2",
+      "name": "风间将军",
+      "title": "风间流",
+      "stats": {
+        "atk": 2,
+        "hp": 20
+      },
+      "art": {
+        "asset_id": "f2_general",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        }
+      }
+    }
+  ],
+  "cards": [
+    {
+      "id": "f1_silverguardsquire",
+      "name": "白银侍从",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 2,
+      "keywords": [],
+      "desc": "朴实可靠的前排。",
+      "stats": {
+        "atk": 2,
+        "hp": 2
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f1_silverguardsquire",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_unit"
+      }
+    },
+    {
+      "id": "f1_backlinearcher",
+      "name": "前阵弓手",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 2,
+      "keywords": [
+        "ranged"
+      ],
+      "desc": "远程：同一行或列 2 格内攻击，视线不可被阻挡。",
+      "stats": {
+        "atk": 1,
+        "hp": 3
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f1_backlinearcher",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_unit"
+      }
+    },
+    {
+      "id": "f1_sunstonetemplar",
+      "name": "日石骑士",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 3,
+      "keywords": [],
+      "desc": "攻守均衡的中坚。",
+      "stats": {
+        "atk": 3,
+        "hp": 3
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f1_sunstonetemplar",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_unit"
+      }
+    },
+    {
+      "id": "f1_windbladecommander",
+      "name": "风刃指挥官",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 4,
+      "keywords": [
+        "provoke"
+      ],
+      "desc": "嘲讽：相邻的敌人必须先攻击它。",
+      "stats": {
+        "atk": 3,
+        "hp": 4
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f1_windbladecommander",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_unit"
+      }
+    },
+    {
+      "id": "f1_ironcliffeguardian",
+      "name": "铁崖守卫",
+      "type": "unit",
+      "faction": "f1",
+      "cost": 5,
+      "keywords": [
+        "provoke"
+      ],
+      "desc": "嘲讽：厚实的墙。",
+      "stats": {
+        "atk": 3,
+        "hp": 7
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f1_ironcliffeguardian",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_unit"
+      }
+    },
+    {
+      "id": "f2_onyxjaguar",
+      "name": "猛虎刺客",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 3,
+      "keywords": [
+        "rush"
+      ],
+      "desc": "疾行：召唤当回合即可攻击。",
+      "stats": {
+        "atk": 3,
+        "hp": 3
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f2_onyxjaguar",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_unit"
+      }
+    },
+    {
+      "id": "f2_sparrowhawk",
+      "name": "雀鹰",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 2,
+      "keywords": [
+        "ranged"
+      ],
+      "desc": "远程：同一行或列 2 格内攻击。",
+      "stats": {
+        "atk": 2,
+        "hp": 1
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f2_sparrowhawk",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_unit"
+      }
+    },
+    {
+      "id": "f2_lanternfox",
+      "name": "灯笼狐",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 3,
+      "keywords": [],
+      "desc": "轻盈的灵兽。",
+      "stats": {
+        "atk": 2,
+        "hp": 3
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f2_lanternfox",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_unit"
+      }
+    },
+    {
+      "id": "f2_mage4winds",
+      "name": "四方法师",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 4,
+      "keywords": [
+        "ranged"
+      ],
+      "desc": "远程：同一行或列 2 格内攻击。",
+      "stats": {
+        "atk": 2,
+        "hp": 4
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f2_mage4winds",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_unit"
+      }
+    },
+    {
+      "id": "f2_heartofthesonghai",
+      "name": "心之侍",
+      "type": "unit",
+      "faction": "f2",
+      "cost": 5,
+      "keywords": [],
+      "desc": "高攻高血的大将。",
+      "stats": {
+        "atk": 4,
+        "hp": 5
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "f2_heartofthesonghai",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_unit"
+      }
+    },
+    {
+      "id": "neutral_healingmystic",
+      "name": "疗愈秘术师",
+      "type": "unit",
+      "faction": "neutral",
+      "cost": 3,
+      "keywords": [],
+      "desc": "登场：为己方将军恢复 2 点生命。",
+      "stats": {
+        "atk": 2,
+        "hp": 3
+      },
+      "opening_heal": 2,
+      "art": {
+        "asset_id": "neutral_healingmystic",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "neutral_unit"
+      }
+    },
+    {
+      "id": "neutral_bonereaper",
+      "name": "骸骨收割者",
+      "type": "unit",
+      "faction": "neutral",
+      "cost": 4,
+      "keywords": [],
+      "desc": "中立的稳健打手。",
+      "stats": {
+        "atk": 3,
+        "hp": 4
+      },
+      "opening_heal": 0,
+      "art": {
+        "asset_id": "neutral_bonereaper",
+        "static_frame": {
+          "animation": "idle",
+          "index": 0
+        },
+        "card_frame_asset_id": "neutral_unit"
+      }
+    },
+    {
+      "id": "f1_sundropelixir",
+      "name": "阳光药水",
+      "type": "spell",
+      "faction": "f1",
+      "cost": 1,
+      "keywords": [],
+      "desc": "为一个友方单位或己方将军恢复 4 点生命。",
+      "spell": {
+        "effect": "heal",
+        "amount": 4,
+        "target": "friendly_any"
+      },
+      "art": {
+        "asset_id": "icon_f1_sundropelixir",
+        "static_frame": {
+          "animation": "sundropelixir",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_spell"
+      }
+    },
+    {
+      "id": "f1_truestrike",
+      "name": "破魔箭",
+      "type": "spell",
+      "faction": "f1",
+      "cost": 2,
+      "keywords": [],
+      "desc": "对一个敌方随从造成 3 点伤害。",
+      "spell": {
+        "effect": "damage",
+        "amount": 3,
+        "target": "enemy_minion"
+      },
+      "art": {
+        "asset_id": "icon_f1_truestrike",
+        "static_frame": {
+          "animation": "truestrike",
+          "index": 0
+        },
+        "card_frame_asset_id": "f1_spell"
+      }
+    },
+    {
+      "id": "f2_phoenixfire",
+      "name": "凤火",
+      "type": "spell",
+      "faction": "f2",
+      "cost": 3,
+      "keywords": [],
+      "desc": "对一个敌方目标造成 3 点伤害。",
+      "spell": {
+        "effect": "damage",
+        "amount": 3,
+        "target": "enemy_any"
+      },
+      "art": {
+        "asset_id": "icon_f2_phoenixfire",
+        "static_frame": {
+          "animation": "phoenixfire",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_spell"
+      }
+    },
+    {
+      "id": "f2_cobrastrike",
+      "name": "眼镜蛇击",
+      "type": "spell",
+      "faction": "f2",
+      "cost": 2,
+      "keywords": [],
+      "desc": "使一个友方随从永久获得 +2 攻击。",
+      "spell": {
+        "effect": "buff_attack",
+        "amount": 2,
+        "target": "friendly_minion"
+      },
+      "art": {
+        "asset_id": "icon_f2_cobrastrike",
+        "static_frame": {
+          "animation": "cobrastrike",
+          "index": 0
+        },
+        "card_frame_asset_id": "f2_spell"
+      }
+    }
+  ],
+  "decks": {
+    "player": [
+      "f1_silverguardsquire",
+      "f1_silverguardsquire",
+      "f1_silverguardsquire",
+      "f1_backlinearcher",
+      "f1_backlinearcher",
+      "f1_sunstonetemplar",
+      "f1_sunstonetemplar",
+      "f1_sunstonetemplar",
+      "f1_windbladecommander",
+      "f1_windbladecommander",
+      "f1_ironcliffeguardian",
+      "f1_ironcliffeguardian",
+      "neutral_healingmystic",
+      "neutral_healingmystic",
+      "neutral_bonereaper",
+      "f1_sundropelixir",
+      "f1_sundropelixir",
+      "f1_truestrike",
+      "f1_truestrike",
+      "f1_truestrike"
+    ],
+    "ai": [
+      "f2_onyxjaguar",
+      "f2_onyxjaguar",
+      "f2_onyxjaguar",
+      "f2_sparrowhawk",
+      "f2_sparrowhawk",
+      "f2_sparrowhawk",
+      "f2_lanternfox",
+      "f2_lanternfox",
+      "f2_lanternfox",
+      "f2_mage4winds",
+      "f2_mage4winds",
+      "f2_heartofthesonghai",
+      "f2_heartofthesonghai",
+      "neutral_healingmystic",
+      "neutral_healingmystic",
+      "neutral_bonereaper",
+      "f2_phoenixfire",
+      "f2_phoenixfire",
+      "f2_cobrastrike",
+      "f2_cobrastrike"
+    ]
+  }
+}

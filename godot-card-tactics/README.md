@@ -114,6 +114,13 @@ godot-card-tactics/
 │  └─ mana_bar.gd                # 9 颗法力水晶
 ├─ data/cards.json               # 卡牌、将军、套牌
 ├─ assets/duelyst_cc0/          # CC0 资产子集 + LICENSE + SOURCE.md
+├─ export/
+│  ├─ asset_manifest.json        # 引擎无关资产清单（35 资产/1291 帧/许可/来源）
+│  ├─ cards.json                 # 引擎无关卡牌/将军/套牌/规则常量
+│  ├─ slice_atlas.py             # 纯 Python 切片/重打包/联系表/manifest 校验
+│  ├─ build_exports.py           # 从源数据重建 manifest/cards
+│  ├─ README.md                  # 导出/切片/校验用法
+│  └─ sample_contact_sheet.png   # 切片证据（2 个真实图集）
 ├─ tools/
 │  ├─ smoke_card_tactics.gd      # headless 冒烟测试（65 checks）
 │  ├─ screenshot_card_tactics.gd # 1920×1080 真实 GPU 截图
@@ -121,13 +128,28 @@ godot-card-tactics/
 │  ├─ record_card_tactics.sh     # AVI → MP4/GIF
 │  └─ perf_card_tactics.gd       # 真实 GPU FPS 采样
 ├─ docs/
-│  ├─ TECH.md                    # 规则模型/状态机/AI/图集/资产管线
+│  ├─ DEVELOPMENT.md             # 开发文档：规则/状态机/AI/确定性/重写清单
+│  ├─ CROSS_ENGINE.md            # 跨引擎四层拆分/映射表/移植契约/验收
+│  ├─ PORTABLE_ASSETS.md         # 资产清单/图集 schema/锚点/许可/导出
+│  ├─ TECH.md                    # 原实现：规则模型/图集/UI/资产管线
 │  ├─ 迭代记录.md
 │  ├─ shots/                     # 5 张 1920×1080 截图
 │  ├─ card_tactics.mp4           # 10.4s / 1280×720 / 30fps
 │  └─ card_tactics.gif           # 10.4s / 800px 宽
 ├─ README.md
 └─ CREDITS.md
+```
+
+## 开发与移植文档
+
+- [开发文档 DEVELOPMENT.md](docs/DEVELOPMENT.md) —— 完整规则、回合状态机、动作 API、AI 评分、确定性种子与测试向量；不读 GDScript 也能重写。
+- [跨引擎移植 CROSS_ENGINE.md](docs/CROSS_ENGINE.md) —— **A 数据 / B 算法 / C 渲染 / D 工具链** 四层拆分、Godot / Unity / Unreal / Three.js 映射表、移植契约与验收清单。
+- [可移植资产 PORTABLE_ASSETS.md](docs/PORTABLE_ASSETS.md) —— 35 个 PNG / 24 个帧 JSON、图集 schema、帧矩形、锚点/缩放、CC0 来源与导出方法。
+- [导出工具 export/README.md](export/README.md) —— `asset_manifest.json`、`cards.json`、`slice_atlas.py`；一条命令校验资产：
+
+```bash
+python3 export/slice_atlas.py verify --manifest export/asset_manifest.json
+# MANIFEST_OK assets=35 atlas_assets=24 animations=109 frames=1291
 ```
 
 ## 验证

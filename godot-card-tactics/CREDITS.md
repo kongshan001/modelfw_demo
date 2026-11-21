@@ -29,5 +29,6 @@
 
 - [Godot Engine 4.6](https://godotengine.org/) — MIT License。
 - [ffmpeg](https://ffmpeg.org/) — 仅用于把录制 AVI 转成 MP4/GIF；不参与运行时。
+- [Pillow](https://python-pillow.org/) — HPND License；仅 `export/slice_atlas.py` 切片/联系表使用，不随游戏运行时分发。
 - 中文 UI 使用操作系统 CJK 字体（PingFang SC / Hiragino Sans GB / Heiti SC / Noto Sans CJK SC / Microsoft YaHei 等），**字体文件未复制进项目**。
 - macOS / Intel HD Graphics 6000 用于本机性能与截图验证。
