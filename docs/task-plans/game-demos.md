@@ -21,8 +21,10 @@
 - 交付: `docs/art-review/changan-action-review.md` + 代表图；不改代码/资产；媒体
 - 约束: 独立评审，不复用实现者自评；不复制原游戏素材；中文
 - 指派: game-art-director worker（dispatcher）
-- 状态: queued
-- 后续: game-artist 整改
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-043/result.md
+- 结论: 4.1/10；内部 CONCERNS，外放 REJECT；P0=剪影/阵营、夜景明度/材质、相机/反馈，P1=HUD/对比、唐风身份/展示物料
+- 后续: game-artist 按 P0→P1 整改；Art Director 独立复评后再签外放
 
 ## T-20261121-039 · 波次生存 Vertical Slice（T-038 follow-up）
 - 线程: T-20261121-038（波次进攻拆解 → 实现，跨类型 follow-up）
@@ -144,7 +146,7 @@
 - 交付: `godot-proc-map/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/许可合规
 - 约束: 只复刻算法与视觉语言，不复制案例素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性种子；不改其他项目
 - 指派: game-engineer worker（dispatcher）
-- 状态: blocked（等 T-020 done + Git 发布）
+- 状态: running
 - depends_on: T-20261121-040（T-020 重试）
 
 ## T-20261121-014 · 复刻《幻唐志》手游道具背包界面（Godot UI）
