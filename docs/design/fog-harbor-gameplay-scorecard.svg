@@ -1,0 +1,293 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">雾港余烬 · 玩法创新迭代评分与 top 2 brief</title>
+  <desc id="desc">T-20261121-042：16 个方案 / 13 个家族；top 1 H1 大件手持 22 分，top 2 N1 搜声 19 分；提案，待独立红队与真人 playtest，未改代码，未自我批准。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080d14"/>
+      <stop offset="0.55" stop-color="#0d1420"/>
+      <stop offset="1" stop-color="#111a27"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2c879"/>
+      <stop offset="1" stop-color="#c98f35"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#73e0cf"/>
+      <stop offset="1" stop-color="#2c9c90"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .title{font:700 34px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#eef3fa}
+      .sub{font:400 15px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#93a1b5}
+      .h2{font:700 18px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#eef3fa}
+      .h3{font:600 14px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#dbe5f1}
+      .body{font:400 13px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#aebccd}
+      .small{font:400 11px "PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;fill:#8594a8}
+      .mono{font:600 12px "SFMono-Regular",Consolas,monospace;fill:#c7d3e2}
+      .id{font:700 12px "SFMono-Regular",Consolas,monospace;fill:#e8b45a}
+      .score{font:600 12px "SFMono-Regular",Consolas,monospace;fill:#c7d3e2;text-anchor:middle}
+      .total{font:700 15px "SFMono-Regular",Consolas,monospace;fill:#f2c879;text-anchor:middle}
+      .gold{fill:#e8b45a}
+      .teal{fill:#54c7b8}
+      .warn{fill:#e06c75}
+      .muted{fill:#7d8da2}
+      .panel{fill:#0f1722;stroke:#243244;stroke-width:1}
+      .card{fill:#131d2a;stroke:#2c3a4d;stroke-width:1}
+      .divider{stroke:#263243;stroke-width:1}
+      .rowline{stroke:#1b2635;stroke-width:1}
+      .goldbar{fill:url(#gold)}
+      .tealbar{fill:url(#teal)}
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <g opacity="0.35">
+    <circle cx="1760" cy="90" r="280" fill="#e8b45a" opacity="0.06"/>
+    <circle cx="120" cy="990" r="300" fill="#54c7b8" opacity="0.05"/>
+  </g>
+
+  <!-- Header -->
+  <text x="44" y="56" class="title">雾港余烬 · 玩法创新迭代</text>
+  <text x="44" y="82" class="sub">T-20261121-042 · 16 个方案 / 13 个家族 / 五项评分 · top 1 H1 大件手持 · top 2 N1 搜声</text>
+  <g transform="translate(1510,32)">
+    <rect x="0" y="0" width="366" height="48" rx="8" fill="#1a2330" stroke="#33455c"/>
+    <text x="14" y="20" class="small">2026-11-22 · Game Designer worker</text>
+    <text x="14" y="38" class="mono gold">提案 / 待独立红队 + playtest</text>
+  </g>
+  <line x1="44" y1="106" x2="1876" y2="106" class="divider"/>
+
+  <!-- Diagnosis strip -->
+  <g transform="translate(44,120)">
+    <rect x="0" y="0" width="1832" height="54" rx="8" class="card"/>
+    <text x="16" y="21" class="small">诊断（以当前 build 为准）</text>
+    <text x="16" y="40" class="body">打无产出（敌人不掉落/弹药不补给） · 搜无代价（2 箱激活/24 格/溢出 100% 折现） · 雾不改变信息（屏幕空间遮罩/无遮挡） · 撤离太便宜（站 3 秒） · 成长线性（3 条升级）</text>
+  </g>
+
+  <!-- Score table panel -->
+  <g transform="translate(30,194)">
+    <rect x="0" y="0" width="1140" height="760" rx="10" class="panel"/>
+    <text x="18" y="26" class="h2">16 个方案 · 五项评分（1–5）</text>
+    <text x="18" y="46" class="small">F = 可玩灰盒 build 人天，不含 5 人 × 2 轮 playtest；分数为 pre-prototype 估计，未实测</text>
+
+    <!-- table header -->
+    <g transform="translate(0,68)">
+      <text x="18" y="14" class="small">ID</text>
+      <text x="74" y="14" class="small">方案（动词 + 约束）</text>
+      <text x="530" y="14" class="small">玩家放弃什么</text>
+      <text x="782" y="14" class="small">N</text>
+      <text x="814" y="14" class="small">D</text>
+      <text x="846" y="14" class="small">C</text>
+      <text x="878" y="14" class="small">F</text>
+      <text x="910" y="14" class="small">A</text>
+      <text x="950" y="14" class="small">总</text>
+      <text x="996" y="14" class="small">决策</text>
+      <line x1="12" y1="22" x2="1128" y2="22" class="divider"/>
+    </g>
+
+    <!-- H1 -->
+    <g transform="translate(0,94)">
+      <rect x="10" y="-18" width="1120" height="40" rx="5" fill="#1d1a12" opacity="0.85"/>
+      <text x="18" y="7" class="id">H1</text>
+      <text x="74" y="5" class="h3 gold">大件手持：占格 ≥2 可扛手省 2–4 格；占双手，禁射/禁冲刺</text>
+      <text x="530" y="5" class="small">省格 vs 火力/机动；不能全要</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">5</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">22</text>
+      <text x="996" y="5" class="small gold">L1 · top 1</text>
+    </g>
+    <!-- G1 -->
+    <g transform="translate(0,136)">
+      <text x="18" y="7" class="id">G1</text>
+      <text x="74" y="5" class="body">贪光：携带价值越高，敌人侦测越远；丢下即降</text>
+      <text x="530" y="5" class="small">潜行；想带价值就被追</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">20</text>
+      <text x="996" y="5" class="small">H1 modifier</text>
+    </g>
+    <!-- E1 -->
+    <g transform="translate(0,178)">
+      <text x="18" y="7" class="id">E1</text>
+      <text x="74" y="5" class="body">撤离供电：带 2×2 电池启动信标，守 8 秒，敌人汇聚</text>
+      <text x="530" y="5" class="small">一个 2×2 格 + 安静撤离</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">20</text>
+      <text x="996" y="5" class="small">第二波</text>
+    </g>
+    <!-- N1 -->
+    <g transform="translate(0,220)">
+      <rect x="10" y="-18" width="1120" height="40" rx="5" fill="#0d2424" opacity="0.85"/>
+      <text x="18" y="7" class="id">N1</text>
+      <text x="74" y="5" class="h3 teal">搜声：快搜 0.9s 大铃声 / 静搜 2.4s 小铃声；敌人查看</text>
+      <text x="530" y="5" class="small">时间 vs 安全；不能又快又安静</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small teal">L0 → L1 · top 2</text>
+    </g>
+    <!-- R1 -->
+    <g transform="translate(0,262)">
+      <text x="18" y="7" class="id">R1</text>
+      <text x="74" y="5" class="body">竞争者：1 个 NPC 搜箱后带物资撤离；可截胡</text>
+      <text x="530" y="5" class="small">时间/弹药；不追就少一箱</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">3</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">L0 → L1 第二波</text>
+    </g>
+    <!-- T1 -->
+    <g transform="translate(0,304)">
+      <text x="18" y="7" class="id">T1</text>
+      <text x="74" y="5" class="body">中转仓：3 个地图 stash；存物 50% 价值保留，死亡不丢</text>
+      <text x="530" y="5" class="small">50% 价值 vs 路线时间</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">L0 → L1 第二波</text>
+    </g>
+    <!-- S2 -->
+    <g transform="translate(0,346)">
+      <text x="18" y="7" class="id">S2</text>
+      <text x="74" y="5" class="body">六格背包：24→6 格，每件占 1 格，不能囤</text>
+      <text x="530" y="5" class="small">收集/堆叠；每件都是硬选择</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">3</text><text x="846" y="6" class="score">5</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">L0</text>
+    </g>
+    <!-- K1 -->
+    <g transform="translate(0,388)">
+      <text x="18" y="7" class="id">K1</text>
+      <text x="74" y="5" class="body">单局契约：开局选只用手枪/不能治疗/带出指定物</text>
+      <text x="530" y="5" class="small">构筑自由；自限换奖励</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">3</text><text x="846" y="6" class="score">5</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">模式，不做核心</text>
+    </g>
+    <!-- D1 -->
+    <g transform="translate(0,430)">
+      <text x="18" y="7" class="id">D1</text>
+      <text x="74" y="5" class="body">阵亡遗物箱：死亡背包变成下局可回收的箱子</text>
+      <text x="530" y="5" class="small">死亡不再“全丢”，但要再进一次</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">L0</text>
+    </g>
+    <!-- F1 -->
+    <g transform="translate(0,472)">
+      <text x="18" y="7" class="id">F1</text>
+      <text x="74" y="5" class="body">雾潮：地图边缘每 90 秒被雾/水吞没，箱子消失</text>
+      <text x="530" y="5" class="small">时间/路线；没搜的箱子会没</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">5</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">第二波</text>
+    </g>
+    <!-- X1 -->
+    <g transform="translate(0,514)">
+      <text x="18" y="7" class="id">X1</text>
+      <text x="74" y="5" class="body">消防封路：警报后出口逐个关闭，必须提前选出口</text>
+      <text x="530" y="5" class="small">路线承诺；不能全都要</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">19</text>
+      <text x="996" y="5" class="small">L0</text>
+    </g>
+    <!-- I1 -->
+    <g transform="translate(0,556)">
+      <text x="18" y="7" class="id">I1</text>
+      <text x="74" y="5" class="body">保险精算：出击前为格子投保，死亡返还；保费随价值升</text>
+      <text x="530" y="5" class="small">现在的信用点；降低失败损失</text>
+      <text x="782" y="6" class="score">3</text><text x="814" y="6" class="score">3</text><text x="846" y="6" class="score">4</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">18</text>
+      <text x="996" y="5" class="small">L0</text>
+    </g>
+    <!-- B2 -->
+    <g transform="translate(0,598)">
+      <text x="18" y="7" class="id">B2</text>
+      <text x="74" y="5" class="body">背包挡弹：6×4 格映射受击体积，物品挡弹/耐久</text>
+      <text x="530" y="5" class="small">容量/贵重品；不能满载又防弹</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">3</text><text x="878" y="6" class="score">3</text><text x="910" y="6" class="score">4</text>
+      <text x="950" y="6" class="total">18</text>
+      <text x="996" y="5" class="small warn">L0 only</text>
+    </g>
+    <!-- S1 -->
+    <g transform="translate(0,640)">
+      <text x="18" y="7" class="id">S1</text>
+      <text x="74" y="5" class="body">实时背包：开包不暂停，背包变侧栏，边打边整理</text>
+      <text x="530" y="5" class="small">安全/时间；整理会被打</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">3</text><text x="846" y="6" class="score">3</text><text x="878" y="6" class="score">4</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">17</text>
+      <text x="996" y="5" class="small">L0</text>
+    </g>
+    <!-- A1 -->
+    <g transform="translate(0,682)">
+      <text x="18" y="7" class="id">A1</text>
+      <text x="74" y="5" class="body">无撤离标记：移除罗盘/撤离点标记，靠地图知识找路</text>
+      <text x="530" y="5" class="small">确定性/导航；会迷路</text>
+      <text x="782" y="6" class="score">4</text><text x="814" y="6" class="score">3</text><text x="846" y="6" class="score">2</text><text x="878" y="6" class="score">5</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">17</text>
+      <text x="996" y="5" class="small warn">L0 only</text>
+    </g>
+    <!-- C1 -->
+    <g transform="translate(0,724)">
+      <text x="18" y="7" class="id">C1</text>
+      <text x="74" y="5" class="body">海关申报：撤离时申报/瞒报，抽查没收/罚款</text>
+      <text x="530" y="5" class="small">确定性/价值；申报税 vs 没收风险</text>
+      <text x="782" y="6" class="score">5</text><text x="814" y="6" class="score">4</text><text x="846" y="6" class="score">2</text><text x="878" y="6" class="score">2</text><text x="910" y="6" class="score">3</text>
+      <text x="950" y="6" class="total">16</text>
+      <text x="996" y="5" class="small warn">L0 only</text>
+    </g>
+  </g>
+
+  <!-- Top 1 card -->
+  <g transform="translate(1190,194)">
+    <rect x="0" y="0" width="690" height="356" rx="10" class="card"/>
+    <rect x="0" y="0" width="8" height="356" rx="4" class="goldbar"/>
+    <text x="26" y="36" class="h2">TOP 1 · H1 大件手持</text>
+    <g transform="translate(584,16)">
+      <rect x="0" y="0" width="82" height="58" rx="8" fill="#241d12" stroke="#6b5426"/>
+      <text x="41" y="30" text-anchor="middle" class="h2 gold">22</text>
+      <text x="41" y="47" text-anchor="middle" class="small">/ 25</text>
+    </g>
+    <text x="26" y="70" class="body">What if：大件可以扛手省 2–4 格，但占双手、不能射击/冲刺？</text>
+    <text x="26" y="94" class="body">玩家放弃：省格 <tspan class="muted">vs</tspan> 火力/机动；不能既满载又保持战斗准备。</text>
+    <text x="26" y="124" class="h3">核心循环</text>
+    <text x="26" y="146" class="small">30 秒：看到黑匣子 → 装包（4 格）或扛起（省 4 格，收起枪）→ 敌人出现 → 放下 → 射击 → 重拾。</text>
+    <text x="26" y="166" class="small">5 分钟：先清精英再扛，还是扛着穿过最后一段；撤离前决定带哪件。</text>
+    <text x="26" y="186" class="small">30 分钟：仓库/升级不变；变化的是每局“带什么/怎么带”的风险。</text>
+    <text x="26" y="216" class="h3">最小原型 / 验收</text>
+    <text x="26" y="238" class="small">L1 5–7 天 · 复用 6×4 背包/拾取/射击/冲刺/HUD · 不做新枪/敌人/地图/美术。</text>
+    <text x="26" y="258" class="small">H1 ≥4/5 在 ≥2 个独立时刻扛/放；H2 ≥3/5 说得出取舍；H3 ≥3/5 想再来。</text>
+    <text x="26" y="278" class="small">H4 首操作 ≤60 秒；0/5 不知道“不能开枪”；性能回退 ≤10%。</text>
+    <text x="26" y="308" class="h3">Kill</text>
+    <text x="26" y="330" class="small warn">0/5 扛起；4/5 说“只是多 4 格”；敌人出现时从不放下；UI 不可读；7 天做不出。</text>
+    <text x="520" y="330" class="small gold">提案 · 待红队/playtest</text>
+  </g>
+
+  <!-- Top 2 card -->
+  <g transform="translate(1190,570)">
+    <rect x="0" y="0" width="690" height="356" rx="10" class="card"/>
+    <rect x="0" y="0" width="8" height="356" rx="4" class="tealbar"/>
+    <text x="26" y="36" class="h2">TOP 2 · N1 搜声</text>
+    <g transform="translate(584,16)">
+      <rect x="0" y="0" width="82" height="58" rx="8" fill="#102622" stroke="#2c6b62"/>
+      <text x="41" y="30" text-anchor="middle" class="h2 teal">19</text>
+      <text x="41" y="47" text-anchor="middle" class="small">/ 25</text>
+    </g>
+    <text x="26" y="70" class="body">What if：快搜 0.9 秒大铃声 / 静搜 2.4 秒小铃声；敌人循声查看？</text>
+    <text x="26" y="94" class="body">玩家放弃：时间 <tspan class="muted">vs</tspan> 安全；不能又快又安静。</text>
+    <text x="26" y="124" class="h3">核心循环</text>
+    <text x="26" y="146" class="small">30 秒：靠近箱 → 快搜/静搜 → 铃声扩散 → 敌人转身/走来 → 躲/打/放弃。</text>
+    <text x="26" y="166" class="small">5 分钟：规划先搜哪个箱、在哪个巡逻间隙搜、要不要用枪声/冲刺诱敌。</text>
+    <text x="26" y="186" class="small">30 分钟：仓库/升级不变；变化的是每局搜索路线和“什么时候值得冒险搜”。</text>
+    <text x="26" y="216" class="h3">最小原型 / 验收</text>
+    <text x="26" y="238" class="small">先 L0 1 天 → L1 5–7 天 · 复用搜箱计时/敌人 FSM/FX/HUD · 不做音频/新敌人/新地图。</text>
+    <text x="26" y="258" class="small">H1 ≥4/5 在 ≥2 次“敌人 350px 内”选择静搜；H2 ≥3/5 说得出；H3 ≥3/5 想再来。</text>
+    <text x="26" y="278" class="small">H4 0/5 不知道铃声含义；敌人反应 ≤1.5 秒；卡住 >5 秒 = 0；性能回退 ≤10%。</text>
+    <text x="26" y="308" class="h3">Kill</text>
+    <text x="26" y="330" class="small warn">4/5 永远快搜；敌人不查看/卡住；铃声不可读；最优是“先清光再搜”；7 天做不出。</text>
+    <text x="520" y="330" class="small teal">提案 · 先 L0 灰盒</text>
+  </g>
+
+  <!-- Footer -->
+  <line x1="44" y1="982" x2="1876" y2="982" class="divider"/>
+  <text x="44" y="1012" class="small">评分口径：N/D/C/F/A 1–5，总分 = 五项相加；F = 可玩灰盒 build 人天，不含 playtest；未做原型/真人测试，分数为 pre-prototype 估计。</text>
+  <text x="44" y="1038" class="small">状态：全部为提案；待独立红队 + 5 人 × 2 轮 playtest；不自我批准；未改任何 GDScript/场景/资源。</text>
+  <text x="1510" y="1038" class="small gold">16 方案 / 13 家族 / 首波 2 / 第二波 6</text>
+</svg>

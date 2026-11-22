@@ -2,6 +2,39 @@
 
 ## 进行中
 
+## T-20261121-042 · 雾港撤离玩法创新迭代（T-026 follow-up）
+- 线程: T-20261121-026（雾港撤离）
+- 父任务: T-20261121-026（done）
+- 类型: game-demo（玩法创新）
+- 目标: 用 T-033/034/035 的玩法创新框架，为雾港撤离提出 1–2 个可原型的新机制（不是换皮/堆功能），给评分、top brief、playtest 与 kill criteria
+- 交付: `docs/design/fog-harbor-gameplay-iteration.md` + 一页 brief + taste 否决清单 + playtest 计划 + 截图；不改游戏代码
+- 约束: 原创；参考抽象结构不复制 IP；必须多方案/五项评分/可证伪假设；不自我批准
+- 指派: game-designer worker（dispatcher）
+- 状态: done
+- 后续: 红队评审 / 原型实现
+
+## T-20261121-043 · 长安城动作游戏美术评审（T-025 follow-up）
+- 线程: T-20261121-024（长安城动作游戏）
+- 父任务: T-20261121-025（done）
+- 类型: game-demo（独立美术评审）
+- 目标: 按 1920×1080 + 25% 独立评审 godot-changan-action 的构图/角色/场景/UI/VFX/一致性，给 P0–P2 与 verdict
+- 交付: `docs/art-review/changan-action-review.md` + 代表图；不改代码/资产；媒体
+- 约束: 独立评审，不复用实现者自评；不复制原游戏素材；中文
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+- 后续: game-artist 整改
+
+## T-20261121-039 · 波次生存 Vertical Slice（T-038 follow-up）
+- 线程: T-20261121-038（波次进攻拆解 → 实现，跨类型 follow-up）
+- 父任务: T-20261121-038；依赖: T-20261121-038（done + Git 发布）
+- 类型: game-demo（Godot 波次生存）
+- 目标: 按 T-038 brief 实现单场地 8 波 vertical slice：领主走位+自动攻击、固定塔位建塔/修墙、引怪、5 敌型（含 Boss）、2 塔、2–3 次三选一、失败/重开/分数
+- 交付: `godot-wave-defense/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/IP 边界
+- 约束: 只复刻抽象机制，不复制《奔奔王国》/Kingshot 角色/UI/素材/商标；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
+- 指派: game-engineer worker（dispatcher）
+- 状态: failed
+- depends_on: T-20261121-038
+
 ## T-20261121-037 · 复刻 Godot Particles 魔法发射特效教程
 - 来源: 飞书消息（B 站《中配：Godot Particles 魔法发射特效教程！》，https://b23.tv/9gCDB4E，2026-11-21，21:21）
 - 类型: game-demo（Godot VFX）
@@ -112,7 +145,7 @@
 - 约束: 只复刻算法与视觉语言，不复制案例素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性种子；不改其他项目
 - 指派: game-engineer worker（dispatcher）
 - 状态: blocked（等 T-020 done + Git 发布）
-- depends_on: T-20261121-020
+- depends_on: T-20261121-040（T-020 重试）
 
 ## T-20261121-014 · 复刻《幻唐志》手游道具背包界面（Godot UI）
 - 来源: 飞书消息（2026-11-21，“帮我用godot来复刻幻唐志手游的道具背包界面”）
