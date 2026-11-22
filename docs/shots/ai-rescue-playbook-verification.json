@@ -1,0 +1,59 @@
+{
+  "task": "T-20261121-041",
+  "followup_of": "T-20261121-028",
+  "deliverable": "docs/ai-half-finished-rescue-playbook-交互版.html",
+  "checked_at": "2026-11-22",
+  "tool": "Google Chrome 150.0.7871.125 headless + CDP; file://; viewport 1440x1000",
+  "console_errors": [],
+  "external_dependencies": [],
+  "render": {
+    "title": "AI 半成品游戏抢救手册 · 4 招拆成可执行 SOP",
+    "page_height_px": 15197,
+    "symptoms": 12,
+    "taste_rows": 2,
+    "rubric_dimensions_visual": 7,
+    "sop_steps": 7,
+    "acceptance_items": 14
+  },
+  "interactions": {
+    "triage_select_blurry": {
+      "selected": "“看不清/糊/不高级”",
+      "layer_pills": 10,
+      "do_actions": 3,
+      "dont_actions": 2,
+      "evidence_checked": 1,
+      "task_json_chars": 910
+    },
+    "judge_filled_example": {
+      "weighted_score": 3.92,
+      "threshold": 7.0,
+      "p0": 0,
+      "verdict": "REJECT",
+      "scored_dimensions": 7,
+      "evidence_dimensions": 7,
+      "self_checks_passed": 6,
+      "judge_prompt_chars": 992
+    }
+  },
+  "theme_check": {
+    "dark": {"background": "#0A130F", "ink": "#E8F1E8"},
+    "light": {"background": "#F2EFE4", "ink": "#17261E", "button": "主题：亮"}
+  },
+  "persistence": {
+    "method": "localStorage; edit project name → Page.reload",
+    "project_name_persisted": true,
+    "taste_rows": 2,
+    "judge_score_persisted": "3.92",
+    "triage_selection_persisted": "“看不清/糊/不高级”"
+  },
+  "screenshots": [
+    "docs/shots/ai-rescue-playbook-hero.png",
+    "docs/shots/ai-rescue-playbook-tools.png"
+  ],
+  "notes": [
+    "交互自测覆盖：症状选择、层切换、证据勾选、task JSON 生成、taste 行编辑/导出、rubric 打分/加权/verdict/自检、SOP 与验收勾选。",
+    "0 控制台错误/异常；无外部样式表、脚本或字体请求。",
+    "深/浅两套主题均实测；localStorage 编辑持久化实测通过。",
+    "截图来自同一构建；工具拼图由 triage / taste / judge 三段实拍拼接，未使用《烬谷盗火录》素材。"
+  ]
+}

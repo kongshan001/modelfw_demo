@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>AI 半成品游戏抢救手册 · 4 招拆成可执行 SOP</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1410'/%3E%3Cpath d='M8 9h16v4H8zM8 15h10v4H8zM8 21h13v4H8z' fill='%235FD8C9' opacity='.85'/%3E%3Cpath d='M22 15h4v10h-4z' fill='%23F2B35C'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --warn:#FF8A5C; --ok:#5FD88A;
+  --grid:rgba(150,200,170,.05);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --warn:#B4441F; --ok:#1B7A4A;
+  --grid:rgba(23,38,30,.05);
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(46px,7vw,88px) clamp(20px,5vw,56px) 26px;max-width:var(--maxw);margin:0 auto}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(280px,.78fr);gap:clamp(22px,4vw,52px);align-items:center}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.1vw,56px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,17.5px);color:var(--ink-soft);max-width:72ch;margin:0 0 18px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+.src-line{font-size:12.5px;color:var(--ink-faint);margin-top:16px;max-width:78ch}
+.src-line a{color:var(--teal);text-decoration:none;border-bottom:1px dotted var(--teal)}
+.hero-card{border:1px solid var(--line-strong);border-radius:18px;background:linear-gradient(160deg,var(--card),var(--card-2));padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero-card::after{content:"";position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,var(--teal-dim),transparent 65%);pointer-events:none}
+.hero-card-h{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:10px}
+.mini-loop{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.mini-loop li{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;padding:9px 0;border-bottom:1px dashed var(--line)}
+.mini-loop li:last-child{border-bottom:none}
+.mini-loop b{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.06em;padding-top:2px}
+.mini-loop span{font-size:14px;color:var(--ink-soft)}
+.mini-loop span b{font-family:var(--sans);font-size:14px;color:var(--ink);letter-spacing:0}
+.hero-card-f{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft)}
+.hero-card-f b{color:var(--teal)}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 70px}
+section{margin:0 0 clamp(46px,6vw,78px);scroll-margin-top:82px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.1em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.callout{border:1px solid var(--line-strong);border-radius:16px;background:linear-gradient(135deg,var(--card),var(--card-2));padding:clamp(18px,3vw,26px);margin:14px 0 18px}
+.callout .big{font-family:var(--serif);font-size:clamp(20px,2.6vw,28px);line-height:1.4;margin:0 0 8px;font-weight:700}
+.callout .big em{font-style:normal;color:var(--gold)}
+.callout p{color:var(--ink-soft);margin:0;font-size:14.5px}
+.tag,.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,var(--line));background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.idxgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:8px 0 18px}
+a.idx{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:14px 15px;transition:.2s;box-shadow:var(--shadow)}
+a.idx:hover{border-color:var(--teal);transform:translateY(-1px)}
+a.idx .n{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em}
+a.idx .t{font-family:var(--serif);font-size:17px;font-weight:700;margin:2px 0 3px}
+a.idx .d{font-size:13px;color:var(--ink-soft)}
+a.idx .s{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:6px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.65;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px;white-space:pre-wrap;word-break:break-word}
+pre b{color:var(--gold);font-weight:600}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14px}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.method{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:clamp(16px,2.6vw,24px);margin:14px 0;box-shadow:var(--shadow)}
+.method-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.mnum{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--gold);border:1px solid var(--gold-dim);background:var(--gold-dim);border-radius:999px;padding:3px 10px}
+.method-head h3{margin:0;font-size:clamp(19px,2.2vw,24px)}
+.ts{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.method .q{font-family:var(--serif);font-size:clamp(17px,2vw,20px);color:var(--ink);border-left:2px solid var(--teal);padding-left:14px;margin:10px 0 12px}
+.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--card-2);padding:13px 15px}
+.box.warn{border-color:color-mix(in srgb,var(--warn) 30%,var(--line))}
+.box.ok{border-color:color-mix(in srgb,var(--ok) 30%,var(--line))}
+.box p,.box li{font-size:13.5px;color:var(--ink-soft)}
+.box ul{margin:.2em 0;padding-left:1.1em}
+.box b{color:var(--ink)}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:880px){.hero-grid{grid-template-columns:1fr}.hero-card{max-width:560px}.method-grid,.grid2{grid-template-columns:1fr}}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{color:var(--paper);filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.tiny{padding:3px 7px;font-size:11px}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+/* wizard */
+.wizard{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;margin:16px 0}
+@media(max-width:900px){.wizard{grid-template-columns:1fr}}
+.wizard-side{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px;align-self:start}
+.wizard-main{border:1px solid var(--line-strong);border-radius:14px;background:var(--card);padding:clamp(14px,2.4vw,20px);min-height:320px}
+.wizard-step{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:8px}
+.sym-group{margin-bottom:12px}
+.sym-group h4{color:var(--ink-soft);margin:0 0 5px}
+.sym-btn{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:var(--paper-2);border:1px solid var(--line);border-radius:9px;color:var(--ink-soft);font-family:var(--sans);font-size:13.5px;line-height:1.4;padding:8px 10px;margin:0 0 5px;cursor:pointer;transition:.18s}
+.sym-btn em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--ink-faint);white-space:nowrap;padding-top:2px}
+.sym-btn:hover{border-color:var(--line-strong);color:var(--ink)}
+.sym-btn.active{border-color:var(--teal);background:var(--teal-dim);color:var(--ink)}
+.sym-btn.active em{color:var(--teal)}
+.panel-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.panel-head h3{margin:0}
+.panel-head .tag{margin-left:auto}
+.layer-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.pill{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer;transition:.18s}
+.pill:hover{border-color:var(--line-strong);color:var(--ink)}
+.pill.active{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+.pill .dot-mark{color:var(--teal);font-size:12px}
+.action-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px;margin:10px 0 14px}
+@media(max-width:980px){.action-grid{grid-template-columns:1fr}}
+.action{border:1px solid var(--line);border-radius:12px;background:var(--card-2);padding:12px 14px}
+.action h4{margin:0 0 7px}
+.action ul{margin:0;padding-left:1.1em}
+.action li{font-size:13.5px;color:var(--ink-soft);margin:.2em 0}
+.action.do{border-color:color-mix(in srgb,var(--teal) 35%,var(--line))}
+.action.dont{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.chk{display:flex;gap:7px;align-items:flex-start;font-size:13px;color:var(--ink-soft);margin:5px 0;cursor:pointer}
+.chk input{margin-top:4px;accent-color:var(--teal);flex:0 0 auto}
+.chk.done{color:var(--ink-faint);text-decoration:line-through}
+.accept-box{border:1px solid var(--line);border-radius:12px;background:var(--card-2);padding:12px 14px;margin:10px 0}
+.accept-box b{color:var(--ink)}
+.accept-box ul{margin:.2em 0 .4em;padding-left:1.1em}
+.accept-box li{font-size:13.5px;color:var(--ink-soft)}
+.judge-line{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);border-top:1px dashed var(--line);padding-top:8px;margin-top:6px}
+.judge-line b{color:var(--teal)}
+.json-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0}
+.json-head h4{margin:0}
+pre.jsonbox{margin-top:6px;max-height:360px;overflow:auto;font-size:12px}
+.empty{border:1px dashed var(--line-strong);border-radius:12px;padding:34px 22px;text-align:center;color:var(--ink-faint);font-size:14px}
+/* steps */
+.steps{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.step{display:grid;grid-template-columns:34px 1fr;gap:10px;border:1px solid var(--line);border-radius:13px;background:var(--card);padding:13px 15px 13px 11px;transition:.2s}
+.step.done{border-color:color-mix(in srgb,var(--ok) 32%,var(--line));background:color-mix(in srgb,var(--ok) 5%,var(--card))}
+.step-check{display:flex;justify-content:center;padding-top:2px;cursor:pointer}
+.step-check input{position:absolute;opacity:0;width:1px;height:1px}
+.step-check span{display:block;width:20px;height:20px;border:1px solid var(--line-strong);border-radius:6px;background:var(--paper-2);position:relative}
+.step-check input:checked+span{background:var(--teal);border-color:var(--teal)}
+.step-check input:checked+span::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(42deg)}
+.step-check input:focus-visible+span{outline:2px solid var(--teal);outline-offset:2px}
+.step-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.step-n{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.08em}
+.step-head h3{font-size:17px;margin:0}
+.step-head .ts{margin-left:auto}
+.step-body ul{margin:.3em 0 .4em}
+.step-body li{font-size:13.5px;color:var(--ink-soft)}
+.deliver{font-family:var(--mono);font-size:11px;color:var(--ink-faint);border-top:1px dashed var(--line);padding-top:6px;margin-top:4px}
+.deliver b{color:var(--teal)}
+.progress-line{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);margin:6px 0 2px}
+.gauge{flex:1;height:6px;border-radius:999px;background:var(--paper-2);border:1px solid var(--line);overflow:hidden}
+.gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .25s}
+/* clarify */
+.qa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:12px 0}
+.qa-card{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:13px 15px}
+.qa-card .q-num{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.1em}
+.qa-card h3{font-size:17px;margin:2px 0 6px}
+.qa-card ul{margin:0;padding-left:1.1em}
+.qa-card li{font-size:13px;color:var(--ink-soft);margin:.2em 0}
+/* editor */
+.editor{border:1px solid var(--line-strong);border-radius:15px;background:var(--card);padding:clamp(14px,2.4vw,20px);margin:14px 0}
+.editor-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.editor-bar label{font-family:var(--mono);font-size:11px;color:var(--ink-faint);display:flex;gap:6px;align-items:center}
+.spacer{flex:1}
+.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+input[type=text],input[type=date],input[type=number],textarea,select{font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;outline:none}
+input[type=text]:focus,input[type=date]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:var(--teal)}
+textarea{resize:vertical;line-height:1.45;width:100%}
+.block-label{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:6px 0 4px}
+#musts{width:100%;min-height:88px}
+.taste-table{min-width:1080px;font-size:12.5px}
+.taste-table th{padding:8px 8px}
+.taste-table td{padding:7px 8px}
+.taste-table input[type=text],.taste-table input[type=date],.taste-table select{width:100%;min-width:86px}
+.taste-table textarea{min-height:56px;font-size:12.5px}
+.taste-table tr.row-warn td{background:color-mix(in srgb,var(--warn) 6%,transparent)}
+.taste-table .cell-tag{display:block;margin-top:3px}
+.hint{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-top:8px}
+/* judge */
+.judge-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:14px;margin:14px 0}
+@media(max-width:960px){.judge-layout{grid-template-columns:1fr}}
+.rubric-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.rubric-tabs .pill{font-size:12px;padding:6px 11px}
+.judge-meta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:0 0 10px;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+.judge-meta label{display:flex;align-items:center;gap:6px}
+.judge-meta input[type=number]{width:72px}
+.judge-table{min-width:720px}
+.judge-table input[type=number]{width:76px}
+.judge-table textarea{min-height:52px;font-size:12.5px}
+.judge-table .w{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-top:2px}
+.verdict-panel{border:1px solid var(--line-strong);border-radius:14px;background:var(--card-2);padding:16px;align-self:start;position:sticky;top:76px}
+@media(max-width:960px){.verdict-panel{position:static}}
+.score-big{font-family:var(--serif);font-size:clamp(38px,6vw,58px);line-height:1;font-weight:700;color:var(--ink)}
+.score-sub{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:4px 0 12px}
+.verdict{font-family:var(--mono);font-size:14px;letter-spacing:.06em;border-radius:9px;padding:9px 12px;border:1px solid var(--line-strong);background:var(--paper-2);color:var(--ink)}
+.verdict.v-approve{border-color:var(--ok);color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.verdict.v-concerns{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.verdict.v-reject{border-color:var(--warn);color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.verdict.v-invalid{border-color:var(--line-strong);color:var(--ink-faint);background:var(--paper-2)}
+.verdict-note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 12px;min-height:36px}
+.verdict-panel .btn{width:100%;margin:4px 0;text-align:left}
+.selfcheck{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.selfcheck h4{margin:0 0 5px}
+.selfcheck label{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:var(--ink-soft);margin:4px 0;cursor:pointer}
+.selfcheck input{margin-top:3px;accent-color:var(--teal)}
+pre.prompt-preview{max-height:300px;overflow:auto;font-size:11.5px}
+/* anti + accept */
+.anti-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:12px 0}
+.anti{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:0 12px 12px 0;background:var(--card);padding:12px 14px}
+.anti h3{font-size:16px;margin:0 0 4px}
+.anti p{font-size:12.5px;color:var(--ink-soft);margin:0 0 4px}
+.anti p b{color:var(--ink)}
+.anti .fix{color:var(--ok)}
+.acc-list{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;margin:10px 0}
+@media(max-width:820px){.acc-list{grid-template-columns:1fr}}
+.acc-item{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--ink-soft);padding:6px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.acc-item:hover{background:var(--card)}
+.acc-item input{margin-top:4px;accent-color:var(--teal)}
+.acc-item.done{color:var(--ink-faint);text-decoration:line-through}
+/* misc */
+.src-table td:first-child{width:118px;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+.footer{max-width:var(--maxw);margin:0 auto;padding:26px clamp(18px,5vw,56px) 60px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-faint)}
+.footer b{color:var(--ink-soft)}
+#topBtn{position:fixed;right:18px;bottom:18px;z-index:55;font-family:var(--mono);font-size:11px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:999px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+#topBtn:hover{color:var(--ink);border-color:var(--teal)}
+@media print{
+  body::before,.progress,nav.toc,#themeBtn,#topBtn,.copy,.wizard-side,.rubric-tabs,.editor-bar,.verdict-panel .btn,.json-head .btn{display:none!important}
+  body{background:#fff;color:#111}
+  .wrap{max-width:none}
+  header.hero{padding:20px 0}
+  section{margin-bottom:24px}
+  a{color:#111}
+  .card,.method,.step,.wizard-main,.editor,.verdict-panel{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="kicker"><span class="dot"></span> 方法论讲义 · B 站 BV1AVs461EFQ 拆解 · 访问 2026-11-21</div>
+      <h1>AI 半成品游戏抢救<br><span class="u">4 招</span>拆成<span class="g">可执行 SOP</span></h1>
+      <p class="sub">半成品不是“推倒重来”，而是<b>先分清坏在哪一层 → 问清意图 → 冻结 taste/否决清单 → 只改这一层 → 让没参与的 AI 独立裁判 → 用证据决定继续/回滚</b>。本页把视频的 4 个方法转成可粘贴进 worker prompt 的模板，并用仓库 Gridbound 的整改数据做 dry-run。</p>
+      <div class="stat-row">
+        <span class="stat"><b>4</b> 个方法</span>
+        <span class="stat"><b>7</b> 步 SOP</span>
+        <span class="stat"><b>12</b> 个症状</span>
+        <span class="stat"><b>10</b> 个诊断层</span>
+        <span class="stat"><b>3</b> 个模板</span>
+        <span class="stat"><b>0</b> 外部依赖</span>
+      </div>
+      <p class="src-line">来源：B 站《AI给的半成品差点意思？4招妙手回春！》（UP TP制造好游戏，3:51，案例《烬谷盗火录》）。视频取证见 <a href="ai-half-finished-rescue-playbook.md">playbook §9</a>；本页不复制该游戏任何画面/素材/UI。视频观点、仓库验证、本文推断逐条区分。</p>
+    </div>
+    <aside class="hero-card" aria-label="抢救循环">
+      <div class="hero-card-h">Rescue Loop</div>
+      <ol class="mini-loop">
+        <li><b>01</b><span><b>分层诊断</b><br>只选一层，先找证据</span></li>
+        <li><b>02</b><span><b>先问清楚</b><br>7 问 + 5 行复述</span></li>
+        <li><b>03</b><span><b>冻结 taste</b><br>3–5 条底线 + ≥3 条否决</span></li>
+        <li><b>04</b><span><b>单层改动</b><br>一个假设、一个指标、一个时间盒</span></li>
+        <li><b>05</b><span><b>独立裁判</b><br>盲评、证据优先、先问题后分</span></li>
+        <li><b>06</b><span><b>证据决策</b><br>继续 / 回滚 / 换层 / 停止</span></li>
+      </ol>
+      <div class="hero-card-f">核心：<b>一次只改一层</b>。没有 before/after 证据，就不算“改好了”。</div>
+    </aside>
+  </div>
+</header>
+
+<nav class="toc" id="toc" aria-label="目录"><div class="inner">
+  <a href="#s0" class="active">00 结论</a>
+  <a href="#s1">01 四招</a>
+  <a href="#s2">02 Triage</a>
+  <a href="#s3">03 SOP</a>
+  <a href="#s4">04 反问</a>
+  <a href="#s5">05 Taste</a>
+  <a href="#s6">06 裁判</a>
+  <a href="#s7">07 角色</a>
+  <a href="#s8">08 反例</a>
+  <a href="#s9">09 验收</a>
+  <a href="#s10">10 出处</a>
+  <button class="btn ghost" id="themeBtn" type="button" style="margin-left:auto">主题：暗</button>
+</div></nav>
+
+<main>
+
+<section id="s0">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">一句话 + 10 分钟版</span></div>
+  <div class="callout">
+    <p class="big">半成品最常见的死法不是缺功能，而是<em>一次同时重做玩法、画面、剧情</em>：无法判断哪一步有效，也丢掉了已验证的资产。</p>
+    <p>正确顺序：<b>分层诊断 → 先问清 → 冻结 taste/否决 → 单层最小改动 → 独立裁判 → 证据决策</b>。视频的 2D→2.5D 案例改的是<b>表现层</b>，不是规则层；“只改一层”是整套方法的地基。</p>
+  </div>
+  <div class="idxgrid">
+    <a class="idx" href="#m1"><div class="n">METHOD 01</div><div class="t">分层诊断</div><div class="d">玩法 / 画面 / 剧情——哪块不满意就只改哪块；第一步不是动手。</div><div class="s">视频 0:45–1:25</div></a>
+    <a class="idx" href="#m2"><div class="n">METHOD 02</div><div class="t">开工前先让 AI 问清楚</div><div class="d">先答完再开工，别让它先交一大堆；第一题是“第一眼希望玩家有什么感觉”。</div><div class="s">视频 1:25–1:40</div></a>
+    <a class="idx" href="#m3"><div class="n">METHOD 03</div><div class="t">否决清单 = taste</div><div class="d">否掉的东西留下来；每条带原因、证据、替代、重审条件。</div><div class="s">视频 1:40–2:15 / 3:10</div></a>
+    <a class="idx" href="#m4"><div class="n">METHOD 04</div><div class="t">中立 AI 裁判</div><div class="d">怕谄媚，就让没参与的 AI 按 rubric 盲评；先问题、后分数。</div><div class="s">视频 2:15–3:15</div></a>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>场景</th><th>做什么</th><th>不做什么</th></tr></thead>
+      <tbody>
+        <tr><td>单个小问题（一张卡看不清、一个按钮错位）</td><td>第 0–4 步 + 一页 taste 摘要 + 同机位 before/after</td><td>不写长文档，不重做系统</td></tr>
+        <tr><td>一个新的半成品 demo</td><td>第 0–6 步全跑；先 1 页支柱 + 3 分钟切片</td><td>不先堆内容/美术量</td></tr>
+        <tr><td>用户说“就是感觉不对”</td><td>先做分层与反问；必要时找 5–6 人试玩</td><td>不让 AI 猜完直接大改</td></tr>
+        <tr><td>已经改了两轮还不对</td><td>停下来复盘是否改错层；3 次单层失败再决定只重做该层</td><td>不继续加码同一个错误方向</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid2">
+    <div class="card ok"><h4>视频观点</h4><p>4 个方法、2D→2.5D 案例、3D 低模 vs 2D 序列帧、开发者/玩家/裁判三角色、献祭案例、5–6 人试玩、taste 精简 5 条。</p></div>
+    <div class="card"><h4>本文推断 / 仓库验证</h4><p>把三层扩成 10 个诊断层；把否决清单 schema 化；把“独立裁判”落成 rubric/盲评/证据规则；用 Gridbound 的 T-018→T-019 数据做单层整改 dry-run。这些是方法迁移，不是视频原话。</p></div>
+  </div>
+</section>
+
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>四招拆解：视频说了什么，怎么落地</h2><span class="sec-note">视频观点 / 仓库验证 / 本文推断</span></div>
+  <p class="lead">先把四个方法拆开。每个方法给：视频里的原意与案例、可直接执行的动作、以及边界（哪些是推断、哪些不能机械套用）。</p>
+
+  <article class="method" id="m1">
+    <div class="method-head"><span class="mnum">01</span><h3>先分清不满意的是哪块</h3><span class="ts">视频 0:45–1:25</span></div>
+    <p class="q">“玩法、画面、剧情，哪块不满意就只改哪块；第一步不是动手改。”</p>
+    <p>视频里的案例：接手时是一个 2D 半成品，判断<b>玩法成熟 ✓、2D 表现 ✗</b>——2D 美术占 80–90% 工作量、画风很难统一，于是换成更擅长的 2.5D。<b>改的是表现层，不是规则层。</b></p>
+    <div class="method-grid">
+      <div class="box ok"><h4>落地动作</h4><ul>
+        <li>先写“本次只改哪一层”，再写“本次不改什么”。</li>
+        <li>用一张“症状 → 层 → 动作”表把抱怨变成证据（本页 02 节可直接用）。</li>
+        <li>只做一个单层假设；需要改第二层 → 拆 follow-up。</li>
+      </ul></div>
+      <div class="box warn"><h4>边界</h4><ul>
+        <li>不要因为视频用 2.5D 就机械套用 2.5D；层由证据决定。</li>
+        <li>“全都不满意”通常不是四个问题，而是缺一条设计支柱。</li>
+        <li>核心动词在目标玩家处不成立 → 这是产品问题，不是美术问题。</li>
+      </ul></div>
+    </div>
+  </article>
+
+  <article class="method" id="m2">
+    <div class="method-head"><span class="mnum">02</span><h3>开工前，先让 AI 问清楚</h3><span class="ts">视频 1:25–1:40</span></div>
+    <p class="q">“答完问题再开工，别让它先交一大堆。”十问的第一题：“第一眼希望玩家有什么感觉？”作者的答案：“我希望是，可爱，但不安。”</p>
+    <p>感受先行，但感受必须继续拆成<b>手段</b>（轮廓/色板/音效/镜头/交互）与<b>约束</b>（2D、分辨率、工期、版权），否则“精致/高级”无法执行。还要问“不喜欢什么样的”“可以告诉它参考什么”。</p>
+    <div class="method-grid">
+      <div class="box ok"><h4>落地动作</h4><ul>
+        <li>用 7 问模板（04 节）：目标玩家、第一眼感受、核心动词、参考、非目标、验收、禁忌/预算。</li>
+        <li>worker 实现前先复述 5 行：理解 / 只改层 / 不改 / 验收 / 风险假设。</li>
+        <li>异步任务不能问 → 写“假设 + 依据 + 置信度”；高风险 → <code>needs_input</code>。</li>
+      </ul></div>
+      <div class="box warn"><h4>边界</h4><ul>
+        <li>“可爱但不安”不是规格；要继续拆成具体关系（例如圆润轮廓 + 低饱和 + 不可预测的红色脉冲）。</li>
+        <li>不要把感受问题变成“先做一版看看”，那会回到盲生成。</li>
+      </ul></div>
+    </div>
+  </article>
+
+  <article class="method" id="m3">
+    <div class="method-head"><span class="mnum">03</span><h3>否掉的东西留下来，就是你的 taste</h3><span class="ts">视频 1:40–2:15 / 3:10</span></div>
+    <p class="q">“每次‘不成功’都有价值。”AI 提的方案是“3D 低模角色 + 墨线描边 + 骨骼动画”，他的做法是 2D + 序列帧；“完全不如 2D 加序列帧做出来的强”。</p>
+    <p>置顶评论里作者公开了完整 taste 文档。视频给的精简 5 条是：</p>
+    <ul class="clean">
+      <li><b>感受 → 手段 → 约束</b>：先说清想让玩家感到什么。</li>
+      <li><b>“精致、高级”不是规格</b>，要拆成具体关系。</li>
+      <li><b>参考作品写清：取什么、为什么、什么不取。</b></li>
+      <li><b>每个新内容：强化了哪条支柱？删掉会失去什么？</b></li>
+      <li><b>评审先说看到了什么，再说哪个设计导致了问题。</b></li>
+    </ul>
+    <div class="method-grid">
+      <div class="box ok"><h4>落地动作</h4><ul>
+        <li>用 05 节的编辑器，冻结 3–5 条不可妥协项 + ≥3 条已否决方案。</li>
+        <li>每条否决带：日期、层、被否方案、原因/证据、保留/替代、重审条件。</li>
+        <li>append-only：不删旧条目；过期就标记，保留时间与原因。</li>
+      </ul></div>
+      <div class="box warn"><h4>边界</h4><ul>
+        <li>不要复制作者的具体偏好；项目要求优先于通用 taste。</li>
+        <li>只写“不喜欢”等于没写——没有证据，AI 下次还会提同样的方案。</li>
+        <li>否决太多会变枷锁；每季度或大版本重审一次。</li>
+      </ul></div>
+    </div>
+  </article>
+
+  <article class="method" id="m4">
+    <div class="method-head"><span class="mnum">04</span><h3>让 AI 互相挑刺，找中立裁判</h3><span class="ts">视频 2:15–3:15</span></div>
+    <p class="q">“AI 最大的问题：谄媚。”“它肯定会说，你说得对。”</p>
+    <p>视频流程：<b>开发者 AI 先做完一小段 → 玩家 AI 去体验、写报告 → 第三个 AI 当裁判</b>。案例：开发者 AI 认为“献祭让玩家变强也让敌人变强，有风险收益”；玩家 AI 反驳“我发现不献祭更容易通关，我就不献祭了”；改法是“献祭不删，改到让人想献祭——神谕改变打法，贪得越多，夺回的火越多”。</p>
+    <div class="method-grid">
+      <div class="box ok"><h4>落地动作</h4><ul>
+        <li>三角色：生产者（实现）/ 体验者（fresh context 或真人）/ 裁判（没参与制作）。</li>
+        <li>裁判拿到匿名证据 + rubric + taste；先写 ≥3 个失败项，再打分。</li>
+        <li>06 节的评分器可直接算加权分与 verdict；P0 不清不得放行。</li>
+      </ul></div>
+      <div class="box warn"><h4>边界</h4><ul>
+        <li>“好不好玩/手感”不要交给 AI 裁判；用 5–6 名目标玩家试玩（视频做法）或仓库真人 playtest。</li>
+        <li>同模型裁判仍有共同盲区；能换模型就换，不能换就换角色/上下文 + 真人补位。</li>
+        <li>裁判找不出任何问题 → 视为无效评审，不是“通过”。</li>
+      </ul></div>
+    </div>
+  </article>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>说法</th><th>视频观点</th><th>仓库验证 / 本文推断</th></tr></thead>
+      <tbody>
+        <tr><td>只改一层</td><td>玩法/画面/剧情，哪块不满意只改哪块</td><td><b>仓库验证</b>：Gridbound 核心循环可玩，T-018 失败项集中在卡面/单位/UI 可读性；T-019 只改视觉/UI，规则未动，指标提升。<b>推断</b>：扩成 10 层诊断（性能/手感/反馈/UI/需求/支柱）。</td></tr>
+        <tr><td>先问后做</td><td>十问；“可爱，但不安”</td><td><b>推断</b>：感受必须拆成手段与约束；落成 7 问 + 5 行复述 + 异步 needs_input。</td></tr>
+        <tr><td>否决 = taste</td><td>3D 低模 + 描边 + 骨骼 vs 2D 序列帧；置顶 taste 文档</td><td><b>本文强化</b>：否决条目必须有原因/证据/替代/重审条件；append-only；模板化。</td></tr>
+        <tr><td>独立裁判</td><td>开发者 AI / 玩家 AI / 第三个 AI；5–6 人试玩</td><td><b>推断</b>：程序独立 ≠ 认知独立；rubric、盲评、P0 先列、证据优先；AI 不判乐趣。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Triage 向导：症状 → 层 → 动作</h2><span class="sec-note">选症状 · 确认层 · 复制 task JSON</span></div>
+  <p class="lead">不要从“我想改什么”开始，从<b>玩家实际看到了什么</b>开始。左侧选一个最接近的症状；右侧确认层、勾证据、拿动作清单。选错层会在面板里提示。所有内容与 <code>docs/ai-half-finished-rescue-playbook.md</code> §2 一致。</p>
+
+  <div class="wizard">
+    <aside class="wizard-side">
+      <div class="wizard-step">Step 1 · 选择最接近的症状</div>
+      <div id="symList"></div>
+      <button class="btn ghost" id="resetTriage" type="button" style="width:100%;margin-top:6px">重置向导</button>
+    </aside>
+    <div class="wizard-main" id="triagePanel">
+      <div class="empty">← 从左侧选择一个症状开始<br><span style="font-size:12px">例如“有操作，但没选择/无聊”“看不清/糊/不高级”</span></div>
+    </div>
+  </div>
+
+  <details class="fold">
+    <summary>全部 12 个症状速查表（与 playbook §2 对应）</summary>
+    <div class="body">
+      <div class="tablewrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>症状</th><th>推荐层</th><th>先补的证据</th><th>只改该层</th><th>不要动</th></tr></thead>
+          <tbody id="symTableBody"></tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--ink-faint);margin:0">视频只给了玩法/画面/剧情三层；性能/技术、手感/反馈、UI/信息是本文为仓库 demo 增加的诊断层——它们经常伪装成“画面不好”，但根因不同。</p>
+    </div>
+  </details>
+
+  <div class="grid2">
+    <div class="card ok"><h4>什么情况不要推倒重来</h4><ul class="clean" style="font-size:13.5px;color:var(--ink-soft)">
+      <li>核心动词已被至少 3 个目标玩家理解，并能重复玩 3 分钟。</li>
+      <li>失败项集中在一层，且可用参数/局部替换/局部重画解决。</li>
+      <li>现有资产、规则、剧情中至少有一项明确值得保留。</li>
+      <li>你有 before/after 证据，能证明问题在收窄。</li>
+      <li>问题是单点 bug，不是系统性设计缺失。</li>
+    </ul></div>
+    <div class="card"><h4>什么情况才考虑重做（优先只重做该层）</h4><ul class="clean" style="font-size:13.5px;color:var(--ink-soft)">
+      <li>目标玩家 3 分钟后说不出“我在玩什么/为什么继续”。</li>
+      <li>核心动词缺失，或每次修改都在改规则而不是改表现。</li>
+      <li>同一层做了 3 次单层迭代仍无改善。</li>
+      <li>平台/性能/版权/工期是硬约束，当前方案不可解。</li>
+      <li>目标玩家/品类已经改变——这时是新产品，不是抢救。</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>抢救 SOP：7 步，一层一个假设</h2><span class="sec-note">诊断 → 反问 → taste → 单层 → 裁判 → 决策</span></div>
+  <div class="progress-line"><span id="sopProgressText">SOP 0/7</span><span class="gauge"><i id="sopGauge"></i></span></div>
+  <div class="steps" id="sopList"></div>
+
+  <h3>第 6 步的决策表</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>裁判结果</th><th>动作</th><th>记录</th></tr></thead>
+      <tbody>
+        <tr><td>P0 数量下降 + 目标指标达标 + 无回归</td><td>继续下一层或收尾</td><td>更新 before/after 与残留问题</td></tr>
+        <tr><td>指标持平，但方向有证据</td><td>允许一次更聚焦的单层改动</td><td>写清为什么再试一次</td></tr>
+        <tr><td>指标变差或出现 P0 回归</td><td>回滚该次改动，重新诊断</td><td>保留失败记录，进入否决清单</td></tr>
+        <tr><td>改了两轮仍无改善</td><td>检查是否改错层；换层诊断</td><td>不要继续加码</td></tr>
+        <tr><td>同一层 3 次单层迭代失败</td><td>只重做该层（或做垂直切片），不是全盘重写</td><td>写重做范围与保留资产</td></tr>
+        <tr><td>核心动词在目标玩家处不成立</td><td>停止修补；重做 3 分钟垂直切片</td><td>这是产品问题，不是美术问题</td></tr>
+        <tr><td>证据不足/无法判断</td><td>设计成本最低的区分实验（A/B、单变量）</td><td>不要凭感觉拍板</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox"><b>没有 before 基线就没有“改好了”。</b>第 0 步保存：构建/commit、种子、分辨率、目标显示尺寸、25% 缩略图、3 张图、10s 录屏、p95/最差帧、用户原话、必须保留的资产清单。仓库落点：<code>docs/shots/</code>、<code>docs/迭代记录.md</code>、对应 demo 的 <code>TECH.md</code>。</div>
+</section>
+
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>开工前反问：7 问 + 5 行复述</h2><span class="sec-note">能问就问；不能问就标注假设</span></div>
+  <p class="lead">把下面内容贴给 worker，要求它<b>先回答/复述，再动手</b>。第一题不是风格，是“第一眼希望玩家有什么感觉”。</p>
+
+  <div class="qa-grid">
+    <div class="qa-card"><div class="q-num">Q1</div><h3>目标玩家与场景</h3><ul><li>谁在玩？经验/动机是什么？</li><li>什么设备、分辨率、输入方式？单次多久？</li><li>成功后他会怎么向朋友描述？</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q2</div><h3>第一眼感受</h3><ul><li>希望第一眼感到什么？用 3 个场景说明。</li><li>由哪些手段产生（轮廓/色板/构图/音效/镜头/交互）？</li><li>什么会破坏它？</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q3</div><h3>核心动词</h3><ul><li>玩家重复做的一个动作是什么？</li><li>失败/成长如何改变这个动作？</li><li>3 分钟内有哪些有意义的选择？</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q4</div><h3>参考作品</h3><ul><li>1–3 个参考，每个写“取什么 / 为什么 / 不取什么”。</li><li>具体到信息层级/节奏/轮廓/交互/氛围。</li><li>不复制素材、角色、UI、Logo、品牌。</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q5</div><h3>非目标</h3><ul><li>这次明确不做什么（玩法/内容/平台/美术/音频/联机/商业化）？</li><li>哪些是“以后可能”，哪些是“永远不做”？</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q6</div><h3>验收口径</h3><ul><li>目标尺寸 + 25% 缩略下哪些指标必须达标？</li><li>阈值多少？怎么复现（分辨率/种子/相机/步骤）？</li><li>什么算失败（P0）？失败回滚还是再试一次？</li></ul></div>
+    <div class="qa-card"><div class="q-num">Q7</div><h3>约束、禁忌与预算</h3><ul><li>时间盒/预算/人力？最多几轮？</li><li>性能目标、目标设备、包体/内存限制？</li><li>版权/商标/肖像/声音授权？不可妥协项 3–5 条。</li></ul></div>
+  </div>
+
+  <div class="json-head"><h4>5 行复述（worker 实现前必须填写）</h4><button class="btn" id="copyRestate" type="button">复制</button></div>
+  <pre id="restateBlock">我理解你要的是：____
+这次只改的层：____
+我不改的：____
+验收口径：____
+主要风险/假设：____</pre>
+
+  <h3>异步任务的降级规则</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>情况</th><th>动作</th><th>禁止</th></tr></thead>
+      <tbody>
+        <tr><td>能问</td><td>一次问 1–3 个最关键的问题；答完再开工</td><td>先交一大堆</td></tr>
+        <tr><td>不能问</td><td>写“假设 + 依据 + 置信度”，只做低风险、可回滚的最小改动</td><td>假装确定</td></tr>
+        <tr><td>高风险且无答案（改玩法/叙事方向、引入新资产/依赖、版权、不可逆数据）</td><td>停，返回 <code>needs_input</code>，列 1–3 个问题</td><td>硬做</td></tr>
+        <tr><td>预计超过约定时间 2 倍</td><td>停，返回已完成部分 + 需要确认的点</td><td>无限拖</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="json-head"><h4>整段反问清单（可直接贴 worker prompt）</h4><button class="btn" id="copyClarify" type="button">复制 7 问 + 复述</button></div>
+  <details class="fold"><summary>预览完整复制内容</summary><div class="body"><pre id="clarifyFull" style="margin:10px 0 0"></pre></div></details>
+</section>
+
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Taste / 否决清单编辑器</h2><span class="sec-note">否决比“喜欢”更能约束 AI</span></div>
+  <p class="lead">喜欢清单是抽象的、可被任何作品满足；否决清单带着方案、原因、证据、替代与重审条件，能直接阻止 AI 走回错误分支。<b>本节编辑内容只保存在本机浏览器，不会上传。</b></p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>维度</th><th>喜欢清单</th><th>否决清单</th></tr></thead>
+      <tbody>
+        <tr><td>具体性</td><td>“要精致/高级/有设计感”</td><td>“不要 3D 低模 + 墨线描边 + 骨骼；目标尺寸下不如 2D 序列帧”</td></tr>
+        <tr><td>因果</td><td>只给结果</td><td>带原因和证据，AI 能推广到新方案</td></tr>
+        <tr><td>边界</td><td>告诉 AI 往哪走</td><td>告诉 AI 哪些 trade-off 不能做</td></tr>
+        <tr><td>可测试</td><td>难验收</td><td>新方案可逐条对照“是否踩了旧否决”</td></tr>
+        <tr><td>差异化</td><td>容易变成通用参考</td><td>你的取舍别人抄不走</td></tr>
+        <tr><td>成本</td><td>一条抽象偏好要反复解释</td><td>一行否决阻止一整条错误分支</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="editor">
+    <div class="editor-bar">
+      <label>项目名 <input type="text" id="tasteProject" style="width:170px" placeholder="<项目名>"></label>
+      <span class="spacer"></span>
+      <span class="mono" id="tasteStats"></span>
+      <button class="btn primary" id="addReject" type="button">+ 添加否决</button>
+      <button class="btn" id="copyTaste" type="button">复制 Markdown</button>
+      <button class="btn" id="downloadTaste" type="button">下载 .md</button>
+      <button class="btn ghost" id="resetTaste" type="button">恢复示例</button>
+    </div>
+    <label class="block-label" for="musts">不可妥协项（3–5 条，每行：条目 | 测试方法）</label>
+    <textarea id="musts" placeholder="例：卡名在 25% 缩略图仍可辨 | 480×270 截图；≥7:1 或 3/3 人读出"></textarea>
+    <div class="tablewrap" style="margin-top:12px">
+      <table class="taste-table">
+        <thead><tr><th style="min-width:110px">日期</th><th>类型</th><th>层</th><th>被否方案</th><th>否决原因（证据）</th><th>保留 / 替代</th><th>重审条件</th><th></th></tr></thead>
+        <tbody id="tasteBody"></tbody>
+      </table>
+    </div>
+    <div class="hint">规则：每条必须有原因 + 证据；区分硬否决与暂缓；append-only；过期/被替代要标记。示例行来自 playbook 的通用示例，可直接删改。</div>
+  </div>
+
+  <div class="json-head"><h4>否决条目的最小 schema</h4><button class="btn" id="copySchema" type="button">复制</button></div>
+  <pre id="schemaBlock">日期 | 类型（硬否决/暂缓） | 层 | 被否方案 | 否决原因（证据） | 保留/替代 | 重审条件
+
+例：
+2026-11-21 | 硬否决 | 画面 | 角色改成 3D 低模 + 描边 + 骨骼动画 | 1280×720 下轮廓/表情辨识不如 2D 序列帧，成本更高 | 保留 2D 序列帧，先统一线宽/色板 | 镜头可自由旋转或需要 8 方向时重审</pre>
+</section>
+
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>独立裁判：rubric + 盲评 + 反谄媚</h2><span class="sec-note">先问题、后分数；P0 不被平均分掩盖</span></div>
+  <p class="lead">三角色：<b>生产者</b>实现并提交证据，<b>体验者</b>只体验/写报告，<b>裁判</b>没参与制作、只判断不实现。裁判必须：先写看到了什么 → 再列 ≥3 个失败项 → 最后才按 rubric 打分。</p>
+
+  <div class="grid2">
+    <div class="card ok"><h4>裁判 prompt 的 6 条硬规则</h4><ul class="clean" style="font-size:13.5px;color:var(--ink-soft)">
+      <li>先描述实际看到/玩到什么（文件、时间码、截图区域、像素/数值）。</li>
+      <li>再列失败项（P0/P1/P2），每项有证据、影响、最小修复方向。</li>
+      <li>按 rubric 逐维打分；没证据写“证据不足”，不得猜。</li>
+      <li>最后给 <code>APPROVE / CONCERNS / REJECT</code>，单列“未评估项”。</li>
+      <li>禁止开场表扬、用“高级/不错”代替证据、用平均分掩盖 P0。</li>
+      <li>禁止修改代码/资产；裁判只判断，不实现。</li>
+    </ul></div>
+    <div class="card"><h4>反谄媚 / 盲评</h4><ul class="clean" style="font-size:13.5px;color:var(--ink-soft)">
+      <li>A/B 匿名标签、随机顺序、隐藏作者与提交时间。</li>
+      <li>不问“这好不好？”，改问“哪些问题会阻止放行？”</li>
+      <li>要求裁判给反方证据；找不出问题 = 评审无效。</li>
+      <li>同模型有共同盲区：换模型/换角色/换上下文 + 真人试玩。</li>
+      <li>“好不好玩/手感”交 5–6 名目标玩家，不交 AI 分数。</li>
+    </ul></div>
+  </div>
+
+  <div class="judge-layout">
+    <div>
+      <div class="rubric-tabs" id="rubricTabs"></div>
+      <div class="judge-meta">
+        <label>门槛 <input type="number" id="threshold" min="0" max="10" step="0.1" value="7"></label>
+        <label>P0 失败项数 <input type="number" id="p0count" min="0" step="1" value="0"></label>
+        <span id="scoreSummary">已评 0/0 · 有证据 0/0</span>
+      </div>
+      <div class="tablewrap">
+        <table class="judge-table">
+          <thead><tr><th style="min-width:220px">维度 / 权重</th><th style="width:90px">分数</th><th>证据（文件 / 时间码 / 数值）</th></tr></thead>
+          <tbody id="rubricBody"></tbody>
+        </table>
+      </div>
+      <div class="hint">0 = 未评。评分锚点：1–2 不可用；3–4 原型；5–6 可玩 demo；7–8 可外放；9–10 标杆。每个项目必须显式写门槛。</div>
+    </div>
+    <aside class="verdict-panel">
+      <div class="score-big" id="weightedScore">—</div>
+      <div class="score-sub">加权分 / 门槛 <span id="thresholdLabel">7.0</span></div>
+      <div class="verdict" id="verdict">未评分</div>
+      <div class="verdict-note" id="verdictNote">先按 rubric 打分；证据优先，分数最后。</div>
+      <div class="selfcheck">
+        <h4>反谄媚自检</h4>
+        <label><input type="checkbox" data-check="0"> 先写证据，后写评价</label>
+        <label><input type="checkbox" data-check="1"> 每个分数都有文件/时间码/数值支撑</label>
+        <label><input type="checkbox" data-check="2"> 没有把 P0 平均进总分</label>
+        <label><input type="checkbox" data-check="3"> 没有因为“作者很努力/改了很多”而放宽</label>
+        <label><input type="checkbox" data-check="4"> 已标注未评估项/证据不足项</label>
+        <label><input type="checkbox" data-check="5"> A/B 匿名、随机顺序、隐藏作者</label>
+      </div>
+      <button class="btn primary" id="copyJudgePrompt" type="button">复制裁判 prompt</button>
+      <button class="btn" id="copyJudgeResult" type="button">复制评分 Markdown</button>
+      <button class="btn ghost" id="resetJudge" type="button">重置评分</button>
+    </aside>
+  </div>
+
+  <details class="fold">
+    <summary>预览：将复制给裁判的 prompt</summary>
+    <div class="body"><pre id="judgePromptPreview" class="prompt-preview" style="margin:10px 0 0"></pre></div>
+  </details>
+
+  <h3>评分锚点与按层选裁判</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>层</th><th>rubric 维度（示例）</th><th>证据</th><th>本仓库裁判</th></tr></thead>
+      <tbody>
+        <tr><td>画面/UI/VFX</td><td>目标尺寸可读性、25% 缩略、层级、一致性、VFX 时机、合规与原创</td><td>同机位截图、局部 100%、视频抽帧、对比度/字号</td><td><code>game-art-director</code></td></tr>
+        <tr><td>玩法</td><td>核心动词清晰度、选择深度、反馈闭环、难度曲线、重玩</td><td>3 分钟录屏、选择次数、试玩记录</td><td><code>game-designer</code> + 真人试玩</td></tr>
+        <tr><td>剧情</td><td>因果、动机、节奏、世界观一致性、传达</td><td>关键节点复述、台词/演出录屏</td><td><code>game-designer</code></td></tr>
+        <tr><td>性能/QA</td><td>p95 帧时间、最差帧、加载、内存、稳定性</td><td>profile、日志、设备参数</td><td><code>game-qa-lead</code></td></tr>
+        <tr><td>对抗审查</td><td>可复现缺陷、证据漏洞、性能、逻辑边界、文档合规</td><td>最小复现步骤、证据包</td><td><code>game-red-team</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>映射到本仓库：什么时候用谁</h2><span class="sec-note">一任务一角色；实现者不能自评</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>场景</th><th>角色</th><th>输入</th><th>输出</th><th>不能做什么</th></tr></thead>
+      <tbody>
+        <tr><td>画面/UI/VFX 评审</td><td><code>game-art-director</code></td><td>目标尺寸截图、25% 缩略、before/after、taste、rubric</td><td>P0–P2 + 参数 + APPROVE/CONCERNS/REJECT</td><td>不改代码/资产</td></tr>
+        <tr><td>功能/回归/放行</td><td><code>game-qa-lead</code></td><td>构建、smoke、验收口径、证据包</td><td>可复现 bug、基线数据、放行/打回</td><td>不定美术方向</td></tr>
+        <tr><td>美术+QA 签字后的对抗审查</td><td><code>game-red-team</code></td><td>已签字构建、证据包、文档</td><td>可复现的质量/证据/性能/逻辑/文档问题</td><td>不直接修</td></tr>
+        <tr><td>玩法/剧情意图与体验</td><td><code>game-designer</code></td><td>设计规格、构建、试玩记录</td><td>体验缺口、优先级、验收口径</td><td>不写代码/不做独立美术评审</td></tr>
+        <tr><td>实现</td><td><code>game-artist</code> / <code>game-engineer</code></td><td>brief、scope lock、taste</td><td>可运行改动 + 自测 + before/after</td><td>不自我批准</td></tr>
+        <tr><td>最终拍板</td><td>人类 owner / 主 Agent</td><td>裁判报告 + 证据</td><td>继续/回滚/停止</td><td>不被单一分数绑架</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="json-head"><h4>推荐顺序（贴进任务规划）</h4><button class="btn" id="copyPipeline" type="button">复制</button></div>
+  <pre id="pipelineBlock">Game Designer 规格
+→ Art Director brief（若涉及视觉）
+→ Game Artist 实现
+→ Game Engineer 技术/性能
+→ Game QA 验收
+→ Art Director 独立复评
+→（可选）Red Team 对抗
+→ 人类 owner 决策
+
+硬规则：
+- 一任务一角色；实现者不能同时是裁判。
+- 裁判任务 JSON 写 independent_of，并拿匿名化/同机位证据；不能看生产者的自评草稿。
+- 视觉任务用 game-art-director 复评；功能/回归用 game-qa-lead；两者都签字后才用 game-red-team 找茬。
+- “好不好玩/手感”最终用 5–6 名目标玩家试玩或仓库真人 playtest。</pre>
+
+  <div class="okbox"><b>落到 dispatcher 的建议字段：</b><code>layer</code>、<code>taste_doc</code>、<code>clarify_questions</code>、<code>clarify_answers</code>、<code>scope_lock</code>、<code>reject_log</code>、<code>judge</code>（agent / independent_of / blind / rubric / threshold / evidence）、<code>acceptance</code>、<code>baseline</code>、<code>rollback</code>。只给建议，不改代码；详见 playbook §4。</div>
+</section>
+
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>反例：10 个失败模式</h2><span class="sec-note">照着做会浪费一轮预算</span></div>
+  <div class="anti-grid">
+    <div class="anti"><h3>1. 一上来“推倒重来”</h3><p><b>症状：</b>觉得哪都不对，直接新建工程。</p><p><b>后果：</b>丢掉已验证的核心/资产，无法归因。</p><p class="fix"><b>正确：</b>先分层；只重做失败层；保留可用资产。</p></div>
+    <div class="anti"><h3>2. 把“精致/高级”当规格</h3><p><b>症状：</b>brief 只有形容词。</p><p><b>后果：</b>AI 加纹理/光效，越做越糊。</p><p class="fix"><b>正确：</b>拆成对比度、字号、层级、材质数量等可测关系。</p></div>
+    <div class="anti"><h3>3. 让实现 AI 自评</h3><p><b>症状：</b>“我觉得已经很好”。</p><p><b>后果：</b>谄媚/盲区，P0 被放过。</p><p class="fix"><b>正确：</b>独立裁判 + rubric + 证据；实现者不签字。</p></div>
+    <div class="anti"><h3>4. 裁判只看总分</h3><p><b>症状：</b>平均 6.8 就放行。</p><p><b>后果：</b>P0 被平均分掩盖。</p><p class="fix"><b>正确：</b>先列 P0/P1/P2；P0 未清不放行。</p></div>
+    <div class="anti"><h3>5. 没有 before 基线</h3><p><b>症状：</b>只发 after 截图。</p><p><b>后果：</b>无法证明改好了，也无法回滚。</p><p class="fix"><b>正确：</b>第 0 步同机位、同尺寸、同种子。</p></div>
+    <div class="anti"><h3>6. 一次改多层</h3><p><b>症状：</b>玩法+画面+剧情一起动。</p><p><b>后果：</b>不知道哪步有效，回归难定位。</p><p class="fix"><b>正确：</b>scope lock；一层一个假设；跨层拆 follow-up。</p></div>
+    <div class="anti"><h3>7. 否决只写“不喜欢”</h3><p><b>症状：</b>没有原因/证据。</p><p><b>后果：</b>下一次 AI 还会提同样的方案。</p><p class="fix"><b>正确：</b>每条否决带原因、证据、替代、重审条件。</p></div>
+    <div class="anti"><h3>8. 用 AI 裁判判断“好不好玩”</h3><p><b>症状：</b>让模型给“乐趣分”。</p><p><b>后果：</b>分数不可信，误导方向。</p><p class="fix"><b>正确：</b>AI 判可检查项；乐趣用真人试玩。</p></div>
+    <div class="anti"><h3>9. 机械套用参考</h3><p><b>症状：</b>视频说 2.5D，就所有项目都 2.5D。</p><p><b>后果：</b>忽略本项目目标/约束。</p><p class="fix"><b>正确：</b>参考写“取什么/为什么/不取什么”；项目要求优先。</p></div>
+    <div class="anti"><h3>10. 指标平均化</h3><p><b>症状：</b>平均 FPS 60，但关键帧卡顿。</p><p><b>后果：</b>掩盖最差体验。</p><p class="fix"><b>正确：</b>记录 p95/最差帧、关键事件停顿、25% 缩略可读性。</p></div>
+  </div>
+</section>
+
+<section id="s9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>验收清单（fail closed）</h2><span class="sec-note">缺证据直接打回</span></div>
+  <div class="progress-line"><span id="accProgressText">验收 0/14</span><span class="gauge"><i id="accGauge"></i></span></div>
+  <div class="acc-list" id="accList"></div>
+  <div class="json-head"><h4>复制勾选结果</h4><button class="btn" id="copyAccept" type="button">复制</button></div>
+</section>
+
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span><h2>来源、取证与边界</h2><span class="sec-note">视频观点 / 仓库验证 / 本文推断</span></div>
+  <div class="tablewrap">
+    <table class="src-table">
+      <tbody>
+        <tr><td>视频</td><td>《AI给的半成品差点意思？4招妙手回春！》</td></tr>
+        <tr><td>UP 主</td><td>TP制造好游戏（mid 600477837）；嘉宾 Rinorsi（@云诺羲）</td></tr>
+        <tr><td>案例</td><td>《烬谷盗火录》（仍在打磨，未正式上线）</td></tr>
+        <tr><td>时长 / 发布</td><td>3:51（231s）/ 2026-11-19</td></tr>
+        <tr><td>地址</td><td><a href="https://www.bilibili.com/video/BV1AVs461EFQ">bilibili.com/video/BV1AVs461EFQ</a>；短链 <a href="https://b23.tv/VmLeMCN">b23.tv/VmLeMCN</a></td></tr>
+        <tr><td>访问日期</td><td>2026-11-21（父任务 T-028 取证）；2026-11-22（T-041 整理）</td></tr>
+        <tr><td>取证方式</td><td>view API 取标题/简介/时长/发布；reply API 取置顶评论（rpid 324450717360）及 3 条子回复；yt-dlp 下载 480p；ffmpeg 每 5s 抽帧确认烧录字幕/案例画面。未登录，字幕接口为空，时间点误差 ±5s。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <details class="fold">
+    <summary>视频简介原文（4 个方法）</summary>
+    <div class="body"><ol style="margin:8px 0 0;padding-left:1.4em">
+      <li>先分清不满意的是哪块：玩法、画面、剧情，哪块不满意就只改哪块</li>
+      <li>开工前，先让 AI 问清楚你要什么</li>
+      <li>否掉的东西留下来：攒成否决清单，就是你的 taste</li>
+      <li>让 AI 互相挑刺：怕 AI 谄媚，就找一个中立的 AI 当裁判</li>
+    </ol></div>
+  </details>
+
+  <details class="fold">
+    <summary>关键帧证据（抽帧定位，±5s）</summary>
+    <div class="body"><div class="tablewrap" style="margin-top:10px"><table>
+      <thead><tr><th>时间</th><th>画面/字幕</th></tr></thead>
+      <tbody>
+        <tr><td>0:50</td><td>“玩法成熟 ✓ / 2D 表现 ✗；2D 美术占 80–90%，画风很难统一 → 换成更擅长的 2.5D”</td></tr>
+        <tr><td>1:05</td><td>方法一：先分清不满意的是哪块；第一步不是动手改</td></tr>
+        <tr><td>1:25</td><td>十问第一题：第一眼希望玩家有什么感觉？回答：“可爱，但不安”</td></tr>
+        <tr><td>1:40–1:50</td><td>AI 方案“3D 低模角色 + 墨线描边 + 骨骼动画” vs“2D + 序列帧”</td></tr>
+        <tr><td>2:35–2:50</td><td>“AI 最大的问题：谄媚”；开发者 AI 的献祭方案 vs 玩家 AI 的反驳</td></tr>
+        <tr><td>3:05</td><td>“献祭不删，改到让人想献祭”；“交给五六个人玩一圈”</td></tr>
+        <tr><td>3:10</td><td>taste 精简 5 条</td></tr>
+      </tbody>
+    </table></div></div>
+  </details>
+
+  <details class="fold">
+    <summary>仓库内证据与配套文件</summary>
+    <div class="body"><div class="tablewrap" style="margin-top:10px"><table>
+      <thead><tr><th>文件</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>docs/ai-half-finished-rescue-playbook.md</code></td><td>完整 SOP、来源、dry-run、反例、验收清单</td></tr>
+        <tr><td><code>docs/templates/ai-taste-doc.md</code></td><td>一页 taste + 否决清单模板</td></tr>
+        <tr><td><code>docs/templates/ai-clarify-questions.md</code></td><td>开工前 7 问 + 5 行复述</td></tr>
+        <tr><td><code>docs/templates/ai-judge-prompt.md</code></td><td>独立裁判 prompt + rubric 骨架</td></tr>
+        <tr><td><code>docs/art-review/gridbound-art-review.md</code></td><td>T-018 独立美术评审：5.0/10、P0、量化指标</td></tr>
+        <tr><td><code>docs/task-plans/game-demos.md</code> T-018/T-019</td><td>评审/整改任务记录与结果</td></tr>
+      </tbody>
+    </table></div></div>
+  </details>
+
+  <div class="grid2">
+    <div class="card ok"><h4>视频观点（有出处）</h4><p>4 个方法、2D→2.5D 案例、3D 低模 vs 2D 序列帧、开发者/玩家/裁判三角色、献祭案例、5–6 人试玩、taste 精简 5 条——来自视频简介、置顶评论或抽帧。</p></div>
+    <div class="card"><h4>本文推断（方法迁移）</h4><p>把“玩法/画面/剧情”扩成 10 层诊断；把否决清单 schema 化；把独立裁判落成 rubric/盲评/证据规则；把 dispatcher 字段与注入顺序作为建议；用 Gridbound 做仓库 dry-run。这些不是视频原话。</p></div>
+  </div>
+  <div class="warnbox"><b>未验证 / 未复制：</b>视频未给出 taste 的量化阈值；本页示例阈值（7:1 / 4.5:1 等）来自仓库既有评审口径，具体项目应按目标尺寸重新标定。未使用《烬谷盗火录》的任何截图/素材/UI；文中案例仅转述方法与结果。</div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <b>AI 半成品抢救手册 · 交互版 v1.1</b> · 2026-11-22 · 父任务 T-20261121-028，续跑 T-20261121-041 · 只做调研/文档/模板，不改游戏代码 · 单文件无外部依赖 · 来源与访问日期见 10 节。
+</footer>
+</div>
+
+<button id="topBtn" type="button">↑ 顶部</button>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const root = document.documentElement;
+  const LS_KEY = 'ai-rescue-playbook-v1';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const today = () => { const d = new Date(); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); };
+
+  // ---------------------------------------------------------------- data
+  const LAYERS = {
+    gameplay: {
+      name: '玩法', judge: 'game-designer + 真人试玩', rubric: 'gameplay',
+      do: ['只改一个核心动词的风险/收益或反馈节奏', '做一个单变量规则测试 + 3 分钟切片', '用选择次数和“继续意愿”验证'],
+      dont: ['不要加内容量/换皮', '不要先改画面'],
+      accept: ['3 分钟内玩家能说出“我在做什么/为什么继续”', '核心动词完成率/选择次数达到项目阈值']
+    },
+    visual: {
+      name: '画面', judge: 'game-art-director', rubric: 'visual',
+      do: ['先改对比度、字号阶梯、焦点与留白', '统一剪影/轮廓与信息层级', '同机位 before/after 对照'],
+      dont: ['不要改规则/数值', '不要整体换皮'],
+      accept: ['关键文字对比度 ≥7:1（按项目口径）', '25% 缩略图关键信息可辨', '0 处裁切/遮挡']
+    },
+    narrative: {
+      name: '剧情', judge: 'game-designer', rubric: 'narrative',
+      do: ['补因果节拍、角色目标、关键台词', '先改 3 个节点，不重写全部剧本', '用关键节点复述准确率验证'],
+      dont: ['不要换美术', '不要先加设定量'],
+      accept: ['3/5 玩家能复述“谁想要什么、为什么冲突”', '前 3 分钟出现明确目标']
+    },
+    feedback: {
+      name: '反馈', judge: 'game-art-director + game-designer', rubric: 'visual',
+      do: ['补预警、命中反馈、状态文案、因果提示', '让“为什么死/发生了什么”在 1 秒内可读', '只改反馈时序与信息，不动数值'],
+      dont: ['不要先改数值平衡', '不要先加新机制'],
+      accept: ['3/3 试玩者能复述死亡原因', '预警提前量达到项目阈值'],
+      key: 'feedback'
+    },
+    performance: {
+      name: '性能/技术', judge: 'game-qa-lead', rubric: 'qa',
+      do: ['profile → 定位热点 → 降负载/批处理/分级', '先修最差帧，不追平均分', '固定场景做 before/after'],
+      dont: ['不要先砍内容', '不要先改美术方向'],
+      accept: ['p95 帧时间 ≤16.7ms（60fps 目标）', '最差帧/加载时长达到项目阈值']
+    },
+    feel: {
+      name: '手感', judge: 'game-qa-lead + 真人试玩', rubric: 'gameplay',
+      do: ['输入缓冲、动画取消窗口、帧时间', '只调一个手感参数并做 A/B', '用同机位逐帧对比'],
+      dont: ['不要改美术方向', '不要同时改数值与动画'],
+      accept: ['输入→反馈 ≤ 项目阈值（如 100ms）', '连续操作 10 次无吞输入']
+    },
+    ui: {
+      name: 'UI/信息', judge: 'game-art-director', rubric: 'visual',
+      do: ['信息层级、去重、状态机、空态', '把关键状态放到固定位置', '用任务完成率验证'],
+      dont: ['不要改玩法', '不要重做全部界面'],
+      accept: ['任务完成率达到项目阈值', '同一信息 ≤1 次主展示 + 1 次辅助', '空态/错误态可恢复']
+    },
+    need: {
+      name: '需求', judge: '主 Agent 反问 + 人类 owner', rubric: 'none',
+      do: ['先补 7 问与 taste 文档', '写清非目标、禁忌、验收', '只重做被否的那一层'],
+      dont: ['不要继续盲生成', '不要用“更精致”当指令'],
+      accept: ['7 问已答或假设已标注', '否决清单 ≥3 条', 'worker 能复述 5 行范围锁']
+    },
+    pillar: {
+      name: '设计支柱', judge: 'game-designer + 人类 owner', rubric: 'gameplay',
+      do: ['写 1 页设计支柱：玩家/重复动作/为什么继续/不能牺牲', '做 3 分钟垂直切片', '再回到分层诊断，不直接全重写'],
+      dont: ['不要直接重写全部', '不要用“全重做”代替诊断'],
+      accept: ['1 页支柱 + 3 分钟切片可运行', '3/5 玩家能说出核心循环']
+    },
+    tech: {
+      name: '技术/bug', judge: 'game-qa-lead', rubric: 'qa',
+      do: ['复现 → 最小修复 → 回归', '补一条自动化/手动用例', '确认没有掩盖其他问题'],
+      dont: ['不要重做系统', '不要顺手重构'],
+      accept: ['100% 复现步骤通过', '原 smoke 无回归', '同类问题扫描一次']
+    }
+  };
+
+  const SYMPTOMS = [
+    {
+      id: 'lost', group: '玩法 / 体验', title: '“不知道下一步做什么”', layerKey: 'gameplay',
+      evidence: ['首次游玩录屏（启动 → 第一次有效操作）', '首次有效操作耗时、迷路/停顿次数', '同屏信息数量与视觉焦点截图'],
+      actions: ['只加一个明确目标 + 一个可感知反馈', '或把已有目标放到视线中心/首屏', '用 3 分钟切片验证玩家能否复述“我在做什么”'],
+      nots: ['不要先重画场景', '不要加更多系统/菜单'],
+      acceptance: ['3 名目标玩家中 ≥2 人在 30 秒内说出下一步', '首次有效操作 ≤30 秒（按项目阈值）']
+    },
+    {
+      id: 'boring', group: '玩法 / 体验', title: '“有操作，但没选择/无聊”', layerKey: 'gameplay',
+      evidence: ['3 分钟重复动作录屏', '有意义的选择次数/分支数', '失败与成长是否改变同一个动词'],
+      actions: ['只改一个核心动词的风险/收益或反馈节奏', '做一个单变量规则测试（只动一个数/一条规则）', '用选择次数与“继续意愿”做前后对比'],
+      nots: ['不要加内容量/换皮', '不要先改画面'],
+      acceptance: ['3 分钟切片出现 ≥2 个有意义选择', '≥3/5 试玩者愿意再玩一局']
+    },
+    {
+      id: 'blurry', group: '画面 / 表现', title: '“看不清/糊/不高级”', layerKey: 'visual',
+      evidence: ['目标显示尺寸截图 + 25% 缩略图', '关键文字对比度/字号实测', '问题局部 100% 裁切'],
+      actions: ['先改对比度、字号阶梯、焦点与留白', '统一剪影/轮廓与信息层级', '同机位 before/after 对照'],
+      nots: ['不要改规则/数值', '不要整体换皮'],
+      acceptance: ['关键文字 ≥7:1（按项目口径）', '25% 缩略图关键信息可辨', '0 处裁切/遮挡']
+    },
+    {
+      id: 'inconsistent', group: '画面 / 表现', title: '“风格杂/像拼的”', layerKey: 'visual',
+      evidence: ['同屏 3 个元素的线宽/色相/材质对比', '资产来源与风格清单', 'UI/角色/场景各一张代表图'],
+      actions: ['统一线宽/材质/色板/字体', '建立一个视觉母版（1 个参照物）', '只重画不一致的资产，不重做全部'],
+      nots: ['不要重做玩法', '不要引入新画风混搭'],
+      acceptance: ['同屏材质 ≤2 种、线宽 ≤2 档', '视觉母版覆盖 UI/角色/场景', '无新增来源不明资产']
+    },
+    {
+      id: 'death', group: '反馈 / 可读性', title: '“不知道发生了什么/为什么死”', layerKey: 'feedback',
+      evidence: ['死亡前 3 秒录屏', '伤害来源/预警是否可见', '死亡原因文案与结算信息'],
+      actions: ['补预警、命中反馈、状态文案、因果提示', '让“为什么死/发生了什么”在 1 秒内可读', '只改反馈时序与信息，不动数值'],
+      nots: ['不要先改数值平衡', '不要先加新机制'],
+      acceptance: ['3/3 试玩者能复述死亡原因', '预警提前量 ≥ 项目阈值（如 0.3s）']
+    },
+    {
+      id: 'story', group: '剧情 / 叙事', title: '“剧情跳/人物没动机”', layerKey: 'narrative',
+      evidence: ['关键情节点 3 句话复述', '角色目标/动机是否在前 3 分钟出现', '跳读/跳过率'],
+      actions: ['补因果节拍、角色目标、关键台词', '先改 3 个节点，不重写全部剧本', '用复述准确率验证'],
+      nots: ['不要换美术', '不要先加设定量'],
+      acceptance: ['3/5 玩家能复述“谁想要什么、为什么冲突”', '前 3 分钟出现明确目标']
+    },
+    {
+      id: 'perf', group: '技术 / 性能', title: '“卡/掉帧/加载慢”', layerKey: 'performance',
+      evidence: ['p95/最差帧时间、平均 FPS', 'draw call/三角面/内存/加载分阶段', '问题场景的设备与分辨率'],
+      actions: ['profile → 定位热点 → 降负载/批处理/分级', '先修最差帧，不追平均分', '固定场景做 before/after'],
+      nots: ['不要先砍内容', '不要先改美术方向'],
+      acceptance: ['p95 帧时间 ≤16.7ms（60fps 目标）', '最差帧/加载时长达到项目阈值']
+    },
+    {
+      id: 'feel', group: '技术 / 性能', title: '“操作不跟手/有延迟”', layerKey: 'feel',
+      evidence: ['输入到反馈的帧数/延迟', '动画取消窗口、输入缓冲、命中帧', '连续操作 30 秒录屏'],
+      actions: ['输入缓冲、动画取消窗口、帧时间', '只调一个手感参数并做 A/B', '用同机位逐帧对比'],
+      nots: ['不要改美术方向', '不要同时改数值与动画'],
+      acceptance: ['输入→反馈 ≤ 项目阈值（如 100ms）', '连续操作 10 次无吞输入']
+    },
+    {
+      id: 'bug', group: '技术 / 性能', title: '“这里有 bug/崩了一次”', layerKey: 'tech',
+      evidence: ['复现步骤/种子/版本', '崩溃日志/截图/录屏', '影响面与频率'],
+      actions: ['复现 → 最小修复 → 回归', '补一条自动化/手动用例', '确认没有掩盖其他问题'],
+      nots: ['不要重做系统', '不要顺手重构'],
+      acceptance: ['100% 复现步骤通过', '原 smoke 无回归', '同类问题扫描一次']
+    },
+    {
+      id: 'ui', group: 'UI / 信息', title: '“UI 信息找不到/重复”', layerKey: 'ui',
+      evidence: ['完成一个任务的最短路径与点击次数', '同一信息出现次数/位置', '空态/错误态/长文本截图'],
+      actions: ['信息层级、去重、状态机、空态', '把关键状态放到固定位置', '用任务完成率验证'],
+      nots: ['不要改玩法', '不要重做全部界面'],
+      acceptance: ['任务完成率 ≥ 项目阈值', '同一信息 ≤1 次主展示 + 1 次辅助', '空态/错误态可恢复']
+    },
+    {
+      id: 'ai', group: '协作 / 需求', title: '“AI 做的不是我想要的”', layerKey: 'need',
+      evidence: ['反问记录与回答', 'taste 文档/否决清单', '上一轮 prompt 与产出对照'],
+      actions: ['先补反问与 taste，再生成', '明确非目标/禁忌/验收', '只重做被否的那一层'],
+      nots: ['不要继续盲生成', '不要用“更精致”当指令'],
+      acceptance: ['7 问已答或假设已标注', '否决清单 ≥3 条', 'worker 能复述 5 行范围锁']
+    },
+    {
+      id: 'allbad', group: '整体', title: '“整体都差”', layerKey: 'pillar',
+      evidence: ['能否一句话说清“玩家重复做什么”', '3 分钟内玩家能否说出目标', '现有资产/规则/剧情中值得保留的清单'],
+      actions: ['写 1 页设计支柱（玩家/重复动作/为什么继续/不能牺牲）', '做 3 分钟垂直切片', '再回到分层诊断，不直接全重写'],
+      nots: ['不要直接重写全部', '不要用“全重做”代替诊断'],
+      acceptance: ['1 页支柱 + 3 分钟切片可运行', '3/5 玩家能说出核心循环']
+    }
+  ];
+
+  const RUBRICS = {
+    visual: { label: '画面 / UI / VFX', role: 'game-art-director（美术总监）', dims: [
+      ['目标尺寸可读性（含 25% 缩略）', 20], ['棋盘/场景与单位分离', 20], ['UI 信息结构', 15],
+      ['字体与排版', 12], ['色彩/光照/风格一致性', 13], ['VFX', 10], ['合规与原创', 10]
+    ]},
+    gameplay: { label: '玩法 / 体验', role: 'game-designer（策划）+ 真人试玩', dims: [
+      ['核心动词清晰度', 25], ['有意义的选择', 25], ['反馈闭环', 20], ['难度/节奏', 15], ['重玩/深度', 15]
+    ]},
+    narrative: { label: '剧情 / 叙事', role: 'game-designer（策划）', dims: [
+      ['因果清晰度', 25], ['角色动机', 20], ['节奏', 20], ['世界观一致性', 15], ['传达/复述准确率', 20]
+    ]},
+    qa: { label: '功能 / QA', role: 'game-qa-lead（QA 负责人）', dims: [
+      ['P0 功能通过', 30], ['回归', 25], ['可复现性', 20], ['证据完整', 15], ['性能/稳定性', 10]
+    ]},
+    redteam: { label: '红队 / 对抗', role: 'game-red-team（红队）', dims: [
+      ['可复现缺陷', 30], ['证据漏洞', 20], ['性能/稳定性', 20], ['逻辑/边界', 20], ['文档/合规', 10]
+    ]}
+  };
+
+  const SOP = [
+    { n: '0', title: '冻结现状（基线）', owner: '开始前 · 任意角色', bullets: [
+      '保存构建版本/commit、随机种子、分辨率、目标显示尺寸与 25% 缩略图。',
+      '3 张图：全景、问题局部 100%、关键交互态；1 段约 10 秒录屏。',
+      '性能：至少记录 p95 帧时间/最差帧；用户原话不要先翻译成方案。',
+      '列出资产/规则/剧情中明确要保留的东西。'
+    ], out: 'docs/shots/、docs/迭代记录.md、对应 demo 的 TECH.md' },
+    { n: '1', title: '分层诊断（只选一层）', owner: '诊断 · 主 Agent / 策划', bullets: [
+      '问三个问题：玩家实际看到/做了什么？哪个具体设计导致的？只动这层最坏损失什么？',
+      '用 02 节 triage：症状 → 层 → 只改该层的动作；写清“不改清单”。',
+      '如果“全都不满意”，先写 1 页设计支柱 + 3 分钟切片，再诊断。'
+    ], out: '一层声明 + 证据清单 + 不改清单' },
+    { n: '2', title: '反问 + 复述', owner: '开工前 · 主 Agent / worker', bullets: [
+      '贴 7 问；要求 worker 先答/复述 5 行，再动手。',
+      '异步任务不能问：写“假设 + 依据 + 置信度”；高风险 → needs_input。',
+      '第一题是感受，不是风格；感受继续拆成手段与约束。'
+    ], out: 'clarify_answers 或假设清单' },
+    { n: '3', title: '冻结 taste + 否决清单', owner: '开工前 · 人类 owner / 策划 / 美术总监', bullets: [
+      '3–5 条不可妥协项，每条带测试方法。',
+      '≥3 条已否决方案，每条带原因/证据/替代/重审条件。',
+      'append-only；区分硬否决与暂缓；项目要求优先于通用偏好。'
+    ], out: 'taste 文档 + reject_log（05 节可导出）' },
+    { n: '4', title: '单层最小改动', owner: '实现 · game-artist / game-engineer', bullets: [
+      'scope lock：列出允许改的文件/场景/资产；写清不改清单。',
+      '一个假设、一个指标、一个时间盒；不做顺手重构。',
+      '保留回滚点；改动前先跑 smoke；同机位 before/after。'
+    ], out: '仅限 scope_lock 的 diff + before/after' },
+    { n: '5', title: '独立裁判', owner: '评审 · game-art-director / game-qa-lead / game-red-team', bullets: [
+      '生产者提交构建与证据，不写“我觉得很好”。',
+      '体验者（fresh context/真人）写“看到什么、哪里卡住、为什么继续/退出”。',
+      '裁判拿匿名证据 + rubric + taste：先 ≥3 个失败项，再打分，最后 verdict + 未评估项。'
+    ], out: '裁判报告（P0–P2 + 分数 + verdict + 未评估项）' },
+    { n: '6', title: '决策（继续/回滚/换层/停止）', owner: '拍板 · 人类 owner / 主 Agent', bullets: [
+      'P0 下降 + 指标达标 + 无回归 → 继续下一层或收尾。',
+      '指标变差/P0 回归 → 回滚并重新诊断；两轮无改善 → 检查是否改错层。',
+      '同一层 3 次单层失败 → 只重做该层；核心动词不成立 → 3 分钟垂直切片。',
+      '证据不足 → 设计成本最低的区分实验，不凭感觉拍板。'
+    ], out: '决策记录 + 残留问题 + 下一轮单层范围' }
+  ];
+
+  const ACCEPT = [
+    '第 0 步基线已保存：目标尺寸 + 25% 缩略 + 10s 录屏 + 种子 + p95 帧时间。',
+    '只声明了一层，并写了症状、证据、因果。',
+    'clarify_questions 已答，或假设已标注依据/置信度；高风险无回答 → needs_input。',
+    'taste 文档含 3–5 条不可妥协项，每条有测试方法。',
+    '否决清单 ≥3 条，每条有原因/证据/替代/重审条件。',
+    'scope_lock 列出允许改的文件；“不改清单”明确。',
+    '单层改动只有一个假设、一个指标、一个时间盒。',
+    '没有越界改动（diff/资产审计通过）。',
+    'before/after 同机位、同尺寸、同种子。',
+    '独立裁判 ≠ 实现者；盲评；先问题后分；证据完整；verdict + 未评估项。',
+    'P0 数量/目标指标与 before 对比；残留问题记录在案。',
+    '决策已记录（继续/回滚/换层/只重做该层/停止）。',
+    '涉及“乐趣/手感”时，有 5–6 名目标玩家试玩或等价真人证据。',
+    '版权/商标/资产来源检查通过；未复制参考游戏素材/品牌。'
+  ];
+
+  const CLARIFY_FULL = [
+    '## 开工前反问（答完再开工）',
+    '',
+    '### 5 行复述',
+    '我理解你要的是：____',
+    '这次只改的层：____',
+    '我不改的：____',
+    '验收口径：____',
+    '主要风险/假设：____',
+    '',
+    '### 7 问',
+    '1. 目标玩家/场景：谁、什么设备/分辨率/输入、单次多久、为什么玩？',
+    '2. 第一眼感受：希望第一眼感到什么？用 3 个具体场景说明；由哪些手段产生？什么会破坏它？',
+    '3. 核心动词：玩家重复做的一个动作是什么？失败/成长如何改变它？3 分钟内有哪些有意义的选择？',
+    '4. 参考：1–3 个作品；每个写“取什么/为什么/不取什么”；不复制素材/角色/UI/Logo。',
+    '5. 非目标：这次明确不做什么？哪些是“以后可能”，哪些是“永远不做”？',
+    '6. 验收：目标尺寸/25% 缩略/设备下哪些可观察指标？阈值多少？怎么复现？什么算 P0？',
+    '7. 约束/禁忌/预算：时间盒/预算/迭代轮数？性能/包体？版权/商标/肖像/声音授权？3–5 条不可妥协项？',
+    '',
+    '### 异步降级',
+    '- 能问：一次问 1–3 个最关键的问题，答完再开工。',
+    '- 不能问：写“假设 + 依据 + 置信度”，只做低风险、可回滚的最小改动。',
+    '- 高风险（改玩法/叙事方向、引入新资产/依赖、版权、不可逆数据）且无答案 → 停，返回 needs_input。',
+    '- 预计超过约定时间 2 倍 → 停，返回已完成部分 + 需要确认的点。'
+  ].join('\n');
+
+  const TASTE_LAYERS = ['画面', '玩法', '剧情', '反馈', '性能', '手感', 'UI', '需求', '其他'];
+
+  // ---------------------------------------------------------------- state
+  const sampleRows = () => ([
+    { id: 'sample-1', sample: true, date: '2026-11-21', type: '硬否决', layer: '画面',
+      rejected: '角色改成 3D 低模 + 描边 + 骨骼动画',
+      reason: '1280×720 下轮廓/表情辨识不如 2D 序列帧，成本更高',
+      alt: '保留 2D 序列帧，先统一线宽/色板',
+      revisit: '镜头可自由旋转或需要 8 方向时' },
+    { id: 'sample-2', sample: true, date: '2026-11-21', type: '暂缓', layer: '玩法',
+      rejected: '先加 20 张新卡扩充内容',
+      reason: '核心循环尚未验证，内容量会掩盖问题',
+      alt: '先做 3 分钟切片 + 单变量规则测试',
+      revisit: '核心动词通过 5 人试玩后' }
+  ]);
+
+  function defaultsState() {
+    return {
+      triage: { id: null, layer: null, checked: [] },
+      taste: {
+        project: '<项目名>',
+        musts: '',
+        rows: sampleRows()
+      },
+      judge: { rubric: 'visual', threshold: 7, p0: 0, scores: {}, evidence: {}, checks: [false, false, false, false, false, false] },
+      sop: SOP.map(() => false),
+      accept: ACCEPT.map(() => false)
+    };
+  }
+
+  function loadState() {
+    const d = defaultsState();
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+      if (!raw || typeof raw !== 'object') return d;
+      return {
+        ...d, ...raw,
+        triage: { ...d.triage, ...(raw.triage || {}) },
+        taste: { ...d.taste, ...(raw.taste || {}), rows: Array.isArray(raw.taste && raw.taste.rows) ? raw.taste.rows : d.taste.rows },
+        judge: { ...d.judge, ...(raw.judge || {}) },
+        sop: Array.isArray(raw.sop) && raw.sop.length === SOP.length ? raw.sop : d.sop,
+        accept: Array.isArray(raw.accept) && raw.accept.length === ACCEPT.length ? raw.accept : d.accept
+      };
+    } catch (e) { return d; }
+  }
+
+  let state = loadState();
+  const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} };
+
+  // ---------------------------------------------------------------- theme + chrome
+  const savedTheme = localStorage.getItem('ai-rescue-theme');
+  if (savedTheme) root.dataset.theme = savedTheme;
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) root.dataset.theme = 'light';
+  const themeBtn = $('#themeBtn');
+  function syncTheme() { themeBtn.textContent = '主题：' + (root.dataset.theme === 'dark' ? '暗' : '亮'); }
+  syncTheme();
+  themeBtn.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('ai-rescue-theme', root.dataset.theme);
+    syncTheme();
+  });
+
+  const progress = $('#progress');
+  function onScroll() {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  $('#topBtn').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  const sections = $$('main > section');
+  const tocLinks = $$('nav.toc a');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      });
+    }, { rootMargin: '-20% 0px -65% 0px', threshold: 0 });
+    sections.forEach(sec => observer.observe(sec));
+  }
+
+  async function copyText(text, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e2) {}
+      ta.remove();
+    }
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = '已复制';
+      setTimeout(() => { btn.textContent = old; }, 1200);
+    }
+  }
+
+  // ---------------------------------------------------------------- triage
+  function symptomById(id) { return SYMPTOMS.find(s => s.id === id) || null; }
+
+  function renderSymptoms() {
+    const groups = [];
+    SYMPTOMS.forEach(s => { if (!groups.includes(s.group)) groups.push(s.group); });
+    $('#symList').innerHTML = groups.map(g => `
+      <div class="sym-group"><h4>${esc(g)}</h4>
+        ${SYMPTOMS.filter(s => s.group === g).map(s => `
+          <button type="button" class="sym-btn ${state.triage.id === s.id ? 'active' : ''}" data-sym="${s.id}">
+            <span>${esc(s.title)}</span><em>${esc(LAYERS[s.layerKey].name)}</em>
+          </button>`).join('')}
+      </div>`).join('');
+  }
+
+  function buildTask(s, layerKey) {
+    const L = LAYERS[layerKey];
+    return {
+      layer: layerKey,
+      clarify_questions: [
+        '目标尺寸/25% 缩略图下，玩家第一眼必须读到什么？',
+        '这次明确不改哪些规则/系统/资产？',
+        '验收指标与阈值是什么？'
+      ],
+      clarify_answers: { '<回答或假设>': '<未答则写：假设 + 依据 + 置信度>' },
+      scope_lock: ['<只列本次允许改的文件/场景/资产>'],
+      reject_log: [{ layer: layerKey, idea: '<被否方案>', why: '<原因 + 证据>', alt: '<保留/替代>', revisit: '<重审条件>' }],
+      judge: {
+        agent: L.judge.split(' + ')[0],
+        independent_of: ['<实现者>'],
+        blind: true,
+        rubric: 'docs/templates/ai-judge-prompt.md',
+        rubric_key: L.rubric,
+        pass_threshold: 7.0,
+        problems_first: true,
+        evidence: ['<目标尺寸截图>', '<25% 缩略>', '<before/after 录屏>']
+      },
+      acceptance: layerKey === s.layerKey ? s.acceptance.slice() : L.accept.slice(),
+      baseline: ['<before 同机位截图/录屏/种子>'],
+      rollback: 'revert scope_lock paths'
+    };
+  }
+
+  function renderTriage() {
+    const panel = $('#triagePanel');
+    const s = symptomById(state.triage.id);
+    if (!s) {
+      panel.innerHTML = '<div class="empty">← 从左侧选择一个症状开始<br><span style="font-size:12px">例如“有操作，但没选择/无聊”“看不清/糊/不高级”</span></div>';
+      return;
+    }
+    const rec = LAYERS[s.layerKey];
+    const curKey = state.triage.layer || s.layerKey;
+    const cur = LAYERS[curKey];
+    const mismatch = curKey !== s.layerKey;
+    const checked = state.triage.checked || [];
+    const acts = mismatch ? cur.do : s.actions;
+    const nots = mismatch ? cur.dont : s.nots;
+    const accept = mismatch ? cur.accept : s.acceptance;
+    const json = JSON.stringify(buildTask(s, curKey), null, 2);
+    panel.innerHTML = `
+      <div class="panel-head">
+        <div><div class="wizard-step">Step 2 · 确认层</div><h3>${esc(s.title)}</h3></div>
+        <span class="tag gold">推荐：${esc(rec.name)}</span>
+      </div>
+      <div class="layer-pills">
+        ${Object.entries(LAYERS).map(([k, L]) => `
+          <button type="button" class="pill ${k === curKey ? 'active' : ''}" data-layer="${k}">
+            ${esc(L.name)}${k === s.layerKey ? ' <span class="dot-mark">●</span>' : ''}
+          </button>`).join('')}
+      </div>
+      ${mismatch ? `<div class="warnbox"><b>改错层风险：</b>你选择了“${esc(cur.name)}”，但症状更指向“${esc(rec.name)}”。先补证据再决定；如果连续两轮无效，回到推荐层。下面的动作清单已切换为你选的层。</div>` : ''}
+      <div class="action-grid">
+        <div class="action evidence">
+          <h4>先补证据 · ${checked.filter(Boolean).length}/${s.evidence.length}</h4>
+          ${s.evidence.map((e, i) => `
+            <label class="chk ${checked[i] ? 'done' : ''}">
+              <input type="checkbox" data-ev="${i}" ${checked[i] ? 'checked' : ''}> ${esc(e)}
+            </label>`).join('')}
+        </div>
+        <div class="action do"><h4>只改这一层</h4><ul>${acts.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>
+        <div class="action dont"><h4>不要动</h4><ul>${nots.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>
+      </div>
+      <div class="accept-box">
+        <b>验收口径</b>
+        <ul>${accept.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
+        <div class="judge-line">独立裁判：<b>${esc(cur.judge)}</b> · rubric：<b>${esc(cur.rubric)}</b> · 门槛：7.0 · P0 必须为 0</div>
+      </div>
+      <div class="json-head"><h4>可粘贴到 task JSON</h4><button class="btn" id="copyTriageJson" type="button">复制 JSON</button></div>
+      <pre class="jsonbox" id="triageJson">${esc(json)}</pre>`;
+  }
+
+  function renderSymTable() {
+    $('#symTableBody').innerHTML = SYMPTOMS.map(s => `
+      <tr>
+        <td><b>${esc(s.title)}</b></td>
+        <td>${esc(LAYERS[s.layerKey].name)}</td>
+        <td>${s.evidence.map(esc).join('<br>')}</td>
+        <td>${s.actions.map(esc).join('<br>')}</td>
+        <td>${s.nots.map(esc).join('<br>')}</td>
+      </tr>`).join('');
+  }
+
+  function selectSymptom(id) {
+    const s = symptomById(id);
+    state.triage = { id, layer: s.layerKey, checked: s.evidence.map(() => false) };
+    save(); renderSymptoms(); renderTriage();
+  }
+
+  $('#symList').addEventListener('click', e => {
+    const btn = e.target.closest('.sym-btn');
+    if (btn) selectSymptom(btn.dataset.sym);
+  });
+  $('#resetTriage').addEventListener('click', () => {
+    state.triage = { id: null, layer: null, checked: [] };
+    save(); renderSymptoms(); renderTriage();
+  });
+  $('#triagePanel').addEventListener('click', e => {
+    const layerBtn = e.target.closest('[data-layer]');
+    if (layerBtn) {
+      state.triage.layer = layerBtn.dataset.layer;
+      save(); renderTriage();
+      return;
+    }
+    const copyBtn = e.target.closest('#copyTriageJson');
+    if (copyBtn) copyText($('#triageJson').textContent, copyBtn);
+  });
+  $('#triagePanel').addEventListener('change', e => {
+    const cb = e.target.closest('[data-ev]');
+    if (!cb) return;
+    state.triage.checked[Number(cb.dataset.ev)] = cb.checked;
+    save(); renderTriage();
+  });
+
+  // ---------------------------------------------------------------- taste
+  let uid = 0;
+  function newTasteRow() {
+    uid += 1;
+    return {
+      id: 'row-' + Date.now() + '-' + uid,
+      sample: false,
+      date: today(),
+      type: '硬否决', layer: '画面',
+      rejected: '', reason: '', alt: '', revisit: ''
+    };
+  }
+  const isComplete = r => ['rejected', 'reason', 'alt', 'revisit'].every(k => String(r[k] || '').trim().length > 0);
+
+  function renderTaste() {
+    $('#tasteProject').value = state.taste.project || '';
+    $('#musts').value = state.taste.musts || '';
+    $('#tasteBody').innerHTML = state.taste.rows.map(r => {
+      const done = isComplete(r);
+      return `
+        <tr data-row="${r.id}" class="${done ? '' : 'row-warn'}">
+          <td><input type="date" data-field="date" value="${esc(r.date)}"></td>
+          <td><select data-field="type">
+            <option ${r.type === '硬否决' ? 'selected' : ''}>硬否决</option>
+            <option ${r.type === '暂缓' ? 'selected' : ''}>暂缓</option>
+          </select></td>
+          <td><select data-field="layer">
+            ${TASTE_LAYERS.map(l => `<option ${r.layer === l ? 'selected' : ''}>${l}</option>`).join('')}
+          </select></td>
+          <td><textarea data-field="rejected" rows="2">${esc(r.rejected)}</textarea>
+            ${r.sample ? '<span class="tag cell-tag">示例</span>' : ''}
+            <span class="cell-tag row-tag">${done ? '' : '<span class="tag warn">缺证据/替代</span>'}</span></td>
+          <td><textarea data-field="reason" rows="2">${esc(r.reason)}</textarea></td>
+          <td><textarea data-field="alt" rows="2">${esc(r.alt)}</textarea></td>
+          <td><textarea data-field="revisit" rows="2">${esc(r.revisit)}</textarea></td>
+          <td><button class="btn tiny" data-del="${r.id}" type="button">删</button></td>
+        </tr>`;
+    }).join('');
+    updateTasteStats();
+  }
+
+  function updateTasteStats() {
+    const rows = state.taste.rows;
+    const hard = rows.filter(r => r.type === '硬否决').length;
+    const complete = rows.filter(isComplete).length;
+    $('#tasteStats').textContent = `${rows.length} 条 · 硬否决 ${hard} · 暂缓 ${rows.length - hard} · 完整 ${complete}/${rows.length}`;
+  }
+
+  function updateRowValidation(tr, row) {
+    const done = isComplete(row);
+    tr.classList.toggle('row-warn', !done);
+    const tag = tr.querySelector('.row-tag');
+    if (tag) tag.innerHTML = done ? '' : '<span class="tag warn">缺证据/替代</span>';
+  }
+
+  $('#tasteProject').addEventListener('input', e => { state.taste.project = e.target.value; save(); });
+  $('#musts').addEventListener('input', e => { state.taste.musts = e.target.value; save(); });
+  $('#tasteBody').addEventListener('input', e => {
+    const tr = e.target.closest('tr[data-row]');
+    if (!tr) return;
+    const row = state.taste.rows.find(r => r.id === tr.dataset.row);
+    const field = e.target.dataset.field;
+    if (!row || !field) return;
+    row[field] = e.target.value;
+    row.sample = false;
+    updateRowValidation(tr, row);
+    updateTasteStats();
+    save();
+  });
+  $('#tasteBody').addEventListener('change', e => {
+    const tr = e.target.closest('tr[data-row]');
+    if (!tr) return;
+    const row = state.taste.rows.find(r => r.id === tr.dataset.row);
+    const field = e.target.dataset.field;
+    if (!row || !field) return;
+    row[field] = e.target.value;
+    row.sample = false;
+    updateRowValidation(tr, row);
+    updateTasteStats();
+    save();
+  });
+  $('#tasteBody').addEventListener('click', e => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    state.taste.rows = state.taste.rows.filter(r => r.id !== btn.dataset.del);
+    save(); renderTaste();
+  });
+  $('#addReject').addEventListener('click', () => {
+    state.taste.rows.push(newTasteRow());
+    save(); renderTaste();
+  });
+  $('#resetTaste').addEventListener('click', () => {
+    if (!confirm('恢复示例会覆盖当前编辑，继续？')) return;
+    state.taste.rows = sampleRows();
+    save(); renderTaste();
+  });
+
+  function tasteMarkdown() {
+    const p = (state.taste.project || '<项目名>').trim();
+    const rows = state.taste.rows;
+    const bad = rows.filter(r => !isComplete(r)).length;
+    const cell = s => String(s == null ? '' : s).replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+    const lines = [
+      '# ' + p + ' Taste / 否决清单',
+      '',
+      '> 导出：' + today() + ' · 结构参考 B 站 BV1AVs461EFQ 置顶评论公开的 taste 文档（改写模板，非原文复制）',
+      bad ? '> 注意：有 ' + bad + ' 条缺少原因/证据/替代/重审条件，先补完再交给 AI。' : '',
+      '',
+      '## 不可妥协项（3–5 条，每条带测试方法）',
+      state.taste.musts.trim() || '- <待填>',
+      '',
+      '## 已否决方案（append-only）',
+      '| 日期 | 类型 | 层 | 被否方案 | 否决原因（证据） | 保留/替代 | 重审条件 |',
+      '| --- | --- | --- | --- | --- | --- | --- |',
+      ...rows.map(r => `| ${cell(r.date)} | ${cell(r.type)} | ${cell(r.layer)} | ${cell(r.rejected)} | ${cell(r.reason)} | ${cell(r.alt)} | ${cell(r.revisit)} |`),
+      '',
+      '## 规则',
+      '- 每条否决必须有原因 + 证据；只写“不喜欢”等于没写。',
+      '- 区分硬否决与暂缓；暂缓写重审条件。',
+      '- 不删旧条目；过期/被替代要标记，保留日期和原因。',
+      '- 项目明确要求 > 通用偏好；每季度或大版本重审一次。',
+      ''
+    ];
+    return lines.join('\n');
+  }
+
+  $('#copyTaste').addEventListener('click', e => copyText(tasteMarkdown(), e.currentTarget));
+  $('#downloadTaste').addEventListener('click', () => {
+    const blob = new Blob([tasteMarkdown()], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    const name = (state.taste.project || 'project').replace(/[^\w一-龥-]+/g, '-').slice(0, 40);
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ai-taste-' + name + '-' + today() + '.md';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  // ---------------------------------------------------------------- judge
+  function rubricDims() { return RUBRICS[state.judge.rubric].dims; }
+  function arrFor(store, key, len) {
+    if (!Array.isArray(store[key])) store[key] = Array(len).fill('');
+    while (store[key].length < len) store[key].push('');
+    return store[key];
+  }
+  function ensureJudgeArrays() {
+    const n = rubricDims().length;
+    if (!state.judge.scores) state.judge.scores = {};
+    if (!state.judge.evidence) state.judge.evidence = {};
+    arrFor(state.judge.scores, state.judge.rubric, n);
+    arrFor(state.judge.evidence, state.judge.rubric, n);
+  }
+
+  function renderRubricTabs() {
+    $('#rubricTabs').innerHTML = Object.entries(RUBRICS).map(([k, r]) =>
+      `<button type="button" class="pill ${k === state.judge.rubric ? 'active' : ''}" data-rubric="${k}">${esc(r.label)}</button>`
+    ).join('');
+  }
+
+  function renderRubricTable() {
+    ensureJudgeArrays();
+    const dims = rubricDims();
+    const scores = state.judge.scores[state.judge.rubric];
+    const evs = state.judge.evidence[state.judge.rubric];
+    $('#rubricBody').innerHTML = dims.map((d, i) => `
+      <tr>
+        <td><b>${esc(d[0])}</b><div class="w">权重 ${d[1]}%</div></td>
+        <td><input type="number" data-score="${i}" min="0" max="10" step="0.5" value="${scores[i] === '' || scores[i] == null ? '' : scores[i]}" placeholder="0"></td>
+        <td><textarea data-evidence="${i}" rows="2" placeholder="文件 / 时间码 / 数值 / 截图区域">${esc(evs[i])}</textarea></td>
+      </tr>`).join('');
+  }
+
+  function renderSelfChecks() {
+    $$('#s6 [data-check]').forEach(cb => { cb.checked = !!state.judge.checks[Number(cb.dataset.check)]; });
+  }
+
+  function weighted() {
+    const dims = rubricDims();
+    const scores = state.judge.scores[state.judge.rubric] || [];
+    let sum = 0, wsum = 0, scored = 0, evidenced = 0;
+    dims.forEach((d, i) => {
+      const s = Number(scores[i] || 0);
+      if (s > 0) { sum += s * d[1]; wsum += d[1]; scored += 1; }
+      if (String((state.judge.evidence[state.judge.rubric] || [])[i] || '').trim().length >= 3) evidenced += 1;
+    });
+    return { value: wsum > 0 ? sum / wsum : 0, scored, evidenced, total: dims.length };
+  }
+
+  function updateJudge() {
+    ensureJudgeArrays();
+    const dims = rubricDims();
+    const w = weighted();
+    const allScored = w.scored === w.total;
+    const allEvidence = w.evidenced === w.total;
+    const anyScore = w.scored > 0;
+    const threshold = Number(state.judge.threshold || 7);
+    const p0 = Math.max(0, Math.floor(Number(state.judge.p0 || 0)));
+    const checksOk = (state.judge.checks || []).every(Boolean);
+    let verdict = '未评分', note = '先按 rubric 打分；证据优先，分数最后。', cls = 'v-invalid';
+    if (anyScore) {
+      if (!checksOk) {
+        verdict = '无效评审'; cls = 'v-invalid';
+        note = '反谄媚自检未完成：先补自检，再谈分数。找不出问题或没有证据，都不得视为通过。';
+      } else if (p0 > 0) {
+        verdict = 'REJECT'; cls = 'v-reject';
+        note = 'P0 未清：平均分不能掩盖 P0。先修 P0，再谈总分。';
+      } else if (!allScored || !allEvidence) {
+        verdict = 'CONCERNS（证据不足）'; cls = 'v-concerns';
+        note = `还有 ${w.total - w.scored} 个维度未评分、${w.total - w.evidenced} 个维度没有证据。没有证据的维度不得猜，也不得视为通过。`;
+      } else if (w.value >= threshold) {
+        verdict = 'APPROVE'; cls = 'v-approve';
+        note = '达到门槛且 P0=0。仍需单列“未评估项”，并把残留问题写进下一轮。';
+      } else if (w.value >= threshold - 1) {
+        verdict = 'CONCERNS'; cls = 'v-concerns';
+        note = '接近门槛：允许一次更聚焦的单层改动，写清为什么再试一次。';
+      } else {
+        verdict = 'REJECT'; cls = 'v-reject';
+        note = '低于门槛：回滚或重新诊断，不要加码同一方向。';
+      }
+    }
+    $('#weightedScore').textContent = anyScore ? w.value.toFixed(2) : '—';
+    $('#thresholdLabel').textContent = threshold.toFixed(1);
+    $('#scoreSummary').textContent = `已评 ${w.scored}/${w.total} · 有证据 ${w.evidenced}/${w.total} · P0 ${p0}`;
+    const vEl = $('#verdict');
+    vEl.textContent = verdict;
+    vEl.className = 'verdict ' + cls;
+    $('#verdictNote').textContent = note;
+    $('#threshold').value = threshold;
+    $('#p0count').value = p0;
+    $('#judgePromptPreview').textContent = buildJudgePrompt();
+  }
+
+  function buildJudgePrompt() {
+    const r = RUBRICS[state.judge.rubric];
+    const dims = r.dims;
+    const threshold = Number(state.judge.threshold || 7);
+    return [
+      '你是 ' + r.role + '，没有参与这个项目的制作。',
+      '你的任务不是夸，而是找出会阻止放行的问题，并给出可复现的证据。',
+      '',
+      '【输入】',
+      '- 构建/截图/录屏：<路径/链接>',
+      '- 目标显示尺寸：<...>；缩略图：<...>',
+      '- 项目 taste 文档：<路径/摘要>',
+      '- 验收 rubric：' + r.label + '（见下表）',
+      '- 对照基线（before）：<路径>',
+      '- 本次声明只改的层：<玩法/画面/剧情/性能/手感/UI>',
+      '- 本次声明不改的：<...>',
+      '',
+      '【硬规则】',
+      '1. 先写“我实际看到/玩到了什么”：至少 5 条，带文件/时间码/截图区域/像素或数值。',
+      '2. 再写失败项：至少 3 条，按 P0/P1/P2 分级；每条必须有证据、影响、最小修复方向。',
+      '3. 然后才按 rubric 逐维打分。没有证据的维度写“证据不足”，不得猜测。',
+      '4. 最后给 verdict：APPROVE / CONCERNS / REJECT；单列“未评估项”。',
+      '5. 禁止：开场表扬；用“高级/不错/有感觉”代替证据；用平均分掩盖 P0；修改任何代码/资产。',
+      '6. 如果你找不到任何问题：视为评审无效，重新检查证据，而不是直接通过。',
+      '7. 如果证据不足以判断：明确说“不足”，并列出成本最低的补证方式。',
+      '',
+      '【Rubric】' + r.label + '；门槛 ' + threshold.toFixed(1) + '；P0 必须为 0',
+      '| 维度 | 权重 |',
+      '| --- | ---: |',
+      ...dims.map(d => '| ' + d[0] + ' | ' + d[1] + '% |'),
+      '',
+      '【输出格式】',
+      '## 0. 我实际看到/玩到什么',
+      '- ...',
+      '## 1. 失败项（先问题）',
+      '### P0',
+      '- [证据] ... [影响] ... [修复方向] ...',
+      '### P1',
+      '...',
+      '### P2',
+      '...',
+      '## 2. Rubric 评分',
+      '| 维度 | 权重 | 分数 | 证据 | 门槛 | 是否达标 |',
+      '## 3. 结论',
+      '- Verdict: APPROVE / CONCERNS / REJECT',
+      '- 放行条件（若有）：',
+      '- 未评估项：',
+      '- 证据不足项：'
+    ].join('\n');
+  }
+
+  function buildJudgeResult() {
+    const r = RUBRICS[state.judge.rubric];
+    const w = weighted();
+    const threshold = Number(state.judge.threshold || 7);
+    const scores = state.judge.scores[state.judge.rubric] || [];
+    const evs = state.judge.evidence[state.judge.rubric] || [];
+    const verdict = $('#verdict').textContent;
+    return [
+      '## 裁判评分结果',
+      '',
+      '- Rubric：' + r.label,
+      '- 门槛：' + threshold.toFixed(1) + '；P0：' + Number(state.judge.p0 || 0),
+      '- 加权分：' + (w.scored ? w.value.toFixed(2) : '—') + '（已评 ' + w.scored + '/' + w.total + '，有证据 ' + w.evidenced + '/' + w.total + '）',
+      '- Verdict：' + verdict,
+      '',
+      '| 维度 | 权重 | 分数 | 证据 |',
+      '| --- | ---: | ---: | --- |',
+      ...r.dims.map((d, i) => '| ' + d[0] + ' | ' + d[1] + '% | ' + (scores[i] === '' || scores[i] == null ? '未评' : scores[i]) + ' | ' + String(evs[i] || '').replace(/\n/g, ' ') + ' |'),
+      '',
+      '### 反谄媚自检',
+      ...['先证据后评价', '每个分数有证据', 'P0 未被平均', '未因努力放宽', '已标未评估项', 'A/B 匿名'].map((t, i) => '- [' + (state.judge.checks[i] ? 'x' : ' ') + '] ' + t),
+      ''
+    ].join('\n');
+  }
+
+  $('#rubricTabs').addEventListener('click', e => {
+    const btn = e.target.closest('[data-rubric]');
+    if (!btn) return;
+    state.judge.rubric = btn.dataset.rubric;
+    save(); renderRubricTabs(); renderRubricTable(); updateJudge();
+  });
+  $('#rubricBody').addEventListener('input', e => {
+    const t = e.target;
+    const sIdx = t.dataset.score, eIdx = t.dataset.evidence;
+    if (sIdx == null && eIdx == null) return;
+    ensureJudgeArrays();
+    if (sIdx != null) {
+      const v = t.value === '' ? '' : Math.max(0, Math.min(10, Number(t.value)));
+      state.judge.scores[state.judge.rubric][Number(sIdx)] = v;
+    }
+    if (eIdx != null) state.judge.evidence[state.judge.rubric][Number(eIdx)] = t.value;
+    save(); updateJudge();
+  });
+  $('#threshold').addEventListener('input', e => { state.judge.threshold = Number(e.target.value || 0); save(); updateJudge(); });
+  $('#p0count').addEventListener('input', e => { state.judge.p0 = Number(e.target.value || 0); save(); updateJudge(); });
+  $('#s6').addEventListener('change', e => {
+    const cb = e.target.closest('[data-check]');
+    if (!cb) return;
+    state.judge.checks[Number(cb.dataset.check)] = cb.checked;
+    save(); updateJudge();
+  });
+  $('#copyJudgePrompt').addEventListener('click', e => copyText(buildJudgePrompt(), e.currentTarget));
+  $('#copyJudgeResult').addEventListener('click', e => copyText(buildJudgeResult(), e.currentTarget));
+  $('#resetJudge').addEventListener('click', () => {
+    state.judge.scores[state.judge.rubric] = rubricDims().map(() => '');
+    state.judge.evidence[state.judge.rubric] = rubricDims().map(() => '');
+    state.judge.p0 = 0;
+    state.judge.checks = [false, false, false, false, false, false];
+    save(); renderRubricTable(); renderSelfChecks(); updateJudge();
+  });
+
+  // ---------------------------------------------------------------- sop + acceptance
+  function renderSOP() {
+    $('#sopList').innerHTML = SOP.map((s, i) => `
+      <div class="step ${state.sop[i] ? 'done' : ''}">
+        <label class="step-check"><input type="checkbox" data-sop="${i}" ${state.sop[i] ? 'checked' : ''}><span></span></label>
+        <div class="step-body">
+          <div class="step-head"><span class="step-n">${s.n}</span><h3>${esc(s.title)}</h3><span class="ts">${esc(s.owner)}</span></div>
+          <ul class="clean">${s.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>
+          <div class="deliver"><b>交付物</b> ${esc(s.out)}</div>
+        </div>
+      </div>`).join('');
+    updateSopProgress();
+  }
+  function updateSopProgress() {
+    const done = state.sop.filter(Boolean).length;
+    $('#sopProgressText').textContent = `SOP ${done}/${SOP.length}`;
+    $('#sopGauge').style.width = (done / SOP.length * 100) + '%';
+  }
+  $('#sopList').addEventListener('change', e => {
+    const cb = e.target.closest('[data-sop]');
+    if (!cb) return;
+    state.sop[Number(cb.dataset.sop)] = cb.checked;
+    cb.closest('.step').classList.toggle('done', cb.checked);
+    save(); updateSopProgress();
+  });
+
+  function renderAccept() {
+    $('#accList').innerHTML = ACCEPT.map((a, i) => `
+      <label class="acc-item ${state.accept[i] ? 'done' : ''}">
+        <input type="checkbox" data-acc="${i}" ${state.accept[i] ? 'checked' : ''}><span>${esc(a)}</span>
+      </label>`).join('');
+    updateAccProgress();
+  }
+  function updateAccProgress() {
+    const done = state.accept.filter(Boolean).length;
+    $('#accProgressText').textContent = `验收 ${done}/${ACCEPT.length}`;
+    $('#accGauge').style.width = (done / ACCEPT.length * 100) + '%';
+  }
+  $('#accList').addEventListener('change', e => {
+    const cb = e.target.closest('[data-acc]');
+    if (!cb) return;
+    state.accept[Number(cb.dataset.acc)] = cb.checked;
+    cb.closest('.acc-item').classList.toggle('done', cb.checked);
+    save(); updateAccProgress();
+  });
+  $('#copyAccept').addEventListener('click', e => {
+    const text = ['## 半成品抢救验收清单', ''].concat(ACCEPT.map((a, i) => '- [' + (state.accept[i] ? 'x' : ' ') + '] ' + a)).join('\n');
+    copyText(text, e.currentTarget);
+  });
+
+  // ---------------------------------------------------------------- static copy buttons
+  function bindCopy(btnSel, textFn) {
+    const btn = $(btnSel);
+    if (btn) btn.addEventListener('click', e => copyText(textFn(), e.currentTarget));
+  }
+  bindCopy('#copyRestate', () => $('#restateBlock').textContent);
+  bindCopy('#copySchema', () => $('#schemaBlock').textContent);
+  bindCopy('#copyPipeline', () => $('#pipelineBlock').textContent);
+  bindCopy('#copyClarify', () => CLARIFY_FULL);
+  $('#clarifyFull').textContent = CLARIFY_FULL;
+
+  // ---------------------------------------------------------------- init
+  renderSymptoms();
+  renderTriage();
+  renderSymTable();
+  renderTaste();
+  renderRubricTabs();
+  renderRubricTable();
+  renderSelfChecks();
+  renderSOP();
+  renderAccept();
+  updateJudge();
+  onScroll();
+})();
+</script>
+</body>
+</html>
