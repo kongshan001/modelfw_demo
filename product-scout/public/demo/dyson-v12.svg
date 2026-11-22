@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#F3EFE7"/>
+  <rect width="1200" height="58" fill="#211E19"/>
+  <circle cx="34" cy="29" r="7" fill="#C5482B"/>
+  <circle cx="58" cy="29" r="7" fill="#A8792C"/>
+  <circle cx="82" cy="29" r="7" fill="#0D6A5A"/>
+  <rect x="115" y="16" width="420" height="27" rx="13.5" fill="#36322B"/>
+  <text x="135" y="34" font-family="Menlo, monospace" font-size="11" fill="#BDB6A9">scout-sample.store / home / v12</text>
+  <rect x="1110" y="17" width="58" height="24" rx="12" fill="#4B453C"/>
+  <text x="1128" y="33" font-family="Menlo, monospace" font-size="9" fill="#D8D0C2">DEMO</text>
+
+  <rect x="42" y="86" width="1116" height="58" rx="8" fill="#FBF8F0" stroke="#DCD3C2"/>
+  <text x="68" y="123" font-family="Songti SC, Georgia, serif" font-size="24" font-weight="700" fill="#1C1914">NORTHSIDE</text>
+  <text x="212" y="122" font-family="PingFang SC, sans-serif" font-size="12" letter-spacing="4" fill="#6C6558">居家清洁</text>
+  <text x="760" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">吸尘器</text>
+  <text x="832" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">空气</text>
+  <text x="900" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">灯具</text>
+  <text x="960" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">配件</text>
+
+  <rect x="42" y="164" width="588" height="514" rx="14" fill="#E9E1E6"/>
+  <circle cx="336" cy="388" r="188" fill="#F7F2EC"/>
+  <circle cx="336" cy="388" r="188" fill="none" stroke="#D7CFC0"/>
+  <ellipse cx="336" cy="568" rx="150" ry="17" fill="#A998A1" opacity=".3"/>
+
+  <g transform="translate(336 382) rotate(-12)">
+    <rect x="-22" y="-196" width="44" height="198" rx="20" fill="#5B3E57"/>
+    <rect x="-15" y="-180" width="30" height="184" rx="14" fill="#6E4D69"/>
+    <rect x="-36" y="0" width="72" height="116" rx="30" fill="#5B3E57"/>
+    <rect x="-24" y="16" width="48" height="84" rx="22" fill="#6E4D69"/>
+    <path d="M-30 112h60l30 72H-60z" fill="#7B5B75"/>
+    <rect x="-94" y="178" width="188" height="36" rx="18" fill="#4C3449"/>
+    <rect x="-58" y="212" width="18" height="35" rx="8" fill="#3F2A3C"/>
+    <rect x="40" y="212" width="18" height="35" rx="8" fill="#3F2A3C"/>
+    <rect x="28" y="74" width="22" height="44" rx="8" fill="#C8B7C4"/>
+    <rect x="32" y="-118" width="12" height="36" rx="6" fill="#B8A3B3"/>
+    <circle cx="0" cy="-122" r="7" fill="#D7C7D3"/>
+    <path d="M-18 92l36 8" stroke="#B8A3B3" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="-28" cy="184" r="10" fill="#2F202D"/>
+    <path d="M-42 186h-22" stroke="#E3C36A" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="-70" cy="186" r="4" fill="#E3C36A"/>
+  </g>
+
+  <text x="70" y="216" font-family="Menlo, monospace" font-size="10" fill="#6C6558" letter-spacing="2">SAMPLE PRODUCT IMAGE</text>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="196" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="264" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="none" stroke="#C5482B" stroke-width="2"/>
+
+  <path d="M720 164h436" stroke="#DCD3C2"/>
+  <text x="720" y="146" font-family="Menlo, monospace" font-size="10" fill="#A8792C" letter-spacing="3">DEMO SCREENSHOT / 非真实商品页</text>
+  <text x="720" y="202" font-family="PingFang SC, sans-serif" font-size="13" fill="#0D6A5A" letter-spacing="2">Dyson 戴森 · 无线清洁</text>
+  <text x="720" y="248" font-family="Songti SC, Georgia, serif" font-size="40" font-weight="700" fill="#1C1914">V12 Detect Slim</text>
+  <text x="720" y="286" font-family="PingFang SC, sans-serif" font-size="17" fill="#4A443A">轻量无线吸尘器 · 激光探测 · 60 分钟续航</text>
+
+  <rect x="720" y="314" width="196" height="32" rx="16" fill="#F2E7CE"/>
+  <text x="738" y="335" font-family="PingFang SC, sans-serif" font-size="12" fill="#7A5B21">轻量手持 · 全屋清洁</text>
+
+  <text x="720" y="401" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">样例标价</text>
+  <text x="720" y="453" font-family="Songti SC, Georgia, serif" font-size="48" font-weight="700" fill="#C5482B">¥3,499</text>
+  <text x="862" y="451" font-family="PingFang SC, sans-serif" font-size="13" fill="#6C6558">起 · 价格仅作 Demo</text>
+
+  <text x="720" y="491" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">评分 4.8 / 5 · 3.1 万条公开评价</text>
+  <g fill="#A8792C">
+    <path d="M724 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M752 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M780 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M808 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M836 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+  </g>
+
+  <rect x="720" y="545" width="196" height="50" rx="8" fill="#1C1914"/>
+  <text x="777" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#FBF8F0">加入购物袋</text>
+  <rect x="932" y="545" width="196" height="50" rx="8" fill="none" stroke="#1C1914" stroke-width="1.5"/>
+  <text x="997" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#1C1914">收藏</text>
+
+  <line x1="720" y1="628" x2="1128" y2="628" stroke="#DCD3C2"/>
+  <text x="720" y="658" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">配件：激光纤巧软绒吸头 / 防缠绕螺旋吸头</text>
+  <text x="720" y="682" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">清单：主机 · 充电架 · 4 个吸头（样例）</text>
+
+  <g transform="translate(964 112) rotate(8)">
+    <rect x="-116" y="-22" width="232" height="44" rx="4" fill="none" stroke="#C5482B" stroke-width="2" opacity=".8"/>
+    <text x="-94" y="5" font-family="Menlo, monospace" font-size="11" fill="#C5482B" letter-spacing="1.5">SCOUT SAMPLE · DEMO</text>
+  </g>
+
+  <text x="42" y="718" font-family="Menlo, monospace" font-size="9" fill="#8D8678" letter-spacing="1">原创建模示意图，仅用于 Product Scout 演示 · 非真实商品页 · 不包含品牌 Logo</text>
+</svg>

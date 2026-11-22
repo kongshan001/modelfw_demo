@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#F3EFE7"/>
+  <rect width="1200" height="58" fill="#211E19"/>
+  <circle cx="34" cy="29" r="7" fill="#C5482B"/>
+  <circle cx="58" cy="29" r="7" fill="#A8792C"/>
+  <circle cx="82" cy="29" r="7" fill="#0D6A5A"/>
+  <rect x="115" y="16" width="420" height="27" rx="13.5" fill="#36322B"/>
+  <text x="135" y="34" font-family="Menlo, monospace" font-size="11" fill="#BDB6A9">scout-sample.store / chargers / nano2</text>
+  <rect x="1110" y="17" width="58" height="24" rx="12" fill="#4B453C"/>
+  <text x="1128" y="33" font-family="Menlo, monospace" font-size="9" fill="#D8D0C2">DEMO</text>
+
+  <rect x="42" y="86" width="1116" height="58" rx="8" fill="#FBF8F0" stroke="#DCD3C2"/>
+  <text x="68" y="123" font-family="Songti SC, Georgia, serif" font-size="24" font-weight="700" fill="#1C1914">NORTHSIDE</text>
+  <text x="212" y="122" font-family="PingFang SC, sans-serif" font-size="12" letter-spacing="4" fill="#6C6558">数码配件</text>
+  <text x="760" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">充电</text>
+  <text x="820" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">线材</text>
+  <text x="880" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">桌面</text>
+  <text x="940" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">出行</text>
+
+  <rect x="42" y="164" width="588" height="514" rx="14" fill="#E2E8E1"/>
+  <circle cx="336" cy="388" r="188" fill="#F5F1E8"/>
+  <circle cx="336" cy="388" r="188" fill="none" stroke="#D7CFC0"/>
+  <ellipse cx="336" cy="558" rx="120" ry="16" fill="#95A59A" opacity=".35"/>
+
+  <g transform="translate(336 378)">
+    <rect x="-104" y="-128" width="208" height="238" rx="38" fill="#2C574C"/>
+    <rect x="-91" y="-115" width="182" height="212" rx="30" fill="#386B5D"/>
+    <rect x="-70" y="-96" width="140" height="172" rx="18" fill="#234A40"/>
+    <rect x="-46" y="-165" width="20" height="48" rx="7" fill="#9AA79C"/>
+    <rect x="26" y="-165" width="20" height="48" rx="7" fill="#9AA79C"/>
+    <rect x="-28" y="-58" width="56" height="12" rx="6" fill="#D8E4DC"/>
+    <rect x="-56" y="8" width="112" height="45" rx="10" fill="#D8E4DC"/>
+    <text x="-36" y="38" font-family="PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#234A40">65W</text>
+    <text x="-52" y="126" font-family="Menlo, monospace" font-size="9" fill="#B9C9BF" letter-spacing="2">USB-C · GaN</text>
+    <circle cx="54" cy="126" r="4" fill="#A7C2B4"/>
+  </g>
+
+  <text x="70" y="216" font-family="Menlo, monospace" font-size="10" fill="#6C6558" letter-spacing="2">SAMPLE PRODUCT IMAGE</text>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="196" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="264" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="none" stroke="#C5482B" stroke-width="2"/>
+
+  <path d="M720 164h436" stroke="#DCD3C2"/>
+  <text x="720" y="146" font-family="Menlo, monospace" font-size="10" fill="#A8792C" letter-spacing="3">DEMO SCREENSHOT / 非真实商品页</text>
+  <text x="720" y="202" font-family="PingFang SC, sans-serif" font-size="13" fill="#0D6A5A" letter-spacing="2">Anker 安克 · 氮化镓系列</text>
+  <text x="720" y="248" font-family="Songti SC, Georgia, serif" font-size="44" font-weight="700" fill="#1C1914">Nano II 65W</text>
+  <text x="720" y="286" font-family="PingFang SC, sans-serif" font-size="17" fill="#4A443A">单口氮化镓快充充电器 · 可折叠插脚</text>
+
+  <rect x="720" y="314" width="196" height="32" rx="16" fill="#F2E7CE"/>
+  <text x="738" y="335" font-family="PingFang SC, sans-serif" font-size="12" fill="#7A5B21">口袋大小 · USB-C 65W</text>
+
+  <text x="720" y="401" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">样例标价</text>
+  <text x="720" y="453" font-family="Songti SC, Georgia, serif" font-size="48" font-weight="700" fill="#C5482B">¥149</text>
+  <text x="820" y="451" font-family="PingFang SC, sans-serif" font-size="13" fill="#6C6558">起 · 价格仅作 Demo</text>
+
+  <text x="720" y="491" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">评分 4.9 / 5 · 5.3 万条公开评价</text>
+  <g fill="#A8792C">
+    <path d="M724 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M752 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M780 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M808 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M836 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+  </g>
+
+  <rect x="720" y="545" width="196" height="50" rx="8" fill="#1C1914"/>
+  <text x="777" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#FBF8F0">加入购物袋</text>
+  <rect x="932" y="545" width="196" height="50" rx="8" fill="none" stroke="#1C1914" stroke-width="1.5"/>
+  <text x="997" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#1C1914">收藏</text>
+
+  <line x1="720" y1="628" x2="1128" y2="628" stroke="#DCD3C2"/>
+  <text x="720" y="658" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">兼容：笔记本 / 平板 / 手机 / Switch</text>
+  <text x="720" y="682" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">清单：充电器 · 说明书 · 18 个月保修</text>
+
+  <g transform="translate(964 112) rotate(8)">
+    <rect x="-116" y="-22" width="232" height="44" rx="4" fill="none" stroke="#C5482B" stroke-width="2" opacity=".8"/>
+    <text x="-94" y="5" font-family="Menlo, monospace" font-size="11" fill="#C5482B" letter-spacing="1.5">SCOUT SAMPLE · DEMO</text>
+  </g>
+
+  <text x="42" y="718" font-family="Menlo, monospace" font-size="9" fill="#8D8678" letter-spacing="1">原创建模示意图，仅用于 Product Scout 演示 · 非真实商品页 · 不包含品牌 Logo</text>
+</svg>

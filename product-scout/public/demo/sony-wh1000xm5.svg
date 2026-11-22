@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#F3EFE7"/>
+  <rect width="1200" height="58" fill="#211E19"/>
+  <circle cx="34" cy="29" r="7" fill="#C5482B"/>
+  <circle cx="58" cy="29" r="7" fill="#A8792C"/>
+  <circle cx="82" cy="29" r="7" fill="#0D6A5A"/>
+  <rect x="115" y="16" width="420" height="27" rx="13.5" fill="#36322B"/>
+  <text x="135" y="34" font-family="Menlo, monospace" font-size="11" fill="#BDB6A9">scout-sample.store / headphones / xm5</text>
+  <rect x="1110" y="17" width="58" height="24" rx="12" fill="#4B453C"/>
+  <text x="1128" y="33" font-family="Menlo, monospace" font-size="9" fill="#D8D0C2">DEMO</text>
+
+  <rect x="42" y="86" width="1116" height="58" rx="8" fill="#FBF8F0" stroke="#DCD3C2"/>
+  <text x="68" y="123" font-family="Songti SC, Georgia, serif" font-size="24" font-weight="700" fill="#1C1914">NORTHSIDE</text>
+  <text x="212" y="122" font-family="PingFang SC, sans-serif" font-size="12" letter-spacing="4" fill="#6C6558">声音实验室</text>
+  <text x="770" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">耳机</text>
+  <text x="835" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">音箱</text>
+  <text x="900" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">配件</text>
+  <text x="965" y="122" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">关于</text>
+  <circle cx="1078" cy="115" r="14" fill="none" stroke="#1C1914" stroke-opacity=".45"/>
+  <path d="M1072 115h12M1078 109v12" stroke="#1C1914" stroke-opacity=".45" stroke-width="1.5"/>
+
+  <rect x="42" y="164" width="588" height="514" rx="14" fill="#E7E1D4"/>
+  <circle cx="336" cy="394" r="188" fill="#F5F1E8"/>
+  <circle cx="336" cy="394" r="188" fill="none" stroke="#D7CFC0"/>
+  <ellipse cx="336" cy="567" rx="142" ry="18" fill="#C9C0AF" opacity=".45"/>
+
+  <g transform="translate(336 388)">
+    <rect x="-160" y="-124" width="320" height="248" rx="112" fill="#1F3A4D"/>
+    <rect x="-142" y="-106" width="284" height="212" rx="96" fill="#27485E"/>
+    <rect x="-116" y="-80" width="232" height="168" rx="80" fill="#1C3242"/>
+    <rect x="-190" y="-56" width="74" height="118" rx="32" fill="#172B39"/>
+    <rect x="116" y="-56" width="74" height="118" rx="32" fill="#172B39"/>
+    <rect x="-182" y="-44" width="54" height="94" rx="26" fill="#223D4F"/>
+    <rect x="128" y="-44" width="54" height="94" rx="26" fill="#223D4F"/>
+    <path d="M-186 6 C-200 92 -140 156 -42 158 L42 158 C140 156 200 92 186 6" fill="none" stroke="#172B39" stroke-width="22" stroke-linecap="round"/>
+    <rect x="-38" y="130" width="76" height="20" rx="10" fill="#0F202B"/>
+    <circle cx="158" cy="-8" r="5" fill="#7FA2B4"/>
+    <path d="M-80 -56 C-20 -86 38 -86 98 -56" fill="none" stroke="#3B6076" stroke-width="3" opacity=".8"/>
+  </g>
+
+  <text x="70" y="216" font-family="Menlo, monospace" font-size="10" fill="#6C6558" letter-spacing="2">SAMPLE PRODUCT IMAGE</text>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="196" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="264" y="600" width="60" height="54" rx="8" fill="#F7F3EA" stroke="#DCD3C2"/>
+  <rect x="70" y="600" width="118" height="54" rx="8" fill="none" stroke="#C5482B" stroke-width="2"/>
+
+  <path d="M720 164h436" stroke="#DCD3C2"/>
+  <text x="720" y="146" font-family="Menlo, monospace" font-size="10" fill="#A8792C" letter-spacing="3">DEMO SCREENSHOT / 非真实商品页</text>
+  <text x="720" y="202" font-family="PingFang SC, sans-serif" font-size="13" fill="#0D6A5A" letter-spacing="2">Sony 索尼 · 官方系列</text>
+  <text x="720" y="248" font-family="Songti SC, Georgia, serif" font-size="40" font-weight="700" fill="#1C1914">WH-1000XM5</text>
+  <text x="720" y="286" font-family="PingFang SC, sans-serif" font-size="17" fill="#4A443A">头戴式无线降噪耳机 · 轻量舒适</text>
+
+  <rect x="720" y="314" width="196" height="32" rx="16" fill="#F2E7CE"/>
+  <text x="738" y="335" font-family="PingFang SC, sans-serif" font-size="12" fill="#7A5B21">旗舰降噪 · 30 小时续航</text>
+
+  <text x="720" y="401" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">样例标价</text>
+  <text x="720" y="453" font-family="Songti SC, Georgia, serif" font-size="48" font-weight="700" fill="#C5482B">¥2,299</text>
+  <text x="862" y="451" font-family="PingFang SC, sans-serif" font-size="13" fill="#6C6558">起 · 价格仅作 Demo</text>
+
+  <text x="720" y="491" font-family="PingFang SC, sans-serif" font-size="12" fill="#6C6558">评分 4.9 / 5 · 2.3 万条公开评价</text>
+  <g fill="#A8792C">
+    <path d="M724 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M752 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M780 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M808 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+    <path d="M836 505l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z"/>
+  </g>
+
+  <rect x="720" y="545" width="196" height="50" rx="8" fill="#1C1914"/>
+  <text x="777" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#FBF8F0">加入购物袋</text>
+  <rect x="932" y="545" width="196" height="50" rx="8" fill="none" stroke="#1C1914" stroke-width="1.5"/>
+  <text x="997" y="576" font-family="PingFang SC, sans-serif" font-size="14" fill="#1C1914">收藏</text>
+
+  <line x1="720" y1="628" x2="1128" y2="628" stroke="#DCD3C2"/>
+  <text x="720" y="658" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">颜色：午夜蓝 / 铂金银 / 黑色</text>
+  <text x="720" y="682" font-family="PingFang SC, sans-serif" font-size="11" fill="#6C6558">清单：耳机 · 收纳盒 · USB-C 线</text>
+
+  <g transform="translate(964 112) rotate(8)">
+    <rect x="-116" y="-22" width="232" height="44" rx="4" fill="none" stroke="#C5482B" stroke-width="2" opacity=".8"/>
+    <text x="-94" y="5" font-family="Menlo, monospace" font-size="11" fill="#C5482B" letter-spacing="1.5">SCOUT SAMPLE · DEMO</text>
+  </g>
+
+  <text x="42" y="718" font-family="Menlo, monospace" font-size="9" fill="#8D8678" letter-spacing="1">原创建模示意图，仅用于 Product Scout 演示 · 非真实商品页 · 不包含品牌 Logo</text>
+</svg>

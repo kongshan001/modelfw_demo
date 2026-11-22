@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse 70% 45% at 8% -10%, rgba(197, 72, 43, 0.11), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 96% 2%, rgba(13, 106, 90, 0.1), transparent 65%),
+      linear-gradient(rgba(28, 25, 20, 0.026) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(28, 25, 20, 0.02) 1px, transparent 1px);
+    background-size: auto, auto, 36px 36px, 36px 36px;
+  }
+
+  ::selection {
+    background: #f0cbbd;
+    color: #1c1914;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0d6a5a;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-[22px] border border-line bg-cream shadow-card;
+  }
+
+  .surface-quiet {
+    @apply rounded-2xl border border-line/80 bg-cream/70;
+  }
+
+  .field-label {
+    @apply flex items-center justify-between gap-3 text-[12px] font-semibold tracking-[0.12em] text-muted;
+  }
+
+  .field-input {
+    @apply mt-2 w-full rounded-xl border border-line bg-white/75 px-3.5 py-2.5 text-[15px] text-ink placeholder:text-muted/55 transition-colors duration-150 hover:border-ink/25 focus:border-teal focus:bg-white focus:outline-none;
+  }
+
+  .field-input[aria-invalid="true"] {
+    @apply border-vermilion bg-blush/40;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-[14px] font-semibold tracking-wide text-cream transition-all duration-200 hover:-translate-y-0.5 hover:bg-vermilion-dark hover:shadow-lift disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-muted/45 disabled:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-cream px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:border-ink/30 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-muted transition-colors hover:bg-paper hover:text-ink;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-wide;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.26em] text-muted;
+  }
+
+  .hairline {
+    @apply border-t border-dashed border-line;
+  }
+
+  .prose-note {
+    @apply text-[12px] leading-relaxed text-muted;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-cream;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .vertical-rl {
+    writing-mode: vertical-rl;
+  }
+
+  .receipt-edge {
+    --notch: 10px;
+    mask-image:
+      radial-gradient(circle at 0 0, transparent var(--notch), black calc(var(--notch) + 0.5px)),
+      radial-gradient(circle at 100% 0, transparent var(--notch), black calc(var(--notch) + 0.5px));
+    mask-size: 51% 100%;
+    mask-position: left, right;
+    mask-repeat: no-repeat;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
