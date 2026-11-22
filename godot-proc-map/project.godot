@@ -1,0 +1,29 @@
+; Engine configuration file.
+; 边境制图台 — 原创程序化地图实验：BSP 地牢 + 噪声生物群系。
+; Godot 4.6 / GL Compatibility / 1280×720. No third-party runtime dependencies.
+
+config_version=5
+
+[application]
+
+config/name="边境制图台 · 程序化地图"
+config/description="BSP dungeon and FastNoiseLite biome world with staged generation, deterministic seeds and debug overlays."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.043, 0.064, 0.067, 1)

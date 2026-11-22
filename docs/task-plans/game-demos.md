@@ -146,8 +146,10 @@
 - 交付: `godot-proc-map/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证；原创资产/许可合规
 - 约束: 只复刻算法与视觉语言，不复制案例素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性种子；不改其他项目
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 - depends_on: T-20261121-040（T-020 重试）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-021/result.md
+- 后续: `docs/godot-procgen-survey.md` §7.5 已写回；`docs/algorithm-demos-index.md` 已追加第 4 个 demo
 
 ## T-20261121-014 · 复刻《幻唐志》手游道具背包界面（Godot UI）
 - 来源: 飞书消息（2026-11-21，“帮我用godot来复刻幻唐志手游的道具背包界面”）

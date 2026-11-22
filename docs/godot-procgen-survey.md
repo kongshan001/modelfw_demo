@@ -512,6 +512,17 @@ pois   = poisson_disk(r=10.0, k=30, seed=seed+5, only=walkable)
 
 **微基准口径**：§2.4 的中位数是 T-020 在 2026-11-21 用本机 Godot `4.6.stable.official.89cea1439` 跑的 20 次采样；T-040 只复核了二进制版本一致，**未重跑全部基准**。验收时应按同一脚本在本机复测，报告 median + P95。
 
+
+### 7.5 T-021 实现落地（2026-11-22）
+
+T-021 已按 §5 的 **A + B** 在 [`godot-proc-map/`](../godot-proc-map/) 落地，未做 C/3D 体素（避免与 `godot-wfc/`、T-022 重复）：
+
+- **A. BSP 地牢**：64×48 / 80×60，5 阶段（切分/房间/走廊/连通/装饰），最近邻生成树 + 环路，BFS 修复 + AStarGrid2D 复核；40 seeds 房间 100% 可达，生成中位 **17.45ms**、p95 **24.67ms**。
+- **B. 噪声群岛 Hero**：96×64，6 阶段（海拔/气候/群系/河流/植被/地标），3 通道 FastNoiseLite + 岛屿遮罩 + 陡降河流 + Bridson Poisson + POI/Voronoi + 连续水色/hillshade/双面海岸泡沫；100 seeds 最大陆块最低 **95.9%**、至少 1 条河入海、6 个 POI，生成中位 **63.22ms**、p95 **74.21ms**。
+- **实现差异**：没有使用 `set_cells_terrain_connect`，而是运行时烘焙 `TileSetAtlasSource` + 自定义 16 向 terrain mask，以支持同格多层 alpha 叠加（地面/沙/森林/岩/雪/河）与双面海岸；语义与 Match Corners/Sides 的边过渡一致。详见项目 TECH §4.4。
+- **验收**：`PROC_MAP_SMOKE_OK`；600 帧 headless 0 ERROR；真实 GPU 1280×720 探针：最终轮群岛完成态 93.7 avg / 67 min、全调试 76.7 / 75、地牢 123.3 / 78 FPS；另一轮 97.3 / 94.0 / 131.3（Intel HD 6000，vsync off，负载有波动）。
+- **文档/媒体**：`godot-proc-map/README.md`、`docs/TECH.md`、`docs/迭代记录.md`、`CREDITS.md`；7 张 1920×1080 截图 + 10s MP4/GIF；全部素材原创，未复制案例素材/品牌。
+
 ---
 
 ## 8. 一句话总结

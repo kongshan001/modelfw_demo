@@ -1,6 +1,6 @@
-# 算法 Demo 索引：WFC / Steering / Flow Field
+# 算法 Demo 索引：WFC / Steering / Flow Field / 程序化地图
 
-> 2026-11-21 · Godot 4.6 / GL Compatibility · 三个独立可交互算法 Demo 的统一入口
+> 2026-11-21 建立，2026-11-22 追加程序化地图 · Godot 4.6 / GL Compatibility · 四个独立可交互算法 Demo 的统一入口
 > 原则：每个 Demo 有自己的 seed、场景、阵容与性能口径；**绝对 FPS 不可横向比较**。
 > 选型一句话：**WFC 生成世界，Flow Field 给出全局方向，Steering 负责局部不撞。**
 
@@ -11,6 +11,7 @@
 | **Flow Field**<br>流场寻路 | 大量单位共享一条到最近目标的最短路 | 多源 BFS 积分场 + 最陡下降流场 + 双线性采样 | T-011 默认 1000 体：**26.4 FPS @720 / 16.8 FPS @1080**（高负载；同轮 2.17×） | [README](../godot-flowfield/README.md) · [原理报告](../godot-flowfield/docs/TECHNICAL_PRINCIPLES.md) |
 | **Steering**<br>转向行为实验场 | 少量/中等单位的实时转向、避障、成群 | 期望速度 − 当前速度 = 转向力；分离/对齐/聚合；三须避障 | 50/100/200 体 = **73.5 / 45.9 / 33.4 FPS**（本机另一会话） | [README](../godot-steering/README.md) · [TECH](../godot-steering/docs/TECH.md) |
 | **WFC**<br>坍缩花园 | 生成满足局部约束的合法地图 | 候选叠加 + Shannon 熵 + 加权坍缩 + 约束传播 + 快照回溯 | 16×10：算法视图 **42.6 FPS** / 成品地图 **73.8 FPS**（本机另一会话） | [README](../godot-wfc/README.md) · [TECH](../godot-wfc/docs/TECH.md) |
+| **程序化地图**<br>边境制图台 | 可玩的 BSP 地牢 + 有世界感的生物群系地图 | BSP + 生成树 + BFS/A*；三通道噪声 + 岛屿遮罩 + 河流 + Poisson + Voronoi | 生成中位 **17.5ms（地牢）/63.2ms（群岛）**；**93.7 / 76.7 / 123.3 FPS** @1280×720（群岛/全调试/地牢） | [README](../godot-proc-map/README.md) · [TECH](../godot-proc-map/docs/TECH.md) |
 
 **只看一份**：[Flow Field 技术原理与工程实践](../godot-flowfield/docs/TECHNICAL_PRINCIPLES.md) §0 一页结论 + §2 选型对比；交互版见 [TECHNICAL_PRINCIPLES-交互版.html](../godot-flowfield/docs/TECHNICAL_PRINCIPLES-交互版.html)（单文件无外部依赖）。
 
@@ -179,5 +180,35 @@ bash tools/run_ablation.sh                                # T-011 审计级复�
 | WFC | T-20261121-005 | `godot-wfc/` |
 | Steering | T-20261121-006 | `godot-steering/` |
 | Flow Field | T-20261121-008（failed）→ T-20261121-009（交付）→ T-20261121-011（审计）→ T-20261121-012（原理/文档） | `godot-flowfield/` + `docs/perf/` + `docs/portable/` + 本索引 |
+| 程序化地图 | T-20261121-020/T-040（调研）→ T-20261121-021（交付） | `godot-proc-map/` + `docs/godot-procgen-survey.md` |
 
 > 本索引由 T-20261121-012 建立；新增算法 demo 时请在同一页追加，不复刻一套平行索引。
+
+
+---
+
+## 9. 程序化地图 · 边境制图台（T-20261121-021）
+
+**形态**：同一种子/同一界面切换两条完整管线。**地牢 · BSP**：递归切分 → 房间 → 最近邻生成树 + 环路 → BFS 连通修复 → 最远点对起点/终点 → 火把/陈设；**群岛 · 噪声（Hero）**：海拔/湿度/温度 → 岛屿遮罩 → 8 类群系 → 陡降河流 → Bridson Poisson 植被 → 6 个 POI + Voronoi 区域。五个调试叠加（连通/房间·区域/群系/噪声/边界），阶段单步/连续/速度，种子/签名/子随机流，中文 HUD。
+
+### 文档与媒体
+
+| 文件 | 内容 |
+| --- | --- |
+| [README](../godot-proc-map/README.md) | 运行、操作、算法摘要、实测 |
+| [TECH](../godot-proc-map/docs/TECH.md) | 参数、复杂度、网络/噪声/河流/Poisson 细节、自定义 16 向 terrain、跨引擎、差异与风险 |
+| [迭代记录](../godot-proc-map/docs/迭代记录.md) | 视觉三轮、性能 160→62ms、1280 HUD 修复 |
+| [01_biome_hero_1920.png](../godot-proc-map/docs/shots/01_biome_hero_1920.png) | 群岛 Hero |
+| [02_biome_elevation_stage_1920.png](../godot-proc-map/docs/shots/02_biome_elevation_stage_1920.png) | 海拔阶段（单步） |
+| [03_biome_debug_1920.png](../godot-proc-map/docs/shots/03_biome_debug_1920.png) | 群系 + 区域 + 连通 + 边界 |
+| [04_biome_moisture_1920.png](../godot-proc-map/docs/shots/04_biome_moisture_1920.png) | 湿度场 |
+| [05_dungeon_hero_1920.png](../godot-proc-map/docs/shots/05_dungeon_hero_1920.png) | 地牢 Hero |
+| [06_dungeon_debug_1920.png](../godot-proc-map/docs/shots/06_dungeon_debug_1920.png) | BSP / 房间 / 连通 |
+| [07_biome_closeup_1920.png](../godot-proc-map/docs/shots/07_biome_closeup_1920.png) | 群岛近景 |
+| [proc_map_demo.mp4](../godot-proc-map/docs/proc_map_demo.mp4) / [GIF](../godot-proc-map/docs/proc_map_demo.gif) | 10 秒：Hero → BSP 调试 → 六阶段生成 → 同种子复现 → 近景 |
+
+**性能** `[本机实测，2026-11-22，1280×720，vsync off]`：最终轮：群岛完成态 93.7 avg / 67 min，全调试 76.7 / 75，地牢完成态 123.3 / 78，群岛生成中 130.0 / 130 FPS；另一轮 97.3 / 94.0 / 131.3 / 122.5。生成中位（算法本体）：地牢 17.45ms、群岛 63.22ms；p95 24.67 / 74.21ms（100 群岛 + 40 地牢 seeds）。
+
+**关键结论**：地图视觉上限主要来自**地形过渡、光照与标签层**，不是再加一种算法；自定义 16 向 terrain 解析器可以在运行时烘焙 TileSet 上实现与 Terrain 等价的边过渡，并支持多层 alpha；生成耗时必须把算法预算与 TileMapLayer 应用成本分开统计。
+
+**许可**：全部代码/瓦片/UI 原创；未使用商业游戏截图、素材或品牌。见 [CREDITS](../godot-proc-map/CREDITS.md)。
