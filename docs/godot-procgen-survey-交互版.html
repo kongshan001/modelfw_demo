@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Godot 程序化地图生成 — 技术方案、案例与复刻 Brief</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A130F'/%3E%3Cpath d='M5 6h9v9H5zM18 6h9v9h-9zM5 18h9v9H5z' fill='%235FD8C9' opacity='.9'/%3E%3Cpath d='M18 18h9v9h-9z' fill='%23F2B35C'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --water:#4FC3C7; --warn:#FF8A5C; --ok:#5FD88A;
+  --grid:rgba(150,200,170,.05);
+  --wall:#07100C; --cell-floor:#C9D8A8; --cell-floor-2:#AFC98D;
+  --cell-room:#5FD8C9; --cell-corr:#F2B35C;
+  --biome-deep:#0E2E38; --biome-water:#1E5B66; --biome-sand:#D8C27C;
+  --biome-grass:#6E9B52; --biome-forest:#2F5A3A; --biome-rock:#7E8A82;
+  --biome-snow:#E6EFE8; --biome-river:#5FD8C9;
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --water:#1D7C85; --warn:#B4441F; --ok:#1B7A4A;
+  --grid:rgba(23,38,30,.05);
+  --wall:#DDE6D2; --cell-floor:#476B39; --cell-floor-2:#5D8248;
+  --cell-room:#0E7A70; --cell-corr:#A66B1E;
+  --biome-deep:#24606B; --biome-water:#3E8E99; --biome-sand:#C9B36D;
+  --biome-grass:#7BA45B; --biome-forest:#3D6B43; --biome-rock:#8D968C;
+  --biome-snow:#F2F6EF; --biome-river:#0E7A70;
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1160px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(42px,6.5vw,84px) clamp(20px,5vw,56px) 24px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(31px,5.2vw,56px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:80ch;margin:0 0 18px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,46px) clamp(18px,5vw,56px) 80px}
+section{margin:0 0 clamp(44px,6vw,76px);scroll-margin-top:96px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card .big{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--teal);line-height:1.1}
+.card .rank{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.12em}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,var(--line));background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.banner{border:1px solid var(--line-strong);border-radius:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--teal) 8%,var(--card)),var(--card));padding:18px 20px;box-shadow:var(--shadow);margin:14px 0 18px}
+.banner b{color:var(--teal)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px}
+pre b{color:var(--gold);font-weight:600}
+pre .c{color:var(--ink-faint)}
+.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--line-strong)}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--teal-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+details.fold{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:10px 0 16px;overflow:hidden}
+details.fold summary{cursor:pointer;list-style:none;padding:12px 16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+details.fold summary::-webkit-details-marker{display:none}
+details.fold summary::before{content:"▸";color:var(--teal);transition:.2s}
+details.fold[open] summary::before{transform:rotate(90deg)}
+details.fold .body{padding:0 16px 14px;font-size:14.5px;color:var(--ink-soft)}
+details.fold .body b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.demo{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;box-shadow:var(--shadow);margin:14px 0 18px}
+.demo-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.demo-head .t{font-family:var(--serif);font-size:19px;font-weight:700;margin:0}
+.demo-head .d{font-size:13px;color:var(--ink-soft);margin:2px 0 0}
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;align-items:start}
+.demo-side{min-width:0}
+.demo canvas{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:var(--card-2);image-rendering:pixelated}
+.canvas-wrap{min-width:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--card-2)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}
+.controls label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.controls input[type=number]{width:100%;max-width:150px;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:6px 8px;outline:none}
+.controls input[type=range]{width:100%;accent-color:var(--teal)}
+.controls select{width:100%;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:7px;padding:7px 8px;outline:none}
+.controls output{font-family:var(--mono);font-size:11px;color:var(--teal);min-width:34px;text-align:right}
+.ctrl-row{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin:0 0 7px}
+.ctrl-row label{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.ctrl-row output{font-family:var(--mono);font-size:11px;color:var(--teal)}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{color:var(--paper);filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.on{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 0}
+.metrics{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.metric{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:var(--paper-2)}
+.metric b{color:var(--ink);font-weight:600}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-soft);margin:8px 0 2px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--teal);margin-right:5px;vertical-align:middle}
+.sw.gold{background:var(--gold)} .sw.warn{background:var(--warn)} .sw.wall{background:var(--wall)} .sw.floor{background:var(--cell-floor)} .sw.room{background:var(--cell-room)} .sw.corr{background:var(--cell-corr)}
+.sw.deep{background:var(--biome-deep)} .sw.water{background:var(--biome-water)} .sw.sand{background:var(--biome-sand)} .sw.grass{background:var(--biome-grass)} .sw.forest{background:var(--biome-forest)} .sw.rock{background:var(--biome-rock)} .sw.snow{background:var(--biome-snow)}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);line-height:1.6}
+.bench{margin:10px 0 6px}
+.bench-row{display:grid;grid-template-columns:130px minmax(0,1fr) 72px;gap:10px;align-items:center;margin:6px 0;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+.bench-bar{height:9px;background:var(--paper-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.bench-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:99px}
+.bench-row b{text-align:right;color:var(--ink);font-weight:600}
+.score{display:grid;grid-template-columns:minmax(210px,1.4fr) repeat(5,minmax(54px,.5fr)) 64px;gap:4px;align-items:center;margin:6px 0;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.score .name{color:var(--ink);font-weight:600}
+.score .v{text-align:center}
+.score .total{text-align:right;color:var(--gold);font-weight:700}
+.score .head{color:var(--ink-faint);font-size:10px;line-height:1.35}
+.scorebar{height:6px;background:var(--paper-2);border-radius:99px;overflow:hidden;margin-top:5px}
+.scorebar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.spec{width:100%;font-size:13px;min-width:0;background:transparent}
+.spec th,.spec td{padding:7px 9px}
+.spec th{width:110px;white-space:nowrap}
+.check{list-style:none;padding:0;margin:.2em 0 1em}
+.check li{padding-left:1.6em;position:relative;margin:.3em 0;font-size:14px;color:var(--ink-soft)}
+.check li::before{content:"□";position:absolute;left:0;color:var(--teal);font-family:var(--mono)}
+.src-table td:last-child{white-space:nowrap}
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 70px;color:var(--ink-faint);font-size:13px}
+footer a{color:var(--teal);text-decoration:none}
+.fab{position:fixed;right:16px;bottom:16px;z-index:55;display:flex;gap:8px}
+.fab button{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:9px;padding:8px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink)}
+@media screen and (max-width:900px){.demo-body{grid-template-columns:1fr}.demo-side{display:grid;grid-template-columns:1fr 1fr;gap:12px}.demo-side .btnrow{grid-column:1/-1}}
+@media screen and (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .score{grid-template-columns:1fr repeat(5,36px) 48px;font-size:10px}
+  .score .head{font-size:9px}
+  .fab{right:8px;bottom:8px}
+  .fab button{padding:6px 9px;font-size:11px}
+  .sec-note{margin-left:0;width:100%}
+  .demo-side{grid-template-columns:1fr}
+}
+@media print{.fab,nav.toc,.progress{display:none}.demo canvas{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span>技术调研 · Godot 4.6 · 2026-11-21</div>
+  <h1>Godot <span class="g">程序化地图</span>：<br>从噪声到<span class="u">可玩世界</span></h1>
+  <p class="sub">一页回答：Godot 里有哪些主流方案、哪些效果最好、我们该复刻哪 2–3 个。面向 <b>GL Compatibility / 1280×720 / Intel HD Graphics 6000 30 FPS+</b>，附 3 个可交互算法演示、可查证案例与实现 brief。</p>
+  <div class="stat-row">
+    <span class="stat"><b>Godot 4.6</b> stable</span>
+    <span class="stat"><b>12</b> 种方案对比</span>
+    <span class="stat"><b>3</b> 个可交互 demo</span>
+    <span class="stat"><b>12</b> 个游戏案例</span>
+    <span class="stat"><b>GL Compatibility</b></span>
+    <span class="stat">访问 <b>2026-11-21</b> · 复核 <b>2026-11-22</b></span>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0">结论</a>
+  <a href="#s1">方案对比</a>
+  <a href="#s2">Godot 4.6</a>
+  <a href="#s3">交互演示</a>
+  <a href="#s4">案例</a>
+  <a href="#s5">仓库现状</a>
+  <a href="#s6">复刻 Brief</a>
+  <a href="#s7">来源</a>
+</div></nav>
+
+<main>
+
+<section id="s0">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">先看这页，再看细节</span></div>
+  <p class="lead">Godot 做程序化地图不缺算法，缺的是<b>“结构 → 连通 → 自动过渡 → 美术 → 预算”</b>的管线。商业项目几乎都是多种算法串联；单一 WFC 只适合做局部细节层。</p>
+
+  <div class="cards">
+    <div class="card ok">
+      <div class="rank">先做 · 24.0 / 25</div>
+      <div class="t">A · BSP 地牢 + TileSet Terrain</div>
+      <p>BSP 房间/走廊 + 自动过渡 + BFS 验证。最低风险，1–2 天可出可玩 slice；复用仓库已有 BSP/CA 参数。</p>
+      <span class="tag">2D</span><span class="tag ok">低风险</span><span class="tag">30 FPS 稳</span>
+    </div>
+    <div class="card">
+      <div class="rank">第二做 · 22.5 / 25</div>
+      <div class="t">B · 噪声生物群系 + Poisson</div>
+      <p>FastNoiseLite 多通道 + 岛屿遮罩 + 河流 + Poisson 植被/POI。视觉上限最高；2D 版本可为 T-022 的 3D 海岛铺路。</p>
+      <span class="tag">2D/3D</span><span class="tag gold">视觉 hero</span><span class="tag">后台生成</span>
+    </div>
+    <div class="card warn">
+      <div class="rank">可选 · 20.0 / 25</div>
+      <div class="t">C · CA + BSP + WFC 细节</div>
+      <p>BSP 锚点 + CA 洞穴 + 已有 WFC 做局部细节。视觉上限高，但边界/预条件/回溯最容易出问题；可延后。</p>
+      <span class="tag warn">成本最高</span><span class="tag">复用 godot-wfc</span>
+    </div>
+  </div>
+
+  <div class="tablewrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th style="width:24%">问题</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td>主流方案有哪些？</td><td>4 族：<b>约束求解</b>（WFC/图语法）、<b>空间划分</b>（BSP/房间模板/黄金路径）、<b>随机生长</b>（CA/醉汉漫步）、<b>场与采样</b>（噪声/Voronoi/Poisson/L-System/Marching Squares/Cubes）。</td></tr>
+        <tr><td>哪些效果最好？</td><td><b>2D</b>：噪声生物群系 + TileSet Terrain 自动过渡 + 手工瓦片美术；<b>3D</b>：WFC 岛屿/城镇（Bad North/Townscaper 路线）或体素 + Marching Cubes/Transvoxel（godot_voxel）。</td></tr>
+        <tr><td>该复刻哪 2–3 个？</td><td><b>A</b> BSP + 自动过渡（先做）；<b>B</b> 噪声生物群系 + Poisson（第二做）；<b>C</b> CA+BSP+WFC（可选，不重写 WFC）。</td></tr>
+        <tr><td>最容易被高估？</td><td><b>纯 WFC</b>。局部邻接不等于全局连通/锁钥/可玩；大图回溯可能爆炸；Godot 插件多为 2D，3D 要自研。</td></tr>
+        <tr><td>最低成本“像商业游戏”？</td><td>把钱花在<b>瓦片接口 + 自动过渡 + 受限色板 + 装饰层</b>；算法复杂度不是视觉上限，瓦片一致性才是。</td></tr>
+        <tr><td>本轮不要重复？</td><td>不再做纯 WFC 演示（已有 <code>godot-wfc/</code>）；不再做 CA/BSP/醉汉漫步的纯算法拆解（已有 teardown + generators.py + HTML）；不做 3D 海岛（T-022 已立项）。</td></tr>
+        <tr><td>Godot 4.6 有新能力吗？</td><td>4.6 是打磨/工作流版本，<b>没有新的 WFC/地形生成 API</b>。依赖 4.x 稳定栈：TileMapLayer（4.4+）、TileSet Terrains、FastNoiseLite、AStarGrid2D、NavigationRegion2D、MultiMesh、SurfaceTool/ArrayMesh、Geometry2D、WorkerThreadPool。4.6 增量是<b>可旋转场景瓦片</b>、GridMap Bresenham 画线等。</td></tr>
+        <tr><td>GL Compatibility 能做吗？</td><td><b>2D 可以，且是低端机首选</b>；核心 3D 可以。但不支持 MSAA 2D、2D HDR、Compute Shader、RenderingDevice、SDFGI、SSR、体积雾、CompositorEffects。因此不要走 GPU compute 体素路线。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="banner">
+    <b>三句话选型：</b>要稳要快 → BSP/模板 + 自动过渡 + BFS；要视觉世界感 → 噪声多通道 + 岛屿遮罩 + Poisson + Voronoi + 河流；要约束美感/城镇细节 → WFC 只做细节层，全局结构/连通/锁钥先用 BSP/图语法定。执行顺序：<b>A → B → C（可选）</b>。
+  </div>
+  <div class="warnbox"><b>本报告边界：</b>只调研与给 brief，不改游戏代码；不复制任何商业游戏画面/素材/关卡；无公开算法细节的案例一律标“推断”。原始 URL 访问日期 2026-11-21；<b>T-040 于 2026-11-22 复核</b>：3 个 demo 无 console error，案例表中未证实的细节已改为“未证实/推断”（见 §04 复核记录）。</div>
+</section>
+
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>技术方案对比</h2><span class="sec-note">输入/输出 · 可控性 · 连通性 · 成本 · 2D/3D</span></div>
+  <p class="lead">“成本”是工程复杂度 + 目标机生成耗时的合称；实测见 §02.4。除 BSP/图语法/模板外，几乎所有算法都需要 <b>BFS/并查集验证</b>。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>方案</th><th>输入 → 输出</th><th>可控性</th><th>连通性</th><th>动态修改</th><th>典型成本</th><th>2D/3D</th><th>Godot 落地</th></tr></thead>
+      <tbody>
+        <tr><td><b>WFC（tile/overlap）</b></td><td>瓦片集+邻接规则，或一张示例图 → 满足局部约束的网格</td><td>局部高、全局低；固定格/权重/负样本</td><td><b>不保证</b>；需 BFS/A* 连接/后处理</td><td>中；局部重解会传播/回溯</td><td>高；传播 O(N·候选)，最坏回溯指数级</td><td>2D 强；3D 需自研</td><td>插件：AlexeyBond WFC（MIT）、Fast WFC（MIT，C++）；原生无 WFC 节点</td></tr>
+        <tr><td><b>元胞自动机洞穴（CA）</b></td><td>随机墙/地板 + 邻域规则 → 洞穴掩码</td><td>中；墙比例/阈值/迭代/边界</td><td><b>不保证</b>；4-5 通常较好，4-4 会碎；需修复</td><td>易；局部重跑几轮</td><td>低；O(W·H·I·8)；本机 128×96×5 约 96 ms（GDScript）</td><td>2D/3D</td><td>原生无节点；<code>PackedByteArray</code>/<code>Image</code> 自写；WorkerThreadPool</td></tr>
+        <tr><td><b>BSP 房间+走廊</b></td><td>一个矩形 + 递归切分 → 房间 + 走廊</td><td><b>高</b>；切分/叶大小/内缩/走廊宽度</td><td><b>天然好</b>；走廊图连通；仍要 BFS 验证</td><td>中；增删房间要重建局部走廊</td><td>低；O(R log R + 走廊)；本机 80×60 约 3.5 ms（含 BFS）</td><td>2D 强；3D 分层 BSP</td><td>原生无节点；<code>Rect2i</code> + 自写；TileMapLayer 绘制</td></tr>
+        <tr><td><b>醉汉漫步</b></td><td>起点 + 步数/偏向 → 蜿蜒隧道/洞穴</td><td>低–中；步数/半径/偏向/回弹</td><td>通常连通，但可能困在小区域</td><td>易；继续走即可扩展</td><td>低；O(steps)</td><td>2D/3D</td><td>原生无节点；适合支洞/连接，不做主结构</td></tr>
+        <tr><td><b>Voronoi 生物群系/多边形</b></td><td>种子点 + 距离度量 → 多边形区域</td><td>中–高；点分布/权重/Lloyd/噪声扰动</td><td>区域邻接图天然连通；通行需路网</td><td>中；加点/删点重建局部</td><td>中；Delaunay O(n log n)，暴力 O(n²)</td><td>2D 强；3D 少用</td><td>原生无 Delaunay；<code>Geometry2D</code> 裁剪/合并；自写或第三方</td></tr>
+        <tr><td><b>Perlin/Simplex/FastNoiseLite</b></td><td>种子+频率/分形/域扭曲 → 高度/湿度/温度场</td><td>中–高；频率/octave/lacunarity/gain/遮罩</td><td>N/A；陆地连通需阈值/遮罩/后处理</td><td>易；换种子/参数即变</td><td>低–中；O(W·H·通道)；本机 128×96×3 约 60 ms（逐像素 GDScript）</td><td>2D/3D 强</td><td><b>原生</b>：FastNoiseLite、NoiseTexture2D、Noise.get_image()</td></tr>
+        <tr><td><b>Poisson Disk 采样</b></td><td>最小距离 r + 边界 + k → 均匀但不过密的点集</td><td>高；r 控密度，k 控质量</td><td>N/A；用于植被/POI/出生点</td><td>易；增量加点</td><td>低；Bridson O(n)</td><td>2D/3D</td><td>原生无节点；自写 Bridson；RandomNumberGenerator</td></tr>
+        <tr><td><b>L-System 河流/道路/植被</b></td><td>公理+重写规则+角度/步长 → 折线/分支</td><td>中–高；规则/角度/长度/扰动</td><td>河流需入海；道路需 A*/图连接</td><td>中；规则变则整体变</td><td>低–中；O(步数×符号数)</td><td>2D/3D</td><td>原生无节点；Line2D/Curve2D/ArrayMesh 自写</td></tr>
+        <tr><td><b>Marching Squares 2D</b></td><td>标量场/布尔网格 → 等值线/多边形</td><td>中；阈值/平滑/闭合</td><td>N/A；适合洞穴/海岸/水域轮廓</td><td>易；改场后局部重算</td><td>中；O(W·H)；每格 16 case</td><td>2D</td><td>原生无节点；<code>Geometry2D</code> 清理/三角化</td></tr>
+        <tr><td><b>3D Marching Cubes/体素</b></td><td>3D 密度场 → 三角网格（+法线/UV）</td><td>中–高；密度/阈值/LOD/材质</td><td>体素连通需额外验证；洞穴可能断开</td><td>中–难；改地形要重建 chunk</td><td>高；GDScript 逐体素很慢；C++/GDExtension 才实用</td><td>3D</td><td>插件 godot_voxel（MIT，4.6 有 v1.6）；SurfaceTool/ArrayMesh 自写；Compatibility 无 compute</td></tr>
+        <tr><td><b>图语法/任务图</b></td><td>房间/任务节点 + 重写规则 → 锁钥/循环/分支图</td><td><b>很高</b>；规则即设计意图</td><td><b>由构造保证</b>；可强制锁钥/环路/Boss 路径</td><td>中；改图后重映射空间</td><td>中；O(规则×图节点)</td><td>2D/3D 抽象层</td><td>原生无节点；自写；驱动 BSP/模板/场景拼接</td></tr>
+        <tr><td><b>房间模板/黄金路径</b></td><td>模板库 + 路径/连接口约束 → 可玩关卡</td><td><b>很高</b>；模板/连接口/难度预算</td><td><b>由路径先验保证</b>；模板匹配门</td><td>中；换模板/重排</td><td>中；O(房间数×模板数)</td><td>2D/3D</td><td>TileMapLayer + 场景实例 + set_pattern；自写选择器</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cards">
+    <div class="card"><h4>可控性 ↔ 惊喜</h4><p>BSP/模板可控但容易“整齐”；CA/噪声惊喜但难保证可玩；WFC 在中间，但全局约束弱。</p></div>
+    <div class="card"><h4>商业项目都是混合管线</h4><p>Caves of Qud：分段 + WFC + A* + 后处理；Bad North：路径优先 + WFC 填岛；Townscaper：3D WFC + 二次 WFC。</p></div>
+    <div class="card"><h4>连通性是后处理</h4><p>除 BSP/图语法/模板外，CA、噪声、WFC、醉汉漫步都必须 BFS/并查集验证，失败时修复或确定性重开。</p></div>
+    <div class="card"><h4>动态修改成本</h4><p>CA/噪声/醉汉漫步最便宜；BSP/Voronoi/WFC 中等；Marching Cubes 最贵（chunk + 碰撞/导航同步）。</p></div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Godot 4.6 落地细节</h2><span class="sec-note">原生 API · 插件 · GL Compatibility · 本机实测</span></div>
+
+  <h3>2.1 原生能力速查</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:16%">能力</th><th style="width:24%">API / 节点</th><th>程序化地图里的用法</th><th>必须注意</th></tr></thead>
+      <tbody>
+        <tr><td><b>瓦片地图</b></td><td><code>TileMapLayer</code>（4.4+）</td><td>每层一个节点；<code>set_cell(coords, source_id, atlas_coords, alternative_tile)</code> 批量写格</td><td>更新在帧末批量处理；需要立即读/碰撞时 <code>update_internals()</code>；序列化坐标限 16-bit signed（-32768..32767），超大世界要分块/偏移</td></tr>
+        <tr><td><b>自动过渡</b></td><td><code>TileSet</code> Terrains</td><td>给瓦片分配 terrain set/terrain；<code>set_cells_terrain_connect(cells, terrain_set, terrain)</code> 或 <code>set_cells_terrain_path(path, ...)</code> 自动选角/边/内角</td><td>三种匹配模式：<b>Match Corners and Sides / Match Corners / Match Sides</b>；TileSet 必须准备所有组合，否则结果不可预期；支持概率变体</td></tr>
+        <tr><td><b>噪声</b></td><td><code>FastNoiseLite</code></td><td>高度/湿度/温度/洞穴密度/岛屿遮罩；<code>get_noise_2d/3d</code>、<code>get_image()</code>、<code>get_seamless_image()</code></td><td>值大多在 [-1,1]（部分 Cellular 可能 &gt;1）；固定 seed；批量优先 <code>get_image()</code>/NoiseTexture2D，逐像素 GDScript 有开销</td></tr>
+        <tr><td><b>噪声纹理</b></td><td><code>NoiseTexture2D</code></td><td>可平铺/法线/颜色渐变纹理；<code>color_ramp</code> 直接做高度/生物群系色带</td><td>内部用 <code>Thread</code> 生成；<code>get_image()</code> 完成前可能返回 <code>null</code>，要 <code>await texture.changed</code></td></tr>
+        <tr><td><b>确定性随机</b></td><td><code>RandomNumberGenerator</code></td><td>固定种子、独立随机流（布局/装饰/掉落）、<code>seed</code> + <code>state</code> 存档/回放</td><td>PCG32；<code>randomize()</code> 只用于“新一局”；同 seed + 同调用顺序才可复现；不要混全局 <code>randi()</code></td></tr>
+        <tr><td><b>网格寻路/验证</b></td><td><code>AStarGrid2D</code></td><td><code>region</code> + <code>update()</code>；<code>set_point_solid</code>/<code>fill_solid_region</code>；<code>get_id_path</code> 验证可达；支持方形/六边形、对角线模式、JPS</td><td>改 region/cell/障碍后要重新 <code>update()</code>；随机墙太多时无路径（<code>path_len=0</code>，正常）；适合验证，不适合每帧全量重建</td></tr>
+        <tr><td><b>导航</b></td><td><code>NavigationRegion2D</code> + <code>NavigationServer2D</code></td><td>由可行走多边形/瓦片生成导航区；<code>bake_navigation_polygon(true)</code> 默认线程烘焙</td><td>导航不等于生成；生成后要重建/更新导航；动态障碍用 NavigationServer 局部更新</td></tr>
+        <tr><td><b>大量装饰</b></td><td><code>MultiMesh</code> / <code>MultiMeshInstance2D/3D</code></td><td>草/树/石头/粒子替身；一次 draw call 画数千实例</td><td>单个 MultiMesh 的实例不单独视锥剔除；自定义 AABB；每对象光源受限；Blend Shapes 不支持</td></tr>
+        <tr><td><b>程序化网格</b></td><td><code>SurfaceTool</code> / <code>ArrayMesh</code></td><td>Marching Squares/Cubes、Voronoi 多边形、道路/河流带状网格</td><td>SurfaceTool 书写方便；大批量/多线程优先 ArrayMesh 数组接口；注意顺时针绕序；顶点属性格式在第一个顶点前确定</td></tr>
+        <tr><td><b>2D 几何</b></td><td><code>Geometry2D</code></td><td><code>merge_polygons</code>、<code>clip_polygons</code>、<code>intersect_polygons</code>、<code>offset_polygon</code>、<code>triangulate_polygon</code>、<code>is_point_in_polygon</code></td><td>用于 Voronoi 单元裁剪、岛屿轮廓、房间多边形、道路缓冲；复杂多边形先清理自交</td></tr>
+        <tr><td><b>后台生成</b></td><td><code>WorkerThreadPool</code></td><td><code>add_task</code>/<code>add_group_task</code> 跑 CA/噪声/WFC/BSP；完成后主线程应用</td><td><b>场景树不是线程安全的</b>；worker 里不要 add_child/改节点；用 <code>call_deferred</code> 回主线程；每线程独立 RNG/噪声实例</td></tr>
+        <tr><td><b>生成纹理</b></td><td><code>Image</code> + <code>ImageTexture</code></td><td>高度图、生物群系图、mask、调试热力图</td><td><code>set_pixel</code> 逐像素较慢；大图用 <code>PackedByteArray</code> + <code>Image.create_from_data</code> 更快</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="okbox"><b>4.6 版本说明：</b><code>TileMapLayer</code> 是 4.4 引入、<code>TileMap</code> 废弃后的现行 API；4.6 继续沿用。4.6 与程序化地图直接相关的增量是<b>可旋转场景瓦片</b>（90° 步进，适合建筑/装饰朝向）与 <b>GridMap 的 Bresenham 画线</b>（编辑器效率）；没有新的 WFC/地形生成 API。不要把精力花在“追 4.6 新算法”上。</div>
+
+  <h3>2.2 原生 / 插件 / 非 Godot 可移植</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>需求</th><th>Godot 原生</th><th>推荐插件（许可）</th><th>非 Godot 可移植参考</th></tr></thead>
+      <tbody>
+        <tr><td><b>WFC 2D</b></td><td>无</td><td><b>AlexeyBond/godot-constraint-solving</b>（MIT；TileMapLayer/GridMap；回溯/多线程/从示例学规则；无 3D/全局路径约束）；<b>Fast WFC</b>（MIT；C++ 版 mxgmn；tiling+overlapping）；<b>Rayogenesis WFC</b>（MIT；overlap；Godot 4.3；体量小）</td><td><b>mxgmn/WaveFunctionCollapse</b>（MIT 代码；示例图片/瓦片不随软件授权）</td></tr>
+        <tr><td><b>体素/3D 地形</b></td><td>SurfaceTool/ArrayMesh 可自写；无内置 MC</td><td><b>Zylann/godot_voxel</b>（MIT；C++ module/GDExtension；v1.6 对应 Godot 4.6；blocky + Transvoxel LOD；无限分页）；<b>Terrain3D</b>（MIT；高度场，不是体素；Godot 4.5–4.8+）</td><td>SebLague/Godot-Marching-Cubes（MIT；<b>compute shader</b>，Compatibility 不可用，只适合 Forward+/Mobile 学习）</td></tr>
+        <tr><td><b>地牢</b></td><td>无</td><td><b>GenMap Lite</b>（MIT；Godot 4.3；48×48；TileMapLayer + TileSet；房间可达；worker thread + 批量绘制）</td><td>TinyKeep 风格 BSP/房间分离；Unexplored 的 cyclic graph</td></tr>
+        <tr><td><b>噪声/CA/BSP/Voronoi/Poisson</b></td><td>全部可用 GDScript/C# 自写；FastNoiseLite、Geometry2D、RandomNumberGenerator 原生</td><td>一般不需要插件；WorkerThreadPool + PackedByteArray</td><td>算法可移植；不要复制无权代码</td></tr>
+        <tr><td><b>寻路/导航</b></td><td>AStarGrid2D、NavigationRegion2D、NavigationServer2D</td><td>无</td><td>A*/JPS/流场可移植；Godot 已原生</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox"><b>许可风险：</b><code>loothammer</code> <b>无 LICENSE 文件，但 README 声明 MIT</b>（GitHub license API 404）；<code>Peatral</code> <b>无许可证</b>（README 也无声明）。两者保守处理：只读思路，不复制代码/资产；复用 loothammer 前自行确认合规。mxgmn WFC 的<b>代码是 MIT，但示例图片/瓦片不属于软件授权</b>；不能把 <code>samples/*.png</code> 放进仓库。Kenney/CC0 资产也要在 <code>CREDITS.md</code> 记录来源。</div>
+
+  <h3>2.3 GL Compatibility 的限制与预算</h3>
+  <div class="cards">
+    <div class="card ok"><h4>支持</h4><p>2D 渲染、核心 3D、TileMapLayer、MultiMesh、SurfaceTool/ArrayMesh、SSAO、SSAA、全屏 quad 后处理。</p></div>
+    <div class="card warn"><h4>不支持</h4><p><b>MSAA 2D、2D HDR Viewport、Compute Shader、RenderingDevice、SDFGI、SSR、SSIL、体积雾、CompositorEffects</b>。所以 GPU Marching Cubes / GPU 噪声 / GPU WFC 不可用。</p></div>
+    <div class="card"><h4>成本特征</h4><p>低基础成本、高扩展成本；控制 draw call、材质切换、过度绘制。瓦片图集 + MultiMesh + 分块加载。</p></div>
+    <div class="card"><h4>30 FPS 预算</h4><p>33.3 ms/帧。生成放后台；交互步进单帧逻辑 ≤ 8–16 ms；TileMapLayer 批量写；不要每格一个 Node2D。</p></div>
+  </div>
+
+  <h3>2.4 本机 Godot 4.6 微基准</h3>
+  <p class="note">环境：MacBook Air 2015 · Intel HD Graphics 6000 · macOS · Godot <code>4.6.stable.official.89cea1439</code> · <code>--headless</code> · GL Compatibility 项目设置。20 次采样，去掉 3 次预热，取中位数；单位 ms。临时 GDScript 基准，不是 GPU 帧率。</p>
+  <div class="bench" aria-label="本机生成耗时中位数">
+    <div class="bench-row"><span>BSP 80×60</span><div class="bench-bar"><i style="width:2.7%"></i></div><b>3.5 ms</b></div>
+    <div class="bench-row"><span>TileMap 4800 格</span><div class="bench-bar"><i style="width:3.5%"></i></div><b>4.5 ms</b></div>
+    <div class="bench-row"><span>AStarGrid2D 96×72</span><div class="bench-bar"><i style="width:2.7%"></i></div><b>3.5 ms</b></div>
+    <div class="bench-row"><span>噪声 128×96×3</span><div class="bench-bar"><i style="width:46.5%"></i></div><b>60.4 ms</b></div>
+    <div class="bench-row"><span>CA 128×96×5</span><div class="bench-bar"><i style="width:73.9%"></i></div><b>96.1 ms</b></div>
+    <div class="bench-row"><span>噪声纹理路径</span><div class="bench-bar"><i style="width:99.5%"></i></div><b>129.3 ms</b></div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>基准</th><th>规模/参数</th><th>中位</th><th>最小</th><th>最大</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>CA 洞穴</td><td>128×96，45% 初始墙，4-5 规则，5 次迭代 + BFS</td><td><b>96.1</b></td><td>64.6</td><td>260.3</td><td>纯 GDScript 逐格；64×48 约 1/4 体量，约 20–30 ms</td></tr>
+        <tr><td>BSP 房间+走廊</td><td>80×60，最大深度 5，最小叶 8，L 走廊 + BFS</td><td><b>3.5</b></td><td>2.0</td><td>22.8</td><td>生成本体 &lt;1 ms；BFS 验证占大头但仍很快</td></tr>
+        <tr><td>噪声三通道</td><td>128×96，Simplex/Simplex/Perlin + 岛屿遮罩 + 分类</td><td><b>60.4</b></td><td>30.6</td><td>158.9</td><td>逐像素 <code>get_noise_2d</code>；后台线程或降分辨率更稳</td></tr>
+        <tr><td>噪声纹理路径</td><td>同上，<code>Noise.get_image()</code> 三次 + 字节分类</td><td>129.3</td><td>38.9</td><td>210.3</td><td>中位反而更慢（分配/归一化/GC 波动）；优势是异步/不占主线程</td></tr>
+        <tr><td>TileMapLayer 写格</td><td>80×60 = 4800 格，<code>set_cell</code> + <code>update_internals()</code></td><td><b>4.5</b></td><td>2.9</td><td>108.0</td><td>帧末批量；首次/GC 峰值明显</td></tr>
+        <tr><td>AStarGrid2D</td><td>96×72，约 23% 实心，1 次路径查询</td><td><b>3.5</b></td><td>2.0</td><td>48.7</td><td>首次较慢；随机墙过多时无路径（<code>path_len=0</code>）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="okbox"><b>结论：</b>BSP/模板可以在一帧内生成并立即绘制；CA/噪声应放后台或降低分辨率；TileMapLayer 写入很便宜，真正成本在算法与验证。这些是 <b>CPU/GDScript</b> 数据，不是 GPU 帧率；验收要分别测生成耗时与播放 FPS。报告用中位数 + P95，不要只报最好一轮。</div>
+</section>
+
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>交互演示</h2><span class="sec-note">Canvas 原创 · 种子可复现 · 指标实时</span></div>
+  <p class="lead">三个演示对应三种主流 2D 方案：<b>CA 洞穴</b>、<b>BSP 房间+走廊</b>、<b>噪声生物群系</b>。所有图形由 Canvas 程序化绘制，不加载任何外部图片；参数与 §05 的 Godot brief 对齐。</p>
+
+  <div class="demo">
+    <div class="demo-head"><div><div class="t">演示 1 · CA 洞穴（4-5 规则）</div><div class="d">随机墙 → 邻域规则迭代 → 洞穴；可单步、重放、修复连通。</div></div><div><span class="tag">2D</span><span class="tag gold">最小成本</span></div></div>
+    <div class="demo-body">
+      <div class="canvas-wrap"><canvas id="caCanvas" width="600" height="300" aria-label="元胞自动机洞穴演示"></canvas></div>
+      <div class="demo-side">
+        <div>
+          <div class="ctrl-row"><label for="caSeed">种子</label><input id="caSeed" type="number" value="2137" step="1"></div>
+          <div class="ctrl-row"><label for="caWall">初始墙比例</label><output id="caWallOut">45%</output></div>
+          <input id="caWall" type="range" min="30" max="55" value="45" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="caIter">迭代次数</label><output id="caIterOut">5</output></div>
+          <input id="caIter" type="range" min="1" max="9" value="5" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="caRule">规则</label><select id="caRule"><option value="45">4 / 5（连洞穴）</option><option value="44">4 / 4（碎洞）</option></select></div>
+          <div class="btnrow"><button class="btn primary" id="caGen">生成</button><button class="btn" id="caStepBtn">单步</button><button class="btn" id="caReplayBtn">重放</button><button class="btn" id="caRepairBtn">修复连通</button></div>
+        </div>
+        <div>
+          <div class="metrics">
+            <span class="metric">地板 <b id="caFloor">—</b></span>
+            <span class="metric">连通块 <b id="caComps">—</b></span>
+            <span class="metric">最大块 <b id="caLargest">—</b></span>
+            <span class="metric">耗时 <b id="caMs">—</b></span>
+          </div>
+          <div class="legend"><span><i class="sw wall"></i>墙</span><span><i class="sw floor"></i>地板</span><span><i class="sw gold"></i>修复走廊</span></div>
+          <div class="note" id="caPhase">等待生成…</div>
+        </div>
+      </div>
+    </div>
+    <details class="fold"><summary>Godot 落地参数（与演示一致）</summary><div class="body">
+      <pre><code><span class="c"># 60×30 → Godot 可放大到 64×48；45% 墙、4-5 规则、5 次迭代</span>
+var grid := PackedByteArray(); grid.resize(w*h)
+<span class="c"># 越界算墙；墙邻居 ≥4 保持墙，地板邻居 ≥5 变墙</span>
+<span class="c"># 生成放 WorkerThreadPool；完成后 call_deferred 写 TileMapLayer</span>
+<span class="c"># 用 BFS/并查集验证连通；失败用 L 走廊修复或换 seed 重开</span></code></pre>
+    </div></details>
+  </div>
+
+  <div class="demo">
+    <div class="demo-head"><div><div class="t">演示 2 · BSP 房间 + 走廊</div><div class="d">递归切分 → 房间 → 最近邻 L 走廊 → BFS 验证；可叠 BSP 树。</div></div><div><span class="tag">2D</span><span class="tag ok">可玩性稳</span></div></div>
+    <div class="demo-body">
+      <div class="canvas-wrap"><canvas id="bspCanvas" width="640" height="480" aria-label="BSP 房间走廊演示"></canvas></div>
+      <div class="demo-side">
+        <div>
+          <div class="ctrl-row"><label for="bspSeed">种子</label><input id="bspSeed" type="number" value="4242" step="1"></div>
+          <div class="ctrl-row"><label for="bspMin">最小叶</label><output id="bspMinOut">8</output></div>
+          <input id="bspMin" type="range" min="6" max="12" value="8" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="bspDepth">最大深度</label><output id="bspDepthOut">5</output></div>
+          <input id="bspDepth" type="range" min="3" max="7" value="5" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="bspTree">BSP 树 / 房间 ID</label><input id="bspTree" type="checkbox" checked></div>
+          <div class="ctrl-row"><label for="bspLoop">额外环路</label><input id="bspLoop" type="checkbox" checked></div>
+          <div class="btnrow"><button class="btn primary" id="bspGen">生成</button><button class="btn" id="bspNew">换种子</button></div>
+        </div>
+        <div>
+          <div class="metrics">
+            <span class="metric">房间 <b id="bspRooms">—</b></span>
+            <span class="metric">走廊 <b id="bspCorr">—</b></span>
+            <span class="metric">可达 <b id="bspReach">—</b></span>
+            <span class="metric">耗时 <b id="bspMs">—</b></span>
+          </div>
+          <div class="legend"><span><i class="sw room"></i>房间</span><span><i class="sw corr"></i>走廊</span><span><i class="sw warn"></i>起点/终点</span><span><i class="sw line"></i>BSP 线</span></div>
+          <div class="note" id="bspPhase">等待生成…</div>
+        </div>
+      </div>
+    </div>
+    <details class="fold"><summary>Godot 落地参数（与演示一致）</summary><div class="body">
+      <pre><code><span class="c"># 64×48 格 / 32 px；最小叶 8×6，最大深度 5，房间内缩 1</span>
+<span class="c"># 每个叶节点放随机房间；房间中心按最近未连接房间连 L 走廊</span>
+<span class="c"># 可选 10–15% 额外环路；BFS 从起点验证所有房间可达</span>
+<span class="c"># 起点=房间0，终点=BFS 最远点；TileSet Terrain 自动刷墙/地面过渡</span></code></pre>
+    </div></details>
+  </div>
+
+  <div class="demo">
+    <div class="demo-head"><div><div class="t">演示 3 · 噪声生物群系 + Poisson + 河流</div><div class="d">海拔/湿度/温度 → 岛屿遮罩 → 生物群系 → 最陡下降河流 → Poisson 植被/POI。</div></div><div><span class="tag">2D</span><span class="tag gold">视觉 hero</span></div></div>
+    <div class="demo-body">
+      <div class="canvas-wrap"><canvas id="noiseCanvas" width="768" height="512" aria-label="噪声生物群系地图演示"></canvas></div>
+      <div class="demo-side">
+        <div>
+          <div class="ctrl-row"><label for="noiseSeed">种子</label><input id="noiseSeed" type="number" value="9001" step="1"></div>
+          <div class="ctrl-row"><label for="noiseSea">海平面</label><output id="noiseSeaOut">0.32</output></div>
+          <input id="noiseSea" type="range" min="20" max="55" value="32" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="noiseMoist">湿度偏移</label><output id="noiseMoistOut">0.00</output></div>
+          <input id="noiseMoist" type="range" min="-20" max="20" value="0" style="width:100%;accent-color:var(--teal)">
+          <div class="ctrl-row"><label for="noiseIsland">岛屿遮罩</label><input id="noiseIsland" type="checkbox" checked></div>
+          <div class="ctrl-row"><label for="noiseVeg">植被 / POI</label><input id="noiseVeg" type="checkbox" checked></div>
+          <div class="ctrl-row"><label for="noiseView">视图</label><select id="noiseView"><option value="biome">生物群系</option><option value="elev">海拔</option><option value="moist">湿度</option></select></div>
+          <div class="btnrow"><button class="btn primary" id="noiseGen">生成</button><button class="btn" id="noiseNew">换种子</button></div>
+        </div>
+        <div>
+          <div class="metrics">
+            <span class="metric">陆地 <b id="noiseLand">—</b></span>
+            <span class="metric">最大陆块 <b id="noiseLargest">—</b></span>
+            <span class="metric">河流 <b id="noiseRivers">—</b></span>
+            <span class="metric">POI <b id="noisePois">—</b></span>
+            <span class="metric">耗时 <b id="noiseMs">—</b></span>
+          </div>
+          <div class="legend"><span><i class="sw deep"></i>深水</span><span><i class="sw water"></i>浅水</span><span><i class="sw sand"></i>沙</span><span><i class="sw grass"></i>草</span><span><i class="sw forest"></i>森林</span><span><i class="sw rock"></i>岩</span><span><i class="sw snow"></i>雪</span></div>
+          <div class="note" id="noisePhase">等待生成…</div>
+        </div>
+      </div>
+    </div>
+    <details class="fold"><summary>Godot 落地参数（与演示一致）</summary><div class="body">
+      <pre><code><span class="c"># 96×64 格 / 32 px；FastNoiseLite ×3：海拔 0.012 / 湿度 0.02 / 温度 0.03</span>
+<span class="c"># 岛屿遮罩 = 径向衰减 + 噪声扰动；海平面 0.32，湿度偏移可调</span>
+<span class="c"># 河流：从高海拔沿最陡下降走到水；Poisson r=3 撒树、r=10 撒 POI</span>
+<span class="c"># 生成放 WorkerThreadPool；切视图只重绘，不重算</span></code></pre>
+    </div></details>
+  </div>
+
+  <div class="okbox"><b>实测（2026-11-22）：</b>Chrome 150 headless 打开本页，3 个 demo 全部自动生成、<b>0 console error</b>；截图见 <code>docs/shots/godot-procgen-survey-{ca,bsp,biomes}.png</code>。所有图形为 Canvas 程序化绘制，页面无外部依赖。</div>
+</section>
+
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>案例核实</h2><span class="sec-note">Godot 商业 · 开源/插件 · 非 Godot 可移植</span></div>
+  <p class="lead">优先 Godot 项目；每个案例标注<b>是否 Godot、是否程序化、证据等级、许可</b>。没有公开算法细节的标“推断”，不把社区猜测写成事实。</p>
+
+  <h3>4.1 Godot 已发布游戏</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>案例</th><th>引擎/世代</th><th>程序化地图？</th><th>技术证据</th><th>视觉亮点</th><th>许可</th><th>来源（访问 2026-11-21）</th></tr></thead>
+      <tbody>
+        <tr><td><b>Dome Keeper</b><br><span class="note">Bippinbits / Raw Fury</span></td><td><b>Godot 3 → Godot 4</b>（2024 “A Keeper's Duty”；RPS 原文 “moving from godot 3 to 4”；3.x 小版本/GodotSteam 分支未核实）</td><td><b>是</b>：RPS 报道升级后 “better map generation”，地图形状/尺寸更多、出现新结构；算法未公开</td><td>RPS（<b>媒体</b>，直接引述引擎升级与地图改进）+ Steam 公告（<b>官方</b>，本次未取到正文）；<b>推断</b>：多 pass 形状 + 规则/噪声 + 手工调参</td><td>可破坏矿井 + 穹顶防守；挖掘/资源/波次强反馈</td><td>商业</td><td><a href="https://godotengine.org/showcase/dome-keeper/" target="_blank" rel="noopener">Godot Showcase</a> · <a href="https://www.rockpapershotgun.com/dome-keeper-just-got-a-massive-update-that-ups-replayability-and-helps-generate-better-worlds" target="_blank" rel="noopener">RPS</a></td></tr>
+        <tr><td><b>Lumencraft</b><br><span class="note">2Dynamic Games</span></td><td><b>Godot 3</b>（访谈时；访谈称未来会考虑 4，现状未核实）</td><td><b>是</b>：Steam 商店页明确 “procedurally generated maps/levels” + 全可破坏地形</td><td>Godot 访谈（<b>官方</b>）：Godot 3、全破坏地形/流体/动态光照；Steam 商店页（<b>官方</b>）：procedurally generated maps/levels；算法未公开（<b>推断</b>：CA/噪声 + 自定义地形）</td><td>黑暗中的挖掘/照明/塔防；像素级破坏</td><td>商业</td><td><a href="https://godotengine.org/showcase/lumencraft/" target="_blank" rel="noopener">Godot Showcase</a> · <a href="https://godotengine.org/article/godot-showcase-2dynamic-games-lumencraft/" target="_blank" rel="noopener">访谈</a> · <a href="https://store.steampowered.com/app/1713810/" target="_blank" rel="noopener">Steam</a></td></tr>
+        <tr><td><b>Cassette Beasts</b><br><span class="note">Bytten Studio</span></td><td><b>Godot</b>（技术博客确认；3.5 为社区常见说法，未逐条核实）</td><td><b>否（主世界手工）</b>：16×8 个 32×32 瓦片 chunk 的 GridMap 手工世界（<b>官方技术博客</b>）</td><td>“Technical Look: The Park”（<b>官方</b>，原文现 404，经 Wayback 存档核实）：GridMap + chunk 流式加载；无自动瓦片，角/过渡手工摆</td><td>2.5D 像素开放世界；固定相机 + 网格地形</td><td>商业</td><td><a href="https://godotengine.org/showcase/cassette-beasts/" target="_blank" rel="noopener">Godot Showcase</a> · <a href="https://web.archive.org/web/20210809140543/https://www.cassettebeasts.com/2021/08/09/technical-look-the-park/" target="_blank" rel="noopener">技术博客（Wayback）</a></td></tr>
+        <tr><td><b>Brotato</b><br><span class="note">Blobfish</span></td><td><b>Godot 3.5</b>（teemo.dev 拆解确认）</td><td><b>否</b>：固定竞技场；随机的是敌人波次/商店/掉落</td><td>Godot Showcase（<b>官方</b>）+ teemo.dev 拆解（<b>媒体</b>，明确 “twenty-wave arena roguelite on constants that never move”）；无程序化地图证据</td><td>固定竞技场让走位可控；武器/道具组合是主角</td><td>商业</td><td><a href="https://godotengine.org/showcase/brotato/" target="_blank" rel="noopener">Godot Showcase</a> · <a href="https://teemo.dev/game-design/brotato/design/overview-notes/" target="_blank" rel="noopener">系统拆解</a></td></tr>
+        <tr><td><b>Road to Vostok</b><br><span class="note">Antti Leinonen</span></td><td><b>Godot</b>（2023 从 Unity 迁移，Wikipedia 确认；4.x 未确认）</td><td><b>未证实（推断非程序化）</b>：Wikipedia 确认 EA 有 9 张地图/3 区域；是否手工未在来源明确</td><td>Wikipedia（<b>媒体</b>）：9 maps、3 regions、引擎迁移；Steam 更新（<b>官方</b>）：EA 信息；没有程序化地图证据</td><td>硬核生存 FPS；真实边境氛围；分区推进 + permadeath</td><td>商业</td><td><a href="https://en.wikipedia.org/wiki/Road_to_Vostok" target="_blank" rel="noopener">Wikipedia</a> · <a href="https://store.steampowered.com/news/app/1963610" target="_blank" rel="noopener">Steam 更新</a></td></tr>
+        <tr><td><b>ΔV: Rings of Saturn</b><br><span class="note">Kodera Software</span></td><td><b>Godot</b>（世代未确认）</td><td><b>未证实</b>：Showcase/Steam 均未说明小行星带是否程序化；没有程序化地图公开证据（<b>推断</b>：岩体/矿点可能程序化）</td><td>Godot Showcase（<b>官方</b>）确认引擎；Steam 商店页（<b>官方</b>）确认玩法；生成方式未公开</td><td>硬科幻小行星采矿；真实物理/碰撞</td><td>商业</td><td><a href="https://godotengine.org/showcase/delta-v-rings-of-saturn/" target="_blank" rel="noopener">Godot Showcase</a> · <a href="https://store.steampowered.com/app/846030/" target="_blank" rel="noopener">Steam</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="warnbox"><b>核实结论：</b>Dome Keeper、Lumencraft 是可确认“Godot + 程序化地图”的商业案例（RPS / Steam 商店页），但都没有公开算法；<b>Cassette Beasts 是手工 GridMap 世界</b>（官方技术博客）、<b>Brotato 是固定竞技场</b>（teemo.dev 拆解）；<b>Road to Vostok</b> 只有“9 张地图/3 区域”的媒体记录，手工程度未证实；<b>ΔV</b> 的生成方式未公开。Godot Showcase 能证明“引擎”，不能证明“程序化”。</div>
+
+  <h3>4.2 Godot 开源项目 / 插件</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>项目</th><th>类型</th><th>技术/规模</th><th>Godot 版本</th><th>许可</th><th>适合复刻？</th><th>来源</th></tr></thead>
+      <tbody>
+        <tr><td><b>Zylann/godot_voxel</b></td><td>C++ module / GDExtension</td><td>3D 体素：blocky + smooth Transvoxel LOD、无限分页、物理、植被、自定义生成器</td><td>Godot 4；<b>v1.6 对应 4.6</b></td><td><b>MIT</b></td><td>✅ 3D 体素首选（需编译/扩展）</td><td><a href="https://github.com/Zylann/godot_voxel" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/Zylann/godot_voxel/releases/tag/v1.6" target="_blank" rel="noopener">v1.6</a></td></tr>
+        <tr><td><b>TokisanGames/Terrain3D</b></td><td>C++ GDExtension</td><td>高度场地形：64×64 m–65.5×65.5 km、32 纹理、10 LOD、植被、孔洞/雕刻</td><td>Godot 4.5–4.8+（v1.1.0）</td><td><b>MIT</b></td><td>✅ 程序化高度图渲染；不适合悬垂洞穴</td><td><a href="https://github.com/TokisanGames/Terrain3D" target="_blank" rel="noopener">GitHub</a></td></tr>
+        <tr><td><b>AlexeyBond/godot-constraint-solving</b></td><td>GDScript 插件</td><td>2D WFC/CSP：回溯、多线程、从示例学规则、TileMapLayer/TileMap/GridMap、概率；无 3D/全局路径约束</td><td>Godot 4（Asset 1.7 标 4.3；4.6 未显式声明）</td><td><b>MIT</b></td><td>✅ 2D WFC 细节层首选</td><td><a href="https://github.com/AlexeyBond/godot-constraint-solving" target="_blank" rel="noopener">GitHub</a> · <a href="https://godotengine.org/asset-library/asset/1951" target="_blank" rel="noopener">Asset</a></td></tr>
+        <tr><td><b>AliasFactory/Godot_Fast_WFC</b></td><td>C++ 插件</td><td>mxgmn WFC 的 C++ 移植；tiling + overlapping；自带 demo</td><td>Asset 标注 <b>4.4</b>（4.6 未显式声明）</td><td><b>MIT</b></td><td>✅ 追求速度的 2D WFC；需实测 4.6</td><td><a href="https://github.com/AliasFactory/Godot_Fast_WFC" target="_blank" rel="noopener">GitHub</a> · <a href="https://godotengine.org/asset-library/asset/4149" target="_blank" rel="noopener">Asset</a></td></tr>
+        <tr><td><b>Rayogenesis/WFC Addon</b></td><td>GDScript 插件</td><td>overlap WFC；<code>WFCGenerator2D</code>；TileMapLayer；旋转/反射；回溯</td><td>Godot <b>4.3</b></td><td><b>MIT</b></td><td>⚠️ 学习/小项目；维护未知</td><td><a href="https://github.com/Rayogenesis/WaveFunctionCollapse-GodotAddon" target="_blank" rel="noopener">GitHub</a></td></tr>
+        <tr><td><b>GenMap Lite</b></td><td>GDScript 插件</td><td>一键地牢：TileMapLayer + TileSet、碰撞/导航、房间 Area2D、可达性、worker thread；上限 48×48</td><td>Asset 标注 <b>4.3</b></td><td><b>MIT</b></td><td>✅ 快速原型/对照</td><td><a href="https://godotengine.org/asset-library/asset/5546" target="_blank" rel="noopener">Asset</a></td></tr>
+        <tr><td><b>loothammer dungeon</b></td><td>GDScript 示例</td><td>80×80、最多 10 房间、L 走廊、TileMapLayer</td><td>Godot 4</td><td><b>README 声明 MIT（无 LICENSE 文件）</b></td><td>⚠️ 可参考；复用前自行确认合规，保守只读</td><td><a href="https://github.com/loothammer/godot_2D_procedural_dungeon_gen" target="_blank" rel="noopener">GitHub</a></td></tr>
+        <tr><td><b>Peatral Map Generator</b></td><td>GDScript + C++</td><td>Voronoi、岛屿、海拔、河流、湿度、生物群系；Poisson + Delaunator</td><td>Godot 4（2023）</td><td><b>无许可证</b></td><td>⚠️ 只读思路</td><td><a href="https://github.com/Peatral/Godot-Map-Generator" target="_blank" rel="noopener">GitHub</a></td></tr>
+        <tr><td><b>SebLague Marching Cubes</b></td><td>学习项目</td><td>Godot 4 <b>compute shader</b> Marching Cubes</td><td>Godot 4</td><td><b>MIT</b></td><td>❌ 不适合 GL Compatibility</td><td><a href="https://github.com/SebLague/Godot-Marching-Cubes" target="_blank" rel="noopener">GitHub</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.3 非 Godot 但可移植</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>案例</th><th>引擎</th><th>技术（证据）</th><th>可移植教训</th><th>许可</th><th>来源</th></tr></thead>
+      <tbody>
+        <tr><td><b>Noita</b></td><td>自研 Falling Everything（C++）</td><td>每像素物理模拟材质；复杂元胞自动机（<b>官方/媒体</b>）</td><td>全像素 CA 是视觉奇观，但性能/设计成本极高；2D 只建议粗网格 CA 做洞穴</td><td>商业</td><td><a href="https://noitagame.com/" target="_blank" rel="noopener">官网</a> · <a href="https://noitagame.com/press/" target="_blank" rel="noopener">Press Kit</a></td></tr>
+        <tr><td><b>Caves of Qud</b></td><td><b>Unity</b>（Unity 案例 + Steam FAQ）</td><td>多 pass：结构 → WFC（texture mode，3×3 图案，8×8/16×16 训练图）→ A* 连接 → 后处理；大图分段 WFC（<b>GDC 2019</b>）</td><td><b>不要把 WFC 当全局生成器</b>：分段、先结构后细节、A* 修连通</td><td>商业</td><td><a href="https://unity.com/resources/systems-driven-design-in-caves-of-qud" target="_blank" rel="noopener">Unity 案例</a> · <a href="https://gdcvault.com/browse/gdc-19/play/1026263" target="_blank" rel="noopener">GDC</a></td></tr>
+        <tr><td><b>Bad North</b></td><td>非 Godot（Unity 为社区常见说法，未逐条核实）</td><td>3D 岛屿 WFC，手工瓦片模块；<b>先保证路径/房屋可达，再 WFC 填充</b>；离线生成失败可整局重开（<b>Oskar Stålberg 2018 演讲</b>）</td><td>路径优先 + WFC 细节 + 失败重开；Godot 用 A*Grid/BFS 先验 + WFC 插件填充</td><td>商业</td><td><a href="https://www.youtube.com/watch?v=0bcZb-SsnrA" target="_blank" rel="noopener">演讲</a></td></tr>
+        <tr><td><b>Townscaper</b></td><td>非 Godot（引擎未核实）</td><td>3D/不规则网格约束求解（常被描述为 WFC 思路）；二次 WFC 生成庭院；六边形/变形网格（<b>SGC21</b>）</td><td>不规则网格 + 约束求解 + 二次 pass 能消除方块感；2D 可借鉴定制六边形/噪声扰动边界</td><td>商业</td><td><a href="https://www.youtube.com/watch?v=Uxeo9c-PX-w" target="_blank" rel="noopener">Beyond Townscapers</a></td></tr>
+        <tr><td><b>Unexplored</b></td><td>非 Godot（自研/Ludoscope）</td><td><b>Cyclic dungeon generation</b>：图重写规则生成环路/锁钥，而非树状分支；关卡用 tilemap 表示（<b>论文/演讲</b>）</td><td>图语法先定任务/锁钥/环路，再映射空间；Godot 用自定义 Resource/Graph</td><td>商业</td><td><a href="https://www.taylorfrancis.com/chapters/edit/10.1201/9781315156378-11/cyclic-generation-joris-dormans" target="_blank" rel="noopener">章节</a> · <a href="https://www.youtube.com/watch?v=mA6PacEZX9M" target="_blank" rel="noopener">演讲</a></td></tr>
+        <tr><td><b>Spelunky / Enter the Gungeon</b></td><td>非 Godot（GameMaker / Unity）</td><td>Spelunky：4×4 房间网格 + 只允许左/右/下的黄金路径 + 房间模板；Gungeon：手工房间池 + 分类选房（<b>开发者演讲/书籍</b>；仓库已有视频拆解）</td><td>“先保证路径，再填内容”最稳；Godot 用场景模板 + 连接口匹配</td><td>商业</td><td><a href="procedural-generation-teardown.md">仓库拆解</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cards">
+    <div class="card"><h4>商业项目几乎都是混合管线</h4><p>结构（BSP/图/模板）→ 细节（WFC/噪声）→ 连通修复（A*/BFS）→ 装饰/POI。单一算法只存在于教学 demo。</p></div>
+    <div class="card"><h4>视觉记忆点来自美术与反馈</h4><p>Dome Keeper 的挖掘反馈、Lumencraft 的黑暗/破坏、Cassette Beasts 的手工像素世界，都比“算法名字”重要。</p></div>
+    <div class="card"><h4>WFC 的正确位置</h4><p>Caves of Qud 分段 WFC + A*；Bad North 先路径后 WFC；Townscaper 二次 WFC。不要用它保证全局可玩性。</p></div>
+    <div class="card"><h4>许可边界前置</h4><p>商业游戏只研究；无许可证/无 LICENSE 文件的仓库只读；WFC 示例图不能入库；原创/CC0 资产写 CREDITS。</p></div>
+  </div>
+
+  <div class="okbox"><b>T-040 复核记录（2026-11-22）：</b>
+    ① 3 个 Canvas demo 在 Chrome 150 headless 全部自动生成，<b>0 console error</b>；CA 连通块 1、BSP 21/21 可达、噪声 5 条河流/7 个 POI；截图在 <code>docs/shots/godot-procgen-survey-*.png</code>。<br>
+    ② 案例修正：Cassette Beasts 原链接 404 → 改用 <b>Wayback 存档</b>（确认 16×8×32×32、GridMap、手工过渡）；Dome Keeper 删除未证实的“迷宫/天然洞穴”与 3.5.1 细节；Lumencraft 补 <b>Steam “procedurally generated”</b>；Brotato 补 teemo.dev 拆解；Road to Vostok/ΔV 改为“未证实/推断”；loothammer 改为 <b>README MIT（无 LICENSE 文件）</b>。<br>
+    ③ 链接复核：Godot 4.6 Release / Renderers / TileMapLayer / godot_voxel v1.6 / Terrain3D v1.1.0 / GenMap Lite / AlexeyBond / RPS / Steam / Wikipedia 均 200 且内容可读。
+  </div>
+</section>
+
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>与仓库现状对照</h2><span class="sec-note">避免重复 · 可复用参数/代码思路</span></div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>现有资产</th><th>已经覆盖</th><th>可复用</th><th>本轮应避免</th></tr></thead>
+      <tbody>
+        <tr><td><code>godot-wfc/</code></td><td>2D WFC 完整交互：候选叠加、Shannon 熵、加权坍缩、约束传播、快照回溯、确定性重开；14 种原创庭院瓦片；16×10 实测算法视图 avg 42.6 / min 38 FPS，成品地图 avg 73.8 / min 46 FPS</td><td><code>wfc_solver.gd</code>（掩码/熵/传播/回溯）、<code>wfc_tileset.gd</code>（边接口/权重）、<code>tile_baker.gd</code>（图集）、<code>board_view.gd</code>（波前/热力/调试）、<code>hud.gd</code>（中文控制台）</td><td><b>不要重写纯 WFC demo</b>；不要重复“候选/熵/回溯”教学；不要把 14 种庭院瓦片直接当新项目美术</td></tr>
+        <tr><td><code>docs/procedural-generation-teardown.md</code> + <code>generators.py</code></td><td>CA 4-5 规则、Spelunky 黄金路径、BSP、醉汉漫步；确定性 XorShift32；21 seeds 连通验证；参数/坑/修复</td><td>CA 参数（45% 墙、keep 4、become 5、4–6 次；4/4 + 走廊修复）；BSP 递归/内缩/L 走廊；BFS/最远点；种子签名</td><td><b>不要重复四种算法的纯拆解</b>；不要再做“算法视频复刻”；把参数迁移到带美术/自动瓦片/预算的可玩 slice</td></tr>
+        <tr><td><code>procedural-generation-teardown-交互版.html</code></td><td>既有讲义设计系统：深/浅色 token、卡片、表格、demo 面板、控件、FAB、进度条、复制按钮</td><td>复用 CSS 变量与组件类名（<code>--paper/--ink/--gold/--teal</code>、<code>.card</code>、<code>.tablewrap</code>、<code>.demo</code>、<code>.controls</code>、<code>.metrics</code>）</td><td>不要复制旧页面正文/图表；新页面只复用设计系统，内容全部重写</td></tr>
+        <tr><td><code>docs/shots/</code></td><td>既有截图命名与尺寸习惯</td><td>新截图放 <code>docs/shots/godot-procgen-survey-*.png</code></td><td>不要覆盖旧截图；不要放商业游戏画面</td></tr>
+        <tr><td>T-20261121-022（3D 海岛）</td><td>已单独立项：高度场/岛屿遮罩/噪声/侵蚀/网格/水面/植被/LOD</td><td>本报告的 FastNoiseLite、岛屿遮罩、Poisson、LOD/分块结论</td><td><b>本任务不做 3D 海岛实现</b>；不把 3D 体素作为本轮主目标</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="okbox"><b>本轮定位：</b>不是“再做一个算法 demo”，而是<b>把已有算法资产变成可落地的地图生产管线</b>：BSP/噪声负责结构，TileSet Terrain 负责视觉过渡，BFS/A* 负责可玩性，WorkerThreadPool 负责预算，调试叠加负责可验证。</div>
+</section>
+
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>复刻目标与实现 Brief</h2><span class="sec-note">评分 · 参数 · 验收 · 版权</span></div>
+
+  <h3>6.1 评分（1–5，越高越好）</h3>
+  <p class="note">“实现成本（5=低）”“许可风险（5=低）”“30fps 信心（5=高）”已反向计分，便于直接相加。</p>
+  <div class="score">
+    <div class="head">目标</div><div class="head v">视觉</div><div class="head v">成本<br>5=低</div><div class="head v">许可<br>5=低</div><div class="head v">适配</div><div class="head v">30fps</div><div class="head total">总分</div>
+    <div class="name">A · BSP 地牢 + 自动过渡</div><div class="v">4.0</div><div class="v">5.0</div><div class="v">5.0</div><div class="v">5.0</div><div class="v">5.0</div><div class="total">24.0</div>
+    <div class="name">B · 噪声生物群系 + Poisson</div><div class="v">5.0</div><div class="v">3.5</div><div class="v">5.0</div><div class="v">4.5</div><div class="v">4.5</div><div class="total">22.5</div>
+    <div class="name">C · CA + BSP + WFC（可选）</div><div class="v">4.5</div><div class="v">2.5</div><div class="v">5.0</div><div class="v">4.0</div><div class="v">4.0</div><div class="total">20.0</div>
+    <div class="name">对照 · 纯 WFC 新 demo</div><div class="v">3.5</div><div class="v">2.0</div><div class="v">5.0</div><div class="v">4.0</div><div class="v">3.5</div><div class="total">18.0</div>
+  </div>
+  <div class="scorebar" aria-hidden="true"><i style="width:96%"></i></div>
+  <p class="note">A 总分最高、风险最低；B 视觉最高、成本中等；C 上限高但最容易与已有 WFC/CA demo 重复。<b>执行顺序：A → B → C（可选）。</b></p>
+
+  <h3>6.2 Brief A：BSP 地牢 + TileSet Terrain 自动过渡</h3>
+  <details class="fold" open><summary>Brief A · 64×48 可玩地牢 slice · 1–2 天</summary><div class="body">
+    <table class="spec">
+      <tr><th>地图尺寸</th><td><b>64×48 格</b>（32 px/格，世界 2048×1536，相机滚动）；可选 80×60 压力档</td></tr>
+      <tr><th>瓦片/材质</th><td>3 层：地板、墙体、装饰；TileSet Atlas 32×32；地板 6–8 变体、墙 3 变体、门 2 变体；<b>原创程序化瓦片</b>或 CC0（Kenney）并在 <code>CREDITS.md</code> 记录</td></tr>
+      <tr><th>自动过渡</th><td>TileSet Terrain <code>wall</code>，模式 <b>Match Corners and Sides</b>；<code>set_cells_terrain_connect</code> 批量刷墙/地面过渡；地板/墙保留概率变体</td></tr>
+      <tr><th>算法</th><td>BSP 递归切分（最小叶 10×8，最大深度 6，房间 5×4 起，内缩 1–2）→ 每叶放房间 → 房间中心“最近未连接房间”连 L 走廊（MST 近似）→ 可选 10–15% 环路 → BFS 验证 → 未达房间连最近可达点 → 死胡同剪枝 → 起点/终点取 BFS 最远点对</td></tr>
+      <tr><th>种子</th><td><code>RandomNumberGenerator</code> 固定 seed（如 <code>hash("T-021-dungeon")</code>）；独立流：split/room/corridor/decor/loot；记录 <code>seed + size + signature</code></td></tr>
+      <tr><th>步进可视化</th><td>阶段：<code>split → rooms → corridors → connectivity → decor</code>；暂停/单步/速度 1–20 阶段/秒；当前阶段高亮；完成后可切成品/调试</td></tr>
+      <tr><th>调试叠加</th><td>BSP 切分线、叶节点矩形、房间 ID、走廊图、BFS 连通分量、未达房间红框、起点/终点、种子/签名、生成耗时 ms</td></tr>
+      <tr><th>验收</th><td>100 seeds：<b>房间可达 100%</b>、房间不重叠、走廊不出界；同 seed 两次签名一致；64×48 生成 ≤ 50 ms（后台/加载）；步进播放 ≥ 30 FPS @1280×720；draw call ≤ 10；600 帧 headless 无 ERROR</td></tr>
+      <tr><th>版权</th><td>不复制商业地牢布局/瓦片/UI；瓦片原创或 CC0；参考算法但不复制无权代码</td></tr>
+    </table>
+    <pre><code>seed = hash("T-021-dungeon")
+leaves = bsp_split(Rect2i(1,1,62,46), max_depth=6, min_leaf=10x8)
+rooms  = inset_random_rooms(leaves, min=5x4, rng_room)
+grid   = wall_grid(64,48); carve_rooms(grid, rooms)
+connect_rooms_nearest(grid, rooms, rng_corr)  <span class="c"># L 走廊</span>
+add_loops(grid, rooms, rng_corr, ratio=0.12)
+reachable = bfs(grid, rooms[0].center)
+for room in rooms where not reachable: connect_to_nearest_reachable(room)
+start, exit = farthest_pair(grid, rooms[0].center)
+decorate(grid, rng_decor, poisson_min_dist=2)</code></pre>
+    <p class="note">Godot 落地：生成放 WorkerThreadPool；主线程 call_deferred 写 TileMapLayer；AStarGrid2D 只做验证；装饰用 MultiMeshInstance2D；调试用 <code>_draw()</code>，不建额外节点。</p>
+  </div></details>
+
+  <h3>6.3 Brief B：FastNoiseLite + Poisson + Voronoi 生物群系</h3>
+  <details class="fold"><summary>Brief B · 96×64 世界地图 · 3–5 天</summary><div class="body">
+    <table class="spec">
+      <tr><th>地图尺寸</th><td><b>96×64 格</b>（32 px，世界 3072×2048）或 128×96 压力档；TileMapLayer 分块 32×32 加载</td></tr>
+      <tr><th>瓦片/材质</th><td>6 生物群系：深水、浅水、沙、草、森林、岩石/雪；每类 4–6 变体；水/岸/草/林/岩/雪自动过渡；原创调色板</td></tr>
+      <tr><th>场</th><td><code>FastNoiseLite</code> ×3：海拔（FBM/Simplex，0.012，octaves 4）、湿度（Simplex，0.02）、温度（Perlin，0.03）；岛屿遮罩 = 径向衰减 + 域扭曲；可选细节噪声</td></tr>
+      <tr><th>分类</th><td>海拔阈值 → 水/岸/陆地；陆地按湿度分草/森林；高海拔/低温度 → 岩石/雪；所有阈值暴露为导出参数</td></tr>
+      <tr><th>河流</th><td>从高海拔格沿最陡下降走到水/边界；合并相邻河流；限制 3–6 条；避免 1 格断头</td></tr>
+      <tr><th>植被/POI</th><td>Poisson Disk（Bridson，r=2.5–4 格，k=30）撒树/石头/遗迹；POI 3–8 个；独立 RNG 流</td></tr>
+      <tr><th>区域（可选）</th><td>Voronoi（Poisson 种子 + 最近点距离场）做王国/生态区边界；边界噪声扰动；<code>Geometry2D</code> 裁剪/合并</td></tr>
+      <tr><th>种子</th><td>海拔/湿度/温度/植被/POI/河流各自 seed offset；记录 <code>seed + 参数 + signature</code>；同 seed 逐格一致</td></tr>
+      <tr><th>步进可视化</th><td>视图切换：<code>海拔 → 湿度 → 温度 → 生物群系 → 河流 → 植被/POI</code>；生成一次，切视图只重绘</td></tr>
+      <tr><th>调试叠加</th><td>噪声通道热力、阈值线、生物群系直方图、最大陆块占比、河流长度/入海、Poisson 最小距离、生成 ms</td></tr>
+      <tr><th>验收</th><td>100 seeds：最大陆块 ≥ 90% 陆地面积；至少 1 条河流入海；3–8 个 POI；同 seed 签名一致；96×64 生成 ≤ 100 ms（后台/加载）；播放 ≥ 30 FPS；draw call ≤ 12；无每格节点</td></tr>
+      <tr><th>版权</th><td>噪声/算法无版权问题；瓦片/色板原创或 CC0；不复制商业地图纹理/画面</td></tr>
+    </table>
+    <pre><code>elev = FastNoiseLite(seed+1, SIMPLEX, freq=0.012, octaves=4)
+moist = FastNoiseLite(seed+2, SIMPLEX, freq=0.02)
+temp  = FastNoiseLite(seed+3, PERLIN,  freq=0.03)
+for y,x:
+  e = elev.get_noise_2d(x,y)*0.7 + island_mask(x,y)*0.5 - 0.15
+  m = moist.get_noise_2d(x,y)
+  t = temp.get_noise_2d(x,y)
+  biome = classify(e,m,t)
+rivers = steepest_descent_from_high_points(elev, water_mask, max=6)
+trees  = poisson_disk(r=3.0, k=30, seed=seed+4, only=land)
+pois   = poisson_disk(r=10.0, k=30, seed=seed+5, only=walkable)</code></pre>
+    <p class="note">Godot 落地：优先 <code>Noise.get_image()</code>/NoiseTexture2D 批量出图；生成放后台；TileMapLayer + TileSet Terrain 自动过渡；河流/道路用 Line2D/Curve2D 或直接写瓦片；Voronoi 只在需要区域边界时加。</p>
+  </div></details>
+
+  <h3>6.4 Brief C（可选）：CA 洞穴 + BSP 锚点 + WFC 细节层</h3>
+  <details class="fold"><summary>Brief C · 80×60 混合关卡 · 复用 godot-wfc</summary><div class="body">
+    <table class="spec">
+      <tr><th>地图</th><td>80×60 格；BSP 房间作为“锚点/安全区”，房间之间用 CA 洞穴连接；边界墙</td></tr>
+      <tr><th>算法</th><td>BSP 房间 → 房间外区域 CA（45% 墙、4-5 规则、5 次）→ BFS 验证 → L 走廊连接孤立房间/洞穴 → WFC 只在房间边缘/道路节点做局部填充（固定格/预条件）</td></tr>
+      <tr><th>复用</th><td><code>godot-wfc/scripts/wfc_solver.gd</code>、<code>wfc_tileset.gd</code>、<code>tile_baker.gd</code>；CA 参数来自 teardown；BSP 来自 <code>generators.py</code></td></tr>
+      <tr><th>种子</th><td>BSP/CA/WFC 三段独立 seed；WFC 重开预算 ≤ 48 次回溯；总生成预算 ≤ 100 ms（后台）</td></tr>
+      <tr><th>验收</th><td>100 seeds：BSP 房间 100% 可达；CA 洞穴最大连通块 ≥ 95%；WFC 无未坍缩格/矛盾；同 seed 一致；30 FPS 播放；无不可达 POI</td></tr>
+      <tr><th>风险</th><td>WFC 与 CA 边界/预条件最容易出矛盾；先固定房间边缘为 WFC 的 allowed set，再局部块；<b>不要全图 WFC</b></td></tr>
+      <tr><th>版权</th><td>复用自家 <code>godot-wfc</code> 代码；不引入 WFC 示例图片/商业瓦片</td></tr>
+    </table>
+    <p><b>结论：</b>C 视觉上限高，但工程/调试成本也最高；如果 T-021 只要求“一个能打的复刻”，<b>A + B 足够</b>，C 留作后续。</p>
+  </div></details>
+
+  <h3>6.5 必须避免的版权边界</h3>
+  <div class="warnbox">
+    <ul class="clean" style="margin-bottom:0">
+      <li>❌ 不复制 Dome Keeper / Lumencraft / Cassette Beasts / Brotato / Road to Vostok / Noita / Caves of Qud / Bad North / Townscaper 的<b>截图、瓦片、UI、音乐、关卡布局</b>。</li>
+      <li>❌ 不反编译、不 rip 商业游戏资产；不在仓库放“参考图/截图”作为素材。</li>
+      <li>❌ 不直接使用 mxgmn WFC 仓库的 <code>samples/*.png</code>（代码 MIT，示例图片/瓦片不随软件授权）。</li>
+      <li>❌ 不复制 Peatral（无许可证）的代码/资产；loothammer 虽在 README 声明 MIT 但无 LICENSE 文件，保守只读思路。</li>
+      <li>❌ 不把 Kenney/CC0 资产说成原创；在 <code>CREDITS.md</code> 写清来源、许可证、URL、修改。</li>
+      <li>✅ 所有 demo 图形用 Canvas/程序化绘制；所有游戏瓦片原创或 CC0；所有外部引用只写链接与文字结论。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>来源表</h2><span class="sec-note">原始访问 2026-11-21 · 复核新增 2026-11-22</span></div>
+  <p class="lead">官方文档优先；媒体/社区来源用于案例核实；推断处已在正文标注。完整列表见 <a href="godot-procgen-survey.md">godot-procgen-survey.md</a>。</p>
+  <div class="tablewrap">
+    <table class="src-table">
+      <thead><tr><th>#</th><th>来源</th><th>用途</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Godot 4.6 Release</td><td>版本定位/4.6 增量</td><td><a href="https://godotengine.org/releases/4.6/" target="_blank" rel="noopener">godotengine.org/releases/4.6</a></td></tr>
+        <tr><td>2</td><td>Renderers (4.6)</td><td>Compatibility 功能/限制</td><td><a href="https://docs.godotengine.org/en/4.6/tutorials/rendering/renderers.html" target="_blank" rel="noopener">docs.godotengine.org</a></td></tr>
+        <tr><td>3</td><td>TileMapLayer (4.6)</td><td>批量写格/16-bit/terrain connect</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_tilemaplayer.html" target="_blank" rel="noopener">class_tilemaplayer</a></td></tr>
+        <tr><td>4</td><td>Using TileSets (4.6)</td><td>Terrain/autotile 模式</td><td><a href="https://docs.godotengine.org/en/4.6/tutorials/2d/using_tilesets.html" target="_blank" rel="noopener">using_tilesets</a></td></tr>
+        <tr><td>5</td><td>FastNoiseLite (4.6)</td><td>噪声类型/分形/种子</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_fastnoiselite.html" target="_blank" rel="noopener">class_fastnoiselite</a></td></tr>
+        <tr><td>6</td><td>NoiseTexture2D (4.6)</td><td>异步线程/`changed`</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_noisetexture2d.html" target="_blank" rel="noopener">class_noisetexture2d</a></td></tr>
+        <tr><td>7</td><td>RandomNumberGenerator (4.6)</td><td>PCG32/seed/state</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_randomnumbergenerator.html" target="_blank" rel="noopener">class_randomnumbergenerator</a></td></tr>
+        <tr><td>8</td><td>AStarGrid2D (4.6)</td><td>寻路/连通验证</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_astargrid2d.html" target="_blank" rel="noopener">class_astargrid2d</a></td></tr>
+        <tr><td>9</td><td>WorkerThreadPool (4.6)</td><td>后台生成</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_workerthreadpool.html" target="_blank" rel="noopener">class_workerthreadpool</a></td></tr>
+        <tr><td>10</td><td>Thread-safe APIs (4.6)</td><td>场景树线程限制</td><td><a href="https://docs.godotengine.org/en/4.6/tutorials/performance/thread_safe_apis.html" target="_blank" rel="noopener">thread_safe_apis</a></td></tr>
+        <tr><td>11</td><td>Geometry2D (4.6)</td><td>多边形裁剪/三角化</td><td><a href="https://docs.godotengine.org/en/4.6/classes/class_geometry2d.html" target="_blank" rel="noopener">class_geometry2d</a></td></tr>
+        <tr><td>12</td><td>godot_voxel v1.6</td><td>3D 体素/4.6 支持</td><td><a href="https://github.com/Zylann/godot_voxel/releases/tag/v1.6" target="_blank" rel="noopener">github.com/Zylann/godot_voxel</a></td></tr>
+        <tr><td>13</td><td>AlexeyBond WFC</td><td>2D WFC 插件</td><td><a href="https://github.com/AlexeyBond/godot-constraint-solving" target="_blank" rel="noopener">github.com/AlexeyBond</a></td></tr>
+        <tr><td>14</td><td>Fast WFC</td><td>C++ WFC 插件</td><td><a href="https://godotengine.org/asset-library/asset/4149" target="_blank" rel="noopener">asset 4149</a></td></tr>
+        <tr><td>15</td><td>GenMap Lite</td><td>一键地牢插件</td><td><a href="https://godotengine.org/asset-library/asset/5546" target="_blank" rel="noopener">asset 5546</a></td></tr>
+        <tr><td>16</td><td>Dome Keeper · RPS</td><td>程序化地图更新</td><td><a href="https://www.rockpapershotgun.com/dome-keeper-just-got-a-massive-update-that-ups-replayability-and-helps-generate-better-worlds" target="_blank" rel="noopener">RPS</a></td></tr>
+        <tr><td>17</td><td>Lumencraft · Godot 访谈</td><td>全破坏像素地形</td><td><a href="https://godotengine.org/article/godot-showcase-2dynamic-games-lumencraft/" target="_blank" rel="noopener">godotengine.org</a></td></tr>
+        <tr><td>18</td><td>Cassette Beasts 技术博客</td><td>GridMap/16×8 chunks（Wayback 存档）</td><td><a href="https://web.archive.org/web/20210809140543/https://www.cassettebeasts.com/2021/08/09/technical-look-the-park/" target="_blank" rel="noopener">Wayback</a></td></tr>
+        <tr><td>19</td><td>Caves of Qud · GDC</td><td>WFC 多 pass</td><td><a href="https://gdcvault.com/browse/gdc-19/play/1026263" target="_blank" rel="noopener">GDC Vault</a></td></tr>
+        <tr><td>20</td><td>Bad North · 演讲</td><td>WFC 岛屿/路径优先</td><td><a href="https://www.youtube.com/watch?v=0bcZb-SsnrA" target="_blank" rel="noopener">YouTube</a></td></tr>
+        <tr><td>21</td><td>Townscaper · 演讲</td><td>3D 约束/二次 WFC</td><td><a href="https://www.youtube.com/watch?v=Uxeo9c-PX-w" target="_blank" rel="noopener">YouTube</a></td></tr>
+        <tr><td>22</td><td>Unexplored · Cyclic</td><td>图语法/环状地牢</td><td><a href="https://www.taylorfrancis.com/chapters/edit/10.1201/9781315156378-11/cyclic-generation-joris-dormans" target="_blank" rel="noopener">Taylor &amp; Francis</a></td></tr>
+        <tr><td>23</td><td>Lumencraft · Steam</td><td>procedurally generated maps/levels（复核 2026-11-22）</td><td><a href="https://store.steampowered.com/app/1713810/" target="_blank" rel="noopener">Steam</a></td></tr>
+        <tr><td>24</td><td>ΔV · Steam</td><td>玩法确认；未见程序化说明（复核 2026-11-22）</td><td><a href="https://store.steampowered.com/app/846030/" target="_blank" rel="noopener">Steam</a></td></tr>
+        <tr><td>25</td><td>Brotato · teemo.dev</td><td>Godot 3.5/20 波固定竞技场（复核 2026-11-22）</td><td><a href="https://teemo.dev/game-design/brotato/design/overview-notes/" target="_blank" rel="noopener">teemo.dev</a></td></tr>
+        <tr><td>26</td><td>loothammer · README</td><td>README 声明 MIT（无 LICENSE 文件）</td><td><a href="https://github.com/loothammer/godot_2D_procedural_dungeon_gen" target="_blank" rel="noopener">GitHub</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p><b>Godot 程序化地图调研</b> · 2026-11-21 · <b>T-040 复核 2026-11-22</b> · 面向 Godot 4.6 / GL Compatibility / 1280×720 / Intel HD 30 FPS+。所有图表与 demo 为原创 Canvas 绘制；案例仅引用公开链接与文字结论，不复制商业游戏画面/素材。</p>
+  <p>截图：<a href="shots/godot-procgen-survey-ca.png">CA 洞穴</a> · <a href="shots/godot-procgen-survey-bsp.png">BSP 房间</a> · <a href="shots/godot-procgen-survey-biomes.png">噪声生物群系</a>。配套 Markdown：<a href="godot-procgen-survey.md">godot-procgen-survey.md</a> · 仓库既有：<a href="../godot-wfc/README.md">godot-wfc</a> · <a href="procedural-generation-teardown.md">程序化生成拆解</a> · <a href="algorithm-demos-index.md">算法 Demo 索引</a></p>
+</footer>
+
+</div>
+<div class="fab"><button id="themeBtn" type="button">☀ 浅色</button><button id="topBtn" type="button">↑ 顶部</button></div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = (s, root) => (root || document).querySelector(s);
+  const $$ = (s, root) => Array.from((root || document).querySelectorAll(s));
+  const root = document.documentElement;
+  const cssVar = (name) => getComputedStyle(root).getPropertyValue(name).trim();
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const now = () => performance.now();
+  const fmt = (n, d) => Number(n).toFixed(d === undefined ? 1 : d);
+
+  // ---------- deterministic RNG ----------
+  class XorShift32 {
+    constructor(seed) { this.state = (seed >>> 0) || 0x9E3779B9; }
+    next() {
+      let x = this.state;
+      x ^= (x << 13); x >>>= 0;
+      x ^= (x >>> 17);
+      x ^= (x << 5); x >>>= 0;
+      this.state = x;
+      return x >>> 0;
+    }
+    float() { return this.next() / 4294967296; }
+    int(lo, hi) { return lo + (this.next() % (hi - lo + 1)); }
+    chance(p) { return (this.next() % 100) < p; }
+  }
+  function parseSeed(value) {
+    const s = String(value).trim();
+    if (/^-?\d+$/.test(s)) return (parseInt(s, 10) >>> 0) || 1;
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0) || 1;
+  }
+
+  // ---------- grid helpers ----------
+  const DIR4 = [[1,0],[-1,0],[0,1],[0,-1]];
+  function components(w, h, isOpen) {
+    const seen = new Uint8Array(w * h);
+    const out = [];
+    const q = new Int32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      if (!isOpen(i) || seen[i]) continue;
+      let head = 0, tail = 0;
+      q[tail++] = i; seen[i] = 1;
+      const cells = [];
+      while (head < tail) {
+        const cur = q[head++];
+        cells.push(cur);
+        const x = cur % w, y = (cur / w) | 0;
+        for (const d of DIR4) {
+          const nx = x + d[0], ny = y + d[1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const ni = ny * w + nx;
+          if (seen[ni] || !isOpen(ni)) continue;
+          seen[ni] = 1; q[tail++] = ni;
+        }
+      }
+      out.push(cells);
+    }
+    return out;
+  }
+  function bfsDistances(w, h, isOpen, start) {
+    const dist = new Int32Array(w * h); dist.fill(-1);
+    if (!isOpen(start)) return dist;
+    const q = new Int32Array(w * h);
+    let head = 0, tail = 0;
+    q[tail++] = start; dist[start] = 0;
+    while (head < tail) {
+      const cur = q[head++];
+      const x = cur % w, y = (cur / w) | 0;
+      for (const d of DIR4) {
+        const nx = x + d[0], ny = y + d[1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const ni = ny * w + nx;
+        if (dist[ni] !== -1 || !isOpen(ni)) continue;
+        dist[ni] = dist[cur] + 1; q[tail++] = ni;
+      }
+    }
+    return dist;
+  }
+  function carveL(w, h, a, b, rng, setCell) {
+    const ax = a[0], ay = a[1], bx = b[0], by = b[1];
+    if (rng.chance(50)) {
+      for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) setCell(x, ay);
+      for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) setCell(bx, y);
+    } else {
+      for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) setCell(ax, y);
+      for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) setCell(x, by);
+    }
+  }
+
+  // ---------- canvas ----------
+  function canvasCtx(canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    return ctx;
+  }
+  function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+
+  // ============================================================
+  // CA demo
+  // ============================================================
+  const CA_W = 60, CA_H = 30, CA_CELL = 10;
+  const caCanvas = $('#caCanvas');
+  const caState = {
+    seed: 2137, wall: 45, iter: 5, rule: 45,
+    grid: null, initial: null, iterDone: 0, repairSet: new Set(), ms: 0, repaired: false,
+    timer: null
+  };
+  function caInitial(seed, wallPercent) {
+    const rng = new XorShift32(seed);
+    const g = new Uint8Array(CA_W * CA_H);
+    for (let y = 0; y < CA_H; y++) {
+      for (let x = 0; x < CA_W; x++) {
+        const i = y * CA_W + x;
+        if (x === 0 || y === 0 || x === CA_W - 1 || y === CA_H - 1) g[i] = 1;
+        else g[i] = rng.chance(wallPercent) ? 1 : 0;
+      }
+    }
+    return g;
+  }
+  function caIterate(src, rule) {
+    const dst = new Uint8Array(src.length);
+    dst.set(src);
+    const becomeFloorWall = rule === 44 ? 4 : 5;
+    for (let y = 1; y < CA_H - 1; y++) {
+      const row = y * CA_W;
+      for (let x = 1; x < CA_W - 1; x++) {
+        const i = row + x;
+        const n = src[i - CA_W - 1] + src[i - CA_W] + src[i - CA_W + 1] + src[i - 1] + src[i + 1] + src[i + CA_W - 1] + src[i + CA_W] + src[i + CA_W + 1];
+        if (src[i] === 1) dst[i] = n >= 4 ? 1 : 0;
+        else dst[i] = n >= becomeFloorWall ? 1 : 0;
+      }
+    }
+    return dst;
+  }
+  function caMetrics() {
+    const g = caState.grid;
+    let floors = 0;
+    for (let i = 0; i < g.length; i++) if (g[i] === 0) floors++;
+    const comps = components(CA_W, CA_H, i => g[i] === 0);
+    const largest = comps.length ? Math.max(...comps.map(c => c.length)) : 0;
+    return { floors, floorPct: floors / g.length * 100, comps: comps.length, largestPct: floors ? largest / floors * 100 : 0, largest };
+  }
+  function renderCA() {
+    const ctx = canvasCtx(caCanvas);
+    const g = caState.grid;
+    if (!g) return;
+    const c = {
+      wall: cssVar('--wall'), floor: cssVar('--cell-floor'), floor2: cssVar('--cell-floor-2'),
+      corr: cssVar('--cell-corr'), line: cssVar('--line-strong'), ink: cssVar('--ink')
+    };
+    ctx.fillStyle = c.wall; ctx.fillRect(0, 0, caCanvas.width, caCanvas.height);
+    for (let y = 0; y < CA_H; y++) {
+      for (let x = 0; x < CA_W; x++) {
+        const i = y * CA_W + x;
+        if (g[i] === 1) continue;
+        ctx.fillStyle = (x * 3 + y * 5) % 7 === 0 ? c.floor2 : c.floor;
+        ctx.fillRect(x * CA_CELL, y * CA_CELL, CA_CELL, CA_CELL);
+        if (caState.repairSet.has(i)) {
+          ctx.fillStyle = c.corr;
+          ctx.fillRect(x * CA_CELL + 2, y * CA_CELL + 2, CA_CELL - 4, CA_CELL - 4);
+        }
+      }
+    }
+    const m = caMetrics();
+    setText('caFloor', fmt(m.floorPct, 1) + '%');
+    setText('caComps', String(m.comps));
+    setText('caLargest', fmt(m.largestPct, 1) + '%');
+    setText('caMs', fmt(caState.ms, 1) + ' ms');
+    setText('caPhase', caState.repaired ? '已修复：' + caState.links + ' 条走廊' : (caState.iterDone === 0 ? '初始随机噪声' : '迭代 ' + caState.iterDone + '/' + caState.iter + (caState.iterDone >= caState.iter ? ' · 完成' : '')));
+  }
+  function caGenerate() {
+    const t0 = now();
+    caState.initial = caInitial(caState.seed, caState.wall);
+    caState.grid = new Uint8Array(caState.initial);
+    for (let i = 0; i < caState.iter; i++) caState.grid = caIterate(caState.grid, caState.rule);
+    caState.iterDone = caState.iter;
+    caState.repairSet.clear();
+    caState.repaired = false;
+    caState.ms = now() - t0;
+    renderCA();
+  }
+  function caStep() {
+    if (!caState.grid || caState.iterDone >= caState.iter) return;
+    const t0 = now();
+    caState.grid = caIterate(caState.grid, caState.rule);
+    caState.iterDone++;
+    caState.ms = now() - t0;
+    caState.repaired = false;
+    renderCA();
+  }
+  function caReplay() {
+    if (caState.timer) { clearInterval(caState.timer); caState.timer = null; }
+    caState.initial = caInitial(caState.seed, caState.wall);
+    caState.grid = new Uint8Array(caState.initial);
+    caState.iterDone = 0;
+    caState.repairSet.clear();
+    caState.repaired = false;
+    caState.ms = 0;
+    renderCA();
+    caState.timer = setInterval(() => {
+      if (caState.iterDone >= caState.iter) { clearInterval(caState.timer); caState.timer = null; return; }
+      caStep();
+    }, 120);
+  }
+  function caRepair() {
+    if (!caState.grid) return;
+    const t0 = now();
+    const rng = new XorShift32(caState.seed ^ 0x9E3779B9);
+    let comps = components(CA_W, CA_H, i => caState.grid[i] === 0);
+    let links = 0;
+    const setCell = (x, y) => {
+      const i = y * CA_W + x;
+      caState.grid[i] = 0;
+      caState.repairSet.add(i);
+    };
+    while (comps.length > 1 && links < 24) {
+      const main = comps[0];
+      let best = Infinity, bp = null, bq = null;
+      for (let ci = 1; ci < comps.length; ci++) {
+        for (const p of main) {
+          const px = p % CA_W, py = (p / CA_W) | 0;
+          for (const q of comps[ci]) {
+            const qx = q % CA_W, qy = (q / CA_W) | 0;
+            const d = Math.abs(px - qx) + Math.abs(py - qy);
+            if (d < best) { best = d; bp = [px, py]; bq = [qx, qy]; }
+          }
+        }
+      }
+      if (!bp) break;
+      carveL(CA_W, CA_H, bp, bq, rng, setCell);
+      links++;
+      comps = components(CA_W, CA_H, i => caState.grid[i] === 0);
+    }
+    caState.links = links;
+    caState.repaired = true;
+    caState.ms = now() - t0;
+    renderCA();
+  }
+  caState.seed = 2137;
+  caGenerate();
+
+  $('#caGen').addEventListener('click', caGenerate);
+  $('#caStepBtn').addEventListener('click', caStep);
+  $('#caReplayBtn').addEventListener('click', caReplay);
+  $('#caRepairBtn').addEventListener('click', caRepair);
+  $('#caSeed').addEventListener('input', e => { caState.seed = parseSeed(e.target.value); caGenerate(); });
+  $('#caWall').addEventListener('input', e => { caState.wall = +e.target.value; setText('caWallOut', caState.wall + '%'); caGenerate(); });
+  $('#caIter').addEventListener('input', e => { caState.iter = +e.target.value; setText('caIterOut', caState.iter); caGenerate(); });
+  $('#caRule').addEventListener('change', e => { caState.rule = +e.target.value; caGenerate(); });
+
+  // ============================================================
+  // BSP demo
+  // ============================================================
+  const BSP_W = 64, BSP_H = 48, BSP_CELL = 10;
+  const bspCanvas = $('#bspCanvas');
+  const bspState = { seed: 4242, minLeaf: 8, maxDepth: 5, tree: true, loop: true, grid: null, rooms: [], leaves: [], roomMask: null, corrMask: null, corridors: 0, reachable: 0, ms: 0 };
+  function bspSplit(rect, depth, minLeaf, maxDepth, rng, leaves) {
+    const canSx = rect.w >= minLeaf * 2;
+    const canSy = rect.h >= minLeaf * 2;
+    if (depth >= maxDepth || (!canSx && !canSy)) { leaves.push(rect); return; }
+    let splitH;
+    if (canSx && !canSy) splitH = true;
+    else if (!canSx && canSy) splitH = false;
+    else splitH = rng.chance(50);
+    if (splitH) {
+      const cut = rng.int(minLeaf, rect.w - minLeaf);
+      bspSplit({ x: rect.x, y: rect.y, w: cut, h: rect.h }, depth + 1, minLeaf, maxDepth, rng, leaves);
+      bspSplit({ x: rect.x + cut, y: rect.y, w: rect.w - cut, h: rect.h }, depth + 1, minLeaf, maxDepth, rng, leaves);
+    } else {
+      const cut = rng.int(minLeaf, rect.h - minLeaf);
+      bspSplit({ x: rect.x, y: rect.y, w: rect.w, h: cut }, depth + 1, minLeaf, maxDepth, rng, leaves);
+      bspSplit({ x: rect.x, y: rect.y + cut, w: rect.w, h: rect.h - cut }, depth + 1, minLeaf, maxDepth, rng, leaves);
+    }
+  }
+  function bspGenerate() {
+    const t0 = now();
+    const rng = new XorShift32(bspState.seed);
+    const leaves = [];
+    bspSplit({ x: 1, y: 1, w: BSP_W - 2, h: BSP_H - 2 }, 0, bspState.minLeaf, bspState.maxDepth, rng, leaves);
+    const rooms = [];
+    for (const leaf of leaves) {
+      if (leaf.w < 7 || leaf.h < 5) continue;
+      const rw = rng.int(4, Math.min(12, leaf.w - 2));
+      const rh = rng.int(3, Math.min(9, leaf.h - 2));
+      const rx = rng.int(leaf.x + 1, leaf.x + leaf.w - rw - 1);
+      const ry = rng.int(leaf.y + 1, leaf.y + leaf.h - rh - 1);
+      rooms.push({ x: rx, y: ry, w: rw, h: rh, cx: rx + (rw >> 1), cy: ry + (rh >> 1) });
+    }
+    const grid = new Uint8Array(BSP_W * BSP_H); grid.fill(1);
+    const roomMask = new Uint8Array(BSP_W * BSP_H);
+    const corrMask = new Uint8Array(BSP_W * BSP_H);
+    const setFloor = (x, y, mask) => {
+      const i = y * BSP_W + x;
+      grid[i] = 0;
+      if (mask) mask[i] = 1;
+    };
+    for (const r of rooms) {
+      for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) setFloor(x, y, roomMask);
+    }
+    const visited = [0];
+    const inVisited = new Set([0]);
+    let corridors = 0;
+    while (visited.length < rooms.length) {
+      let best = Infinity, ba = -1, bb = -1;
+      for (const ai of visited) {
+        for (let bi = 0; bi < rooms.length; bi++) {
+          if (inVisited.has(bi)) continue;
+          const a = rooms[ai], b = rooms[bi];
+          const d = Math.abs(a.cx - b.cx) + Math.abs(a.cy - b.cy);
+          if (d < best) { best = d; ba = ai; bb = bi; }
+        }
+      }
+      if (bb < 0) break;
+      carveL(BSP_W, BSP_H, [rooms[ba].cx, rooms[ba].cy], [rooms[bb].cx, rooms[bb].cy], rng, (x, y) => setFloor(x, y, corrMask));
+      corridors++;
+      visited.push(bb); inVisited.add(bb);
+    }
+    if (bspState.loop && rooms.length > 3) {
+      for (let k = 0; k < 2; k++) {
+        const a = rng.int(0, rooms.length - 1);
+        const b = rng.int(0, rooms.length - 1);
+        if (a === b) continue;
+        carveL(BSP_W, BSP_H, [rooms[a].cx, rooms[a].cy], [rooms[b].cx, rooms[b].cy], rng, (x, y) => setFloor(x, y, corrMask));
+        corridors++;
+      }
+    }
+    const start = [rooms[0].cx, rooms[0].cy];
+    const dist = bfsDistances(BSP_W, BSP_H, i => grid[i] === 0, start[1] * BSP_W + start[0]);
+    let reachable = 0;
+    for (const r of rooms) if (dist[r.cy * BSP_W + r.cx] >= 0) reachable++;
+    let exit = [rooms[rooms.length - 1].cx, rooms[rooms.length - 1].cy];
+    let far = -1;
+    for (const r of rooms) {
+      const d = dist[r.cy * BSP_W + r.cx];
+      if (d > far) { far = d; exit = [r.cx, r.cy]; }
+    }
+    bspState.grid = grid;
+    bspState.rooms = rooms;
+    bspState.leaves = leaves;
+    bspState.roomMask = roomMask;
+    bspState.corrMask = corrMask;
+    bspState.corridors = corridors;
+    bspState.reachable = reachable;
+    bspState.start = start;
+    bspState.exit = exit;
+    bspState.ms = now() - t0;
+    renderBSP();
+  }
+  function renderBSP() {
+    const ctx = canvasCtx(bspCanvas);
+    const g = bspState.grid;
+    if (!g) return;
+    const c = {
+      wall: cssVar('--wall'), floor: cssVar('--cell-floor-2'), room: cssVar('--cell-room'),
+      corr: cssVar('--cell-corr'), line: cssVar('--line-strong'), ink: cssVar('--ink'),
+      warn: cssVar('--warn'), ok: cssVar('--ok')
+    };
+    ctx.fillStyle = c.wall; ctx.fillRect(0, 0, bspCanvas.width, bspCanvas.height);
+    for (let y = 0; y < BSP_H; y++) {
+      for (let x = 0; x < BSP_W; x++) {
+        const i = y * BSP_W + x;
+        if (g[i] === 1) continue;
+        ctx.fillStyle = bspState.roomMask[i] ? c.room : (bspState.corrMask[i] ? c.corr : c.floor);
+        ctx.fillRect(x * BSP_CELL, y * BSP_CELL, BSP_CELL, BSP_CELL);
+      }
+    }
+    if (bspState.tree) {
+      ctx.strokeStyle = c.line; ctx.lineWidth = 1;
+      for (const l of bspState.leaves) {
+        ctx.strokeRect(l.x * BSP_CELL + .5, l.y * BSP_CELL + .5, l.w * BSP_CELL - 1, l.h * BSP_CELL - 1);
+      }
+      ctx.font = '8px "SF Mono", monospace';
+      ctx.fillStyle = c.ink;
+      bspState.rooms.forEach((r, idx) => ctx.fillText(String(idx), r.cx * BSP_CELL - 2, r.cy * BSP_CELL + 3));
+    }
+    const marker = (p, color) => {
+      ctx.beginPath(); ctx.arc(p[0] * BSP_CELL + BSP_CELL / 2, p[1] * BSP_CELL + BSP_CELL / 2, Math.max(4, BSP_CELL * .42), 0, Math.PI * 2);
+      ctx.fillStyle = color; ctx.fill();
+      ctx.strokeStyle = c.wall; ctx.lineWidth = 1; ctx.stroke();
+    };
+    marker(bspState.start, c.ok);
+    marker(bspState.exit, c.warn);
+    setText('bspRooms', String(bspState.rooms.length));
+    setText('bspCorr', String(bspState.corridors));
+    setText('bspReach', bspState.reachable + '/' + bspState.rooms.length);
+    setText('bspMs', fmt(bspState.ms, 1) + ' ms');
+    setText('bspPhase', bspState.reachable === bspState.rooms.length ? '全部房间可达 · seed ' + bspState.seed : '有不可达房间，检查走廊/边界');
+  }
+  bspGenerate();
+  $('#bspGen').addEventListener('click', bspGenerate);
+  $('#bspNew').addEventListener('click', () => { bspState.seed = (Math.random() * 90000 + 1000) | 0; $('#bspSeed').value = bspState.seed; bspGenerate(); });
+  $('#bspSeed').addEventListener('input', e => { bspState.seed = parseSeed(e.target.value); bspGenerate(); });
+  $('#bspMin').addEventListener('input', e => { bspState.minLeaf = +e.target.value; setText('bspMinOut', bspState.minLeaf); bspGenerate(); });
+  $('#bspDepth').addEventListener('input', e => { bspState.maxDepth = +e.target.value; setText('bspDepthOut', bspState.maxDepth); bspGenerate(); });
+  $('#bspTree').addEventListener('change', e => { bspState.tree = e.target.checked; renderBSP(); });
+  $('#bspLoop').addEventListener('change', e => { bspState.loop = e.target.checked; bspGenerate(); });
+
+  // ============================================================
+  // Noise biomes demo
+  // ============================================================
+  const NZ_W = 96, NZ_H = 64, NZ_CELL = 8;
+  const noiseCanvas = $('#noiseCanvas');
+  const noiseState = { seed: 9001, sea: 0.32, moistBias: 0, island: true, veg: true, view: 'biome', elev: null, moist: null, temp: null, biome: null, river: null, trees: [], pois: [], ms: 0, rivers: 0 };
+  function hash2(seed, x, y) {
+    let h = seed ^ Math.imul(x, 374761393) ^ Math.imul(y, 668265263);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function smooth(t) { return t * t * (3 - 2 * t); }
+  function valueNoise(seed, x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const fx = x - xi, fy = y - yi;
+    const a = hash2(seed, xi, yi), b = hash2(seed, xi + 1, yi);
+    const c = hash2(seed, xi, yi + 1), d = hash2(seed, xi + 1, yi + 1);
+    const u = smooth(fx), v = smooth(fy);
+    return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
+  }
+  function fbm(seed, x, y, octaves) {
+    let sum = 0, amp = 1, freq = 1, norm = 0;
+    for (let i = 0; i < octaves; i++) {
+      sum += valueNoise(seed + i * 1013, x * freq, y * freq) * amp;
+      norm += amp; amp *= 0.5; freq *= 2;
+    }
+    return sum / norm;
+  }
+  function noiseGenerate() {
+    const t0 = now();
+    const w = NZ_W, h = NZ_H;
+    const elev = new Float32Array(w * h), moist = new Float32Array(w * h), temp = new Float32Array(w * h);
+    const biome = new Uint8Array(w * h), river = new Uint8Array(w * h);
+    const rng = new XorShift32(noiseState.seed);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        let e = fbm(noiseState.seed + 1, x * 0.045, y * 0.045, 4);
+        const m = fbm(noiseState.seed + 2, x * 0.07, y * 0.07, 3) + noiseState.moistBias;
+        const t = fbm(noiseState.seed + 3, x * 0.03, y * 0.03, 3);
+        if (noiseState.island) {
+          const dx = (x / w) * 2 - 1, dy = (y / h) * 2 - 1;
+          let mask = 1 - clamp(Math.sqrt(dx * dx + dy * dy) * 1.18, 0, 1);
+          mask += (fbm(noiseState.seed + 9, x * 0.06, y * 0.06, 2) - 0.5) * 0.18;
+          e = e * 0.72 + clamp(mask, 0, 1) * 0.5 - 0.12;
+        }
+        elev[i] = e; moist[i] = m; temp[i] = t;
+        let b;
+        if (e < noiseState.sea) b = 0;
+        else if (e < noiseState.sea + 0.055) b = 1;
+        else if (e < noiseState.sea + 0.10) b = 2;
+        else if (e > 0.66) b = 6;
+        else if (e > 0.58) b = 5;
+        else if (m > 0.56) b = 4;
+        else b = 3;
+        biome[i] = b;
+      }
+    }
+    // Rivers: steepest descent from high land cells
+    const starts = [];
+    for (let i = 0; i < w * h; i++) if (elev[i] > 0.62 && biome[i] >= 3) starts.push(i);
+    starts.sort((a, b) => elev[b] - elev[a]);
+    let rivers = 0;
+    for (let s = 0; s < starts.length && rivers < 5; s++) {
+      let cur = starts[s];
+      if (river[cur]) continue;
+      let cx = cur % w, cy = (cur / w) | 0;
+      let reachedWater = false;
+      const path = [];
+      for (let step = 0; step < 220; step++) {
+        if (biome[cy * w + cx] < 2) { reachedWater = true; break; }
+        path.push(cy * w + cx);
+        let best = -1, bestE = elev[cy * w + cx];
+        for (const d of DIR4) {
+          const nx = cx + d[0], ny = cy + d[1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const ni = ny * w + nx;
+          if (elev[ni] < bestE) { bestE = elev[ni]; best = ni; }
+        }
+        if (best < 0) break;
+        cx = best % w; cy = (best / w) | 0;
+      }
+      if (reachedWater && path.length > 5) {
+        for (const p of path) river[p] = 1;
+        rivers++;
+      }
+    }
+    // Poisson vegetation and POIs
+    function poisson(minDist, maxPoints, attempts, ok) {
+      const pts = [];
+      const md2 = minDist * minDist;
+      for (let k = 0; k < attempts && pts.length < maxPoints; k++) {
+        const x = rng.int(0, w - 1), y = rng.int(0, h - 1);
+        if (!ok(x, y)) continue;
+        let good = true;
+        for (const p of pts) {
+          const dx = p.x - x, dy = p.y - y;
+          if (dx * dx + dy * dy < md2) { good = false; break; }
+        }
+        if (good) pts.push({ x, y });
+      }
+      return pts;
+    }
+    const trees = poisson(2.8, 240, 26000, (x, y) => biome[y * w + x] >= 3 && biome[y * w + x] !== 6);
+    const pois = poisson(10, 7, 2500, (x, y) => biome[y * w + x] >= 2 && biome[y * w + x] !== 6);
+    noiseState.elev = elev; noiseState.moist = moist; noiseState.temp = temp;
+    noiseState.biome = biome; noiseState.river = river;
+    noiseState.trees = trees; noiseState.pois = pois; noiseState.rivers = rivers;
+    noiseState.ms = now() - t0;
+    renderNoise();
+  }
+  function biomeColor(code) {
+    switch (code) {
+      case 0: return cssVar('--biome-deep');
+      case 1: return cssVar('--biome-water');
+      case 2: return cssVar('--biome-sand');
+      case 3: return cssVar('--biome-grass');
+      case 4: return cssVar('--biome-forest');
+      case 5: return cssVar('--biome-rock');
+      default: return cssVar('--biome-snow');
+    }
+  }
+  function heatColor(t) {
+    // blue -> teal -> green -> gold -> white
+    const stops = [
+      [0.00, [18, 46, 56]], [0.25, [30, 91, 102]], [0.50, [110, 155, 82]],
+      [0.72, [216, 194, 124]], [0.90, [232, 238, 230]], [1.00, [255, 255, 255]]
+    ];
+    t = clamp(t, 0, 1);
+    for (let i = 1; i < stops.length; i++) {
+      if (t <= stops[i][0]) {
+        const a = stops[i - 1], b = stops[i];
+        const k = (t - a[0]) / (b[0] - a[0]);
+        return 'rgb(' + Math.round(a[1][0] + (b[1][0] - a[1][0]) * k) + ',' + Math.round(a[1][1] + (b[1][1] - a[1][1]) * k) + ',' + Math.round(a[1][2] + (b[1][2] - a[1][2]) * k) + ')';
+      }
+    }
+    return 'rgb(255,255,255)';
+  }
+  function renderNoise() {
+    const ctx = canvasCtx(noiseCanvas);
+    if (!noiseState.biome) return;
+    const w = NZ_W, h = NZ_H;
+    const b = noiseState.biome, river = noiseState.river;
+    const view = noiseState.view;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        let color;
+        if (view === 'biome') color = biomeColor(b[i]);
+        else if (view === 'elev') color = heatColor(clamp(noiseState.elev[i], 0, 1));
+        else {
+          const m = clamp((noiseState.moist[i] + 0.5) / 1.5, 0, 1);
+          color = 'rgb(' + Math.round(30 + 40 * m) + ',' + Math.round(110 + 100 * m) + ',' + Math.round(120 + 30 * m) + ')';
+        }
+        ctx.fillStyle = color;
+        ctx.fillRect(x * NZ_CELL, y * NZ_CELL, NZ_CELL, NZ_CELL);
+        if (view === 'biome' && river[i]) {
+          ctx.fillStyle = cssVar('--biome-river');
+          ctx.fillRect(x * NZ_CELL + 1, y * NZ_CELL + 1, NZ_CELL - 2, NZ_CELL - 2);
+        }
+      }
+    }
+    if (view === 'biome' && noiseState.veg) {
+      ctx.fillStyle = cssVar('--biome-forest');
+      for (const p of noiseState.trees) {
+        ctx.beginPath(); ctx.arc(p.x * NZ_CELL + NZ_CELL / 2, p.y * NZ_CELL + NZ_CELL / 2, Math.max(1.1, NZ_CELL * .16), 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = cssVar('--gold');
+      for (const p of noiseState.pois) {
+        const cx = p.x * NZ_CELL + NZ_CELL / 2, cy = p.y * NZ_CELL + NZ_CELL / 2, r = Math.max(2.5, NZ_CELL * .35);
+        ctx.beginPath(); ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r, cy); ctx.lineTo(cx, cy + r); ctx.lineTo(cx - r, cy); ctx.closePath(); ctx.fill();
+      }
+    }
+    // metrics
+    let land = 0;
+    for (let i = 0; i < b.length; i++) if (b[i] >= 2) land++;
+    const comps = components(w, h, i => b[i] >= 2);
+    const largest = comps.length ? Math.max(...comps.map(c => c.length)) : 0;
+    setText('noiseLand', fmt(land / (w * h) * 100, 1) + '%');
+    setText('noiseLargest', fmt(land ? largest / land * 100 : 0, 1) + '%');
+    setText('noiseRivers', String(noiseState.rivers));
+    setText('noisePois', String(noiseState.pois.length));
+    setText('noiseMs', fmt(noiseState.ms, 1) + ' ms');
+    setText('noisePhase', 'seed ' + noiseState.seed + ' · ' + (view === 'biome' ? '生物群系' : view === 'elev' ? '海拔' : '湿度') + ' · 树 ' + noiseState.trees.length);
+  }
+  noiseGenerate();
+  $('#noiseGen').addEventListener('click', noiseGenerate);
+  $('#noiseNew').addEventListener('click', () => { noiseState.seed = (Math.random() * 90000 + 1000) | 0; $('#noiseSeed').value = noiseState.seed; noiseGenerate(); });
+  $('#noiseSeed').addEventListener('input', e => { noiseState.seed = parseSeed(e.target.value); noiseGenerate(); });
+  $('#noiseSea').addEventListener('input', e => { noiseState.sea = (+e.target.value) / 100; setText('noiseSeaOut', noiseState.sea.toFixed(2)); noiseGenerate(); });
+  $('#noiseMoist').addEventListener('input', e => { noiseState.moistBias = (+e.target.value) / 100; setText('noiseMoistOut', noiseState.moistBias.toFixed(2)); noiseGenerate(); });
+  $('#noiseIsland').addEventListener('change', e => { noiseState.island = e.target.checked; noiseGenerate(); });
+  $('#noiseVeg').addEventListener('change', e => { noiseState.veg = e.target.checked; renderNoise(); });
+  $('#noiseView').addEventListener('change', e => { noiseState.view = e.target.value; renderNoise(); });
+
+  // ============================================================
+  // UI chrome
+  // ============================================================
+  function renderAll() { renderCA(); renderBSP(); renderNoise(); }
+  const themeBtn = $('#themeBtn');
+  themeBtn.addEventListener('click', () => {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    themeBtn.textContent = next === 'dark' ? '☀ 浅色' : '☾ 深色';
+    renderAll();
+  });
+  $('#topBtn').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  const progress = $('#progress');
+  const links = $$('nav.toc a');
+  const sections = links.map(a => $(a.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    let active = sections[0];
+    for (const s of sections) if (s && s.getBoundingClientRect().top <= 120) active = s;
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + (active ? active.id : '')));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  $$('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy'; btn.type = 'button'; btn.textContent = '复制';
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(pre.innerText.replace(/\n复制\s*$/, '')); btn.textContent = '已复制'; }
+      catch (e) { btn.textContent = '手动复制'; }
+      setTimeout(() => { btn.textContent = '复制'; }, 1200);
+    });
+    pre.appendChild(btn);
+  });
+
+  window.addEventListener('resize', () => { renderCA(); renderBSP(); renderNoise(); });
+})();
+</script>
+</body>
+</html>
