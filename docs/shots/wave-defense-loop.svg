@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">波次防守核心循环拆解 · 抽象机制示意</title>
+  <desc id="desc">《奔奔王国》宣传片与真实玩法的波次防守核心循环：准备、战斗、结算、升级；并对比 182 秒竖屏广告与真实游戏的三段式结构。原创示意图，非实机截图，不复制角色、UI 或素材。</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#121b33"/>
+      <stop offset="100%" stop-color="#070b15"/>
+    </radialGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#20304f" stroke-width="0.6" opacity="0.55"/>
+    </pattern>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f2b34c"/>
+    </marker>
+    <marker id="arrowJade" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#56b39b"/>
+    </marker>
+    <marker id="arrowVerm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e0664f"/>
+    </marker>
+    <style>
+      .panel { fill: #0e1730; stroke: #2c3c60; stroke-width: 1.2; }
+      .node { fill: #14203a; stroke: #34496f; stroke-width: 1.4; }
+      .nodePrep { fill: #14243a; stroke: #f2b34c; stroke-width: 1.6; }
+      .nodeFight { fill: #2a1618; stroke: #e0664f; stroke-width: 1.6; }
+      .nodeResolve { fill: #12251f; stroke: #56b39b; stroke-width: 1.6; }
+      .nodeUpgrade { fill: #221c33; stroke: #a58cff; stroke-width: 1.6; }
+      .h1 { font-size: 34px; font-weight: 700; fill: #f6e7c8; }
+      .h2 { font-size: 20px; font-weight: 700; fill: #f6e7c8; }
+      .h3 { font-size: 15px; font-weight: 700; fill: #f6e7c8; }
+      .label { font-size: 13px; fill: #c7d3e8; }
+      .small { font-size: 11.5px; fill: #8fa2c4; }
+      .tiny { font-size: 10.5px; fill: #6f82a6; }
+      .gold { fill: #f2b34c; }
+      .jade { fill: #56b39b; }
+      .verm { fill: #e0664f; }
+      .violet { fill: #a58cff; }
+      .muted { fill: #9fb0d0; }
+      .paper { fill: #f0e2c8; }
+      .nodeTitle { font-size: 18px; font-weight: 700; fill: #f6e7c8; }
+      .nodeText { font-size: 11.5px; fill: #aebdd8; }
+      .quote { font-size: 11.5px; fill: #b9c6de; font-style: italic; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)" opacity="0.55"/>
+  <rect x="20" y="20" width="1560" height="960" rx="20" fill="none" stroke="#d9a441" stroke-width="1.4" opacity="0.6"/>
+
+  <!-- Header -->
+  <text x="56" y="66" class="h1">波次防守 · 核心循环拆解</text>
+  <text x="58" y="94" class="muted" font-size="14">抽象机制示意 · 非实机截图 · 不复制角色 / UI / 素材 · 来源：官方宣传片 + 公开攻略/报道</text>
+  <g text-anchor="end">
+    <text x="1544" y="62" class="gold" font-size="15" font-weight="700">T-20261121-038 · 2026-11-22</text>
+    <text x="1544" y="86" class="paper" font-size="15">《奔奔王国》= Kingshot 国内版</text>
+    <text x="1544" y="108" class="muted" font-size="12">中世纪 · 塔防 + 模拟经营 + SLG · 竖屏广告 182s</text>
+  </g>
+  <line x1="56" y1="124" x2="1544" y2="124" stroke="#d9a441" stroke-width="1" opacity="0.5"/>
+
+  <!-- Left panel: loop -->
+  <rect class="panel" x="40" y="140" width="960" height="780" rx="16"/>
+  <text x="64" y="174" class="h2">A · 单局闭环：准备 → 战斗 → 结算 → 变强</text>
+  <text x="64" y="196" class="small">真正的决策发生在波次之间；战斗期主要考验走位、引怪和集火优先级。</text>
+
+  <!-- Center target -->
+  <circle cx="520" cy="520" r="128" fill="#0b1222" stroke="#d9a441" stroke-width="1.8" stroke-dasharray="7 6"/>
+  <circle cx="520" cy="520" r="112" fill="#111b30" stroke="#2c3c60" stroke-width="1"/>
+  <text x="520" y="486" text-anchor="middle" class="gold" font-size="15" font-weight="700">单局目标</text>
+  <text x="520" y="514" text-anchor="middle" class="paper" font-size="19" font-weight="700">主城 HP 不归零</text>
+  <text x="520" y="542" text-anchor="middle" class="nodeText">顶住 5–10 波 · 8–12 分钟</text>
+  <text x="520" y="564" text-anchor="middle" class="nodeText">失败 → 2 秒内重开</text>
+  <text x="520" y="590" text-anchor="middle" class="tiny">保留最高分 / 已解锁构筑</text>
+
+  <!-- Node 1: Prep (top) -->
+  <g filter="url(#soft)">
+    <rect class="nodePrep" x="390" y="236" width="260" height="112" rx="14"/>
+  </g>
+  <g transform="translate(420,292)">
+    <rect x="-14" y="-6" width="28" height="30" rx="3" fill="#1b2a46" stroke="#f2b34c" stroke-width="1.4"/>
+    <path d="M -18 -6 L 0 -22 L 18 -6 Z" fill="#f2b34c" opacity="0.85"/>
+    <rect x="-4" y="8" width="8" height="16" fill="#0e1730"/>
+    <circle cx="0" cy="-12" r="2.4" fill="#0e1730"/>
+  </g>
+  <text x="466" y="272" class="nodeTitle">① 准备期</text>
+  <text x="466" y="296" class="nodeText">建 / 升塔 · 修墙 · 编队</text>
+  <text x="466" y="316" class="nodeText">做饭 / 人口 / 守哪条路</text>
+  <text x="466" y="336" class="tiny">8–10 秒 · 可暂停思考</text>
+
+  <!-- Node 2: Fight (right) -->
+  <g filter="url(#soft)">
+    <rect class="nodeFight" x="690" y="450" width="268" height="128" rx="14"/>
+  </g>
+  <g transform="translate(724,514)">
+    <line x1="-16" y1="16" x2="16" y2="-18" stroke="#e0664f" stroke-width="3" stroke-linecap="round"/>
+    <line x1="-16" y1="-18" x2="16" y2="16" stroke="#e0664f" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="5" fill="#f6e7c8"/>
+  </g>
+  <text x="764" y="486" class="nodeTitle">② 战斗期</text>
+  <text x="764" y="510" class="nodeText">领主自由走位 · 射程内自动攻击</text>
+  <text x="764" y="530" class="nodeText">塔 / 民兵自动开火 · 技能爆发</text>
+  <text x="764" y="550" class="nodeText">引怪进塔 · 优先精英</text>
+  <text x="764" y="568" class="tiny">操作上限：走位 + 技能时机</text>
+
+  <!-- Node 3: Resolve (bottom) -->
+  <g filter="url(#soft)">
+    <rect class="nodeResolve" x="390" y="700" width="260" height="112" rx="14"/>
+  </g>
+  <g transform="translate(420,756)">
+    <circle cx="0" cy="0" r="16" fill="#1b3a30" stroke="#56b39b" stroke-width="1.4"/>
+    <text x="0" y="6" text-anchor="middle" class="jade" font-size="16" font-weight="700">¥</text>
+    <path d="M -18 18 L 18 18" stroke="#56b39b" stroke-width="1.2" opacity="0.6"/>
+  </g>
+  <text x="466" y="736" class="nodeTitle">③ 结算</text>
+  <text x="466" y="760" class="nodeText">金币 / 资源掉落 · 自动修复</text>
+  <text x="466" y="780" class="nodeText">人口补充 · 保底奖励</text>
+  <text x="466" y="800" class="tiny">低惩罚，鼓励继续下一波</text>
+
+  <!-- Node 4: Upgrade (left) -->
+  <g filter="url(#soft)">
+    <rect class="nodeUpgrade" x="110" y="450" width="250" height="128" rx="14"/>
+  </g>
+  <g transform="translate(146,514)">
+    <rect x="-16" y="-20" width="32" height="40" rx="4" fill="#221c33" stroke="#a58cff" stroke-width="1.4"/>
+    <path d="M -8 8 L 0 -10 L 8 8 Z" fill="#a58cff"/>
+    <line x1="-10" y1="14" x2="10" y2="14" stroke="#a58cff" stroke-width="1.4"/>
+  </g>
+  <text x="188" y="486" class="nodeTitle">④ 变强</text>
+  <text x="188" y="510" class="nodeText">塔型二选一：弩塔 / 炮塔</text>
+  <text x="188" y="530" class="nodeText">3 选 1：射程 / 攻速 / 经济</text>
+  <text x="188" y="550" class="nodeText">英雄升级 / 科技 / 城墙</text>
+  <text x="188" y="568" class="tiny">下一波的解法在这里</text>
+
+  <!-- Loop arrows (clockwise) -->
+  <path d="M 660 330 C 760 350 800 390 806 440" fill="none" stroke="#f2b34c" stroke-width="2.4" marker-end="url(#arrowGold)"/>
+  <path d="M 820 590 C 790 660 720 700 660 726" fill="none" stroke="#e0664f" stroke-width="2.4" marker-end="url(#arrowVerm)"/>
+  <path d="M 380 770 C 300 750 250 700 236 640" fill="none" stroke="#56b39b" stroke-width="2.4" marker-end="url(#arrowJade)"/>
+  <path d="M 230 430 C 270 360 330 330 380 326" fill="none" stroke="#a58cff" stroke-width="2.4" marker-end="url(#arrowGold)"/>
+
+  <!-- Fail path -->
+  <path d="M 958 530 C 1010 560 1010 650 960 690" fill="none" stroke="#e0664f" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#arrowVerm)" opacity="0.85"/>
+  <text x="960" y="726" class="verm" font-size="12" font-weight="700" text-anchor="middle">失守 → 失败</text>
+
+  <!-- rationale strip -->
+  <rect x="64" y="842" width="912" height="58" rx="10" fill="#101a2e" stroke="#2c3c60" stroke-width="1"/>
+  <text x="80" y="866" class="gold" font-size="13" font-weight="700">为什么看起来“一局搞定”</text>
+  <text x="80" y="886" class="label">闭环短、波次可见、每次失败都能立刻重开；广告把它压缩成“你能顶住几波”的单一问题。</text>
+
+  <!-- Right panel: ad vs real -->
+  <rect class="panel" x="1024" y="140" width="536" height="780" rx="16"/>
+  <text x="1048" y="176" class="h2">B · 宣传片 ≠ 完整实机</text>
+  <text x="1048" y="198" class="small">同一款游戏，广告只展示最像“纯塔防”的前几分钟。</text>
+
+  <!-- Ad card -->
+  <rect x="1048" y="216" width="488" height="212" rx="12" fill="#171326" stroke="#a58cff" stroke-width="1.3"/>
+  <text x="1066" y="244" class="violet" font-size="14" font-weight="700">宣传片：182 秒竖屏广告</text>
+  <text x="1066" y="268" class="label">官方账号「奔奔王国」发布 · 10–20 秒一个爽点</text>
+  <text x="1066" y="292" class="label">• 走位 / 拾金币 / 建塔 / 红蓝兵潮，单指可读</text>
+  <text x="1066" y="312" class="label">• 画面可见：皇冠计数、资源格、窄道、城堡</text>
+  <text x="1066" y="332" class="label">• 屏上免责声明：广告创意仅供参考，实际内容需达到关卡解锁</text>
+  <text x="1066" y="356" class="quote">结论：至少是经过剪辑/设计的广告创意，不是完整、连续的实机流程；</text>
+  <text x="1066" y="374" class="quote">皇冠计数与失败条件未在画面中给出可验证语义。</text>
+  <rect x="1066" y="390" width="452" height="24" rx="6" fill="#2a1c3d" stroke="#a58cff" stroke-width="1"/>
+  <text x="1080" y="407" class="violet" font-size="11.5" font-weight="700">可确认：红＝敌方、蓝金＝玩家、窄道＝防守优势位</text>
+
+  <!-- Real game card -->
+  <rect x="1048" y="444" width="488" height="300" rx="12" fill="#101a2e" stroke="#2c3c60" stroke-width="1.2"/>
+  <text x="1066" y="472" class="h3">真实游戏：三段式（公开报道/攻略）</text>
+  <text x="1066" y="494" class="small">“开场几乎完全复刻 Thronefall…几分钟内击败 3 波攻击” — 游戏日报</text>
+
+  <!-- Segment 1 -->
+  <rect x="1066" y="510" width="452" height="58" rx="8" fill="#0f2a23" stroke="#56b39b" stroke-width="1.2"/>
+  <text x="1080" y="532" class="jade" font-size="13" font-weight="700">① 开局塔防 · 约 3 波 · 几分钟</text>
+  <text x="1080" y="552" class="label">教学钩子：单摇杆走位、自动攻击、建箭塔、引怪集火</text>
+
+  <!-- Segment 2 -->
+  <rect x="1066" y="576" width="452" height="58" rx="8" fill="#2a2113" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="1080" y="598" class="gold" font-size="13" font-weight="700">② 城建 / 居民 · 约 10–20 分钟</text>
+  <text x="1080" y="618" class="label">城镇中心、厨房、伐木场、居民职业、饱食度、科技</text>
+
+  <!-- Segment 3 -->
+  <rect x="1066" y="642" width="452" height="58" rx="8" fill="#2a1618" stroke="#e0664f" stroke-width="1.2"/>
+  <text x="1080" y="664" class="verm" font-size="13" font-weight="700">③ SLG / 联盟 · 长期</text>
+  <text x="1080" y="684" class="label">英雄养成、联盟、资源点、PvP、跨服；另有 20 波联盟守城活动</text>
+
+  <text x="1066" y="722" class="tiny">“3 波”指开局教学段；广告里的“顶住几波”是营销压缩，不代表单局无限波。</text>
+
+  <!-- Brief scope callout -->
+  <rect x="1048" y="758" width="488" height="136" rx="12" fill="#241f16" stroke="#f2b34c" stroke-width="1.3"/>
+  <text x="1066" y="786" class="gold" font-size="14" font-weight="700">本复刻 brief 的范围</text>
+  <text x="1066" y="810" class="label">只抽象第 ① 段：单场地、1 领主、3–5 种敌人、2–3 个构筑选择、</text>
+  <text x="1066" y="830" class="label">8 波、失败/重开、分数；Godot 4.6 GL Compatibility。</text>
+  <text x="1066" y="854" class="verm" font-size="12" font-weight="700">不做：城建/居民/饱食、英雄抽卡、联盟/SLG/PvP、付费、联网。</text>
+  <text x="1066" y="878" class="tiny">所有角色、UI、数值、关卡布局均原创；不复制商业游戏素材。</text>
+
+  <!-- Footer -->
+  <line x1="56" y1="938" x2="1544" y2="938" stroke="#2c3c60" stroke-width="1"/>
+  <text x="56" y="962" class="tiny">依据：今日头条文章 7690271997971939903（视频 v02033g10000daftv0vog65g47gphfkg，182s）· App Store 奔奔王国 id6748527570 · 游戏日报/36Kr 公开报道 · 2026-11-22 访问</text>
+  <text x="56" y="980" class="tiny">原创示意图 · 非实机截图 · 不替代美术 brief / QA 报告 · 不构成对《奔奔王国》《Kingshot》商标或素材的使用许可</text>
+</svg>

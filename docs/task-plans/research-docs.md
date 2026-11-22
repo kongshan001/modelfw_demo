@@ -2,6 +2,17 @@
 
 ## 进行中
 
+## T-20261121-038 · 拆解「挑战极限，一局搞定，你能顶住几波进攻」并给复刻 brief
+- 来源: 飞书消息（今日头条链接，https://m.toutiao.com/is/Xt1ba_Px_vo/，文章 ID 7690271997971939903，2026-11-22）
+- 类型: docs-research
+- 目标: 先识别链接里的游戏/演示与真实的波次进攻机制，再给可复刻的 Godot 波次生存 vertical slice brief
+- 交付: `docs/wave-defense-teardown.md`（结论先行；游戏/来源识别；核心循环/波次/难度/升级/反馈；复刻范围与验收；IP 边界；来源）+ 截图；媒体
+- 约束: 只研究/写 brief，不做实现；链接页无元数据，需尝试页面 JSON/yt-dlp/搜索交叉识别；不复制游戏素材/IP；不确定处明确标注
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-038/result.md
+- 结论: 链接是《奔奔王国》来源账号（疑似官方）的 182s 竖屏广告创意，不是完整实机；真实游戏开局约 3 波塔防后转城建/SLG，另有 20 波联盟活动；已给单场地 8 波 Godot 4.6 GL 复刻 brief（5 种敌人/2 种塔/3 个决策点/失败重开分数），并附 IP 边界与验收
+
 ## T-20261121-036 · 调研 · 小游戏换皮/重皮肤管线（B 站 BV16gs36aECJ）
 - 来源: 飞书消息（B 站《同一个小游戏，一个晚上换了三套皮》，https://b23.tv/BxqFSUh，2026-11-21）
 - 类型: docs-research

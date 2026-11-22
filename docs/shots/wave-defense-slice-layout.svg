@@ -1,0 +1,332 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc" font-family="PingFang SC, Noto Sans SC, Source Han Sans SC, Microsoft YaHei, sans-serif">
+  <title id="title">波次生存 Vertical Slice · 单场地布局与 8 波曲线</title>
+  <desc id="desc">Godot 4.6 GL Compatibility 波次生存 vertical slice 的原创布局示意：单场地、一条主路、三个建造位、一个卡口、一个主城；8 波敌人组成与压力曲线；MVP 验收与不做项。非实机截图，不复制任何商业游戏素材。</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#121b33"/>
+      <stop offset="100%" stop-color="#070b15"/>
+    </radialGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#20304f" stroke-width="0.6" opacity="0.55"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e0664f"/>
+    </marker>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f2b34c"/>
+    </marker>
+    <marker id="arrowJade" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#56b39b"/>
+    </marker>
+    <style>
+      .panel { fill: #0e1730; stroke: #2c3c60; stroke-width: 1.2; }
+      .screen { fill: #12342b; stroke: #3b6a58; stroke-width: 1.4; }
+      .path { fill: none; stroke: #b49a6b; stroke-width: 46; stroke-linecap: round; stroke-linejoin: round; }
+      .pathInner { fill: none; stroke: #d6c095; stroke-width: 30; stroke-linecap: round; stroke-linejoin: round; opacity: 0.35; }
+      .pathDash { fill: none; stroke: #f2e1bd; stroke-width: 2; stroke-dasharray: 7 8; opacity: 0.55; }
+      .wall { fill: #2a3a4a; stroke: #5d7188; stroke-width: 1.2; }
+      .pad { fill: #2b2416; stroke: #f2b34c; stroke-width: 1.6; stroke-dasharray: 5 4; }
+      .range { fill: #56b39b; fill-opacity: 0.06; stroke: #56b39b; stroke-width: 1.1; stroke-dasharray: 4 5; }
+      .keep { fill: #203050; stroke: #f2b34c; stroke-width: 1.6; }
+      .h1 { font-size: 34px; font-weight: 700; fill: #f6e7c8; }
+      .h2 { font-size: 20px; font-weight: 700; fill: #f6e7c8; }
+      .h3 { font-size: 15px; font-weight: 700; fill: #f6e7c8; }
+      .label { font-size: 12.5px; fill: #c7d3e8; }
+      .small { font-size: 11.5px; fill: #8fa2c4; }
+      .tiny { font-size: 10px; fill: #6f82a6; }
+      .gold { fill: #f2b34c; }
+      .jade { fill: #56b39b; }
+      .verm { fill: #e0664f; }
+      .muted { fill: #9fb0d0; }
+      .paper { fill: #f0e2c8; }
+      .row { fill: #101a2e; }
+      .rowAlt { fill: #131f36; }
+      .waveNum { font-size: 12px; font-weight: 700; fill: #f2b34c; }
+      .waveText { font-size: 11px; fill: #c7d3e8; }
+      .waveWhy { font-size: 10.5px; fill: #8fa2c4; }
+    </style>
+    <clipPath id="screenClip"><rect x="64" y="224" width="872" height="490" rx="10"/></clipPath>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)" opacity="0.55"/>
+  <rect x="20" y="20" width="1560" height="960" rx="20" fill="none" stroke="#d9a441" stroke-width="1.4" opacity="0.6"/>
+
+  <!-- Header -->
+  <text x="56" y="66" class="h1">波次生存 · Vertical Slice 单场地</text>
+  <text x="58" y="94" class="muted" font-size="14">Godot 4.6 GL Compatibility · 16:9 单屏 · 原创布局示意 · 非实机截图 · 不复制商业游戏角色 / UI / 素材</text>
+  <g text-anchor="end">
+    <text x="1544" y="62" class="gold" font-size="15" font-weight="700">T-20261121-038 · 2026-11-22</text>
+    <text x="1544" y="86" class="paper" font-size="15">1 场地 · 8 波 · 8–12 分钟</text>
+    <text x="1544" y="108" class="muted" font-size="12">1280×720 / 1920×1080 · Intel 30fps+</text>
+  </g>
+  <line x1="56" y1="124" x2="1544" y2="124" stroke="#d9a441" stroke-width="1" opacity="0.5"/>
+
+  <!-- Left panel -->
+  <rect class="panel" x="40" y="140" width="920" height="800" rx="16"/>
+  <text x="64" y="174" class="h2">A · 单场地：一条主路，三个建造位，一个卡口</text>
+  <text x="64" y="196" class="small">固定 3/4 俯视；玩家始终能看见主城、卡口与下一波来的方向。</text>
+
+  <!-- Screen -->
+  <rect class="screen" x="64" y="224" width="872" height="490" rx="10"/>
+  <g clip-path="url(#screenClip)">
+    <!-- subtle arena texture -->
+    <g opacity="0.25">
+      <circle cx="130" cy="290" r="2" fill="#9fd4b4"/><circle cx="190" cy="330" r="2" fill="#9fd4b4"/><circle cx="250" cy="280" r="2" fill="#9fd4b4"/>
+      <circle cx="730" cy="620" r="2" fill="#9fd4b4"/><circle cx="800" cy="580" r="2" fill="#9fd4b4"/><circle cx="840" cy="660" r="2" fill="#9fd4b4"/>
+      <circle cx="500" cy="300" r="2" fill="#9fd4b4"/><circle cx="460" cy="620" r="2" fill="#9fd4b4"/>
+    </g>
+
+    <!-- path -->
+    <path class="path" d="M 906 306 L 756 306 L 756 446 L 552 446 L 552 580 L 336 580 L 252 580"/>
+    <path class="pathInner" d="M 906 306 L 756 306 L 756 446 L 552 446 L 552 580 L 336 580 L 252 580"/>
+    <path class="pathDash" d="M 892 306 L 756 306 L 756 446 L 552 446 L 552 580 L 336 580 L 262 580" marker-end="url(#arrowRed)"/>
+
+    <!-- optional second entrance (stretch) -->
+    <path d="M 690 232 L 690 350 L 720 390 L 756 430" fill="none" stroke="#6f82a6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 7" opacity="0.45"/>
+    <text x="700" y="252" class="tiny">W6 可选第二入口（stretch）</text>
+
+    <!-- walls / choke -->
+    <g>
+      <path d="M 700 390 L 730 398 L 760 386 L 796 400 L 822 380" class="wall" fill="none" stroke-width="16" stroke-linecap="round"/>
+      <path d="M 690 500 L 724 490 L 760 504 L 802 490 L 836 506" class="wall" fill="none" stroke-width="16" stroke-linecap="round"/>
+      <text x="808" y="474" class="verm" font-size="11" font-weight="700">卡口</text>
+      <line x1="800" y1="464" x2="770" y2="444" stroke="#e0664f" stroke-width="1" stroke-dasharray="3 3"/>
+    </g>
+
+    <!-- keep -->
+    <g filter="url(#soft)">
+      <rect class="keep" x="136" y="532" width="96" height="86" rx="6"/>
+      <rect x="148" y="546" width="72" height="58" rx="3" fill="#16233c" stroke="#3b5a8c" stroke-width="1"/>
+      <path d="M 128 532 L 184 496 L 240 532 Z" fill="#f2b34c" opacity="0.9"/>
+      <rect x="166" y="566" width="36" height="38" rx="3" fill="#0e1730" stroke="#f2b34c" stroke-width="1"/>
+      <line x1="184" y1="496" x2="184" y2="474" stroke="#f2b34c" stroke-width="2"/>
+      <path d="M 184 474 L 208 482 L 184 490 Z" fill="#e0664f"/>
+    </g>
+    <text x="184" y="640" class="gold" font-size="12" font-weight="700" text-anchor="middle">主城 HP 100</text>
+    <rect x="136" y="648" width="96" height="7" rx="3.5" fill="#241f16" stroke="#5a4a2a" stroke-width="0.8"/>
+    <rect x="137" y="649" width="76" height="5" rx="2.5" fill="#56b39b"/>
+
+    <!-- spawn gate -->
+    <g>
+      <rect x="860" y="276" width="32" height="60" rx="4" fill="#2a1618" stroke="#e0664f" stroke-width="1.4"/>
+      <path d="M 868 286 L 884 306 L 868 326" fill="none" stroke="#e0664f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="876" y="264" class="verm" font-size="11" font-weight="700" text-anchor="middle">SPAWN</text>
+      <text x="876" y="354" class="tiny" text-anchor="middle">固定出生点</text>
+    </g>
+
+    <!-- build pads -->
+    <g>
+      <circle class="range" cx="810" cy="366" r="76"/>
+      <rect class="pad" x="782" y="338" width="56" height="56" rx="8"/>
+      <rect x="798" y="356" width="24" height="22" rx="3" fill="#3a2e1a" stroke="#f2b34c" stroke-width="1.2"/>
+      <line x1="806" y1="356" x2="806" y2="340" stroke="#f2b34c" stroke-width="2"/>
+      <line x1="814" y1="356" x2="814" y2="340" stroke="#f2b34c" stroke-width="2"/>
+      <path d="M 800 340 L 810 330 L 820 340" fill="#f2b34c"/>
+      <text x="810" y="414" class="gold" font-size="11" font-weight="700" text-anchor="middle">B1 弩塔</text>
+    </g>
+    <g>
+      <circle class="range" cx="626" cy="356" r="76"/>
+      <rect class="pad" x="598" y="328" width="56" height="56" rx="8"/>
+      <rect x="614" y="346" width="24" height="22" rx="3" fill="#3a2e1a" stroke="#f2b34c" stroke-width="1.2"/>
+      <circle cx="626" cy="348" r="7" fill="#3a2e1a" stroke="#f2b34c" stroke-width="1.2"/>
+      <text x="626" y="404" class="gold" font-size="11" font-weight="700" text-anchor="middle">B2 炮塔</text>
+    </g>
+    <g>
+      <circle class="range" cx="430" cy="660" r="70"/>
+      <rect class="pad" x="402" y="632" width="56" height="56" rx="8"/>
+      <rect x="418" y="650" width="24" height="22" rx="3" fill="#3a2e1a" stroke="#f2b34c" stroke-width="1.2"/>
+      <path d="M 422 650 L 430 636 L 438 650 Z" fill="#f2b34c"/>
+      <text x="430" y="708" class="gold" font-size="11" font-weight="700" text-anchor="middle">B3 弩塔</text>
+    </g>
+
+    <!-- hero -->
+    <g filter="url(#soft)">
+      <circle cx="300" cy="508" r="18" fill="#163a5e" stroke="#6fa8ff" stroke-width="2"/>
+      <circle cx="300" cy="500" r="6" fill="#f0e2c8"/>
+      <path d="M 286 522 Q 300 508 314 522 Z" fill="#6fa8ff"/>
+      <path d="M 300 490 L 300 480" stroke="#f2b34c" stroke-width="2"/>
+      <circle cx="300" cy="477" r="3" fill="#f2b34c"/>
+    </g>
+    <circle cx="300" cy="508" r="48" fill="none" stroke="#6fa8ff" stroke-width="1.1" stroke-dasharray="4 5" opacity="0.65"/>
+    <text x="300" y="556" class="jade" font-size="11" font-weight="700" text-anchor="middle">领主 / 自动攻击</text>
+    <text x="300" y="571" class="tiny" text-anchor="middle">WASD + 技能</text>
+
+    <!-- resources -->
+    <g>
+      <rect x="536" y="304" width="46" height="46" rx="6" fill="#1b2a46" stroke="#56b39b" stroke-width="1.4" stroke-dasharray="4 3"/>
+      <circle cx="559" cy="327" r="10" fill="#f2b34c" stroke="#8a5a1c" stroke-width="1.2"/>
+      <text x="559" y="331" class="gold" font-size="10" font-weight="700" text-anchor="middle">5</text>
+      <text x="559" y="368" class="jade" font-size="10" text-anchor="middle">资源格</text>
+    </g>
+    <g>
+      <circle cx="680" cy="480" r="4" fill="#f2b34c"/><circle cx="700" cy="468" r="4" fill="#f2b34c"/><circle cx="720" cy="480" r="4" fill="#f2b34c"/>
+      <text x="700" y="506" class="tiny" text-anchor="middle">击杀掉金币</text>
+    </g>
+
+    <!-- enemy dots / wave direction -->
+    <g fill="#e0664f">
+      <circle cx="836" cy="296" r="5"/><circle cx="820" cy="312" r="5"/><circle cx="804" cy="296" r="5"/>
+      <circle cx="782" cy="318" r="5"/><circle cx="766" cy="300" r="5"/>
+    </g>
+    <text x="800" y="280" class="verm" font-size="10" text-anchor="middle">红＝敌方</text>
+
+    <!-- camera safe frame label -->
+    <text x="80" y="246" class="tiny">16:9 单屏 · 固定 3/4 俯视 · 无镜头移动</text>
+    <text x="80" y="696" class="tiny">示意尺寸：约 40 × 22 逻辑单位；实际按相机取景调整</text>
+  </g>
+  <rect x="64" y="224" width="872" height="490" rx="10" fill="none" stroke="#3b6a58" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- Three rule cards under screen -->
+  <g>
+    <rect x="64" y="732" width="280" height="92" rx="10" fill="#101a2e" stroke="#2c3c60" stroke-width="1"/>
+    <text x="80" y="756" class="gold" font-size="13" font-weight="700">输入 / 镜头</text>
+    <text x="80" y="778" class="label">WASD / 方向键；自动攻击最近敌人</text>
+    <text x="80" y="796" class="label">空格 / 右键：1 个位移或范围技能</text>
+    <text x="80" y="814" class="tiny">手柄可选；不需要鼠标瞄准</text>
+  </g>
+  <g>
+    <rect x="360" y="732" width="280" height="92" rx="10" fill="#101a2e" stroke="#2c3c60" stroke-width="1"/>
+    <text x="376" y="756" class="gold" font-size="13" font-weight="700">建造 / 经济</text>
+    <text x="376" y="778" class="label">击杀掉金币；波间 8–10 秒建造窗口</text>
+    <text x="376" y="796" class="label">2 种塔（单体 / 范围）× 2 级</text>
+    <text x="376" y="814" class="tiny">3 选 1 强化：射程 / 攻速 / 经济</text>
+  </g>
+  <g>
+    <rect x="656" y="732" width="280" height="92" rx="10" fill="#101a2e" stroke="#2c3c60" stroke-width="1"/>
+    <text x="672" y="756" class="verm" font-size="13" font-weight="700">失败 / 重开 / 分数</text>
+    <text x="672" y="778" class="label">主城 HP 归零 → 失败；2 秒内重开</text>
+    <text x="672" y="796" class="label">分数 = 波数×100 + 击杀×10</text>
+    <text x="672" y="814" class="label">+ 剩余主城 HP×50 + 金币</text>
+  </g>
+
+  <!-- Left footer note -->
+  <text x="64" y="862" class="small">所有视觉元素为原创几何示意；不包含《奔奔王国》/《Kingshot》的角色、塔、UI、图标或关卡布局。</text>
+  <text x="64" y="884" class="tiny">设计目标：3 分钟内理解“引怪进塔 + 波间变强”；首次失败落在 W4–W6，仍愿意立刻重开。</text>
+  <text x="64" y="906" class="tiny">若 W6 双入口超出 MVP，可删除虚线支路，保持单入口 8 波。</text>
+
+  <!-- Right panel -->
+  <rect class="panel" x="980" y="140" width="580" height="800" rx="16"/>
+  <text x="1004" y="174" class="h2">B · 8 波组成与压力曲线</text>
+  <text x="1004" y="196" class="small">每波 1–3 个新信息；先教走位，再教建塔，再教引怪与集火。</text>
+
+  <!-- Enemy legend -->
+  <g>
+    <text x="1004" y="224" class="tiny">敌人 archetype（5 种，含 Boss）</text>
+    <circle cx="1014" cy="242" r="5" fill="#e0664f"/><text x="1024" y="246" class="tiny">民兵</text>
+    <circle cx="1074" cy="242" r="5" fill="#f0a04c"/><text x="1084" y="246" class="tiny">快跑</text>
+    <circle cx="1134" cy="242" r="5" fill="#b06a5a"/><text x="1144" y="246" class="tiny">盾兵</text>
+    <circle cx="1194" cy="242" r="6" fill="#a54848"/><text x="1205" y="246" class="tiny">精英</text>
+    <circle cx="1254" cy="242" r="7" fill="#7d2f3a" stroke="#f2b34c" stroke-width="1.2"/><text x="1266" y="246" class="tiny">Boss</text>
+  </g>
+
+  <!-- Wave table -->
+  <g>
+    <rect x="1004" y="260" width="532" height="34" rx="6" fill="#241f16" stroke="#5a4a2a" stroke-width="1"/>
+    <text x="1016" y="282" class="gold" font-size="11" font-weight="700">波</text>
+    <text x="1046" y="282" class="gold" font-size="11" font-weight="700">组成</text>
+    <text x="1320" y="282" class="gold" font-size="11" font-weight="700">教学 / 决策</text>
+
+    <g>
+      <rect class="row" x="1004" y="298" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="316" r="10" fill="#1b2a46" stroke="#f2b34c" stroke-width="1"/>
+      <text x="1022" y="320" class="waveNum" text-anchor="middle">1</text>
+      <text x="1046" y="312" class="waveText">6× 民兵</text>
+      <text x="1046" y="326" class="waveWhy">慢速、单体、低 HP</text>
+      <text x="1320" y="320" class="waveWhy">走位 / 自动攻击 / 拾金币</text>
+    </g>
+    <g>
+      <rect class="rowAlt" x="1004" y="334" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="352" r="10" fill="#1b2a46" stroke="#f2b34c" stroke-width="1"/>
+      <text x="1022" y="356" class="waveNum" text-anchor="middle">2</text>
+      <text x="1046" y="348" class="waveText">10× 民兵 + 2× 快跑</text>
+      <text x="1046" y="362" class="waveWhy">快跑低 HP、速度 ×1.6</text>
+      <text x="1320" y="356" class="waveWhy">建第一座塔；理解射程</text>
+    </g>
+    <g>
+      <rect class="row" x="1004" y="370" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="388" r="10" fill="#1b2a46" stroke="#f2b34c" stroke-width="1"/>
+      <text x="1022" y="392" class="waveNum" text-anchor="middle">3</text>
+      <text x="1046" y="384" class="waveText">12× 民兵 + 3× 盾兵</text>
+      <text x="1046" y="398" class="waveWhy">盾兵减伤 40%、速度 ×0.8</text>
+      <text x="1320" y="392" class="waveWhy">塔型选择：单体 vs 范围</text>
+    </g>
+    <g>
+      <rect class="rowAlt" x="1004" y="406" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="424" r="10" fill="#3a1c1c" stroke="#e0664f" stroke-width="1.2"/>
+      <text x="1022" y="428" class="waveNum" text-anchor="middle">4</text>
+      <text x="1046" y="420" class="waveText">6× 快跑 + 4× 盾兵 + 1× 精英</text>
+      <text x="1046" y="434" class="waveWhy">精英高 HP，优先拆塔</text>
+      <text x="1320" y="428" class="waveWhy">引怪进塔 / 集火精英</text>
+    </g>
+    <g>
+      <rect class="row" x="1004" y="442" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="460" r="10" fill="#3a1c1c" stroke="#e0664f" stroke-width="1.2"/>
+      <text x="1022" y="464" class="waveNum" text-anchor="middle">5</text>
+      <text x="1046" y="456" class="waveText">14× 混合 + 2× 精英</text>
+      <text x="1046" y="470" class="waveWhy">第一次真正的资源压力</text>
+      <text x="1320" y="464" class="waveWhy">3 选 1 强化</text>
+    </g>
+    <g>
+      <rect class="rowAlt" x="1004" y="478" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="496" r="10" fill="#1b2a46" stroke="#f2b34c" stroke-width="1"/>
+      <text x="1022" y="500" class="waveNum" text-anchor="middle">6</text>
+      <text x="1046" y="492" class="waveText">18× 混合 + 3× 精英</text>
+      <text x="1046" y="506" class="waveWhy">双入口（可选）/ 单入口加压</text>
+      <text x="1320" y="500" class="waveWhy">分兵还是放弃支路</text>
+    </g>
+    <g>
+      <rect class="row" x="1004" y="514" width="532" height="36" rx="4"/>
+      <circle cx="1022" cy="532" r="10" fill="#3a1c1c" stroke="#e0664f" stroke-width="1.2"/>
+      <text x="1022" y="536" class="waveNum" text-anchor="middle">7</text>
+      <text x="1046" y="528" class="waveText">12× 混合 + 2× 精英</text>
+      <text x="1046" y="542" class="waveWhy">连续高压；塔位可能被拆</text>
+      <text x="1320" y="536" class="waveWhy">卖塔 / 重修 / 保主城</text>
+    </g>
+    <g>
+      <rect x="1004" y="550" width="532" height="36" rx="4" fill="#2a1618" stroke="#e0664f" stroke-width="1"/>
+      <circle cx="1022" cy="568" r="10" fill="#4a1e24" stroke="#f2b34c" stroke-width="1.2"/>
+      <text x="1022" y="572" class="waveNum" text-anchor="middle">8</text>
+      <text x="1046" y="564" class="waveText">Boss + 10× 杂兵</text>
+      <text x="1046" y="578" class="waveWhy">Boss 有前摇重击；杂兵持续施压</text>
+      <text x="1320" y="572" class="waveWhy">终局检验：构筑是否成立</text>
+    </g>
+  </g>
+
+  <!-- Pressure curve -->
+  <g>
+    <text x="1004" y="616" class="h3">压力曲线（示意，不是数值平衡表）</text>
+    <line x1="1030" y1="760" x2="1524" y2="760" stroke="#2c3c60" stroke-width="1"/>
+    <line x1="1030" y1="760" x2="1030" y2="636" stroke="#2c3c60" stroke-width="1"/>
+    <text x="1030" y="778" class="tiny">W1</text>
+    <text x="1096" y="778" class="tiny">W2</text>
+    <text x="1162" y="778" class="tiny">W3</text>
+    <text x="1228" y="778" class="tiny">W4</text>
+    <text x="1294" y="778" class="tiny">W5</text>
+    <text x="1360" y="778" class="tiny">W6</text>
+    <text x="1426" y="778" class="tiny">W7</text>
+    <text x="1492" y="778" class="tiny">W8</text>
+    <polyline points="1030,744 1096,730 1162,706 1228,676 1294,666 1360,650 1426,642 1492,646" fill="none" stroke="#56b39b" stroke-width="2.6"/>
+    <polygon points="1030,744 1096,730 1162,706 1228,676 1294,666 1360,650 1426,642 1492,646 1492,760 1030,760" fill="#56b39b" opacity="0.08"/>
+    <circle cx="1228" cy="676" r="5" fill="#e0664f" stroke="#f6e7c8" stroke-width="1.2"/>
+    <circle cx="1492" cy="646" r="6" fill="#e0664f" stroke="#f2b34c" stroke-width="1.4"/>
+    <text x="1240" y="668" class="verm" font-size="10.5" font-weight="700">首次可能失败 W4–6</text>
+    <text x="1492" y="632" class="verm" font-size="10.5" font-weight="700" text-anchor="end">Boss W8</text>
+    <text x="1030" y="796" class="tiny">准备窗口 8–10s；单局 8–12 分钟；首通率目标 40–60%（5 人内部试玩）</text>
+  </g>
+
+  <!-- Acceptance card -->
+  <rect x="1004" y="812" width="532" height="104" rx="10" fill="#241f16" stroke="#f2b34c" stroke-width="1.2"/>
+  <text x="1020" y="836" class="gold" font-size="13" font-weight="700">MVP 验收（fail-closed）</text>
+  <text x="1020" y="856" class="label">8 波可通；失败态可达；重开 &lt; 2s；无脚本报错</text>
+  <text x="1020" y="874" class="label">1280×720 与 1920×1080 均无 UI 溢出；Intel 30fps+</text>
+  <text x="1020" y="892" class="label">所有资产原创/CC0；截图/GIF 为实际运行画面</text>
+  <text x="1020" y="908" class="verm" font-size="11" font-weight="700">不做：城建/居民/抽卡/联盟/PvP/联网/付费/程序化地图</text>
+
+  <!-- Footer -->
+  <line x1="56" y1="952" x2="1544" y2="952" stroke="#2c3c60" stroke-width="1"/>
+  <text x="56" y="974" class="tiny">原创布局与数值仅为 vertical slice 建议，不是《奔奔王国》/《Kingshot》的真实数值或关卡；来源与访问日期见 docs/wave-defense-teardown.md。</text>
+</svg>
