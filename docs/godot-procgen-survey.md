@@ -471,7 +471,7 @@ pois   = poisson_disk(r=10.0, k=30, seed=seed+5, only=walkable)
 - [x] `docs/godot-procgen-survey-交互版.html`（CA/BSP/噪声 3 个 demo；Chrome 150 headless 实测无 console error）。
 - [x] `docs/shots/godot-procgen-survey-ca.png`、`-bsp.png`、`-biomes.png`（另 `-hero.png`）。
 - [x] `cc-connect send --image` 发送 2 张截图（2026-11-22）。
-- [ ] `tools/git_publisher.py` 按 `commit_paths` 提交并 push 到 `origin/feat/ai-slice`（由发布器执行）。
+- [x] `tools/git_publisher.py` 按 `commit_paths` 提交并 push 到 `origin/feat/ai-slice`（2026-11-22，发布器执行）。
 
 ### 7.3 验收口径（建议写进 QA）
 
