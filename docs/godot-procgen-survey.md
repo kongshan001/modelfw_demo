@@ -215,6 +215,7 @@ A（1–2 天可出可玩 slice） → B（3–5 天出视觉 hero） → C（�
 | --- | --- | --- | --- |
 | `godot-wfc/` | 2D WFC 完整交互：候选叠加、Shannon 熵、加权坍缩、约束传播、快照回溯、确定性重开；14 种原创庭院瓦片；算法视图/成品地图；16×10 默认档实测算法视图 avg 42.6 / min 38 FPS，成品地图 avg 73.8 / min 46 FPS | `scripts/wfc_solver.gd` 的掩码/熵/传播/回溯；`wfc_tileset.gd` 的边接口/权重；`tile_baker.gd` 的图集烘焙；`board_view.gd` 的波前/热力/调试表达；`hud.gd` 的中文控制台模式 | **不要重写一个纯 WFC demo**；不要重复“候选叠加/熵/回溯”的教学演示；不要把 14 种庭院瓦片直接当新项目美术 |
 | `docs/procedural-generation-teardown.md` + `docs/procedural-generation-demos/generators.py` | CA 4-5 规则、Spelunky 黄金路径、BSP、醉汉漫步；确定性 XorShift32；21 seeds 连通性验证；参数/坑/修复 | CA 参数（45% 墙、keep 4、become 5、4–6 次迭代；4/4 变体 + 走廊修复）；BSP 递归切分/房间内缩/L 走廊；BFS/最远点；种子签名思路 | **不要重复四种算法的纯拆解**；不要再做“算法视频复刻”；把参数迁移到“带美术/自动瓦片/性能预算”的可玩 slice |
+| `godot-flowfield/` | 流场寻路完整 demo：代价场 → 积分场（8 邻接 BFS）→ 流场方向；24×16/36×24/48×32 地图、200/500/1000 智能体、三视图、可编辑地图、固定种子可复现；1000 智能体实测平均 47 FPS | 多源 BFS/积分场/双线性流场采样、固定邻域顺序的确定性、空间哈希分离力、批量绘制、`tools/smoke_flowfield.gd` 冒烟模式 | **不要重做流场/避障 demo**；不要把“寻路”当“地图生成”；T-021 的 A/B brief 只需 AStarGrid2D/BFS 做连通验证，不需要整套流场；若后续同屏敌人很多，再复用流场移动层 |
 | `docs/procedural-generation-teardown-交互版.html` | 既有讲义设计系统：深/浅色 token、卡片、表格、demo 面板、控件、FAB、进度条、复制按钮 | 直接复用 CSS 变量与组件类名（`--paper/--ink/--gold/--teal`、`.card`、`.tablewrap`、`.demo`、`.controls`、`.metrics` 等） | 不要复制旧页面的正文/图表；新页面只复用设计系统，内容全部重写 |
 | `docs/shots/` | 既有截图命名与尺寸习惯 | 新截图放 `docs/shots/godot-procgen-survey-*.png` | 不要覆盖旧截图；不要放商业游戏画面 |
 | T-20261121-022（3D 海岛调研） | 已单独立项，聚焦高度场/岛屿遮罩/噪声/侵蚀/网格/水面/植被/LOD | 本报告的 FastNoiseLite、岛屿遮罩、Poisson、LOD/分块结论可被 T-022 复用 | **本任务不做 3D 海岛实现**；不要把 3D 体素作为本轮主目标 |
