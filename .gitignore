@@ -9,4 +9,5 @@ org-agent-flow.png
 # local/runtime artifacts
 .godot/
 .cc-connect/
+.tripo/
 docs/task-plans/*.lock

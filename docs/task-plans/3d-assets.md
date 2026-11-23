@@ -2,6 +2,17 @@
 
 ## 进行中
 
+## T-20261121-045 · Tripo 高质量图生 3D 工作流调研 + 鬼灭主角私有测试
+- 来源: 飞书消息（2026-11-23，“搜一张鬼灭主角图，让 Tripo 生成模型；调研外部如何用 Tripo 做高质量模型”）
+- 类型: 3d-asset（Tripo 工作流 / 私有技术测试）
+- 目标: 调研 Tripo 高质量图生 3D 的外部最佳实践；用一张公开鬼灭主角参考图做私有测试，评估 Tripo P2/高质量参数的实际效果与差距
+- 交付: `docs/tripo-high-quality-workflow.md`（外部方法/来源/参数/预处/后处/评估/成本）+ 本地 `/tmp/tripo-demon-slayer/` 测试（GLB/渲染，**不入库**）+ 2–3 张渲染；媒体
+- 约束: 仅私人技术评估，不把鬼灭参考图/衍生模型提交仓库、不商用、不再分发；预算 ≤250 credits；记录实际 credits；不伪造质量；后续要入库/展示必须换原创角色
+- 指派: game-artist worker（dispatcher）
+- 状态: done（worker API 中断，产物人工恢复；dispatcher 记录为 failed）
+- 产出: `docs/tripo-high-quality-workflow.md`；P2/H3.1 私有测试在 `/tmp/tripo-demon-slayer/`（鬼灭 IP，不入库）；原创样片 `agent-probes/tripo-qinghe/`；`tools/tripo/`
+- 备注: 实际消耗 185 credits（P2 125 + H3.1 60），余额 300；鬼灭参考图/衍生 GLB/渲染未提交仓库
+
 ## T-20261119-008 · 齐天大圣 · 极意（游戏级可玩版）
 - 来源: 飞书消息（2026-11-19；接受原创方向，要求精美、游戏可用、可外放体验）
 - 父任务: T-20261119-006（首版金发猴王）

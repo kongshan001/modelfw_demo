@@ -20,6 +20,14 @@ tools: Read, Grep, Glob, Bash, Edit, Write, WebSearch, WebFetch
 - 现有真实截图/录屏、目标尺寸、性能预算、引擎/管线；
 - 验收标准（P0/P1 参数、指标、对比图要求）。
 
+## 3D 资产管线（默认，2026-11-21）
+
+- 建模默认路线：**原创参考图（front/side/back）→ Tripo 图生 3D（API）→ Blender 清理/重拓扑/UV/贴图/绑骨/toon → GLB/VRM**。
+- Tripo 凭证只从环境变量或团队 secret 读取（如 `TRIPO_API_KEY`），**禁止**写入仓库/日志/截图/聊天；需要 key 的命令用 `teamai env exec --` 运行。
+- 没有 Tripo 权限时：先用 Blender/CC0/程序化方案回退，并在报告中明确待补的 Tripo 环节；不得因缺 key 伪造输出。
+- 不得用参考游戏/IP 的角色图作为 Tripo 输入；参考图必须原创或明确许可。
+- 验收：拓扑/UV/材质/骨骼/GLB 校验 + 渲染；记录 Tripo task id、模型版本、credits/耗时。
+
 ## 工作流
 
 1. 先看目标尺寸真实画面与 brief，确认要改的层（角色/线/色/材质/光/UI/VFX）；
