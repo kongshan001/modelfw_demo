@@ -2,6 +2,17 @@
 
 ## 进行中
 
+## T-20261124-004 · 复刻 GPT-6 + Hyper3D 3D 小游戏（AI 资产管线）
+- 来源: 飞书消息（B 站《用GPT6+Hyper3D，轻松做3D游戏！》，https://b23.tv/ZLZFzlK，2026-11-24，2:49）
+- 类型: game-demo（3D 小游戏 / AI 资产管线）
+- 目标: 先抽帧识别视频实际做的 3D 游戏类型与流程，再用 Godot 4.6 复刻核心 loop；资产用 Hyper3D（若可用）或 Tripo/CC0 原创替代，记录 GPT-6+Hyper3D 工作流
+- 交付: `godot-ai-3d-game/` 可运行 vertical slice；README/TECH/迭代记录/CREDITS（含 AI 资产来源/许可）；截图/GIF/MP4；smoke + 真实 GPU 验证
+- 约束: 不复制视频/游戏素材/IP；原创名称/场景/UI；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；Tripo 预算 ≤100 credits；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261124-004/result.md
+- 结论: 视频实际为第三人称单圈卡丁车竞速（非射击）；本项目做原创「风车原野 · 青岚杯」。Hyper3D 不可用且授权 Tripo key 来源为空，按允许路径使用 CC0/CC-BY Fox 驾驶员 + 全程序化车辆/赛道/场景，**0 Tripo credits**；差异已写入 `docs/TECH.md` 与 `assets/ai/README.md`
+
 ## T-20261124-003 · 复刻 Godot 弹幕教程（10 种弹幕 + Boss 时间轴）
 - 来源: 飞书消息（B 站《Godot 弹幕怎么做？从一颗子弹到 10 种弹幕》，https://b23.tv/iCKBB0L，2026-11-24，2:52）
 - 类型: game-demo（弹幕射击 / VFX）

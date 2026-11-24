@@ -1,0 +1,35 @@
+; Engine configuration file.
+; 风车原野 · 青岚杯 — 原创卡丁车竞速 vertical slice。
+
+config_version=5
+
+[application]
+
+config/name="风车原野 · 青岚杯"
+config/description="原创低模卡丁车竞速 vertical slice：倒计时、单圈、两名 AI 对手、加速带、名次与胜负。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/resizable=true
+window/stretch/mode="disabled"
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.29, 0.62, 0.93, 1)
+
+[layer_names]
+
+3d_physics/layer_1="race"
