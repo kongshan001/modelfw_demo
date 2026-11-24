@@ -7,7 +7,7 @@ config_version=5
 [application]
 
 config/name="雾林微光 · Fogwood"
-config/description="原创低模雾林：指数高度雾 + 深度雾 + 雾片 + 伪光束 + 浮尘，可交互技术 demo。"
+config/description="原创低模雾林：指数高度雾 + 深度雾 + 雾片 + 伪光束 + 浮尘 + 第三人称角色与动态雾驱散，可交互技术 demo。"
 run/main_scene="res://scenes/main.tscn"
 config/icon="res://icon.svg"
 config/features=PackedStringArray("4.6", "GL Compatibility")

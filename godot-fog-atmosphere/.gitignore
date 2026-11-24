@@ -1,2 +1,6 @@
 .godot/
 *.import
+# 角色 GLB 的导入设置入库，保证新克隆/新机器导入设置一致（.godot/imported 仍由 --import 生成）
+!assets/models/kaykit/Rogue.glb.import
+# GLB 导入时自动提取的内嵌贴图（源文件已内嵌，不重复入库；--import 会重新生成）
+assets/models/kaykit/Rogue_*_texture.png

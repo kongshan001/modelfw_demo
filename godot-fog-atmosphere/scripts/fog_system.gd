@@ -7,6 +7,7 @@ const PUFF_COUNT := 20
 const LOW_PUFF_COUNT := 9
 const PUFF_AREA := 38.0
 const BEAM_COUNT := 4
+const BODY_SOFTNESS := 0.35 # 近身雾片最低柔化（角色始终可见、不被整块遮断/硬切）
 
 var world: Node3D
 var quality_high := true
@@ -14,10 +15,16 @@ var fog_level_index := 2
 var wind_speed := 1.4
 var nightness := 0.0
 
+# 角色局部清雾（由 fog_interaction.gd 每帧写入；远处雾片/雾层保持原样）
+var clear_player_pos := Vector3.ZERO
+var clear_radius := 4.5
+var clear_strength := 0.85
+var clear_amount := 0.0
+
 var puff_multimesh: MultiMeshInstance3D
 var puff_material: StandardMaterial3D
 var layer_nodes: Array[MeshInstance3D] = []
-var layer_materials: Array[StandardMaterial3D] = []
+var layer_materials: Array[ShaderMaterial] = []
 var beam_nodes: Array[Node3D] = []
 var beam_materials: Array[ShaderMaterial] = []
 var pollen: CPUParticles3D
@@ -40,6 +47,7 @@ var _wind_dir := Vector2(0.82, 0.57)
 var _rng := RandomNumberGenerator.new()
 var _tint_base := Color(0.95, 0.97, 0.94)
 var _anim_time := 0.0
+var _puff_clear_alphas: Array[float] = []
 
 
 func setup(p_world: Node3D) -> void:
@@ -86,6 +94,7 @@ func _build_puffs() -> void:
 			"tint": _rng.randf_range(0.86, 1.0),
 		})
 		mm.set_instance_color(i, Color(1.0, 1.0, 1.0, 1.0))
+		_puff_clear_alphas.append(1.0)
 	puff_multimesh = MultiMeshInstance3D.new()
 	puff_multimesh.name = "FogPuffs"
 	puff_multimesh.multimesh = mm
@@ -97,14 +106,14 @@ func _build_puffs() -> void:
 
 func _build_layers() -> void:
 	for i in range(2):
-		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_texture = _patch_texture
-		mat.albedo_color = Color(0.95, 0.97, 0.94, _layer_base_alpha[i])
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		mat.uv1_scale = Vector3(2.4, 2.4, 1.0)
+		# 自定义 shader：噪声雾层 + 角色周围局部雾量遮罩（世界坐标距离）
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://shaders/fog_layer.gdshader")
+		mat.set_shader_parameter("fog_texture", _patch_texture)
+		mat.set_shader_parameter("fog_color", Color(0.95, 0.97, 0.94, 1.0))
+		mat.set_shader_parameter("fog_alpha", _layer_base_alpha[i])
+		mat.set_shader_parameter("uv_scale", Vector2(2.4, 2.4))
+		mat.set_shader_parameter("body_softness", BODY_SOFTNESS)
 		layer_materials.append(mat)
 		var plane := PlaneMesh.new()
 		plane.size = Vector2(62, 62)
@@ -287,15 +296,25 @@ func _update_puffs(delta: float) -> void:
 		var y := gy + float(puff["y_off"]) + wobble
 		var yaw := cam_yaw + float(puff["spin"]) * 2.0 + sin(_anim_time * 0.3 + float(puff["phase"])) * 0.15
 		var basis := Basis.from_euler(Vector3(0.0, yaw, 0.0)).scaled(Vector3(size, size * 0.52, 1.0))
-		puff_multimesh.multimesh.set_instance_transform(i, Transform3D(basis, Vector3(pos.x, y, pos.y)))
+		# 局部清雾：近处雾片淡出并被径向推开；远处保持原密度。
+		var to_player := Vector2(pos.x - clear_player_pos.x, pos.y - clear_player_pos.z)
+		var dist := to_player.length()
+		var core := 1.0 - smoothstep(clear_radius * 0.55, clear_radius * 1.55, dist)
+		var push := Vector2.ZERO
+		if dist > 0.01:
+			push = to_player / dist * (clear_radius * 0.30 * clear_strength * clear_amount * core)
+		var alpha := puff_alpha_for_distance(dist)
+		_puff_clear_alphas[i] = alpha
+		var shown := Vector3(pos.x + push.x, y, pos.y + push.y)
+		puff_multimesh.multimesh.set_instance_transform(i, Transform3D(basis, shown))
 		var tint: float = puff["tint"]
-		puff_multimesh.multimesh.set_instance_color(i, Color(tint, tint, tint, 1.0))
+		puff_multimesh.multimesh.set_instance_color(i, Color(tint, tint, tint, alpha))
 
 
 func _update_layers(delta: float) -> void:
 	for i in range(layer_materials.size()):
 		_layer_uv[i] += Vector2(delta * (0.006 + float(i) * 0.004), delta * 0.0025) * wind_speed
-		layer_materials[i].uv1_offset = Vector3(_layer_uv[i].x, _layer_uv[i].y, 0.0)
+		layer_materials[i].set_shader_parameter("uv_offset", _layer_uv[i])
 
 
 func _active_puff_count() -> int:
@@ -337,6 +356,76 @@ func set_tint(color: Color) -> void:
 	apply_phase(nightness)
 
 
+func set_clear_source(pos: Vector3, radius: float, strength: float, amount: float) -> void:
+	clear_player_pos = pos
+	clear_radius = maxf(0.5, radius)
+	clear_strength = clampf(strength, 0.0, 1.0)
+	clear_amount = clampf(amount, 0.0, 1.0)
+	for mat in layer_materials:
+		mat.set_shader_parameter("player_pos", clear_player_pos)
+		mat.set_shader_parameter("clear_radius", clear_radius)
+		mat.set_shader_parameter("clear_strength", clear_strength)
+		mat.set_shader_parameter("clear_amount", clear_amount)
+		mat.set_shader_parameter("body_softness", BODY_SOFTNESS)
+
+
+func visibility_factor_at(point: Vector3) -> float:
+	# 仅供 HUD/冒烟/调参：与雾片、水平雾层一致的“可见雾量系数”（1=未清除）。
+	var dist := Vector2(point.x - clear_player_pos.x, point.z - clear_player_pos.z).length()
+	var core := 1.0 - smoothstep(clear_radius * 0.55, clear_radius * 1.55, dist)
+	var core_near := 1.0 - smoothstep(1.4, 3.0, dist)
+	var local := maxf(BODY_SOFTNESS * core_near, clear_strength * clear_amount * core)
+	return clampf(1.0 - local, 0.0, 1.0)
+
+
+func puff_alpha_for_distance(distance_flat: float) -> float:
+	var core := 1.0 - smoothstep(clear_radius * 0.55, clear_radius * 1.55, distance_flat)
+	var core_near := 1.0 - smoothstep(1.4, 3.0, distance_flat)
+	var local := maxf(BODY_SOFTNESS * core_near, clear_strength * clear_amount * core)
+	return clampf(1.0 - local, 0.04, 1.0)
+
+
+func puff_clear_alpha(index: int) -> float:
+	if index < 0 or index >= _puff_clear_alphas.size():
+		return 1.0
+	return _puff_clear_alphas[index]
+
+
+func _puff_index_by_distance(point: Vector3, nearest: bool) -> int:
+	var best := INF if nearest else -1.0
+	var index := -1
+	for i in range(_puffs.size()):
+		var p: Vector2 = _puffs[i]["pos"]
+		var d := Vector2(p.x - point.x, p.y - point.z).length()
+		if (nearest and d < best) or (not nearest and d > best):
+			best = d
+			index = i
+	return index
+
+
+func nearest_puff_clear_alpha(point: Vector3) -> float:
+	return puff_clear_alpha(_puff_index_by_distance(point, true))
+
+
+func farthest_puff_clear_alpha(point: Vector3) -> float:
+	return puff_clear_alpha(_puff_index_by_distance(point, false))
+
+
+func get_clear_state() -> Dictionary:
+	return {
+		"player_pos": clear_player_pos,
+		"radius": clear_radius,
+		"strength": clear_strength,
+		"amount": clear_amount,
+		"body_softness": BODY_SOFTNESS,
+		"local_factor": visibility_factor_at(clear_player_pos),
+	}
+
+
+func mist_texture() -> Texture2D:
+	return _mist_texture
+
+
 func set_wind(speed: float) -> void:
 	wind_speed = clampf(speed, 0.2, 3.0)
 	if pollen != null:
@@ -359,7 +448,8 @@ func apply_phase(night_t: float) -> void:
 	if puff_material != null:
 		puff_material.albedo_color = Color(fog_tint.r, fog_tint.g, fog_tint.b, _puff_base_alpha * level_factor)
 	for i in range(layer_materials.size()):
-		layer_materials[i].albedo_color = Color(fog_tint.r, fog_tint.g, fog_tint.b, _layer_base_alpha[i] * level_factor)
+		layer_materials[i].set_shader_parameter("fog_color", fog_tint)
+		layer_materials[i].set_shader_parameter("fog_alpha", _layer_base_alpha[i] * level_factor)
 	var beam_col := Color(0.90, 0.84, 0.66).lerp(Color(0.55, 0.68, 0.92), nightness)
 	var beam_strength := lerpf(0.04, 0.42, nightness)
 	for mat in beam_materials:

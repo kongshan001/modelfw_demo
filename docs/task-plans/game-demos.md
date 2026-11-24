@@ -2,6 +2,20 @@
 
 ## 进行中
 
+## T-20261124-005 · 雾效 Demo 追加角色与动态驱散（T-002 follow-up）
+- 来源: 飞书消息（2026-11-24，“雾效期望追加角色模型并做交互，例如移动过程中雾效会变动驱散”）
+- 线程: T-20261124-002（雾林大气 Demo）
+- 父任务: T-20261124-002（done）
+- 类型: game-demo（3D 场景交互 / 雾效）
+- 目标: 给 `godot-fog-atmosphere/` 加可操控角色；角色移动时局部雾被推开/驱散，停下后平滑恢复，并带足迹/雾浪反馈
+- 交付: 更新 `godot-fog-atmosphere/`；角色 idle/walk/run + 第三人称相机；雾局部清除 uniform/雾片淡出/粒子排斥/恢复；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 角色用原创/CC0（如仓库内 KayKit），不复制时之笛/任天堂素材；保留现有雾效与质量档；1280×720/1920×1080，Intel 30fps+；不改其他项目
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- depends_on: T-20261124-002
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261124-005/result.md
+- 结论: 角色/动画/移动/碰撞/边界完成；局部清雾作用于可见雾片/贴地雾层/近身雾团/粒子/雾浪，雾片逐实例 alpha+推开、雾层 shader uniform、停下 1.6s 恢复；全局环境深度/高度雾无法逐像素本地修改，已在 TECH 如实声明。行走 720p 高质 36fps（昼）/37（夜），1080p 窗口 33fps；真实 GPU 0 SCRIPT ERROR
+
 ## T-20261124-004 · 复刻 GPT-6 + Hyper3D 3D 小游戏（AI 资产管线）
 - 来源: 飞书消息（B 站《用GPT6+Hyper3D，轻松做3D游戏！》，https://b23.tv/ZLZFzlK，2026-11-24，2:49）
 - 类型: game-demo（3D 小游戏 / AI 资产管线）

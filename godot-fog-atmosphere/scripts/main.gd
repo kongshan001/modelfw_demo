@@ -7,6 +7,8 @@ const CameraRigScript = preload("res://scripts/camera_rig.gd")
 const WorldBuilderScript = preload("res://scripts/world_builder.gd")
 const FogSystemScript = preload("res://scripts/fog_system.gd")
 const AtmosphereScript = preload("res://scripts/atmosphere.gd")
+const PlayerControllerScript = preload("res://scripts/player_controller.gd")
+const FogInteractionScript = preload("res://scripts/fog_interaction.gd")
 const HUDScript = preload("res://scripts/hud.gd")
 const PostFXScript = preload("res://scripts/post_fx.gd")
 
@@ -17,9 +19,12 @@ var world: Node3D
 var rig: Node3D
 var fog: Node3D
 var atmosphere: Node3D
+var player: CharacterBody3D
+var fog_interaction: Node3D
 var hud: CanvasLayer
 var post: CanvasLayer
 
+var view_follow := true
 var quality_high := true
 var wind_level := 2
 var god_rays_active := true
@@ -50,7 +55,21 @@ func _ready() -> void:
 	rig = CameraRigScript.new()
 	rig.name = "CameraRig"
 	add_child(rig)
+	rig.world_ref = world
 	rig.reset()
+
+	player = PlayerControllerScript.new()
+	player.name = "Player"
+	add_child(player)
+	player.setup(world, rig)
+
+	fog_interaction = FogInteractionScript.new()
+	fog_interaction.name = "FogInteraction"
+	add_child(fog_interaction)
+	fog_interaction.setup(world, fog, player)
+	player.set_fog_interaction(fog_interaction)
+	rig.set_follow_target(player)
+	_set_view_mode(true, true)
 
 	post = PostFXScript.new()
 	post.name = "PostFXLayer"
@@ -121,6 +140,22 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		KEY_SPACE:
 			rig.auto_orbit = not rig.auto_orbit
+		KEY_V:
+			_set_view_mode(not view_follow, true)
+		KEY_Z:
+			fog_interaction.adjust_radius(-0.5)
+		KEY_X:
+			fog_interaction.adjust_radius(0.5)
+		KEY_Q:
+			fog_interaction.adjust_strength(-0.1)
+		KEY_E:
+			fog_interaction.adjust_strength(0.1)
+		KEY_T:
+			fog_interaction.adjust_recovery(-0.3)
+		KEY_Y:
+			fog_interaction.adjust_recovery(0.3)
+		KEY_F1:
+			fog_interaction.set_debug_visible(not fog_interaction.debug_visible)
 		KEY_TAB:
 			hud.toggle_visible()
 			return
@@ -142,6 +177,8 @@ func _apply_quality(high: bool) -> void:
 	quality_high = high
 	fog.set_quality(high)
 	atmosphere.set_quality(high)
+	if fog_interaction != null:
+		fog_interaction.set_quality(high)
 	if post != null:
 		post.set_quality(high)
 	if world.grass_multimesh != null:
@@ -150,9 +187,21 @@ func _apply_quality(high: bool) -> void:
 	_refresh_hud()
 
 
+func _set_view_mode(follow: bool, snap: bool = true) -> void:
+	view_follow = follow
+	if player != null:
+		player.controls_enabled = follow
+	if rig != null:
+		rig.set_follow_target(player)
+		rig.set_follow(follow, snap)
+	_refresh_hud()
+
+
 func _apply_phase_visuals(t: float) -> void:
 	if world == null:
 		return
+	if player != null:
+		player.set_nightness(clampf(t, 0.0, 1.0))
 	if world.lantern_orb_material != null:
 		world.lantern_orb_material.albedo_color = Color(1.25, 0.90, 0.52).lerp(Color(2.4, 1.75, 0.92), t)
 	if world.lantern_glow_material != null:
@@ -247,9 +296,12 @@ func _refresh_hud() -> void:
 		return
 	var state: Dictionary = atmosphere.fog_state()
 	var counts: Dictionary = fog.get_counts()
+	var clear_state: Dictionary = fog_interaction.state() if fog_interaction != null else {}
+	var player_state: Dictionary = player.state() if player != null else {}
 	hud.update_state({
 		"night": atmosphere.night,
 		"high_quality": quality_high,
+		"follow_view": view_follow,
 		"fog_level_name": state["fog_level_name"],
 		"fog_height_name": state["fog_height_name"],
 		"fog_color_name": state["fog_color_name"],
@@ -258,6 +310,15 @@ func _refresh_hud() -> void:
 		"particles": counts["particles"],
 		"beams": counts["beams"],
 		"god_rays": god_rays_active,
+		"player_speed": float(player_state.get("speed", 0.0)),
+		"player_anim": String(player_state.get("animation", "Idle")),
+		"clear_radius": float(clear_state.get("radius", 4.5)),
+		"clear_strength": float(clear_state.get("strength", 0.85)),
+		"recovery": float(clear_state.get("recovery", 1.6)),
+		"local_factor": float(clear_state.get("local_factor", 1.0)),
+		"clear_amount": float(clear_state.get("amount", 0.0)),
+		"wakes": int(clear_state.get("wakes", 0)),
+		"debug": bool(clear_state.get("debug", false)),
 	})
 
 
@@ -270,7 +331,15 @@ func reset_demo() -> void:
 	_apply_quality(true)
 	fog.set_fog_level(1)
 	fog.set_tint(atmosphere.get_fog_tint())
+	if player != null:
+		player.reset_to_spawn()
+		player.override_active = false
+		player.input_override = Vector2.ZERO
+		player.override_run = false
+	if fog_interaction != null:
+		fog_interaction.reset()
 	rig.reset()
+	_set_view_mode(true, true)
 	_apply_phase_visuals(0.0)
 	_refresh_hud()
 
@@ -278,7 +347,83 @@ func reset_demo() -> void:
 # ---------------------------------------------------------------- Demo / 工具 API
 
 func demo_set_view(yaw: float, pitch: float, distance: float, focus: Vector3 = Vector3(0, 1.4, 0), auto: bool = false) -> void:
+	view_follow = false
+	if player != null:
+		player.controls_enabled = false
 	rig.set_view(yaw, pitch, distance, focus, auto)
+	_refresh_hud()
+
+
+func demo_set_follow_view(yaw: float, pitch: float, distance: float, auto: bool = false) -> void:
+	view_follow = true
+	if player != null:
+		player.controls_enabled = true
+	rig.set_follow_target(player)
+	rig.set_follow_view(yaw, pitch, distance, auto)
+	_refresh_hud()
+
+
+func demo_set_view_mode(follow: bool) -> void:
+	_set_view_mode(follow, true)
+
+
+func demo_set_player_input(x: float, y: float, run: bool = false) -> void:
+	if player == null:
+		return
+	player.override_active = true
+	player.input_override = Vector2(x, y)
+	player.override_run = run
+
+
+func demo_clear_player_input() -> void:
+	if player == null:
+		return
+	player.override_active = false
+	player.input_override = Vector2.ZERO
+	player.override_run = false
+
+
+func demo_teleport_player(x: float, z: float) -> void:
+	if player != null:
+		player.teleport_to_xz(x, z)
+
+
+func demo_set_fog_clear(radius: float, strength: float, recovery: float) -> void:
+	if fog_interaction == null:
+		return
+	fog_interaction.set_clear_radius(radius)
+	fog_interaction.set_clear_strength(strength)
+	fog_interaction.set_recovery_time(recovery)
+	_refresh_hud()
+
+
+func demo_set_clear_debug(value: bool) -> void:
+	if fog_interaction != null:
+		fog_interaction.set_debug_visible(value)
+	_refresh_hud()
+
+
+func demo_get_fog_clear_state() -> Dictionary:
+	if fog_interaction == null or player == null:
+		return {}
+	var out: Dictionary = fog_interaction.state()
+	out["player_pos"] = player.global_position
+	out["local_factor"] = fog_interaction.get_local_factor_at(player.global_position)
+	out["far_factor"] = fog_interaction.get_local_factor_at(player.global_position + Vector3(20, 0, 0))
+	out["fog_system"] = fog.get_clear_state()
+	return out
+
+
+func demo_get_player_state() -> Dictionary:
+	return player.state() if player != null else {}
+
+
+func demo_get_camera_mode() -> String:
+	return "follow" if view_follow else "free"
+
+
+func demo_get_puff_alpha(index: int) -> float:
+	return fog.puff_clear_alpha(index)
 
 
 func demo_set_auto_orbit(value: bool) -> void:

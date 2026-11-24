@@ -27,6 +27,10 @@ var wisp_node: Node3D
 var wisp_halo: MeshInstance3D
 var water_mesh: MeshInstance3D
 var water_uv_offset := Vector2.ZERO
+# 角色碰撞用圆形障碍（树干/石柱/灯笼），由角色控制器做轻量推离。
+var obstacle_circles: Array[Dictionary] = []
+# 低矮石块不参与碰撞（可跨越），但用于挑选角色出生/机位时避免脚底穿石。
+var rock_positions: Array[Vector2] = []
 var _anim_time := 0.0
 
 var _rng := RandomNumberGenerator.new()
@@ -255,6 +259,7 @@ func _build_trees() -> void:
 		var h := terrain_height(p.x, p.y)
 		var trunk_h := _rng.randf_range(5.5, 9.0)
 		var trunk_w := _rng.randf_range(0.8, 1.35)
+		obstacle_circles.append({"pos": p, "radius": 0.42 * trunk_w + 0.22, "height": trunk_h})
 		var trunk_xform := Transform3D(
 			Basis.from_scale(Vector3(trunk_w, trunk_h, trunk_w)),
 			Vector3(p.x, h + trunk_h * 0.5, p.y)
@@ -340,6 +345,7 @@ func _build_rocks() -> void:
 
 
 func _set_rock(mm: MultiMesh, idx: int, p: Vector2) -> int:
+	rock_positions.append(p)
 	var h := terrain_height(p.x, p.y)
 	var sx := _rng.randf_range(0.5, 1.7)
 	var sy := _rng.randf_range(0.28, 0.85)
@@ -387,6 +393,7 @@ func _build_ruins() -> void:
 		var ph: float = entry[1]
 		var tilt: float = entry[2]
 		var h := terrain_height(pos.x, pos.z)
+		obstacle_circles.append({"pos": Vector2(pos.x, pos.z), "radius": 0.78, "height": ph})
 		var basis := Basis.from_euler(Vector3(tilt, _rng.randf_range(0.0, TAU), tilt * 0.6)).scaled(Vector3(1.0, ph, 1.0))
 		pillar_mm.set_instance_transform(i, Transform3D(basis, Vector3(pos.x, h + ph * 0.5, pos.z)))
 		pillar_mm.set_instance_color(i, Color(0.55, 0.54, 0.47).lerp(Color(0.38, 0.44, 0.30), _rng.randf() * 0.7))
@@ -594,6 +601,7 @@ func _build_lanterns() -> void:
 	for i in range(LANTERN_POSITIONS.size()):
 		var p: Vector2 = LANTERN_POSITIONS[i]
 		var h := terrain_height(p.x, p.y)
+		obstacle_circles.append({"pos": p, "radius": 0.58, "height": 1.8})
 		var node := Node3D.new()
 		node.name = "Lantern%d" % i
 		node.position = Vector3(p.x, h, p.y)
@@ -805,6 +813,14 @@ func make_leaf_particle_texture() -> ImageTexture:
 
 func pool_center() -> Vector3:
 	return Vector3(POOL_CENTER.x, WATER_LEVEL, POOL_CENTER.y)
+
+
+func pool_radius() -> float:
+	return POOL_RADIUS
+
+
+func walk_boundary_radius() -> float:
+	return WORLD_SIZE * 0.30
 
 
 func ruin_center() -> Vector3:

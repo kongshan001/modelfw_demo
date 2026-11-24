@@ -150,7 +150,8 @@ func _test_controls() -> void:
 	main.demo_set_view(123.0, 44.0, 19.0, Vector3(4, 2, 4))
 	_check(int(main.rig.yaw_deg) == 123 and int(main.rig.pitch_deg) == 44 and is_equal_approx(main.rig.distance, 19.0), "demo 相机视角设置生效")
 	main.demo_reset()
-	_check(int(main.rig.yaw_deg) == 26 and int(main.rig.pitch_deg) == 36 and is_equal_approx(main.rig.distance, 15.5), "R 重置相机到默认视角")
+	_check(int(main.rig.yaw_deg) == 26 and int(main.rig.pitch_deg) == 20 and is_equal_approx(main.rig.distance, 7.2), "R 重置第三人称相机到默认跟随视角")
+	_check(main.view_follow and main.rig.follow_enabled, "R 重置回到第三人称跟随模式")
 	_check(main.fog.wind_speed == 1.4 and main.atmosphere.fog_level == 1 and main.atmosphere.fog_color_index == 0, "R 重置雾/风/雾色")
 
 	# HUD 隐藏/显示
