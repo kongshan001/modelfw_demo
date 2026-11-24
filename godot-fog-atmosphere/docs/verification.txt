@@ -1,0 +1,64 @@
+雾林微光 · Fogwood — 验收记录
+任务：T-20261124-002
+日期：2026-11-24
+环境：Godot 4.6.stable.official.89cea1439 / GL Compatibility / OpenGL 4.1
+      Intel(R) Core(TM) i7-5650U @ 2.20GHz / Intel(R) HD Graphics 6000
+      内部 1280x720 逻辑画布；截图 SubViewport 1920x1080
+
+1) headless 600 帧
+命令: godot --path godot-fog-atmosphere --headless --quit-after 600
+结果: 退出码 0；ERROR/SCRIPT ERROR 计数 0
+
+2) headless 冒烟
+命令: godot --path godot-fog-atmosphere --headless -s tools/smoke_fog.gd
+结果:
+  PASS 59 项 / FAIL 0 项
+  checks=59 failures=0
+  FOG_SMOKE_OK
+覆盖: 场景加载、地形/材质/程序化贴图、环境深度+高度雾、天空/Glow/阴影、
+      雾片 20、水平层 2、粒子 190/34/24、光束 4、质量档（9/104/2、草 45%、
+      阴影/god rays 关、Glow 保留）、昼夜、雾参数/雾色/风、相机重置、HUD、
+      粒子释放与 WeakRef 泄漏检查。
+
+3) 1920×1080 真实 GPU 截图
+命令: godot --path godot-fog-atmosphere --resolution 1280x720 -s tools/screenshot_fog.gd
+结果: FOG_SHOTS_OK
+  SHOT docs/shots/01_day_mist_dense_1920x1080.png 1920x1080
+  SHOT docs/shots/02_day_mist_light_1920x1080.png 1920x1080
+  SHOT docs/shots/03_day_pool_close_1920x1080.png 1920x1080
+  SHOT docs/shots/04_day_fog_warm_1920x1080.png 1920x1080
+  SHOT docs/shots/05_night_moonbeams_1920x1080.png 1920x1080
+  SHOT docs/shots/06_night_lantern_pool_1920x1080.png 1920x1080
+  SHOT docs/shots/07_quality_high_1920x1080.png 1920x1080
+  SHOT docs/shots/08_quality_low_1920x1080.png 1920x1080
+
+4) 真实窗口 FPS
+命令: godot --path godot-fog-atmosphere --resolution 1280x720 -s tools/probe_fps.gd
+结果: FOG_FPS_OK；完整样本 docs/fps.txt
+  high_day_720p:            avg=44.2 median=44.0 min=40.0 best2s=48.0
+  high_night_720p:          avg=37.4 median=38.0 min=36.0 best2s=38.0
+  low_day_720p:             avg=45.1 median=46.0 min=23.0(预热) best2s=49.0
+  high_day_1080p_window:    avg=34.5 median=35.0 min=34.0 best2s=34.6
+  low_day_1080p_window:     avg=36.2 median=38.0 min=32.0 best2s=38.0
+  actual_window_size: 1920x762（1440x900 屏幕系统夹高；内部仍 720p 渲染）
+  draw calls: high 72 / night 67 / low 47；nodes 71
+
+5) 10 秒视频
+命令: godot --path godot-fog-atmosphere --fixed-fps 30 -s tools/capture_fog.gd
+结果: FOG_VIDEO_FRAMES_OK frames=300
+ffprobe (docs/fog_atmosphere_demo.mp4): 1280x720 / 30fps / duration=10.000000
+产物:
+  docs/fog_atmosphere_demo.mp4  (8.2 MB)
+  docs/fog_atmosphere_demo.gif  (19 MB, 900 宽 / 12fps)
+帧目录: /tmp/fog_atmosphere_frames（仅临时）
+
+7) 窗口启动检查（真实 OpenGL）
+命令: godot --path godot-fog-atmosphere --resolution 960x540 --quit-after 40
+结果: 退出码 0；ERROR/SCRIPT ERROR 计数 0
+    （新增 icon.svg 且 .godot 缓存稳定后复测两次均为 0；早前一次是 icon 缓存未就绪的陈旧路径读取，已消失）
+
+8) 说明
+- 参考视频/抽帧仅存 /tmp，未进入仓库。
+- 未使用第三方运行时依赖或外部资产。
+- 已知限制见 docs/TECH.md 第 9 节：不是真体积雾；god rays 无深度遮挡；
+  1080p 高质余量不大；水面/灯笼为风格化近似。

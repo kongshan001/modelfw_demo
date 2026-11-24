@@ -2,6 +2,24 @@
 
 ## 进行中
 
+## T-20261124-003 · 复刻 Godot 弹幕教程（10 种弹幕 + Boss 时间轴）
+- 来源: 飞书消息（B 站《Godot 弹幕怎么做？从一颗子弹到 10 种弹幕》，https://b23.tv/iCKBB0L，2026-11-24，2:52）
+- 类型: game-demo（弹幕射击 / VFX）
+- 目标: 按视频复刻子弹方向/速度 → 扇形/环形/追踪/分裂等 10 种弹幕，并用时间轴拼成一场有节奏的 Boss 战
+- 交付: `godot-bullet-hell/` 可运行项目（玩家小判定、移动/聚焦、10 pattern、Boss 时间轴、暂停/重开、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创弹幕/角色/UI，不复制视频或东方等 IP 素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+，1000+ 子弹稳定
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261124-002 · 复刻《时之笛重制版》雾气效果（Godot 大气/体积雾）
+- 来源: 飞书消息（B 站《时之笛重制版雾气效果惊人》，https://b23.tv/hnY9Hrl，2026-11-24，13s）
+- 类型: game-demo（3D 大气/雾效渲染）
+- 目标: 按视频画面复刻“林间/神殿”雾气与光束氛围；在 Godot 4.6 用原创场景实现可调雾密度/高度/颜色、光束、粒子与昼夜
+- 交付: `godot-fog-atmosphere/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 不复制时之笛/任天堂角色/场景/素材/Logo；原创低模场景；Godot 4.6 GL Compatibility（不支持真体积雾则用深度/高度雾+雾片+伪光束并注明）；1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
 ## T-20261124-001 · 复刻《迷雾北境 / Bad North》式极简实时战术防守 Demo
 - 来源: 飞书消息（B 站《1w＋93%好评！8年前的宝藏游戏出DLC了？》，https://b23.tv/ErQVkD3，2026-11-24；游戏《迷雾北境》= Bad North）
 - 类型: game-demo（实时战术 / 防守 roguelite）
