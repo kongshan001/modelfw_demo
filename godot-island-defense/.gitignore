@@ -1,0 +1,5 @@
+.godot/
+*.tmp
+*.log
+docs/frames/
+.DS_Store

@@ -1,0 +1,6 @@
+Mistbound Watch FPS probe
+Godot: 4.6.stable / renderer: gl_compatibility
+GPU: Intel(R) HD Graphics 6000
+
+1280x720: 43.9 fps (600 frames, staged wave+combat)
+1920x1080: 31.4 fps (600 frames, staged wave+combat)

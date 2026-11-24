@@ -2,6 +2,24 @@
 
 ## 进行中
 
+## T-20261124-001 · 复刻《迷雾北境 / Bad North》式极简实时战术防守 Demo
+- 来源: 飞书消息（B 站《1w＋93%好评！8年前的宝藏游戏出DLC了？》，https://b23.tv/ErQVkD3，2026-11-24；游戏《迷雾北境》= Bad North）
+- 类型: game-demo（实时战术 / 防守 roguelite）
+- 目标: 复刻核心循环：选队 → 岛屿布防 → 敌人登陆波次 → 兵种克制/地形/永久死亡 → 守屋；做原创资产的可玩 vertical slice
+- 交付: `godot-island-defense/` 可运行项目（1–2 岛、3 兵种、3–5 波、房屋、永久死亡、胜负/重开、暂停/倍速）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 只复刻抽象机制，不复制 Bad North 名称/角色/UI/素材/商标；原创或 CC0 低模；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；确定性/可复现
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
+## T-20261123-002 · 鬼灭 P2 模型本地接入长安城动作 Demo（不入库）
+- 来源: 飞书消息（2026-11-23，“用这个鬼灭的模型，在我的游戏 demo 里面去应用”）
+- 类型: game-demo（本地角色接入 / 私有测试）
+- 目标: 把已 rig 的 P2 鬼灭模型 + 现有动画接入 `godot-changan-action` 的本地副本，替换/增加玩家角色，跑通移动/攻击/舞蹈并出演示视频
+- 交付: `/tmp/changan-tanjiro/` 本地可运行副本；截图/GIF/MP4；不提交仓库、不入库鬼灭模型/素材；实现/差异记录在 /tmp
+- 约束: **仅本地私有**，鬼灭参考图/模型/渲染不入 repo、不商用、不再分发；不改仓库 `godot-changan-action/`；要入库必须换原创角色
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
 ## T-20261121-042 · 雾港撤离玩法创新迭代（T-026 follow-up）
 - 线程: T-20261121-026（雾港撤离）
 - 父任务: T-20261121-026（done）

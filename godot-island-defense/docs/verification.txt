@@ -1,0 +1,252 @@
+# 验证记录 · T-20261124-001 / 雾屿守望
+
+日期：2026-11-24（Asia/Shanghai）
+
+引擎：Godot 4.6.stable.official.89cea1439
+
+GPU：Intel(R) HD Graphics 6000 / OpenGL 4.1 Compatibility
+
+系统：macOS（本机窗口最大 1440×762；1920×1080 通过 SubViewport 真实渲染）
+
+
+## 1. headless 启动 / 退出
+
+命令：`godot --path . --headless --quit-after 600`
+
+结果：exit 0；stderr 0 字节。
+
+```text
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+```
+
+
+## 2. 真实 GPU 启动 / 退出
+
+命令：`godot --path . --resolution 1280x720 --quit-after 600`
+
+结果：exit 0；stderr 0 字节。
+
+```text
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+```
+
+
+## 3. 逻辑 smoke（headless）
+
+命令：`godot --path . --headless -s tools/smoke_island_defense.gd`
+
+结果：exit 0；stderr 0 字节；81 checks / 0 failures；末行 `ISLAND_DEFENSE_SMOKE_OK`。
+
+```text
+— 数据与克制表 —
+PASS  三个玩家兵种齐备
+PASS  每队 3–6 人（当前 4）
+PASS  盾克弓 ×1.8
+PASS  弓克矛 ×1.8
+PASS  矛克盾 ×1.8
+PASS  矛被弓克制（<0.8）
+PASS  海掠者无克制修正
+PASS  高地 +20% 伤害
+PASS  仰攻 -15% 伤害
+PASS  盾卫挡箭 50%
+PASS  重盾蛮兵挡箭 50%
+PASS  两张岛，波次 3–5 波：[3, 4]
+PASS  波次敌人数量递增
+PASS  兵种名称/伤害/射程字段有效
+— 地形 / 导航 / 登陆 —
+PASS  岛屿构建完成
+PASS  AStar 导航点充足（777）
+PASS  岛心高地（9.17 m）
+PASS  外缘为海岸低地
+PASS  岛上有 3 座房屋
+PASS  岛上有 3 个登陆点
+PASS  房屋均建在高地上
+PASS  登陆点可寻路到房屋（2 个路点）
+PASS  路径终点抵达房屋外围
+PASS  水面点击会被夹回可行走地面
+PASS  三队出生点均可行走
+— 伤害系数与管线 —
+PASS  实际管线：盾→弓 10→18
+PASS  实际管线：弓→矛 10→18
+PASS  实际管线：矛→盾 10→18
+PASS  高打低 10→12
+PASS  低打高 10→8.5
+PASS  弓射盾卫被挡（<4）
+PASS  重盾蛮兵与盾卫挡箭同级
+PASS  damage_enemy 实际扣血 18（矛克盾）
+PASS  damage_member 实际扣血
+— 移动与自动攻击 —
+PASS  移动指令生成路径
+PASS  队伍实际移动（7.65 m）
+PASS  队伍抵达目标附近（0.50 m）
+PASS  移动途中无人阵亡
+PASS  接近后自动近战攻击
+PASS  小队仍存活
+PASS  弓手进入射程生成箭矢投射物
+PASS  箭矢命中并造成伤害
+— 房屋受击 —
+PASS  海掠者接近房屋并造成伤害（150.0 → 69.0）
+PASS  短时间攻击未立刻摧毁房屋
+PASS  受损房屋显示世界空间血条标签
+— 暂停 / 倍速 —
+PASS  1× 推进约 1 秒
+PASS  暂停时不推进模拟
+PASS  T/按钮切到 2×
+PASS  2× 时模拟时间双倍推进
+PASS  再次切换回 1×
+— 永久死亡 —
+PASS  整队阵亡后 alive=false
+PASS  阵亡队伍计入永久损失
+PASS  阵亡队伍无法再被选中
+PASS  仍有两队可继续作战
+— 全屋焚毁失败 —
+PASS  全部房屋焚毁 → 失败
+PASS  失败原因写明房屋尽毁
+PASS  房屋计数归零
+— 全队阵亡失败 —
+PASS  三队全部阵亡 → 失败
+PASS  失败原因写明全队阵亡
+PASS  失败并非因房屋（对照组）
+— 波次推进 / 胜利 —
+PASS  布防倒计时结束进入第 1 波
+PASS  波次开始时生成登陆艇
+PASS  登陆艇投放海掠者
+PASS  清空第 1 波后进入间歇并预告第 2 波
+PASS  击杀计数增加
+PASS  第 2 波开始
+PASS  第 2 波清空后进入第 3 波预告
+PASS  第 3 波开始
+PASS  三波全清 → 胜利
+PASS  胜利结算波次与房屋数据正确
+PASS  胜利结算有文本原因
+— 下一岛 / 重开 —
+PASS  残编队伍清空波次后仍可胜利
+PASS  第 1 岛后有下一岛
+PASS  进入第 2 岛（4 波）
+PASS  阵亡队伍不会进入下一岛
+PASS  幸存队伍补员并重置房屋
+PASS  兵种永久损失：弓手队不复活
+PASS  重开后回到第 1 岛并进入布防
+PASS  重开后三队恢复
+PASS  重开后房屋 / 波次重置
+PASS  重开后恢复 1× 且未暂停
+checks=81 failures=0
+ISLAND_DEFENSE_SMOKE_OK
+```
+
+
+## 4. 真实窗口交互
+
+命令：`godot --path . --resolution 1280x720 -s tools/probe_input_island_defense.gd`
+
+结果：exit 0；stderr 0 字节；15 checks / 0 failures；末行 `ISLAND_DEFENSE_INPUT_OK`。
+
+```text
+PASS  启动进入开场页
+PASS  点击「开始布防」进入战斗
+PASS  点击队伍卡选中盾卫队
+PASS  右键下达移动指令
+PASS  数字 2 选中弓手队
+PASS  Space 暂停
+PASS  暂停时模拟冻结
+PASS  Space 继续
+PASS  T 切 2×
+PASS  T 切回 1×
+PASS  点击顶部「暂停」
+PASS  点击暂停面板「继续」
+PASS  滚轮缩放相机
+PASS  框选三支小队（3）
+PASS  R 重开并恢复三队 / 三屋
+checks=15 failures=0
+ISLAND_DEFENSE_INPUT_OK
+```
+
+
+## 5. 真实 GPU FPS
+
+命令：`godot --path . -s tools/probe_fps_island_defense.gd`
+
+结果：exit 0；stderr 0 字节；Intel HD 6000，600 帧平均。
+
+```text
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+FPS 1280x720 = 43.9
+FPS 1920x1080 = 31.4
+ISLAND_DEFENSE_FPS_OK
+```
+
+
+`docs/fps.txt`：
+```text
+Mistbound Watch FPS probe
+Godot: 4.6.stable / renderer: gl_compatibility
+GPU: Intel(R) HD Graphics 6000
+
+1280x720: 43.9 fps (600 frames, staged wave+combat)
+1920x1080: 31.4 fps (600 frames, staged wave+combat)
+```
+
+
+## 6. 1920×1080 截图
+
+命令：`godot --path . -s tools/screenshot_island_defense.gd`
+
+结果：exit 0；stderr 0 字节；9 张 1920×1080 PNG。
+
+```text
+SHOT res://docs/shots/01_intro_1920x1080.png 1920x1080
+SHOT res://docs/shots/02_deployment_1920x1080.png 1920x1080
+SHOT res://docs/shots/03_landing_1920x1080.png 1920x1080
+SHOT res://docs/shots/04_counter_1920x1080.png 1920x1080
+SHOT res://docs/shots/05_house_under_attack_1920x1080.png 1920x1080
+SHOT res://docs/shots/06_pause_1920x1080.png 1920x1080
+SHOT res://docs/shots/07_victory_1920x1080.png 1920x1080
+SHOT res://docs/shots/08_defeat_1920x1080.png 1920x1080
+SHOT res://docs/shots/09_island2_1920x1080.png 1920x1080
+ISLAND_DEFENSE_SHOTS_OK
+```
+
+
+## 7. 10 秒视频
+
+命令：`godot --path . -s tools/record_island_defense.gd`
+
+结果：exit 0；stderr 0 字节；301 帧 JPG（30fps，1920×1080）。
+
+```text
+recorded 60 frames
+recorded 120 frames
+recorded 180 frames
+recorded 240 frames
+recorded 300 frames
+ISLAND_DEFENSE_RECORD_OK frames=301
+```
+
+编码：
+```bash
+ffmpeg -y -framerate 30 -i /tmp/island_defense_frames/frame_%04d.jpg -c:v libx264 -preset medium -crf 19 -pix_fmt yuv420p -movflags +faststart docs/mistbound_watch_demo.mp4
+ffmpeg -y -i docs/mistbound_watch_demo.mp4 -vf "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4" docs/mistbound_watch_demo.gif
+```
+
+```text
+-rw-r--r--  1 ks_128  staff   8.1M Nov 24 13:41 docs/mistbound_watch_demo.gif
+-rw-r--r--  1 ks_128  staff   4.6M Nov 24 13:41 docs/mistbound_watch_demo.mp4
+-rw-r--r--  1 ks_128  staff   405K Nov 24 13:40 docs/shots/01_intro_1920x1080.png
+-rw-r--r--  1 ks_128  staff   378K Nov 24 13:40 docs/shots/04_counter_1920x1080.png
+```
+
+
+## 8. 补充说明
+
+- 所有真实 GPU 工具的 stderr 均为 0 字节；没有 SCRIPT ERROR。
+
+- 本机系统窗口把请求的 1920×1080 限制为 1440×762；1080p 截图与 FPS 使用 1920×1080 SubViewport 真实渲染，不是放大图。
+
+- 合成鼠标在 1440×762（非 16:9）窗口下对界面最顶部暂停按钮存在 1 项落点偏移；1280×720 真实窗口输入 15/15 通过，Space 暂停、暂停面板继续、滚轮、框选、右键移动均通过。该限制已记录在 TECH.md。
+
+- 真实 GPU 截图/录像工具均在 Intel HD Graphics 6000 上运行；输出见 `docs/shots/` 与 `docs/mistbound_watch_demo.*`。
+
+- 临时平衡探针（未交付）：简单追击 AI 在约 82.8s 内清空三波，剩余 2/3 房屋、2/3 小队；说明核心循环可通，但非正式自动测试。

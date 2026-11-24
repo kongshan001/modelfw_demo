@@ -1,0 +1,44 @@
+; Engine configuration file.
+; 雾屿守望 · Mistbound Watch — original minimalist real-time island defense vertical slice.
+; Godot 4.6 / GL Compatibility / 1280x720 logical canvas. All art is procedural and original.
+
+config_version=5
+
+[application]
+
+config/name="雾屿守望 · Mistbound Watch"
+config/description="原创极简实时岛屿防守 vertical slice：三兵种、登陆波次、房屋防线、永久死亡。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/vsync/vsync_mode=0
+window/energy_saving/keep_screen_on=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.66, 0.76, 0.74, 1)
+environment/defaults/default_environment=""
+
+[debug]
+
+gdscript/warnings/untyped_declaration=0
+gdscript/warnings/unsafe_property_access=0
+gdscript/warnings/unsafe_method_access=0
+gdscript/warnings/unsafe_cast=0
+gdscript/warnings/return_value_discarded=0
