@@ -9,7 +9,7 @@
 - 交付: `godot-bullet-hell/` 可运行项目（玩家小判定、移动/聚焦、10 pattern、Boss 时间轴、暂停/重开、FPS）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创弹幕/角色/UI，不复制视频或东方等 IP 素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+，1000+ 子弹稳定
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261124-002 · 复刻《时之笛重制版》雾气效果（Godot 大气/体积雾）
 - 来源: 飞书消息（B 站《时之笛重制版雾气效果惊人》，https://b23.tv/hnY9Hrl，2026-11-24，13s）

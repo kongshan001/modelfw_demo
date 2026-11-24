@@ -1,0 +1,7 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PERF viewport=(1280, 720) bullets=1200 vsync=0
+PERF_RESULT viewport=1280x720 bullets=1200 frames=206 elapsed=4.01s avg_fps=51.34 worst_frame_ms=24.89 min_fps=40.17
+PERF_HUD_FPS 51
+BULLET_HELL_PERF_OK

@@ -1,0 +1,74 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+=== BULLET HELL SMOKE ===
+PASS  10 patterns registered
+PASS  pattern names unique
+PASS  timeline has 3 phases
+PASS  timeline first phase starts P01
+PASS  P01 single emits 1  [count=1]
+PASS  P01 aimed at player  [angle=1.571]
+PASS  P01 speed 300
+PASS  P02 fan3 emits 3  [count=3]
+PASS  P02 fan ±13°  [[-13.0000015001228, 0.0, 13.0000015001228]]
+PASS  P02 speed 260
+PASS  P03 fan5 emits 5  [count=5]
+PASS  P03 fan ±22°  [[-21.9999983354761, -10.999999167738, 0.0, 10.999999167738, 21.9999983354761]]
+PASS  P04 ring emits 24  [count=24]
+PASS  P04 24 distinct directions  [unique=24]
+PASS  P04 speed 230
+PASS  P05 spiral ~19 waves ×2  [count=38]
+PASS  P05 speed 210
+PASS  P05 angle advances  [unique_dirs=36]
+PASS  P06 burst 3 pulses ×5  [count=15]
+PASS  P06 speed layers 200..460  [{ 200: 3, 265: 3, 330: 3, 395: 3, 460: 3 }]
+PASS  P07 sine flower 48  [count=48]
+PASS  P07 sine speed modulation  [min=170.0 max=330.0]
+PASS  P07 all SINE behavior
+PASS  P08 homing emits 5  [count=5]
+PASS  P08 HOMING behavior
+PASS  P08 steering toward new target  [vx=-167.5]
+PASS  P09 split emits 2 parents  [count=2]
+PASS  P09 timed split → 24 children  [count=24]
+PASS  P09 children flagged
+PASS  P10 wall emits 18 of 21  [count=18]
+PASS  P10 wall speed/direction
+PASS  out-of-bounds bullet culled  [count=0]
+PASS  lifetime bullet culled  [count=0]
+PASS  circle collision hit  [{ "hits": 1, "grazes": 0, "hit_pos": (640.0, 600.0), "removed": 0, "active": 1 }]
+PASS  hit flag prevents recount  [{ "hits": 0, "grazes": 1, "hit_pos": (0.0, 0.0), "removed": 0, "active": 1 }]
+PASS  graze without hit  [{ "hits": 0, "grazes": 1, "hit_pos": (0.0, 0.0), "removed": 0, "active": 1 }]
+PASS  graze counted once  [{ "hits": 0, "grazes": 0, "hit_pos": (0.0, 0.0), "removed": 0, "active": 1 }]
+PASS  clear_radius keeps far bullets  [cleared=3 count=3]
+PASS  1200 bullet capacity  [count=1200 high=1200]
+PASS  1200 bullets step without loss  [count=1200]
+PASS  1000 bullet lifetime cleanup  [count=0]
+PASS  phase 0 before 10s  [phase=0]
+PASS  phase 0 saw P01-P04  [[0, 1, 2, 3]]
+PASS  beat grid 120 BPM  [beat=19.80]
+PASS  phase advance at 10s  [phase=1]
+PASS  phase 1 saw P05-P08  [[4, 5, 6, 7]]
+PASS  phase advance at 22s  [phase=2]
+PASS  phase 2 saw split/wall/reprises  [[8, 9, 6, 4]]
+PASS  timeline covers all 10 patterns  [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]
+PASS  timeline finishes after 38s  [finished=true]
+PASS  fixed-seed split determinism  [samples=104]
+PASS  main scene loads
+PASS  timeline running produces bullets  [{ "phase": 0, "pattern": 0, "inspect": -1, "bullets": 2, "lives": 5, "graze": 0, "hp": 1140.0, "paused": false, "game_over": false, "victory": false, "transition": 0.0, "demo": true, "timeline_enabled": true }]
+PASS  pause freezes bullets  [before=2 after=2]
+PASS  pause freezes simulation time  [before=2.600 after=2.600]
+PASS  restart clears bullets  [{ "phase": 0, "pattern": 0, "inspect": -1, "bullets": 0, "lives": 5, "graze": 0, "hp": 1200.0, "paused": false, "game_over": false, "victory": false, "transition": 1.5, "demo": true, "timeline_enabled": true }]
+PASS  restart resets phase/lives/graze  [{ "phase": 0, "pattern": 0, "inspect": -1, "bullets": 0, "lives": 5, "graze": 0, "hp": 1200.0, "paused": false, "game_over": false, "victory": false, "transition": 1.5, "demo": true, "timeline_enabled": true }]
+PASS  hit integration decrements life  [lives=4]
+PASS  last life → game over  [lives=0]
+PASS  restart after game over
+PASS  boss hp zero → victory  [phase=2 hp=0]
+PASS  key 1 → inspect P01  [inspect=0]
+PASS  key 9 → inspect P09  [inspect=8]
+PASS  key 0 → inspect P10  [inspect=9]
+PASS  key Q exits inspect  [inspect=-1]
+PASS  key P pauses
+PASS  key P resumes
+PASS  key TAB toggles demo  [before=true after=false]
+PASS  key R restarts
+checks: 69, failures: 0
+BULLET_HELL_SMOKE_OK

@@ -1,0 +1,42 @@
+; Engine configuration file.
+; 绯星弹幕 · Scarlet Orbit — original bullet-hell vertical slice.
+; Godot 4.6 / GL Compatibility / 1280x720 logical canvas / procedural art.
+
+config_version=5
+
+[application]
+
+config/name="绯星弹幕 · Scarlet Orbit"
+config/description="原创弹幕射击 demo：10 种数据驱动弹幕、三阶段 Boss 时间轴、固定 seed 可复现。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/energy_saving/keep_screen_on=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.016, 0.012, 0.035, 1)
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
+
+[debug]
+
+gdscript/warnings/untyped_declaration=0
+gdscript/warnings/unsafe_property_access=0
+gdscript/warnings/unsafe_method_access=0

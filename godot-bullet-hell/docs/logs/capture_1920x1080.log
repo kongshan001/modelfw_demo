@@ -1,0 +1,41 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+capture viewport: (1920, 1080) base_fps=90
+saved 01_pattern_p01_single.png 1920x1080
+pattern 1 bullets=3
+saved 02_pattern_p02_fan3.png 1920x1080
+pattern 2 bullets=9
+saved 03_pattern_p03_fan5.png 1920x1080
+pattern 3 bullets=10
+saved 04_pattern_p04_ring.png 1920x1080
+pattern 4 bullets=41
+saved 05_pattern_p05_spiral.png 1920x1080
+pattern 5 bullets=57
+saved 06_pattern_p06_burst.png 1920x1080
+pattern 6 bullets=15
+saved 07_pattern_p07_sine.png 1920x1080
+pattern 7 bullets=48
+saved 08_pattern_p08_homing.png 1920x1080
+pattern 8 bullets=10
+saved 09_pattern_p09_split.png 1920x1080
+pattern 9 bullets=24
+saved 10_pattern_p10_wall.png 1920x1080
+pattern 10 bullets=18
+saved 11_timeline_phase1.png 1920x1080
+timeline phase1 bullets=51 hp=360
+saved 12_phase_transition.png 1920x1080
+phase transition active=1.41666666666682
+saved 13_timeline_phase3.png 1920x1080
+timeline phase3 bullets=24 hp=1780
+saved 14_graze.png 1920x1080
+graze=1 bullets=19
+saved 15_hit.png 1920x1080
+hit: lives=4 bullets_after_clear=16
+saved 16_stress_1200.png 1920x1080
+stress bullets=1200 high_water=1202 stress_fps=49
+saved 17_pause.png 1920x1080
+paused=true
+saved 18_victory.png 1920x1080
+victory=true
+saved 18 screenshots to /Users/ks_128/Documents/modelfw_demo/godot-bullet-hell/docs/media
