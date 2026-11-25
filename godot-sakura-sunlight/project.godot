@@ -1,0 +1,64 @@
+; Engine configuration file.
+; Sakura Sunlight · 樱庭日照 — clean-room 2D pixel sunlight study.
+; Original code and procedurally generated pixel art only.
+
+config_version=5
+
+[application]
+
+config/name="Sakura Sunlight · 樱庭日照"
+config/description="A fixed-camera 2D pixel cherry garden lit only by trigonometry: 08:00-17:00, global shader sunlight, two-part tree shadows with a clamped H/tan(elevation) length."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.10, 0.18, 0.12, 1)
+
+[shader_globals]
+
+u_sun_dir={
+"type": "vec2",
+"value": Vector2(0.64, -0.77)
+}
+u_sun_elevation={
+"type": "float",
+"value": 35.0
+}
+u_sun_color={
+"type": "color",
+"value": Color(1, 0.83, 0.62, 1)
+}
+u_ambient_color={
+"type": "color",
+"value": Color(0.78, 0.82, 0.94, 1)
+}
+u_shadow_color={
+"type": "color",
+"value": Color(0.16, 0.24, 0.30, 0.46)
+}
+u_sun_intensity={
+"type": "float",
+"value": 0.78
+}
+u_shadow_strength={
+"type": "float",
+"value": 1.0
+}
+u_time={
+"type": "float",
+"value": 0.0
+}

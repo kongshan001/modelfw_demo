@@ -18,7 +18,7 @@
 - 交付: `godot-sakura-sunlight/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创像素场景/素材，不复制 Unity/C# 源码和视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不用 3D 灯光
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261125-005 · 复刻《Memoria Wake》式等轴类魂银河城（雨伞弹反）Vertical Slice
 - 来源: 飞书消息（B 站《雨伞弹反等轴类魂银河城！〈Memoria Wake〉…》，https://b23.tv/PIPvgWM，2026-11-25，57s 预告）
