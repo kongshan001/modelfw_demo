@@ -1,0 +1,63 @@
+{
+  "seed": 20261127,
+  "fps": 24,
+  "duration_s": 7.0,
+  "frames": 168,
+  "p_double": 0.08,
+  "blinks": [
+    {
+      "start_s": 0.5869,
+      "start": 14,
+      "close": 3,
+      "hold": 2,
+      "open": 3,
+      "left_off": 0,
+      "right_off": 0,
+      "double": false,
+      "index": 0,
+      "end": 22
+    },
+    {
+      "start_s": 2.5513,
+      "start": 61,
+      "close": 3,
+      "hold": 1,
+      "open": 3,
+      "left_off": 0,
+      "right_off": 1,
+      "double": true,
+      "index": 1,
+      "end": 68
+    },
+    {
+      "start_s": 2.9583,
+      "start": 71,
+      "close": 2,
+      "hold": 1,
+      "open": 4,
+      "left_off": 0,
+      "right_off": 0,
+      "double": true,
+      "index": 2,
+      "end": 78
+    },
+    {
+      "start_s": 5.4607,
+      "start": 131,
+      "close": 2,
+      "hold": 1,
+      "open": 4,
+      "left_off": 0,
+      "right_off": 1,
+      "double": false,
+      "index": 3,
+      "end": 138
+    }
+  ],
+  "double_pairs": 1,
+  "intervals_s": [
+    1.958,
+    0.417,
+    2.5
+  ]
+}

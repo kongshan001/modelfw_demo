@@ -1,0 +1,313 @@
+{
+  "asset": "agent-probes/blink-test/qinghe_blink.glb",
+  "generated": "2026-11-25",
+  "checks": [
+    {
+      "check": "glb_morph_targets",
+      "pass": true,
+      "detail": [
+        "Blink_Half",
+        "Blink_Closed",
+        "Blink_Left_Half",
+        "Blink_Left_Closed",
+        "Blink_Right_Half",
+        "Blink_Right_Closed"
+      ]
+    },
+    {
+      "check": "glb_skins",
+      "pass": true,
+      "detail": [
+        [
+          "QingheRig",
+          22
+        ]
+      ]
+    },
+    {
+      "check": "glb_textures",
+      "pass": true,
+      "detail": [
+        "T_EyeIris",
+        "T_Dress",
+        "T_Apron"
+      ]
+    },
+    {
+      "check": "glb_skin_not_white",
+      "pass": true,
+      "detail": [
+        0.93,
+        0.672,
+        0.546,
+        1
+      ]
+    },
+    {
+      "check": "glb_animation_present",
+      "pass": true,
+      "detail": "Blink_Loop"
+    },
+    {
+      "check": "glb_animation_length",
+      "pass": true,
+      "detail": [
+        0.0417,
+        7.0
+      ]
+    },
+    {
+      "check": "glb_animation_samples",
+      "pass": true,
+      "detail": [
+        168,
+        [
+          168,
+          6
+        ]
+      ]
+    },
+    {
+      "check": "glb_weights_range",
+      "pass": true,
+      "detail": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "check": "glb_weights_start_end_zero",
+      "pass": true,
+      "detail": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "check": "glb_blinks_reach_closed",
+      "pass": true,
+      "detail": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "check": "schedule_valid",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "check": "schedule_3_to_5_blinks",
+      "pass": true,
+      "detail": 4
+    },
+    {
+      "check": "schedule_one_double",
+      "pass": true,
+      "detail": [
+        61,
+        71
+      ]
+    },
+    {
+      "check": "schedule_holds_1_2_frames",
+      "pass": true,
+      "detail": [
+        2,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "check": "schedule_lr_stagger",
+      "pass": true,
+      "detail": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "check": "double_rate_5_10pct",
+      "pass": true,
+      "detail": {
+        "windows": 200,
+        "blinks": 640,
+        "double_pairs": 45,
+        "pairs_per_100_blinks": 7.03,
+        "windows_with_double": 45,
+        "target_p": 0.08
+      }
+    },
+    {
+      "check": "exported_lr_stagger_frames",
+      "pass": true,
+      "detail": [
+        62,
+        63,
+        64,
+        66,
+        67,
+        68,
+        132,
+        133,
+        135,
+        136,
+        137,
+        138
+      ]
+    },
+    {
+      "check": "coverage_80_90_10_20",
+      "pass": true,
+      "detail": {
+        "upper_pct": 81.98,
+        "lower_pct": 18.02
+      }
+    },
+    {
+      "check": "highlight_clearance",
+      "pass": true,
+      "detail": {
+        "blend_min_m": 0.009428,
+        "highlight_m": 0.0082,
+        "naive_sag_would_be_m": 0.005573
+      }
+    },
+    {
+      "check": "lash_faces_replaced",
+      "pass": true,
+      "detail": 56
+    },
+    {
+      "check": "per_side_isolation",
+      "pass": true,
+      "detail": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "blender_reimport_targets",
+      "pass": true,
+      "detail": 6
+    },
+    {
+      "check": "blender_reimport_morph_drives",
+      "pass": true,
+      "detail": {
+        "drift_m": 0.073898,
+        "moved_over_1mm": 1320
+      }
+    },
+    {
+      "check": "godot_import",
+      "pass": true,
+      "detail": {
+        "blend_shapes": true,
+        "tracks": true,
+        "bones": true,
+        "animation": [
+          "ANIM Blink length=7.0 tracks=6 blend_shape_tracks=6"
+        ]
+      }
+    },
+    {
+      "check": "media_mp4",
+      "pass": true,
+      "detail": {
+        "bytes": 131946,
+        "duration_s": 7.0
+      }
+    },
+    {
+      "check": "media_target_size",
+      "pass": true,
+      "detail": {
+        "char_px": 180,
+        "changed_pct_eye_roi": 40.2,
+        "mean_abs_diff_eye_roi": 46.288
+      }
+    },
+    {
+      "check": "open_state_parity",
+      "pass": true,
+      "detail": {
+        "mean_abs_diff": 1.424,
+        "p99_abs_diff": 12.0
+      }
+    }
+  ],
+  "summary": {
+    "passed": 27,
+    "total": 27,
+    "ok": true
+  },
+  "numbers": {
+    "blink_count": 4,
+    "fps": 24,
+    "duration_s": 7.0,
+    "seed": 20261127,
+    "double_rate_pairs_per_100_blinks": 7.03,
+    "coverage": {
+      "upper_pct": 81.98,
+      "lower_pct": 18.02
+    },
+    "blend_clearance_m": {
+      "min": 0.009428,
+      "highlight": 0.0082
+    },
+    "target_size": {
+      "target_char_height_px": 180,
+      "target_panel_px": [
+        95,
+        195
+      ],
+      "eye_roi_px": [
+        32,
+        19,
+        62,
+        36
+      ],
+      "mean_abs_diff_eye_roi": 46.288,
+      "max_abs_diff_eye_roi": 218.0,
+      "changed_pixels_gt30": 205,
+      "changed_pct_of_eye_roi": 40.2,
+      "mean_abs_diff_face_band": 9.318,
+      "note": "eye ROI: 205 px (>30/255) change, 40.2% of the ROI; the blink is visible at 180 px character height"
+    },
+    "open_parity": {
+      "mean_abs_diff": 1.424,
+      "p99_abs_diff": 12.0
+    },
+    "glb_bytes": 7331952
+  }
+}

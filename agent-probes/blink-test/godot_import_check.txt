@@ -1,0 +1,21 @@
+# Godot 4.6 headless import check — filtered meaningful lines
+# (headless dummy renderer prints RID/leak warnings on quit; omitted)
+# command: godot --headless --path /tmp/godot-blink --script res://check.gd
+
+GODOT_VERSION 4.6-stable (official)
+ROOT qinghe_blink children=2
+MESH_INSTANCE Qinghe surfaces=20 blend_shapes=0 names=[] skeleton=..
+MESH_INSTANCE Qinghe_BlinkLids surfaces=2 blend_shapes=6 names=[&"Blink_Half", &"Blink_Closed", &"Blink_Left_Half", &"Blink_Left_Closed", &"Blink_Right_Half", &"Blink_Right_Closed"] skeleton=..
+MESH_INSTANCE Qinghe_Outline surfaces=1 blend_shapes=0 names=[] skeleton=..
+ANIM_PLAYERS 1
+ANIM_LIST ["Blink"]
+ANIM Blink length=7.0 tracks=6 blend_shape_tracks=6
+  TRACK 0 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Half keys=1
+  TRACK 1 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Closed keys=1
+  TRACK 2 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Left_Half keys=26
+  TRACK 3 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Left_Closed keys=18
+  TRACK 4 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Right_Half keys=26
+  TRACK 5 path=QingheRig/Skeleton3D/Qinghe_BlinkLids:Blink_Right_Closed keys=18
+SKELETON Skeleton3D bones=22
+SET_BLEND Qinghe_BlinkLids Blink_Left_Closed idx=3 value=1.0
+GODOT_CHECK_OK

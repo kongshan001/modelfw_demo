@@ -26,6 +26,7 @@
 | .blend | `qinghe.blend`，20,208,544 B（打包贴图） |
 | 渲染 | Blender 3.4.1 EEVEE Legacy，1440×1800 / 1440×1440，32 samples |
 | 渲染耗时 | 6 张板共 87.2 s（首帧 53.5 s 含 shader 编译；其余 8–9 s） |
+| 眨眼变体 | `../blink-test/qinghe_blink.blend/.glb`：几何眼睑 + 6 morph targets + 7 s / 24 fps 眨眼 clip（T-20261125-011，见 `docs/BLINK.md`） |
 
 ## 复跑
 
@@ -82,12 +83,22 @@ agent-probes/blender-anime-girl/
 | Blender 4.2.9 / EEVEE Next | ❌ 同上 SIGSEGV |
 | Blender 4.2.9 / Cycles CPU | ⚠️ 能渲染；但 Shader-to-RGB toon 节点在 Cycles 不成立，角色变深色（见反例图） |
 
+## 眨眼变体（T-20261125-011）
+
+![blink contact](../blink-test/blink_face_contact.png)
+
+在 qinghe 的 decal 眼上新建几何眼睑（上睑帘 + 可动睫毛带 + 下睑带，522 verts / 392 quads，
+刚性绑 head），加 6 个 morph targets，做 7 s / 24 fps 眨眼循环（4 次眨眼含 1 次双眨、左右 1 帧错开）。
+GLB 在 Godot 4.6 导入 6 blend shapes + 6 条 blend-shape 轨道；Blender 3.4.1 回导 6 targets + 1–168 帧 action；
+27/27 自动检查通过。资产在 [`../blink-test/`](../blink-test/)，方法/坑/数字见
+[`docs/BLINK.md`](../../docs/BLINK.md)。
+
 ## 已知边界
 
 - 眼睛是贴合头面的分层 decal + 虹膜贴图；正/3-4 视图好，**正侧面会看到眼白浮起**。
 - 头发是低模发片/球体 + 平涂 toon；发丝贴图因各部件 UV 方向不一致未用于最终头发。
 - 头/身用 voxel remesh + smooth，**无动画级环线**；自动最近骨权重；手指不单独绑骨。
-- 无面部表情/口型、无头发骨、无动画 clip、无 IK。
+- 原版无面部表情/口型、无头发骨、无动画 clip、无 IK。眨眼变体（`../blink-test/`）已补：几何眼睑 + `Blink_Half/Closed`（左右独立）+ 7 s 循环；仍无口型、眉/颊联动、眼神 look-at。
 - 描边壳使几何量翻倍；生产需 LOD/可选描边。
 - Tripo 图生 3D **未测**：本机无 `TRIPO_API_KEY`（API 经代理可达但 401）。见探针报告。
 

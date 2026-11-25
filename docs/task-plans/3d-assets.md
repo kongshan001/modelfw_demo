@@ -2,6 +2,22 @@
 
 ## 进行中
 
+## T-20261125-011 · 原创角色眨眼动画能力测试（Blender 形态键）
+- 来源: 飞书消息（2026-11-25，“一般模型做眨眼动画需要注意什么”→“可以试试”）
+- 类型: 3d-asset（面部动画 / 形态键）
+- 目标: 在原创 qinghe/taoyao 模型上实际做眨眼：眼睑形态键、随机节奏/双眨/左右错帧、GLB morph 导出、渲染验收；验证我们是否具备该能力
+- 交付: Blender 脚本 + 更新模型/GLB；face close-up GIF/MP4 + 关键帧；docs/BLINK.md（眼睑路径/节奏/坑/导出）；README；媒体
+- 约束: 仅用原创模型，不复制 IP/参考素材；Blender 3.4.1；眼睑不得穿模、高光稳定；形态键导出 glTF/Godot 可用；不改其他项目
+- 指派: game-artist worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261125-011/result.md
+  - 资产: `agent-probes/blink-test/qinghe_blink.blend`（4.45 MB）/ `qinghe_blink.glb`（7.33 MB，6 morph targets + 7 s clip）/ 6 张 1024² 关键帧 / `blink_face_loop.mp4`（512² 24fps 7.0s）/ `blink_face_loop.gif` / `target_size_blink.gif` / 节奏图 / 对照图
+  - 工具: `tools/blender_blink/`（build / render / make_media / inspect_glb / reimport_check / validate / blink_schedule）
+  - 文档: `docs/BLINK.md`（结构/眼睑路径/形态键/节奏/坑/导出/验证/复用清单）；`agent-probes/blink-test/README.md`；qinghe README、探针报告已补链接
+  - 验证: 27/27 自动检查通过（`blink_validation.json`）；Godot 4.6 导入 6 blend shapes + 6 条轨道；Blender 回导帧 1→17 位移 73.9 mm
+  - 关键数字: 上/下睑 81.98% / 18.02%；投影 Half 混合态最小离面 9.43 mm > 高光 8.2 mm；Open 保真 1.42/255；180 px 眼部 ROI 40.2% 像素变化 >30/255
+  - 备注: 原始 qinghe 无眼睑骨/decal 眼；taoyao 同构未重复搭建；Godot 仅 headless 导入，未做 GPU 回放（handoff 给 engineer/QA）
+
 ## T-20261123-001 · 3D 角色动画方案对比（Mixamo vs 商业/开源/AI 动捕）
 - 来源: 飞书消息（2026-11-23，“模型动画想更丰富，知道 Mixamo，但不确定是否有更好的方案”）
 - 类型: 3d-asset（动画管线调研）

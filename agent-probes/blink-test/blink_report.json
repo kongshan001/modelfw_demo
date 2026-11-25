@@ -1,0 +1,222 @@
+{
+  "blender": "3.4.1",
+  "source_blend": "agent-probes/blender-anime-girl/qinghe.blend",
+  "output_blend": "agent-probes/blink-test/qinghe_blink.blend",
+  "output_glb": "agent-probes/blink-test/qinghe_blink.glb",
+  "glb_bytes": 7331952,
+  "rig_bones": 22,
+  "has_eyelid_bones": [],
+  "shape_keys_before": [],
+  "lash_faces_removed": 56,
+  "lid_object": "Qinghe_BlinkLids",
+  "lid_verts": 522,
+  "lid_faces": 392,
+  "lid_parts": {
+    "upper_rows": 5,
+    "lower_rows": 4,
+    "columns": 29,
+    "eyes": 2
+  },
+  "offsets_m": {
+    "upper": 0.0108,
+    "lower": 0.0105
+  },
+  "meet_line": {
+    "centre_z": 1.0995,
+    "corner_rise_z": 0.0355,
+    "top_cap_z": 1.192
+  },
+  "coverage_centre": {
+    "upper_pct": 81.98,
+    "lower_pct": 18.02
+  },
+  "shape_keys": [
+    "Blink_Open",
+    "Blink_Half",
+    "Blink_Closed",
+    "Blink_Left_Half",
+    "Blink_Left_Closed",
+    "Blink_Right_Half",
+    "Blink_Right_Closed"
+  ],
+  "targets": {
+    "Blink_Half": {
+      "moved_verts": 406,
+      "max_disp_m": 0.037665,
+      "bbox_min": [
+        -0.0988,
+        -0.1414,
+        1.0817
+      ],
+      "bbox_max": [
+        0.0988,
+        -0.1021,
+        1.1805
+      ]
+    },
+    "Blink_Closed": {
+      "moved_verts": 406,
+      "max_disp_m": 0.073898,
+      "bbox_min": [
+        -0.0988,
+        -0.1414,
+        1.0849
+      ],
+      "bbox_max": [
+        0.0988,
+        -0.1024,
+        1.1695
+      ]
+    },
+    "Blink_Left_Half": {
+      "moved_verts": 203,
+      "max_disp_m": 0.037665,
+      "bbox_min": [
+        0.0112,
+        -0.1414,
+        1.0817
+      ],
+      "bbox_max": [
+        0.0988,
+        -0.1021,
+        1.1805
+      ]
+    },
+    "Blink_Left_Closed": {
+      "moved_verts": 203,
+      "max_disp_m": 0.073898,
+      "bbox_min": [
+        0.0112,
+        -0.1414,
+        1.0849
+      ],
+      "bbox_max": [
+        0.0988,
+        -0.1024,
+        1.1695
+      ]
+    },
+    "Blink_Right_Half": {
+      "moved_verts": 203,
+      "max_disp_m": 0.037665,
+      "bbox_min": [
+        -0.0988,
+        -0.1414,
+        1.0817
+      ],
+      "bbox_max": [
+        -0.0112,
+        -0.1021,
+        1.1805
+      ]
+    },
+    "Blink_Right_Closed": {
+      "moved_verts": 203,
+      "max_disp_m": 0.073898,
+      "bbox_min": [
+        -0.0988,
+        -0.1414,
+        1.0849
+      ],
+      "bbox_max": [
+        -0.0112,
+        -0.1024,
+        1.1695
+      ]
+    }
+  },
+  "offset_surface_checks": {
+    "open_min_offset_m": 0.0105,
+    "half_min_offset_m": 0.0105,
+    "closed_min_offset_m": 0.0105,
+    "blend_open_half_min_offset_m": 0.009429,
+    "blend_half_closed_min_offset_m": 0.009428,
+    "naive_open_closed_mid_sag_min_offset_m": 0.005573,
+    "highlight_offset_m": 0.0082,
+    "eye_white_offset_m": 0.0045
+  },
+  "left_key_moved_right_verts": 0,
+  "right_key_moved_left_verts": 0,
+  "normals_mean_y": -0.8539,
+  "action": {
+    "name": "Blink_Loop_24fps",
+    "fcurves": [
+      "key_blocks[\"Blink_Left_Half\"].value",
+      "key_blocks[\"Blink_Left_Closed\"].value",
+      "key_blocks[\"Blink_Right_Half\"].value",
+      "key_blocks[\"Blink_Right_Closed\"].value"
+    ],
+    "frame_range": [
+      1,
+      168
+    ],
+    "fps": 24
+  },
+  "schedule": {
+    "seed": 20261127,
+    "fps": 24,
+    "duration_s": 7.0,
+    "frames": 168,
+    "p_double": 0.08,
+    "blinks": [
+      {
+        "start_s": 0.5869,
+        "start": 14,
+        "close": 3,
+        "hold": 2,
+        "open": 3,
+        "left_off": 0,
+        "right_off": 0,
+        "double": false,
+        "index": 0,
+        "end": 22
+      },
+      {
+        "start_s": 2.5513,
+        "start": 61,
+        "close": 3,
+        "hold": 1,
+        "open": 3,
+        "left_off": 0,
+        "right_off": 1,
+        "double": true,
+        "index": 1,
+        "end": 68
+      },
+      {
+        "start_s": 2.9583,
+        "start": 71,
+        "close": 2,
+        "hold": 1,
+        "open": 4,
+        "left_off": 0,
+        "right_off": 0,
+        "double": true,
+        "index": 2,
+        "end": 78
+      },
+      {
+        "start_s": 5.4607,
+        "start": 131,
+        "close": 2,
+        "hold": 1,
+        "open": 4,
+        "left_off": 0,
+        "right_off": 1,
+        "double": false,
+        "index": 3,
+        "end": 138
+      }
+    ],
+    "double_pairs": 1,
+    "intervals_s": [
+      1.958,
+      0.417,
+      2.5
+    ]
+  },
+  "material_slots_exported": [
+    "Skin",
+    "Lash"
+  ]
+}

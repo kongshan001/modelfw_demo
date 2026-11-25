@@ -1,0 +1,58 @@
+{
+  "glb": "agent-probes/blink-test/qinghe_blink.glb",
+  "objects": [
+    "Qinghe",
+    "Qinghe_BlinkLids",
+    "Qinghe_Outline",
+    "QingheBlinkLidsMesh",
+    "QingheRig"
+  ],
+  "lid_mesh": "QingheBlinkLidsMesh",
+  "lid_verts": 1568,
+  "lid_polys": 784,
+  "shape_keys": [
+    "Basis",
+    "Blink_Half",
+    "Blink_Closed",
+    "Blink_Left_Half",
+    "Blink_Left_Closed",
+    "Blink_Right_Half",
+    "Blink_Right_Closed"
+  ],
+  "target_count": 6,
+  "action": "Blink_Loop_QingheBlinkLidsMesh",
+  "action_frame_range": [
+    1.0,
+    168.0
+  ],
+  "armature": "QingheRig",
+  "bones": 22,
+  "vertex_groups": 22,
+  "modifiers": [
+    "ARMATURE"
+  ],
+  "values_frame1": {
+    "Basis": 0.0,
+    "Blink_Half": 0.0,
+    "Blink_Closed": 0.0,
+    "Blink_Left_Half": 0.0,
+    "Blink_Left_Closed": 0.0,
+    "Blink_Right_Half": 0.0,
+    "Blink_Right_Closed": 0.0
+  },
+  "values_frame17": {
+    "Basis": 0.0,
+    "Blink_Half": 0.0,
+    "Blink_Closed": 0.0,
+    "Blink_Left_Half": 0.0,
+    "Blink_Left_Closed": 1.0,
+    "Blink_Right_Half": 0.0,
+    "Blink_Right_Closed": 1.0
+  },
+  "max_vertex_drift_frame1_to_17_m": 0.073898,
+  "moved_verts_over_1mm": 1320,
+  "lid_min_z_open_m": 1.0783,
+  "lid_min_z_closed_m": 1.0783,
+  "lid_min_z_drop_m": 0.0,
+  "morphs_drive_geometry": true
+}
