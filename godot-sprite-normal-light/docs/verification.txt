@@ -1,0 +1,142 @@
+灯影工坊 · 验收记录
+====================
+
+日期: 2026-11-25
+引擎: Godot 4.6.stable.official.89cea1439
+渲染: OpenGL API 4.1 INTEL-18.8.16 — Compatibility
+GPU:  Intel(R) HD Graphics 6000
+系统: macOS；测试时同时有其他 worker/Godot 进程运行，FPS 为保守值。
+
+1. Headless smoke
+-----------------
+命令:
+  godot --headless --path godot-sprite-normal-light \
+    -s tools/smoke_sprite_normal_light.gd
+
+输出:
+  Godot Engine v4.6.stable.official.89cea1439
+  SPRITE_NORMAL_LIGHT_READY viewport=(1280.0, 720.0) sprites=5
+  SPRITE_NORMAL_LIGHT_RESET
+  SMOKE_SUMMARY checks=181 failures=0
+  SPRITE_NORMAL_LIGHT_SMOKE_OK
+
+覆盖: 5 张受光精灵/尺寸/nearest/整数坐标、法线图非平面、粗糙度 alpha、
+CanvasTexture 绑定、导入设置 (normal_map=2 / invert_y=false / no mipmap)、
+shader 关键代码 (hint_normal / 逆转置 / flip_x / spec/rough/rim/height)、
+8 个滑杆、光照参数、点光/方向光、光源移动、暂停冻结、法线开关、调试循环、
+原生 Light2D 路径 (Point + Directional + fill + CanvasModulate)、
+翻转/2× 缩放与脚底锚点、重置、单 Camera2D、无 SubViewport、像素完美设置。
+
+2. 1280x720 FPS probe
+---------------------
+命令:
+  godot --path godot-sprite-normal-light --resolution 1280x720 \
+    -s tools/probe_sprite_normal_light.gd
+
+输出:
+  PROBE window=(1280, 720) driver=Intel(R) HD Graphics 6000
+  DRAW_CALLS with_hud total=87
+  shader_with_hud: avg=274.9 min=249.2 frames=1100
+  DRAW_CALLS world_only total=9
+  shader_world_only: avg=395.5 min=393.5 frames=1582
+  native_world_only: avg=289.6 min=287.5 frames=727
+  debug_normal_with_hud: avg=194.0 min=188.1 frames=486
+  SPRITE_NORMAL_LIGHT_PROBE_RESULT hud_avg=274.9 hud_min=249.2 world_avg=395.5
+    world_min=393.5 native_avg=289.6 debug_avg=194.0 lowest_avg=194.0
+  SPRITE_NORMAL_LIGHT_PROBE_OK
+
+3. 1920x1080 FPS probe
+----------------------
+命令:
+  godot --path godot-sprite-normal-light \
+    -s tools/probe_sprite_normal_light_1080.gd
+
+输出:
+  PROBE1080 root=(1920, 1080) driver=Intel(R) HD Graphics 6000
+  DRAW_CALLS with_hud total=87
+  shader_with_hud: avg=150.2 min=144.5 frames=601
+  shader_world_only: avg=154.3 min=154.9 frames=464
+  native_world_only: avg=121.7 min=120.2 frames=305
+  SPRITE_NORMAL_LIGHT_PROBE_1080_RESULT hud_avg=150.2 hud_min=144.5
+    world_avg=154.3 world_min=154.9 native_avg=121.7 native_min=120.2
+    lowest_avg=121.7
+  SPRITE_NORMAL_LIGHT_PROBE_1080_OK
+
+注: 1920 世界层的 1s 采样 min 略高于同段 avg，是采样窗口重叠噪声；
+以 avg 为准。两次运行的绝对 FPS 会随系统负载变化，均远高于 30。
+
+4. 真实 GPU / headless 600 帧启动
+---------------------------------
+命令:
+  godot --headless --path godot-sprite-normal-light --quit-after 600
+  godot --path godot-sprite-normal-light --resolution 1280x720 --quit-after 600
+
+输出:
+  headless: Godot Engine v4.6 ... / SPRITE_NORMAL_LIGHT_READY viewport=(1280.0, 720.0) sprites=5
+  GPU:      Godot Engine v4.6 ... / OpenGL API 4.1 INTEL-18.8.16 — Compatibility /
+            SPRITE_NORMAL_LIGHT_READY viewport=(1280.0, 720.0) sprites=5
+
+两处均 0 ERROR、0 SCRIPT ERROR、0 WARNING。退出码 0。
+
+5. 1920x1080 截图（真实根窗口）
+-------------------------------
+命令:
+  godot --path godot-sprite-normal-light -s tools/screenshot_sprite_normal_light.gd
+
+输出:
+  SCREENSHOT_ROOT_SIZE=(1920, 1080)
+  SHOT res://docs/shots/01_ui_shader.png 1920x1080
+  SHOT res://docs/shots/02_normal_on.png 1920x1080
+  SHOT res://docs/shots/03_normal_off.png 1920x1080
+  SHOT res://docs/shots/04_debug_normal.png 1920x1080
+  SHOT res://docs/shots/05_debug_light.png 1920x1080
+  SHOT res://docs/shots/09_debug_vectors.png 1920x1080
+  SHOT res://docs/shots/06_ui_native_light2d.png 1920x1080
+  SHOT res://docs/shots/07_highlight_closeup.png 1920x1080
+  SHOT res://docs/shots/08_flip_scale.png 1920x1080
+  SPRITE_NORMAL_LIGHT_SHOTS_OK count=9 size=(1920, 1080)
+
+文件大小:
+  01_ui_shader.png        684K
+  02_normal_on.png        670K
+  03_normal_off.png       483K
+  04_debug_normal.png     344K
+  05_debug_light.png      404K
+  06_ui_native_light2d.png 358K
+  07_highlight_closeup.png 600K
+  08_flip_scale.png       689K
+  09_debug_vectors.png    638K
+
+6. 10s 视频
+-----------
+命令:
+  godot --path godot-sprite-normal-light --fixed-fps 30 \
+    -s tools/capture_sprite_normal_light.gd
+  ffmpeg ... (tools/build_media.sh)
+
+输出:
+  SPRITE_NORMAL_LIGHT_CAPTURE_OK frames=300
+  duration=10.000000
+  docs/sprite_normal_light.mp4  2.0M  1920x1080 30fps
+  docs/sprite_normal_light.gif  4.5M  960x540 15fps
+
+内容: 法线 ON/OFF（同一 0° 光位）、点光巡游、法线图调试、光照向量叠加、
+低粗糙度金属高光、原生 CanvasTexture + Light2D、翻转/2× 缩放、主画面。
+视频源为 1280x720 固定 30fps SubViewport 抓帧，MP4 最近邻放大到 1920；
+截图则是真实 1920 根视口。
+
+7. 工具链噪声 / 已知非阻塞问题
+-----------------------------
+- 在部分 `godot --import` 运行中会看到引擎条件打印
+  `ERROR: Condition "p_name.is_empty()" is true. at: set_name (scene/main/node.cpp:1432)`；
+  同一空测试工程也可复现，项目正常导入/运行/截图/探针均无该错误，未做引擎级修改。
+- 截图工具/录像工具的 FPS 读数受窗口/逐帧抓图影响，不作为性能结论；
+  性能以 probe_*.gd 为准。
+- 本项目没有实时阴影、单光源、法线图按 1 art px/texel 最近邻采样；
+  详见 docs/TECH.md 「已知限制」。
+
+8. 结论
+-------
+- 可运行、可交互、可切两条路径；无 SCRIPT ERROR。
+- Smoke 181/181 通过；1280/1920 性能均远超 30 FPS。
+- 9 张真实 1920×1080 截图 + 10s MP4/GIF 已生成。

@@ -1,0 +1,90 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Lanternlight Workshop · 灯影工坊"
+config/description="A side-view pixel workshop lit by a movable ember: albedo + height + Sobel normal maps, a custom CanvasItem normal-light shader, and the native Godot CanvasTexture + Light2D path for comparison."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.035, 0.043, 0.055, 1)
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+
+[shader_globals]
+
+u_light_mode={
+"type": "int",
+"value": 0
+}
+u_light_pos={
+"type": "vec2",
+"value": Vector2(139, 79)
+}
+u_light_height={
+"type": "float",
+"value": 64.0
+}
+u_light_radius={
+"type": "float",
+"value": 240.0
+}
+u_light_color={
+"type": "color",
+"value": Color(1, 0.73, 0.45, 1)
+}
+u_light_energy={
+"type": "float",
+"value": 2.0
+}
+u_light_angle_deg={
+"type": "float",
+"value": 330.0
+}
+u_ambient_color={
+"type": "color",
+"value": Color(0.27, 0.315, 0.432, 1)
+}
+u_normal_strength={
+"type": "float",
+"value": 1.0
+}
+u_roughness={
+"type": "float",
+"value": 0.5
+}
+u_spec_strength={
+"type": "float",
+"value": 0.6
+}
+u_rim_strength={
+"type": "float",
+"value": 0.16
+}
+u_debug_mode={
+"type": "int",
+"value": 0
+}
+u_normals_on={
+"type": "bool",
+"value": true
+}
