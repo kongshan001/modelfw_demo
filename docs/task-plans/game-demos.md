@@ -2,6 +2,52 @@
 
 ## 进行中
 
+## T-20261125-008 · 复刻 2D 像素法线受光 + 零额外相机水面夜景反射
+- 来源: 飞书消息（B 站《硬核源码拆解｜拒绝塑料贴纸感！单人手搓 Unity 2D 像素法线受光 + 零额外相机水面夜景反射》，https://b23.tv/XKbRSNA，2026-11-25，2:52）
+- 类型: game-demo（2D 像素光照 / 水面反射）
+- 目标: 复刻 2D 像素法线受光与夜景水面反射：法线正交受光、沿脚底锚点翻折的单 Mesh 合批倒影、round() 像素级水波；不额外开相机/Viewport
+- 交付: `godot-pixel-normal-water/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；单相机
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261125-007 · 复刻 2D 像素樱花树动态日照（三角函数/无 3D 灯光）
+- 来源: 飞书消息（B 站《不靠3D灯光！用初中三角函数在Unity里手搓2D像素樱花树动态日照》，https://b23.tv/6AKhuqE，2026-11-25，1:31）
+- 类型: game-demo（2D 像素光照 / 投影）
+- 目标: 用 Godot 4.6 + GDScript/shader 复刻 08:00–17:00 的 2D 像素日照闭环：太阳方位/高度角、全局受光同步、树冠+树干两段式地面投影、影长按树高/tan 计算并封顶
+- 交付: `godot-sakura-sunlight/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/C# 源码和视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不用 3D 灯光
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261125-005 · 复刻《Memoria Wake》式等轴类魂银河城（雨伞弹反）Vertical Slice
+- 来源: 飞书消息（B 站《雨伞弹反等轴类魂银河城！〈Memoria Wake〉…》，https://b23.tv/PIPvgWM，2026-11-25，57s 预告）
+- 类型: game-demo（等轴 3D 动作 / 类魂 / 银河城）
+- 目标: 复刻核心体验：等轴视角、武器化雨伞攻防/精准弹反、闪避、精力/回血取舍、敌人预警、检查点、遗物能力开门、记忆碎片；做一段原创梦境关卡
+- 交付: `godot-dream-parry/` 可运行 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创名称/角色/场景/素材；不复制《Memoria Wake》/Team Crescendo 的角色/UI/素材/剧情/音乐/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261125-003 · 续跑波次生存 Vertical Slice（T-039 重试）
+- 线程: T-20261121-038（波次进攻）
+- 父任务: T-20261121-039（failed）
+- 类型: game-demo（Godot 波次生存）
+- 目标: 复用 `godot-wave-defense/` 半成品，补齐 8 波/5 敌型/2 塔/三选一/胜负/分数与验证后入库
+- 交付: 可运行 `godot-wave-defense/`；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU；git 提交
+- 约束: 只复刻抽象机制，不复制《奔奔王国》/Kingshot 角色/UI/素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
+## T-20261125-004 · 复刻 Unity 雨天积水（Godot 2D 像素雨/水洼）
+- 来源: 飞书消息（B 站《unity中怎么做出雨天积水？我教你！》，https://b23.tv/lJa7W9c，2026-11-25，3:16）
+- 类型: game-demo（2D 像素 VFX / 雨与水洼）
+- 目标: 按视频复刻 2D 像素雨景：360 渐变雨丝、72 双环涟漪、22s 自然积水/75s 渗干、树木与暖灯倒影、低洼盆地噪声 + 灯柱积水规则；不用粒子系统，尽量少 draw call
+- 交付: `godot-rain-puddles/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；2D；不用粒子系统
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
 ## T-20261125-002 · 《青岚杯》真实感汽车 Tripo 重建（T-001 follow-up）
 - 来源: 飞书消息（2026-11-25，“真实感汽车”）
 - 线程: T-20261124-004（GPT-6 + Hyper3D 3D 游戏）
@@ -121,6 +167,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: failed
 - depends_on: T-20261121-038
+- 后续: T-20261125-003（重试）
 
 ## T-20261121-037 · 复刻 Godot Particles 魔法发射特效教程
 - 来源: 飞书消息（B 站《中配：Godot Particles 魔法发射特效教程！》，https://b23.tv/9gCDB4E，2026-11-21，21:21）

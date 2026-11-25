@@ -580,3 +580,26 @@
 ### 7.3 一句话给实现者
 
 > 做“**一条路、一个卡口、三座塔位、八波红兵**”的单机原型：让玩家在 3 分钟内学会“把敌人引进塔的射程”，在 W4–W6 输一次，并想立刻再来一局；不要做城建、抽卡、联盟和广告里的大规模兵潮。
+
+---
+
+## 8. 实现状态（2026-11-25 · T-20261125-003）
+
+brief 已落成可玩 vertical slice，代码在 `godot-wave-defense/`：
+
+| 项 | 状态 |
+| --- | --- |
+| 单场地 / 8 波 / 5 敌人（含 Boss）/ 2 塔（各 2 级）/ 3 次三选一 | 已实现 |
+| 领主走位 + 自动攻击 + 回旋斩 + 死亡复活 | 已实现 |
+| 3 个固定基座、建塔/升级/出售（返还 50%）、波间修墙/重建 | 已实现 |
+| 主城 HP 失败、失败/重开 <2s、分数/评级、本地最高分存档 | 已实现 |
+| 1280×720 逻辑 / 1920×1080 截图 / GL Compatibility | 已实现 |
+| 原创程序化资产、无第三方运行时依赖 | 已实现 |
+
+验收（真实输出）：
+
+- `godot --headless --path godot-wave-defense --quit-after 600` → 0 ERROR。
+- `godot --headless --path godot-wave-defense --script tools/smoke_wave_defense.gd` → `99 passed, 0 failed` / `WAVE_DEFENSE_SMOKE_OK` / exit 0。
+- 7 张 1920×1080 实机截图与 10.0s MP4/GIF 位于 `godot-wave-defense/docs/shots/`。
+
+与 brief 的差异/取舍：墙初始 80/120（提示可修，非满墙）；未做音频（brief 中可选）；数值为原创起点，未经 5 人 playtest 调平。详细参数、性能与已知风险见 `godot-wave-defense/docs/TECH.md` 与 `docs/迭代记录.md`。
