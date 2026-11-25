@@ -9,7 +9,8 @@
 - 交付: `godot-pixel-normal-water/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；单相机
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261125-008/result.md
 
 ## T-20261125-007 · 复刻 2D 像素樱花树动态日照（三角函数/无 3D 灯光）
 - 来源: 飞书消息（B 站《不靠3D灯光！用初中三角函数在Unity里手搓2D像素樱花树动态日照》，https://b23.tv/6AKhuqE，2026-11-25，1:31）

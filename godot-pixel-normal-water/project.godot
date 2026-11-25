@@ -1,0 +1,31 @@
+; Engine configuration file.
+; Stillwater · 静水回廊 — clean-room 2D pixel normal-lighting / single-camera reflection study.
+; Original code and procedurally generated pixel art only.
+
+config_version=5
+
+[application]
+
+config/name="Stillwater · 静水回廊"
+config/description="A 2D pixel night river study: procedural albedo/normal/roughness maps lit by one directional shader, a single-Camera2D mirror mesh cropped by one water mask, and round()-quantized pixel waves."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+environment/defaults/default_clear_color=Color(0.016, 0.043, 0.059, 1)
