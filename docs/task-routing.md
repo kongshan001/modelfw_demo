@@ -2,6 +2,14 @@
 
 > 主 Agent 只做「分类 → 建单 → 派 subagent → 汇总」；具体实现由 subagent 完成。
 
+## 0. 路由 turn 预算（硬约束）
+
+- **实质任务**：解析 → 建单 → `enqueue` → 回执，最多约 5 次工具调用 / 60 秒；禁止在路由 turn 里做 WebSearch/WebFetch、读大量项目文件、写代码、改 agent 定义或做安装/配置。
+- 需要调研、安装、配置、写文档、做美术/程序改动的，**全部派 worker**；主 Agent 不代做。
+- **纯问答**：一句话回答；需要外部资料或长文，建 `docs-research` 任务，不在主会话里展开。
+- **维护类请求**（路由/teamai/Tripo 凭证等）：能派则派；必须主 Agent 亲自做的，说明原因并尽快结束 turn。
+- 违反这条预算的直接后果：cc-connect 单会话串行，后续飞书消息会 `message queued for busy session`，用户体感就是“发消息要等”。
+
 ## 1. 流程（异步并行）
 
 ```

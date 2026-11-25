@@ -11,7 +11,7 @@
 - 约束: 只调研/写 brief；案例可查证；区分 Godot 原生/插件/非 Godot；不复制素材；中文
 - 指派: general-purpose worker（dispatcher）
 - 状态: done
-- 产出: `docs/godot-procgen-survey.md`（§5 Brief A/B/C、§7.2 执行清单、§7.4 T-040 复核）、`docs/godot-procgen-survey-交互版.html`（CA/BSP/噪声 3 个可交互 demo）、`docs/shots/godot-procgen-survey-{ca,bsp,biomes,hero}.png`
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-040/result.md
 - 结论: 复用 T-020 已落盘正文并补完交付与复核。3 个 demo 在 Chrome 150 headless 实测 0 console error（CA 连通块 1 / BSP 21/21 可达 / 噪声 5 河 7 POI）；案例复核修正 7 项（Cassette Beasts 原文 404→Wayback、Dome Keeper 删未证实细节、Lumencraft 补 Steam 程序化证据、Brotato 补固定竞技场证据、Road to Vostok/ΔV 改为未证实、loothammer 改为 README MIT）；T-021 brief 已就绪（A：BSP+TileSet Terrain 64×48 ≤50ms；B：噪声生物群系 96×64 ≤100ms；C 可选）。微基准沿用 T-020 数据、未重跑（版本已复核）。
 - 后续: T-20261121-021（复刻实现，依赖改为本任务）
 
@@ -24,7 +24,7 @@
 - 约束: 只调研/写模板；不复制《烬谷盗火录》素材；模板可直接用于 dispatcher/worker prompt；中文
 - 指派: general-purpose worker（dispatcher）
 - 状态: done
-- 产出: `docs/ai-half-finished-rescue-playbook.md`、`docs/ai-half-finished-rescue-playbook-交互版.html`、`docs/templates/ai-{taste-doc,clarify-questions,judge-prompt}.md`、`docs/shots/ai-rescue-playbook-{hero,tools}.png`、`docs/shots/ai-rescue-playbook-verification.json`
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261121-041/result.md
 - 结论: 4 招落成 7 步 SOP + 10 层 triage + 3 模板；交互版含 triage 向导（12 症状/10 层/JSON 导出）、否决清单编辑器（本地保存/Markdown 导出）、裁判 rubric（5 套/加权/P0 门禁/反谄媚自检）；Chrome 150 交互自测 0 控制台错误。相对 T-028 新增 HTML、2 张截图与自测证据，正文方法结论不变。
 - 后续: 无（T-028 线程收口）
 

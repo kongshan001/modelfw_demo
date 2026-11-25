@@ -2,6 +2,15 @@
 
 ## 进行中
 
+## T-20261123-001 · 3D 角色动画方案对比（Mixamo vs 商业/开源/AI 动捕）
+- 来源: 飞书消息（2026-11-23，“模型动画想更丰富，知道 Mixamo，但不确定是否有更好的方案”）
+- 类型: 3d-asset（动画管线调研）
+- 目标: 对比 2026 年可用的角色绑定与动画方案，给 Tripo 模型（尤其二次元）一条可落地的“更丰富动画”管线与决策矩阵
+- 交付: `docs/3d-animation-solutions.md`（Mixamo/AccuRIG+ActorCore/Cascadeur/视频动捕/VRM+MMD/Blender Rigify/AI 等；许可/价格/质量/限制/导出/学习成本 + 推荐流程 + 测试计划）+ 截图；媒体
+- 约束: 只调研/验证，不安装付费软件/不替用户登录；不复制 IP 素材；区分官方/社区/实测；优先能接 Blender/Godot 的方案
+- 指派: general-purpose worker（dispatcher）
+- 状态: failed
+
 ## T-20261121-045 · Tripo 高质量图生 3D 工作流调研 + 鬼灭主角私有测试
 - 来源: 飞书消息（2026-11-23，“搜一张鬼灭主角图，让 Tripo 生成模型；调研外部如何用 Tripo 做高质量模型”）
 - 类型: 3d-asset（Tripo 工作流 / 私有技术测试）

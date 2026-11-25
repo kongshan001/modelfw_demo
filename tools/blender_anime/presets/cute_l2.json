@@ -1,0 +1,56 @@
+{
+  "name": "cute_l2",
+  "tier": "L2",
+  "height_m": 1.30,
+  "head_ratio": 4.7,
+  "eye_line_from_chin": 0.46,
+  "head_width_factor": 1.04,
+  "head_depth_factor": 0.92,
+  "mesh": {
+    "tris_target_min": 18000,
+    "tris_target_max": 60000,
+    "quad_ratio_min": 0.75,
+    "non_manifold_max": 0
+  },
+  "uv": {
+    "texture_size": 512,
+    "face_texture": 512,
+    "body_texture": 512,
+    "uv_layers_min": 1
+  },
+  "rig": {
+    "bones_target": "40-90",
+    "max_influences": 4,
+    "fingers": "5 digits x 2 segments",
+    "hair_bones": 4,
+    "skirt_bones": 4
+  },
+  "toon": {
+    "color_steps": 3,
+    "outline_mm": 3.2,
+    "view_transform": "Standard"
+  },
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "resolution": [1440, 1800],
+    "face_resolution": [1440, 1440],
+    "samples": 32,
+    "turntable_frames": 8,
+    "turntable_resolution": [900, 1125]
+  },
+  "quality": {
+    "height_min": 1.15,
+    "height_max": 1.50,
+    "head_ratio_min": 3.8,
+    "head_ratio_max": 5.6,
+    "eye_line_from_chin_min": 0.38,
+    "eye_line_from_chin_max": 0.56,
+    "materials_max": 32,
+    "bones_min": 30,
+    "bones_max": 90,
+    "render_min_px": 1024,
+    "render_max_px": 1920,
+    "silhouette_min": 0.05,
+    "silhouette_max": 0.35
+  }
+}

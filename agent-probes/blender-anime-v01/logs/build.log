@@ -1,0 +1,21 @@
+Blender 3.4.1 (hash 55485cb379f7 built 2022-12-20 00:46:16)
+Read prefs: /Users/ks_128/Library/Application Support/Blender/3.4/config/userpref.blend
+信息: 文件总数 6 | 更改 6 项 | 失败 0 项
+Reloading external rigs...
+Reloading external metarigs...
+BlenderMCP addon registered
+BlenderMCP addon unregistered
+信息: 已保存 "taoyao.blend"
+14:03:01 | INFO: Draco mesh compression is available, use library at /Applications/Blender.app/Contents/Resources/3.4/python/lib/python3.10/site-packages/libextern_draco.dylib
+14:03:01 | INFO: Starting glTF 2.0 export
+14:03:01 | INFO: Extracting primitive: taoyaoMesh
+14:03:14 | INFO: Primitives created: 25
+14:03:15 | INFO: Extracting primitive: taoyaoMesh.001
+14:03:15 | INFO: Primitives created: 1
+14:03:17 | INFO: Finished glTF 2.0 export in 16.067941188812256 s
+
+信息: 已保存 "taoyao.blend"
+ANIME_BUILD_OK name=taoyao tris=42570 tris_outline=30222 verts=21551 bones=50 deform=49 mats=25 glb_bytes=3339064 build_s=39.7 glb_s=16.4
+BLENDER_ANIME_BUILD_DONE taoyao 42570 tris 50 bones 3339064 GLB bytes
+
+Blender quit

@@ -1,0 +1,115 @@
+Blender 3.4.1 (hash 55485cb379f7 built 2022-12-20 00:46:16)
+Read prefs: /Users/ks_128/Library/Application Support/Blender/3.4/config/userpref.blend
+Read blend: /Users/ks_128/Documents/modelfw_demo/agent-probes/blender-anime-v01/taoyao.blend
+帧号:1 | 内存:47.21M (峰值 48.34M) | 时间:00:09.84 | Syncing AnimeRig
+帧号:1 | 内存:47.22M (峰值 48.34M) | 时间:00:09.85 | Syncing taoyao
+帧号:1 | 内存:54.92M (峰值 55.08M) | 时间:00:33.11 | Syncing taoyao_Outline
+帧号:1 | 内存:56.93M (峰值 57.05M) | 时间:00:35.25 | Syncing Cyclorama
+帧号:1 | 内存:56.96M (峰值 57.49M) | 时间:00:38.88 | Syncing Floor
+帧号:1 | 内存:56.99M (峰值 57.49M) | 时间:00:38.95 | Syncing StageRing
+帧号:1 | 内存:57.06M (峰值 57.49M) | 时间:00:38.95 | Syncing ContactShadow
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.08 | Syncing Key
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.62 | Syncing Fill
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.62 | Syncing Rim
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.62 | Syncing Top
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.62 | Syncing Camera
+帧号:1 | 内存:58.08M (峰值 59.08M) | 时间:00:44.99 | Rendering 1 / 8 samples
+帧号:1 | 内存:53.62M (峰值 59.08M) | 时间:01:26.31 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/front.png'
+ Time: 01:27.99 (Saving: 00:01.16)
+
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.29 | Syncing AnimeRig
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.29 | Syncing taoyao
+帧号:1 | 内存:55.94M (峰值 56.10M) | 时间:00:00.34 | Syncing taoyao_Outline
+帧号:1 | 内存:57.95M (峰值 58.06M) | 时间:00:00.36 | Syncing Cyclorama
+帧号:1 | 内存:57.98M (峰值 58.51M) | 时间:00:00.37 | Syncing Floor
+帧号:1 | 内存:58.01M (峰值 58.51M) | 时间:00:00.37 | Syncing StageRing
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing ContactShadow
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Key
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.41 | Syncing Fill
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.42 | Syncing Rim
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.42 | Syncing Top
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.42 | Syncing Camera
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.43 | Rendering 1 / 8 samples
+帧号:1 | 内存:53.62M (峰值 58.51M) | 时间:00:01.21 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/side.png'
+ Time: 00:02.18 (Saving: 00:00.48)
+
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.33 | Syncing AnimeRig
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.33 | Syncing taoyao
+帧号:1 | 内存:55.94M (峰值 56.10M) | 时间:00:00.39 | Syncing taoyao_Outline
+帧号:1 | 内存:57.95M (峰值 58.06M) | 时间:00:00.40 | Syncing Cyclorama
+帧号:1 | 内存:57.98M (峰值 58.51M) | 时间:00:00.41 | Syncing Floor
+帧号:1 | 内存:58.01M (峰值 58.51M) | 时间:00:00.43 | Syncing StageRing
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing ContactShadow
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing Key
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing Fill
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing Rim
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing Top
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Syncing Camera
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.44 | Rendering 1 / 8 samples
+帧号:1 | 内存:53.62M (峰值 58.51M) | 时间:00:01.12 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/back.png'
+ Time: 00:02.06 (Saving: 00:00.83)
+
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.27 | Syncing AnimeRig
+帧号:1 | 内存:52.29M (峰值 52.31M) | 时间:00:00.27 | Syncing taoyao
+帧号:1 | 内存:55.94M (峰值 56.10M) | 时间:00:00.35 | Syncing taoyao_Outline
+帧号:1 | 内存:57.95M (峰值 58.06M) | 时间:00:00.36 | Syncing Cyclorama
+帧号:1 | 内存:57.98M (峰值 58.51M) | 时间:00:00.36 | Syncing Floor
+帧号:1 | 内存:58.01M (峰值 58.51M) | 时间:00:00.37 | Syncing StageRing
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing ContactShadow
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Key
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Fill
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Rim
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Top
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Syncing Camera
+帧号:1 | 内存:58.08M (峰值 58.51M) | 时间:00:00.37 | Rendering 1 / 8 samples
+帧号:1 | 内存:53.62M (峰值 58.51M) | 时间:00:01.18 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/three_quarter.png'
+ Time: 00:02.84 (Saving: 00:01.12)
+
+帧号:1 | 内存:50.31M (峰值 50.34M) | 时间:00:00.14 | Syncing AnimeRig
+帧号:1 | 内存:50.31M (峰值 50.34M) | 时间:00:00.14 | Syncing taoyao
+帧号:1 | 内存:53.96M (峰值 54.12M) | 时间:00:00.17 | Syncing taoyao_Outline
+帧号:1 | 内存:55.97M (峰值 56.09M) | 时间:00:00.18 | Syncing Cyclorama
+帧号:1 | 内存:56.00M (峰值 56.53M) | 时间:00:00.18 | Syncing Floor
+帧号:1 | 内存:56.03M (峰值 56.53M) | 时间:00:00.18 | Syncing StageRing
+帧号:1 | 内存:56.10M (峰值 56.53M) | 时间:00:00.18 | Syncing ContactShadow
+帧号:1 | 内存:56.11M (峰值 56.53M) | 时间:00:00.18 | Syncing Key
+帧号:1 | 内存:56.11M (峰值 56.53M) | 时间:00:00.18 | Syncing Fill
+帧号:1 | 内存:56.11M (峰值 56.53M) | 时间:00:00.18 | Syncing Rim
+帧号:1 | 内存:56.11M (峰值 56.53M) | 时间:00:00.18 | Syncing Top
+帧号:1 | 内存:56.11M (峰值 56.53M) | 时间:00:00.18 | Syncing Camera
+帧号:1 | 内存:56.10M (峰值 56.53M) | 时间:00:00.18 | Rendering 1 / 8 samples
+帧号:1 | 内存:51.64M (峰值 56.53M) | 时间:00:00.86 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/face_closeup.png'
+ Time: 00:02.12 (Saving: 00:01.10)
+
+帧号:1 | 内存:48.28M (峰值 48.30M) | 时间:00:00.59 | Syncing AnimeRig
+帧号:1 | 内存:48.28M (峰值 48.30M) | 时间:00:00.59 | Syncing taoyao
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Syncing Key
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Syncing Fill
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Syncing Rim
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Syncing Top
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Syncing Camera
+帧号:1 | 内存:51.92M (峰值 52.09M) | 时间:00:00.82 | Rendering 1 / 8 samples
+帧号:1 | 内存:49.08M (峰值 52.09M) | 时间:00:01.30 | Rendering 8 / 8 samples
+Saved: 'agent-probes/blender-anime-v01/renders_preview/_silhouette_raw.png'
+ Time: 00:02.47 (Saving: 00:00.85)
+
+Reloading external rigs...
+Reloading external metarigs...
+BlenderMCP addon registered
+RENDER_ENGINE BLENDER_EEVEE samples 8 blender 3.4.1
+RENDER front 88.2s 720x900 samples=8 engine=BLENDER_EEVEE
+RENDER side 2.3s 720x900 samples=8 engine=BLENDER_EEVEE
+RENDER back 2.1s 720x900 samples=8 engine=BLENDER_EEVEE
+RENDER three_quarter 2.9s 720x900 samples=8 engine=BLENDER_EEVEE
+RENDER face_closeup 2.2s 720x720 samples=8 engine=BLENDER_EEVEE
+RENDER _silhouette_raw 2.5s 720x900 samples=8 engine=BLENDER_EEVEE
+RENDER_TOTAL 100.2s
+BLENDER_ANIME_RENDER_OK agent-probes/blender-anime-v01/renders_preview
+BlenderMCP addon unregistered
+
+Blender quit

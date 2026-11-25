@@ -1,0 +1,78 @@
+{
+  "blender": "3.4.1",
+  "engine": "BLENDER_EEVEE",
+  "samples": 8,
+  "resolution": [
+    720,
+    900
+  ],
+  "face_resolution": [
+    720,
+    720
+  ],
+  "total_seconds": 100.22,
+  "shots": [
+    {
+      "name": "front",
+      "seconds": 88.19,
+      "resolution": [
+        720,
+        900
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    },
+    {
+      "name": "side",
+      "seconds": 2.29,
+      "resolution": [
+        720,
+        900
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    },
+    {
+      "name": "back",
+      "seconds": 2.1,
+      "resolution": [
+        720,
+        900
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    },
+    {
+      "name": "three_quarter",
+      "seconds": 2.94,
+      "resolution": [
+        720,
+        900
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    },
+    {
+      "name": "face_closeup",
+      "seconds": 2.19,
+      "resolution": [
+        720,
+        720
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    },
+    {
+      "name": "_silhouette_raw",
+      "seconds": 2.52,
+      "resolution": [
+        720,
+        900
+      ],
+      "engine": "BLENDER_EEVEE",
+      "samples": 8
+    }
+  ],
+  "turntable_frames": 0,
+  "preview": true
+}

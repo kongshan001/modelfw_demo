@@ -1,0 +1,51 @@
+{
+  "name": "chibi_l1",
+  "tier": "L1",
+  "height_m": 1.05,
+  "head_ratio": 3.2,
+  "eye_line_from_chin": 0.42,
+  "head_width_factor": 1.06,
+  "head_depth_factor": 0.92,
+  "mesh": {
+    "tris_target_min": 12000,
+    "tris_target_max": 45000,
+    "quad_ratio_min": 0.70,
+    "non_manifold_max": 0
+  },
+  "uv": {
+    "texture_size": 512,
+    "uv_layers_min": 1
+  },
+  "rig": {
+    "bones_target": "30-60",
+    "max_influences": 4
+  },
+  "toon": {
+    "color_steps": 3,
+    "outline_mm": 3.8,
+    "view_transform": "Standard"
+  },
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "resolution": [1440, 1800],
+    "face_resolution": [1440, 1440],
+    "samples": 32,
+    "turntable_frames": 8,
+    "turntable_resolution": [900, 1125]
+  },
+  "quality": {
+    "height_min": 0.85,
+    "height_max": 1.25,
+    "head_ratio_min": 2.4,
+    "head_ratio_max": 4.0,
+    "eye_line_from_chin_min": 0.34,
+    "eye_line_from_chin_max": 0.55,
+    "materials_max": 32,
+    "bones_min": 20,
+    "bones_max": 70,
+    "render_min_px": 1024,
+    "render_max_px": 1920,
+    "silhouette_min": 0.05,
+    "silhouette_max": 0.38
+  }
+}
