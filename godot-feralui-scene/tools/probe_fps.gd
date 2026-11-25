@@ -59,7 +59,7 @@ func _run() -> void:
 		file.store_line("cpu: %s" % OS.get_processor_name())
 		file.store_line("logical viewport: 1280x720 (canvas_items stretch); 1080p 为窗口/最终 blit 尺寸")
 		file.store_line("actual_window_size_1080_run: %dx%d" % [win_size.x, win_size.y])
-		file.store_line("vsync: off / max_fps: 0 / HUD + markers visible")
+		file.store_line("vsync: off / max_fps: 0 / HUD + markers visible / gate: 720p + 1080p window ≥30")
 		file.store_line("draw_calls: %d / primitives: %d / nodes: %d" % [draws, tris, nodes])
 		for line in _report:
 			file.store_line(line)
@@ -69,8 +69,10 @@ func _run() -> void:
 		print(line)
 	print("FERALUI_FPS_DRAWS=%d PRIMS=%d NODES=%d WINDOW=%dx%d" % [
 		draws, tris, nodes, win_size.x, win_size.y])
-	var ok: bool = float(night720["median"]) >= 30.0 or float(night720["best2s"]) >= 30.0
-	if ok:
+	var ok_720: bool = float(night720["median"]) >= 30.0 or float(night720["best2s"]) >= 30.0
+	var ok_1080: bool = float(night1080["median"]) >= 30.0 or float(night1080["best2s"]) >= 30.0
+	print("FPS_GATE 720p_high_night=%s 1080p_window_high_night=%s" % [ok_720, ok_1080])
+	if ok_720 and ok_1080:
 		print("FERALUI_FPS_OK")
 	else:
 		print("FERALUI_FPS_LOW")

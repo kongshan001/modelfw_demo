@@ -109,8 +109,8 @@ scenes/main.tscn
 
 | 项目 | 数值/说明 |
 | --- | --- |
-| 720p 夜/昼/雨/低 | median 42 / 40 / 37 / 46 fps |
-| 1080p 窗口 夜 高 | median 32.0，avg 32.2、min 30、best 2s 33.6 |
+| 720p 夜/昼/雨/低 | median 42 / 37 / 30 / 46 fps |
+| 1080p 窗口 夜 高 | median 30.0，avg 30.4、min 27、best 2s 31.6 |
 | draw calls / primitives / nodes | 167 / 133,554 / 182（1080p，HUD 可见） |
 | 逻辑视口 | 1280×720 `canvas_items` 拉伸；1080p 窗口受桌面限制实际 1920×762，截图另用 1920×1080 SubViewport |
 | 三角形预算 | ~131k primitives（含 HUD/粒子网格等）；草约 2,200×18 tris，树冠 16×~230 tris |
@@ -118,7 +118,7 @@ scenes/main.tscn
 | 低画质 | 草 56%、花 60%、树冠/卵石阴影关、萤火/浮尘 ratio ↓、落花 18、雨 210、远景 bokeh 4 个 |
 | LOD/裁剪 | 所有 MultiMesh 批处理；`custom_aabb` 防误裁剪；树的低层簇/背景树冠不投影；不使用每帧 LOD 切换，避免镜头移动时闪烁 |
 
-**优化路径**（最终 1080p、HUD 可见 median 32.0fps；早期 HUD 隐藏对照 29.2fps）：
+**优化路径**（最终 1080p、HUD 可见 median 30.0fps；早期 HUD 隐藏对照曾 29.2fps）：
 1. 天空 shader 在夜间/日间/雨天都只计算必要噪声，星野只保留一层；fbm 5→4 octave。
 2. 背景树/幼树/低层树冠关闭阴影投射；减少不必要的 shadow pass。
 3. 远处 bokeh 收敛为 11 个加法贴片、浮石 3 个、贴地雾 3 片，削减 draw calls。

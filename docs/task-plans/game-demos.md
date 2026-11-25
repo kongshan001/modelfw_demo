@@ -19,8 +19,8 @@
 - 约束: 不复制 feralui/X 作者/视频的角色/场景/UI/素材/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-feralui-scene/`（8×1920×1080 截图、10s MP4/GIF、README/TECH/迭代记录/CREDITS）；报告 `godot-feralui-scene/docs/agency/T-20261125-009.md`
-- 验收: smoke 85/85 + `FERALUI_SCENE_SMOKE_OK`；真实 GPU console 0 ERROR/WARNING；Intel HD 720p 夜 42fps / 1080p 窗口 32fps（HUD 可见）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261125-009/result.md
+- 验收: smoke 85/85 + `FERALUI_SCENE_SMOKE_OK`；真实 GPU console 0 ERROR/WARNING；Intel HD 720p 夜 42fps / 1080p 窗口 30fps（median，HUD 可见；FPS gate 同时通过）
 
 ## T-20261125-008 · 复刻 2D 像素法线受光 + 零额外相机水面夜景反射
 - 来源: 飞书消息（B 站《硬核源码拆解｜拒绝塑料贴纸感！单人手搓 Unity 2D 像素法线受光 + 零额外相机水面夜景反射》，https://b23.tv/XKbRSNA，2026-11-25，2:52）
