@@ -1,0 +1,29 @@
+{
+  "title": "打击感分层实验台 — Hit-Feel Playbook",
+  "h1": "打击感不是震动 / 分层反馈 × 浏漓顿挫",
+  "layers": 9,
+  "scoreRows": 9,
+  "evidence": 9,
+  "externalRequests": [],
+  "stopOut": "100ms · 6.0f",
+  "mode": "顿帧",
+  "roStop": "260ms",
+  "activePhase": "顿帧",
+  "diag": "当前缺口：\n敌人不后退/不硬直：像砍木桩，特效再多也不传递力量。",
+  "cardOff": true,
+  "avgBefore": "8.0",
+  "verdictBefore": "证据不足 · 暂不放行",
+  "verdictAfter": "放行（P2）",
+  "evCount": "证据 9 / 9",
+  "reportHas": true,
+  "theme": "light",
+  "narrowOverflow": false,
+  "screenshots": [
+    "docs/shots/hit-feel-playbook-hero.png",
+    "docs/shots/hit-feel-playbook-lab.png",
+    "docs/shots/hit-feel-playbook-audit.png"
+  ],
+  "accessDate": "2026-11-25",
+  "pageErrors": [],
+  "consoleErrors": []
+}

@@ -2,6 +2,15 @@
 
 ## 进行中 / 最近完成
 
+## T-20261125-006 · 沉淀「打击感」设计经验：浏漓顿挫与 Godot 实现参数
+- 来源: 飞书消息（B 站《打击感从哪里来？杜甫一千年前就写过》，https://b23.tv/fyoa1l9，2026-11-25，2:58）
+- 类型: docs-research
+- 目标: 拆解视频的打击感层次（对手反应/刀停/声响/节奏），结合只狼、怪猎 0.2s 等案例，沉淀成可执行的 hit-feel 设计/审计 playbook、参数范围与 Godot 实现映射
+- 交付: `docs/game-feel-hit-impact-playbook.md` + 交互 HTML 检查表 + `docs/templates/hit-feel-audit.md` + 截图；来源 URL/访问日期
+- 约束: 只研究/写文档，不改代码；不复制视频/游戏素材；区分公开事实/作者观点/推断；参数给范围并标注来源；中文
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
+
 ## T-20261121-040 · 续跑 Godot 程序化地图调研（T-020 重试）
 - 线程: T-20261121-020（程序化地图）
 - 父任务: T-20261121-020（failed）；原 T-021 阻塞于此
