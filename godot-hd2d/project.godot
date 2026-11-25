@@ -1,0 +1,40 @@
+; 微缩庭院 · HD-2D
+; Original pixel-art scene with CanvasItem 2D lights, long shadows and a
+; screen-space tilt-shift / dual-ring bokeh post process.
+; No external runtime dependencies.
+
+config_version=5
+
+[application]
+
+config/name="微缩庭院 · HD-2D"
+config/description="原创像素庭院：实时 2D 光照、长影、不依赖深度缓冲的移轴景深。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/size/resizable=true
+window/energy_saving/keep_screen_on=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method.web="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+textures/default_filters/use_nearest_mipmap_filter=false
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.055, 0.075, 0.075, 1)
+
+[audio]
+
+driver/enable_input=false

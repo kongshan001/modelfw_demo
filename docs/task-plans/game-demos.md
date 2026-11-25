@@ -9,7 +9,7 @@
 - 交付: `godot-hd2d/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；不复制八方旅人/SE 的素材/UI/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261125-009 · 复刻 feralui 风格治愈场景（AI 游戏场景 / 微动画）
 - 来源: 飞书消息（B 站《有人用 ai 搞的一个游戏 feralui 的场景，感觉非常不错，转发分享下》，https://b23.tv/towtE2d，2026-11-25，1:11）
