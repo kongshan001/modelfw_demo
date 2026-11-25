@@ -1,21 +1,25 @@
 class_name KartVisual
 extends Node3D
 
-# 原创低模卡丁车。车体优先使用 Tripo P2 图生 GLB，轮组/尾翼/尾焰/旗子仍程序化，
+# 原创低模卡丁车。车体优先使用 Tripo H3.1 真实感跑车 GLB，轮组/尾翼/尾焰/旗子仍程序化，
 # 因此 Tripo 车体替换外观的同时保留车轮滚动/转向、boost 尾焰与缺图回退。
 # 玩家驾驶员优先使用 CC0 Fox.glb（带 Run 动画），缺图时退回程序化小狐狸。
 
 const FOX_PATH := "res://assets/ai/cc0/fox/Fox.glb"
-const TRIPO_KART_PATH := "res://assets/ai/tripo/kart/kart.glb"
-const TRIPO_KART_SHADER := preload("res://shaders/tripo_kart.gdshader")
-const WHEEL_RADIUS := 0.33
+const TRIPO_CAR_PATH := "res://assets/ai/tripo/car/car.glb"
+const TRIPO_CAR_SHADER := preload("res://shaders/tripo_car.gdshader")
+const WHEEL_RADIUS := 0.345
+const WHEEL_WIDTH := 0.24
+const WHEEL_TRACK := 0.735
+const WHEEL_BASE := 0.95
 
-# Tripo GLB 源包围盒（Godot 导入后）：长 × 高 × 宽 = 0.9995 × 0.2778 × 0.6753m，
+# Tripo H3.1 GLB 源包围盒（Godot 导入后）：长 × 高 × 宽 = 1.0000 × 0.2749 × 0.5178m，
 # 长度沿 X、车头朝 +X、AABB 以原点为中心。非均匀缩放把它整理成
 # 3.25m 长 / 0.95m 高 / 1.80m 宽的车体；rotation.y=+90° 让车头对准游戏内的 -Z。
-const TRIPO_KART_SOURCE_SIZE := Vector3(0.999512, 0.277832, 0.675293)
-const TRIPO_KART_TARGET_SIZE := Vector3(3.25, 0.95, 1.80)
-const TRIPO_KART_OFFSET := Vector3(0.0, 0.645, -0.03)
+# y 偏移让车底离地 0.12m，四轮中心仍落在 0.33m 的轮轴上。
+const TRIPO_CAR_SOURCE_SIZE := Vector3(1.0, 0.274865, 0.5178)
+const TRIPO_CAR_TARGET_SIZE := Vector3(3.25, 0.95, 1.80)
+const TRIPO_CAR_OFFSET := Vector3(0.0, 0.595, 0.0)
 
 static var _blob_texture: ImageTexture
 
@@ -42,6 +46,8 @@ var _mat_accent: StandardMaterial3D
 var _mat_cream: StandardMaterial3D
 var _mat_dark: StandardMaterial3D
 var _mat_tire: StandardMaterial3D
+var _mat_rim: StandardMaterial3D
+var _mat_tail: StandardMaterial3D
 var _mat_flame: StandardMaterial3D
 
 
@@ -63,7 +69,13 @@ func _make_materials() -> void:
 	_mat_accent = _solid(accent_color, 0.36)
 	_mat_cream = _solid(Color("#fff3d8"), 0.6)
 	_mat_dark = _solid(Color("#203445"), 0.58)
-	_mat_tire = _solid(Color("#24303b"), 0.94)
+	_mat_tire = _solid(Color("#1b2026"), 0.92)
+	_mat_rim = _solid(Color("#b8c0c6"), 0.30)
+	_mat_rim.metallic = 0.72
+	_mat_tail = _solid(accent_color, 0.34)
+	_mat_tail.emission_enabled = true
+	_mat_tail.emission = accent_color
+	_mat_tail.emission_energy_multiplier = 0.55
 	_mat_flame = _solid(Color("#5ff8ff"), 0.25)
 	_mat_flame.emission_enabled = true
 	_mat_flame.emission = Color("#53dcf5")
@@ -125,7 +137,7 @@ func _build_kart() -> void:
 		pipe.rotation.x = PI * 0.5
 		pipe.material_override = _mat_dark
 		_body_geo.add_child(pipe)
-		_box(_body_root, "TailLamp", Vector3(0.20, 0.10, 0.05), Vector3(side * 0.53, 0.35, 1.56), _mat_flame)
+		_box(_body_root, "TailLamp", Vector3(0.22, 0.05, 0.022), Vector3(side * 0.38, 0.60, 1.615), _mat_tail)
 	# 中央留空的双尾翼，不挡驾驶员。
 	for side in [-1.0, 1.0]:
 		_box(_body_geo, "Winglet", Vector3(0.50, 0.08, 0.32), Vector3(side * 0.62, 0.98, 1.16), _mat_accent)
@@ -148,55 +160,73 @@ func _build_kart() -> void:
 	steering.material_override = _mat_dark
 	_body_root.add_child(steering)
 
-	# 轮组：前轮有转向 pivot，所有轮内层负责滚动。
+	# 轮组：前轮有转向 pivot，所有轮内层负责滚动。真实感跑车用 20 边形轮胎 +
+	# 深色轮辋 + 银色轮圈/辐条 + 车队色中心盖，仍由程序化节点驱动旋转。
 	var tire_mesh := CylinderMesh.new()
-	tire_mesh.top_radius = 0.33
-	tire_mesh.bottom_radius = 0.33
-	tire_mesh.height = 0.28
-	tire_mesh.radial_segments = 12
+	tire_mesh.top_radius = WHEEL_RADIUS
+	tire_mesh.bottom_radius = WHEEL_RADIUS
+	tire_mesh.height = WHEEL_WIDTH
+	tire_mesh.radial_segments = 20
+	var barrel_mesh := CylinderMesh.new()
+	barrel_mesh.top_radius = 0.225
+	barrel_mesh.bottom_radius = 0.225
+	barrel_mesh.height = 0.05
+	barrel_mesh.radial_segments = 20
+	var ring_mesh := TorusMesh.new()
+	ring_mesh.inner_radius = 0.200
+	ring_mesh.outer_radius = 0.238
+	ring_mesh.rings = 20
+	ring_mesh.ring_segments = 6
+	var disc_mesh := CylinderMesh.new()
+	disc_mesh.top_radius = 0.155
+	disc_mesh.bottom_radius = 0.155
+	disc_mesh.height = 0.022
+	disc_mesh.radial_segments = 16
+	var spoke_mesh := BoxMesh.new()
+	spoke_mesh.size = Vector3(0.022, 0.19, 0.032)
 	var hub_mesh := CylinderMesh.new()
-	hub_mesh.top_radius = 0.14
-	hub_mesh.bottom_radius = 0.14
-	hub_mesh.height = 0.30
-	hub_mesh.radial_segments = 8
-	for wx in [-0.92, 0.92]:
-		for wz in [-0.88, 0.88]:
+	hub_mesh.top_radius = 0.055
+	hub_mesh.bottom_radius = 0.055
+	hub_mesh.height = 0.035
+	hub_mesh.radial_segments = 12
+	for wx in [-WHEEL_TRACK, WHEEL_TRACK]:
+		for wz in [-WHEEL_BASE, WHEEL_BASE]:
 			var pivot := Node3D.new()
 			pivot.name = "WheelPivot"
-			pivot.position = Vector3(wx, 0.33, wz)
+			pivot.position = Vector3(wx, WHEEL_RADIUS, wz)
 			_wheel_root.add_child(pivot)
 			var spinner := Node3D.new()
 			spinner.name = "WheelSpin"
 			pivot.add_child(spinner)
-			var tire := MeshInstance3D.new()
-			tire.name = "Tire"
-			tire.mesh = tire_mesh
-			tire.rotation.z = PI * 0.5
-			tire.material_override = _mat_tire
-			spinner.add_child(tire)
-			var hub := MeshInstance3D.new()
-			hub.name = "Hub"
-			hub.mesh = hub_mesh
-			hub.rotation.z = PI * 0.5
-			hub.material_override = _mat_accent
-			hub.position.x = -0.01 if wx < 0.0 else 0.01
-			spinner.add_child(hub)
+			var out := signf(wx)
+			_wheel_part(spinner, "Tire", tire_mesh, _mat_tire, Vector3.ZERO)
+			_wheel_part(spinner, "RimBarrel", barrel_mesh, _mat_dark, Vector3(out * 0.132, 0, 0))
+			_wheel_part(spinner, "RimRing", ring_mesh, _mat_rim, Vector3(out * 0.150, 0, 0))
+			_wheel_part(spinner, "BrakeDisc", disc_mesh, _mat_dark, Vector3(-out * 0.03, 0, 0))
+			for i in 5:
+				var spoke_pivot := Node3D.new()
+				spoke_pivot.name = "SpokePivot"
+				spoke_pivot.position = Vector3(out * 0.155, 0, 0)
+				spoke_pivot.rotation.x = TAU * float(i) / 5.0
+				spinner.add_child(spoke_pivot)
+				_wheel_part(spoke_pivot, "Spoke", spoke_mesh, _mat_rim, Vector3(0, 0.105, 0), Vector3.ZERO)
+			_wheel_part(spinner, "Hub", hub_mesh, _mat_accent, Vector3(out * 0.168, 0, 0))
 			_spinners.append(spinner)
 			if wz < 0.0:
 				_front_pivots.append(pivot)
-		# 前后挡泥板，补足玩具卡丁车的轮廓
-		_box(_body_geo, "FrontFender", Vector3(0.44, 0.10, 0.56), Vector3(wx, 0.58, -0.88), _mat_cream)
-		_box(_body_geo, "RearFender", Vector3(0.46, 0.10, 0.58), Vector3(wx, 0.57, 0.88), _mat_accent)
+		# 前后挡泥板，补足程序化回退车身的轮廓
+		_box(_body_geo, "FrontFender", Vector3(0.42, 0.10, 0.56), Vector3(wx, 0.58, -WHEEL_BASE), _mat_cream)
+		_box(_body_geo, "RearFender", Vector3(0.44, 0.10, 0.58), Vector3(wx, 0.57, WHEEL_BASE), _mat_accent)
 
 	# 车尾小旗，让玩家从追尾镜头一眼识别自己的车。
-	var pole := _box(_body_root, "Antenna", Vector3(0.035, 0.90, 0.035), Vector3(-0.60, 1.14, 1.26), _mat_dark)
+	var pole := _box(_body_root, "Antenna", Vector3(0.035, 0.90, 0.035), Vector3(-0.60, 1.10, 1.10), _mat_dark)
 	pole.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var flag_mesh := BoxMesh.new()
 	flag_mesh.size = Vector3(0.32, 0.19, 0.035)
 	var flag := MeshInstance3D.new()
 	flag.name = "Pennant"
 	flag.mesh = flag_mesh
-	flag.position = Vector3(-0.30, 1.38, 1.26)
+	flag.position = Vector3(-0.30, 1.34, 1.10)
 	flag.material_override = _mat_cream if not is_player else _mat_accent
 	_body_root.add_child(flag)
 
@@ -204,13 +234,13 @@ func _build_kart() -> void:
 	for side in [-1.0, 1.0]:
 		var cone := CylinderMesh.new()
 		cone.top_radius = 0.0
-		cone.bottom_radius = 0.09
-		cone.height = 0.58
+		cone.bottom_radius = 0.075
+		cone.height = 0.48
 		cone.radial_segments = 8
 		var flame := MeshInstance3D.new()
 		flame.name = "BoostFlame"
 		flame.mesh = cone
-		flame.position = Vector3(side * 0.26, 0.43, 1.61)
+		flame.position = Vector3(side * 0.22, 0.31, 1.70)
 		flame.rotation.x = PI * 0.5
 		flame.material_override = _mat_flame
 		flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -224,25 +254,25 @@ func _build_kart() -> void:
 
 func _mount_tripo_body() -> bool:
 	# Tripo 车体只替换外观；车轮/尾焰/旗子/驾驶员仍由上面的程序化节点驱动。
-	if not ResourceLoader.exists(TRIPO_KART_PATH):
+	if not ResourceLoader.exists(TRIPO_CAR_PATH):
 		return false
-	var packed := load(TRIPO_KART_PATH) as PackedScene
+	var packed := load(TRIPO_CAR_PATH) as PackedScene
 	if packed == null:
-		push_warning("KartVisual: %s failed to load, using procedural body" % TRIPO_KART_PATH)
+		push_warning("KartVisual: %s failed to load, using procedural body" % TRIPO_CAR_PATH)
 		return false
 	var model := packed.instantiate() as Node3D
 	if model == null:
-		push_warning("KartVisual: %s is not a Node3D scene, using procedural body" % TRIPO_KART_PATH)
+		push_warning("KartVisual: %s is not a Node3D scene, using procedural body" % TRIPO_CAR_PATH)
 		return false
 	var fit_scale := Vector3(
-		TRIPO_KART_TARGET_SIZE.x / TRIPO_KART_SOURCE_SIZE.x,
-		TRIPO_KART_TARGET_SIZE.y / TRIPO_KART_SOURCE_SIZE.y,
-		TRIPO_KART_TARGET_SIZE.z / TRIPO_KART_SOURCE_SIZE.z)
+		TRIPO_CAR_TARGET_SIZE.x / TRIPO_CAR_SOURCE_SIZE.x,
+		TRIPO_CAR_TARGET_SIZE.y / TRIPO_CAR_SOURCE_SIZE.y,
+		TRIPO_CAR_TARGET_SIZE.z / TRIPO_CAR_SOURCE_SIZE.z)
 	var mount := Node3D.new()
-	mount.name = "TripoKartBody"
+	mount.name = "TripoCarBody"
 	mount.rotation.y = PI * 0.5
 	mount.scale = fit_scale
-	mount.position = TRIPO_KART_OFFSET
+	mount.position = TRIPO_CAR_OFFSET
 	model.name = "Model"
 	mount.add_child(model)
 	_apply_team_materials(model)
@@ -251,12 +281,13 @@ func _mount_tripo_body() -> bool:
 	# Tripo 座舱位于车身中后部：方向盘跟着后移，避免悬在车头外。
 	var steering := _body_root.get_node_or_null("SteeringWheel") as Node3D
 	if steering != null:
-		steering.position = Vector3(0.0, 0.88, 0.02)
+		steering.position = Vector3(0.0, 0.86, 0.10)
 	return true
 
 
 func _apply_team_materials(model: Node3D) -> void:
-	# 同一张 GLB 贴图分给三辆车；用色块蒙版还原玩家奶油/青绿、AI 珊瑚/金/藏蓝的识别色。
+	# 同一张 GLB 贴图分给三辆车；保留 PBR ORM/法线，只把亮部中性漆面重着成车队色。
+	# 玩家奶油/青绿、AI 珊瑚/奶油、金/藏蓝；深色包围/玻璃/轮拱保持原贴图。
 	var stack: Array[Node] = [model]
 	while not stack.is_empty():
 		var node: Node = stack.pop_back()
@@ -271,12 +302,25 @@ func _apply_team_materials(model: Node3D) -> void:
 			var source := mi.mesh.surface_get_material(surface) as StandardMaterial3D
 			if source == null or source.albedo_texture == null:
 				continue
-			var mat := ShaderMaterial.new()
-			mat.shader = TRIPO_KART_SHADER
-			mat.set_shader_parameter("albedo_tex", source.albedo_texture)
-			mat.set_shader_parameter("body_color", body_color)
-			mat.set_shader_parameter("accent_color", accent_color)
-			mi.set_surface_override_material(surface, mat)
+			var orm := source.roughness_texture
+			if orm == null:
+				orm = source.metallic_texture
+			if orm != null and source.normal_texture != null:
+				var mat := ShaderMaterial.new()
+				mat.shader = TRIPO_CAR_SHADER
+				mat.set_shader_parameter("albedo_tex", source.albedo_texture)
+				mat.set_shader_parameter("orm_tex", orm)
+				mat.set_shader_parameter("normal_tex", source.normal_texture)
+				mat.set_shader_parameter("body_color", body_color)
+				mat.set_shader_parameter("metallic_scale", 0.30)
+				mat.set_shader_parameter("roughness_bias", 0.06)
+				mi.set_surface_override_material(surface, mat)
+			else:
+				var tinted := source.duplicate() as StandardMaterial3D
+				tinted.albedo_color = body_color
+				tinted.metallic = minf(source.metallic, 0.35)
+				tinted.roughness = maxf(source.roughness, 0.38)
+				mi.set_surface_override_material(surface, tinted)
 
 
 func _build_shadow() -> void:
@@ -328,7 +372,7 @@ func _build_fox_driver() -> void:
 	_driver_model.rotation.y = PI
 	_driver_model.scale = Vector3.ONE * 0.0078
 	# Tripo 座舱位于车身中后部，且比程序化座舱高；驾驶员整体后移+上移。
-	_driver_model.position = Vector3(0.0, 0.78, 0.40) if _uses_tripo_body else Vector3(0.0, 0.63, 0.08)
+	_driver_model.position = Vector3(0.0, 0.80, 0.42) if _uses_tripo_body else Vector3(0.0, 0.63, 0.08)
 	_body_root.add_child(_driver_model)
 	_driver_model.add_child(model)
 	_driver_anim = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
@@ -336,7 +380,7 @@ func _build_fox_driver() -> void:
 		_driver_anim.play("Run", 0.15, 1.35)
 		_driver_anim.get_animation("Run").loop_mode = Animation.LOOP_LINEAR
 	# 小围巾（不依赖骨骼，作为整体色块）
-	var scarf_pos := Vector3(0.0, 1.08, 0.72) if _uses_tripo_body else Vector3(0.0, 0.94, 0.44)
+	var scarf_pos := Vector3(0.0, 1.10, 0.64) if _uses_tripo_body else Vector3(0.0, 0.94, 0.44)
 	var scarf := _box(_body_root, "Scarf", Vector3(0.34, 0.11, 0.46), scarf_pos, _mat_accent)
 	scarf.rotation.x = -0.10
 
@@ -382,7 +426,7 @@ func _build_fallback_fox() -> void:
 func _build_robot_driver() -> void:
 	_driver_model = Node3D.new()
 	_driver_model.name = "RivalDriver"
-	_driver_model.position = Vector3(0.0, 0.10, 0.30) if _uses_tripo_body else Vector3.ZERO
+	_driver_model.position = Vector3(0.0, 0.12, 0.42) if _uses_tripo_body else Vector3.ZERO
 	_body_root.add_child(_driver_model)
 	_sphere_node(_driver_model, "Helmet", 0.25, Vector3(0, 1.04, 0.22), _mat_accent)
 	var visor := _box(_driver_model, "Visor", Vector3(0.34, 0.11, 0.09), Vector3(0, 1.05, -0.02), _mat_dark)
@@ -415,6 +459,17 @@ func _box(parent: Node3D, node_name: String, size: Vector3, pos: Vector3, materi
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
+	node.material_override = material
+	parent.add_child(node)
+	return node
+
+
+func _wheel_part(parent: Node3D, part_name: String, mesh: Mesh, material: Material, pos: Vector3, rot := Vector3(0, 0, PI * 0.5)) -> MeshInstance3D:
+	var node := MeshInstance3D.new()
+	node.name = part_name
+	node.mesh = mesh
+	node.position = pos
+	node.rotation = rot
 	node.material_override = material
 	parent.add_child(node)
 	return node

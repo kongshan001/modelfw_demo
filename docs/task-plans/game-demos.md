@@ -2,6 +2,18 @@
 
 ## 进行中
 
+## T-20261125-002 · 《青岚杯》真实感汽车 Tripo 重建（T-001 follow-up）
+- 来源: 飞书消息（2026-11-25，“真实感汽车”）
+- 线程: T-20261124-004（GPT-6 + Hyper3D 3D 游戏）
+- 父任务: T-20261125-001（done；当前卡丁车为 P2 低模，余额 65）
+- 类型: game-demo（写实 3D 资产 / 整合）
+- 目标: 用 Tripo H3.1 生成原创、无品牌的真实感汽车，替换现有 P2 卡丁车车体，保留玩法/性能
+- 交付: 更新 `godot-ai-3d-game/`；H3.1 车体 GLB + 贴图 + source/credits；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 预算 **65 credits 上限**；H3.1 detailed/PBR + face_limit 按 dry-run 选；原创无品牌参考图；不做真实车标/照片；减面/优化后 Intel 30fps+；不改玩法/相机
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- depends_on: T-20261125-001
+
 ## T-20261125-001 · 用 Tripo 重建《青岚杯》赛车资产（T-004 follow-up）
 - 来源: 飞书消息（2026-11-25，“用tripo建模”，针对 T-20261124-004 卡丁车 demo）
 - 线程: T-20261124-004（GPT-6 + Hyper3D 3D 游戏）

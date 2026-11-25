@@ -1,6 +1,6 @@
 # 风车原野 · 青岚杯 — 技术说明
 
-更新：2026-11-25（T-20261125-001 Tripo 资产接入）  
+更新：2026-11-25（T-20261125-002 H3.1 真实感跑车替换 P2 卡丁车）  
 工程：`godot-ai-3d-game/`，Godot 4.6 stable，GL Compatibility（OpenGL 4.1）。
 
 ## 0. 参考视频识别与复刻边界
@@ -46,27 +46,40 @@ godot --path godot-ai-3d-game
 
 ### 2.2 本机实际执行（Tripo CLI，`profile=cn`）
 
-| 项 | 卡丁车 | 风车 |
-| --- | --- | --- |
-| 用途 | 替换 `KartVisual` 程序化车体 | 替换 `RaceWorld` 程序化塔身 |
-| 参考图 | `assets/ai/tripo/refs/kart_3q.png` | `assets/ai/tripo/refs/windmill_3q.png` |
-| Tripo task | `f7ef8737-d179-451a-b858-8ad024d14183` | `cbdc4d8b-e6e1-43f9-9838-932b78f5c26d` |
-| 模型 | P2-20260801 | v3.1-20260211（H3.1） |
-| 参数 | face_limit=18000，texture=detailed，pbr=false，quad=false | face_limit=20000，texture=detailed，pbr=false，quad=false |
-| 三角面 | 18,857 | 18,758 |
-| credits | **120** | **40** |
-| 输出 | `kart.glb` 3.6MB + 抽出贴图 | `windmill.glb` 1.7MB + 抽出贴图 |
+| 项 | 真实感跑车（当前） | 卡丁车（T-001 归档） | 风车 |
+| --- | --- | --- | --- |
+| 用途 | 替换 `KartVisual` 程序化车体 | T-001 车体，T-002 起不再加载 | 替换 `RaceWorld` 程序化塔身 |
+| 参考图 | `assets/ai/tripo/refs/realistic_car/realistic_car_3q.png` | `assets/ai/tripo/refs/kart_3q.png` | `assets/ai/tripo/refs/windmill_3q.png` |
+| Tripo task | `856e0f6e-f6aa-49ff-bdd5-c056c3d662ff` | `f7ef8737-d179-451a-b858-8ad024d14183` | `cbdc4d8b-e6e1-43f9-9838-932b78f5c26d` |
+| 模型 | v3.1-20260211（H3.1） | P2-20260801 | v3.1-20260211（H3.1） |
+| 参数 | face_limit=100000，texture=detailed，**pbr=true** | face_limit=18000，texture=detailed，pbr=false | face_limit=20000，texture=detailed，pbr=false |
+| 三角面 | 94,256 → **30,000**（本地 decimate） | 18,857 | 18,758 |
+| credits | **40** | **120** | **40** |
+| 输出 | `car.glb` 6.2MB + Color/ORM/NormalGL 贴图 | `kart.glb` 3.6MB + 抽出贴图 | `windmill.glb` 1.7MB + 抽出贴图 |
 
-- 生成前用 `tripo make ... --dry-run --json` 核对：120 + 40 = **160 credits**，低于 180 预算；实际消耗与预估一致。
-- 余额 **225 → 65**；没有失败、退款、重试或额外 convert 任务。两个 GLB 均直接交付。
+- T-001 dry-run：120 + 40 = **160 credits**，低于 180 预算；余额 **225 → 65**。
+- T-002 dry-run：H3.1 image-to-model 在 face_limit=20k/50k/100k 下，`--for game-pc` 为 **40 credits**（pbr=false，且链 FBX convert）；显式 PBR + detailed 同为 **40** 且直接 GLB；standard + PBR 为 30。预算 65，选 **100k + PBR + detailed = 40**，余额 **65 → 25**。
+- 没有失败、退款、重试或额外 convert 任务；所有 GLB 均直接交付。
 - 所有命令经 `HTTPS_PROXY/HTTP_PROXY=http://127.0.0.1:7897`、显式 `--profile cn`；key 由已登录的 Tripo CLI `cn` profile 自行读取，**项目/文档/仓库中没有 key，未输出明文 key**。
-- 参考图由 `tools/tripo_refs.gd` 在 1024²、浅灰底、真实 GPU 下渲染：卡丁车隐藏车轮/驾驶员/围巾/尾旗/尾灯/尾焰/方向盘，只保留车体；风车隐藏旋转叶片/土台/干草，只保留塔身。这样车轮仍可滚动/转向、叶片仍可旋转。
-- 输入素材原创：参考图来自本项目的程序化模型，不含参考视频帧、Hyper3D 资产或原作素材。
+- T-001 参考图由 `tools/tripo_refs.gd` 在真实 GPU 上渲染程序化车体/塔身；T-002 跑车参考图由 `tools/blender/realistic_car_refs.py` 从零 Blender 建模 + Cycles CPU 渲染（front/side/3q/rear3q 多视图，Tripo 输入为 3q）。两组输入均完全原创，不含参考视频帧、真实车照片/车标或 Hyper3D/第三方素材。
+- 跑车源模型 94,256 tris 由 `tools/blender/decimate_car.py`（Blender 3.4.1，COLLAPSE，ratio 0.318）降到 30,000 tris，保留轮廓/轮拱/UV；PBR 贴图源 4096²，Godot 导入用 `process/size_limit=2048`，法线贴图按 normal map 导入。
 
 ### 2.3 接入与整理
 
-**卡丁车**（`scripts/kart_visual.gd`）：
+**真实感跑车（T-002，当前）**（`scripts/kart_visual.gd`）：
 
+- 程序化车身仍在 `Body/ProceduralBody`；H3.1 跑车挂到 `Body/TripoCarBody`，可用时隐藏 `ProceduralBody`。
+- 源 AABB：长×高×宽 = **1.0000 × 0.2749 × 0.5178m**，长沿 X、车头朝 **+X**，以原点为中心。
+- 目标 **3.25m 长 / 0.95m 高 / 1.80m 宽**；缩放 `(3.25, 3.4557, 3.4762)`，`rotation.y=+90°`（车头 → 游戏 -Z），偏移 `(0, 0.595, 0)`，车底离地 0.12m。
+- 程序化轮组升级为 20 边形轮胎（r=0.345m、宽 0.24m）+ 深色轮辋 + 银色轮圈/5 辐条 + 车队色中心盖；轮距 ±0.735m、轴距 ±0.95m；前轮 pivot 转向、所有轮 spinner 滚动仍由 `KartVisual.update_motion()` 驱动。
+- Fox 驾驶员 `(0, 0.80, 0.42)`、围巾 `(0,1.10,0.64)`、方向盘 `(0,0.86,0.10)` 随 H3.1 座舱调整；boost 尾焰、尾灯、尾旗保留并移到车尾。
+- PBR 保留 base color + ORM（G=roughness / B=metallic）+ NormalGL；`shaders/tripo_car.gdshader` 只重着高亮度**中性**漆面（`smoothstep(0.30,0.55,lum) * (1 - smoothstep(0.10,0.26,sat))`），红尾灯/蓝玻璃/深色包围保持原贴图；三辆车共用一份 GLB 与贴图。
+- 缺图/加载失败回退 `ProceduralBody`，不空白、不 SCRIPT ERROR。
+- 参考图多视图：`assets/ai/tripo/refs/realistic_car/realistic_car_sheet.png`（3q/side/front/rear3q）；生成脚本 `tools/blender/realistic_car_refs.py`。
+
+**卡丁车（T-001 归档）**（`scripts/kart_visual.gd`）：
+
+- T-002 起运行时不再加载，仅保留历史资产与 shader。
 - 程序化车身移入 `Body/ProceduralBody`；Tripo 车身挂到 `Body/TripoKartBody`，可用时隐藏 `ProceduralBody`。
 - 源 AABB：长×高×宽 = **0.9995 × 0.2778 × 0.6753m**，长沿 X、车头朝 **+X**，以原点为中心。
 - 目标尺寸 **3.25m 长 / 0.95m 高 / 1.80m 宽**；缩放 `(3.2516, 3.4193, 2.6655)`，`rotation.y = +90°` 让车头对准游戏内 `-Z`，偏移 `(0, 0.645, -0.03)`。
@@ -83,26 +96,29 @@ godot --path godot-ai-3d-game
 **回退**：
 
 - 加载链为 `ResourceLoader.exists` → `load` → `instantiate`；缺图/失败保持原程序化车身/塔身，不空白、不 SCRIPT ERROR。
-- smoke 新增 Tripo GLB 加载、节点挂载、程序化节点隐藏、4 轮仍存在、叶片仍存在、AABB 尺寸在预期范围等检查（53 → **66 checks**）。
+- smoke 新增 Tripo GLB 加载、节点挂载、程序化节点隐藏、4 轮仍存在、叶片仍存在、AABB 尺寸等检查；T-002 再增加跑车 10k–35k tris 与 PBR 车队色 ShaderMaterial 检查（53 → **68 checks**）。
 
 ### 2.4 credits 与许可
 
 | 项 | credits |
 | --- | ---: |
 | 起始余额 | 225 |
-| 卡丁车 P2 | 120 |
-| 风车 H3.1 | 40 |
-| **合计** | **160** |
-| 结束余额 | 65 |
+| T-001 卡丁车 P2 | 120 |
+| T-001 风车 H3.1 | 40 |
+| T-002 跑车 H3.1 | 40 |
+| **合计** | **200** |
+| 结束余额 | 25 |
 
 Tripo 输出用于本原创项目；输入是项目自有程序化渲染，不含第三方角色/Logo/游戏素材；Tripo 服务条款适用。驾驶员仍使用 CC0/CC-BY Fox，发布时保留 CC-BY 4.0 署名。
 
 ### 2.5 与 Hyper3D 流程的差异
 
-- 视频使用 Hyper3D Rodin；本机无 Hyper3D 访问，改用 Tripo P2/H3.1。输入仍是项目原创图，不复制视频/原作素材。
-- P2 输出是单个网格，车轮不能独立旋转；因此参考图隐藏车轮，游戏保留程序化轮组。
-- P2 车体有少量 AI 拓扑瑕疵（侧裙长条、尾翼支撑略碎），H3.1 风车屋顶有烘焙明暗；未做二次重拓扑。两者合计 37.6k tris，Intel HD 目标仍达标。
-- GLB 的纹理在 Godot 导入时抽成同目录 `*_Color_*.jpg`；移动/发布时必须与 GLB 一起保留。
+- 视频使用 Hyper3D Rodin；本机无 Hyper3D 访问，改用 Tripo P2/H3.1。输入仍是项目原创图/原创 Blender 场景，不复制视频/原作素材。
+- T-002 选 H3.1 + PBR + detailed：dry-run 在 20k/50k/100k face_limit 均为 40 credits，预算 65，故取 100k 源面数，再本地 decimate 到 30k；不超预算。
+- Tripo 输出是单个网格，车轮不能独立旋转；跑车参考图隐藏车轮、保留轮拱，游戏继续用程序化轮组填补。P2 时代同样处理。
+- 跑车车体有少量 AI 拓扑瑕疵（轮拱边缘、后翼子板折线），H3.1 风车屋顶有烘焙明暗；未做二次手工重拓扑。跑车 30k + 风车 18.8k = 48.8k tris，Intel HD 目标仍达标。
+- 跑车 PBR 贴图（base/ORM/NormalGL）源 4096²，Godot 导入时降到 2048²；GLB 纹理抽成同目录文件，移动/发布时必须与 GLB 一起保留。
+- 性能：1080p 平均约 58 FPS、720p 约 65 FPS（见 8.4）；6 秒采样在 ~200m 处有一次 ~0.3–0.5s 的引擎/场景 hitch，禁用 Tripo 车体后仍复现，作为已知风险记录。
 
 ## 3. 场景与渲染
 
@@ -116,7 +132,7 @@ Main scene
     ├── TreeTrunks / TreeCanopies / Bushes / Wildflowers / Rocks (MultiMesh)
     ├── Windmill (TripoWindmill + 程序化 Rotor/土台/干草; ProceduralBody 隐藏)
     ├── 3 BoostPads
-    ├── PlayerKart / 2 RivalKarts (Node3D + KartVisual; Body/TripoKartBody + 程序化 Wheels/尾焰/旗子)
+    ├── PlayerKart / 2 RivalKarts (Node3D + KartVisual; Body/TripoCarBody + 程序化 Wheels/尾焰/旗子)
     ├── ChaseCamera
     └── HUD (CanvasLayer)
 ```
@@ -164,7 +180,7 @@ Main scene
 - 转向速率随速度从 `2.35 rad/s` 降到 `1.12 rad/s`；速度为零时不能原地打方向。
 - 横向护栏限制 `±6.55m`；撞墙降速到 70%，相机轻震、HUD 红边闪烁。
 - 加速带：`apply_boost(1.45)`，最高速 `31 m/s`（111.6 km/h），当前速度立即抬高；3 个加速带 cooldown 3.4s。
-- 玩家车模型：Tripo P2 车体（`Body/TripoKartBody`，18,857 tris，3.25×0.95×1.80m，`rotation.y=+90°`）+ 程序化车轮胎/轮毂/转向 pivot/尾翼/尾灯/尾焰/旗子；三辆车共用 GLB，通过 `shaders/tripo_kart.gdshader` 重新着成各自车队色。玩家驾驶员为 `Fox.glb`（缩放约 0.0078，播放 `Run`，朝向 `+Z=head → rotation.y=π`，Tripo 座舱下位置 `(0,0.78,0.40)`）。缺 Tripo 图时隐藏 `TripoKartBody`、恢复 `ProceduralBody` 和原驾驶员位置；缺 Fox 时 `KartVisual._build_fallback_fox()` 用球/圆锥生成小狐狸，保证不空白。
+- 玩家车模型：Tripo H3.1 真实感跑车（`Body/TripoCarBody`，源 94,256 → 集成 30,000 tris，3.25×0.95×1.80m，`rotation.y=+90°`，offset `(0,0.595,0)`）+ 程序化 20 边形轮胎/银色轮圈/5 辐条/车队色轮心/前轮转向 pivot/尾灯/尾焰/旗子；三辆车共用 GLB，通过 `shaders/tripo_car.gdshader` 只重着高亮度中性漆面为各自车队色，保留 ORM/法线与红尾灯/蓝玻璃。玩家驾驶员为 `Fox.glb`（缩放约 0.0078，播放 `Run`，朝向 `+Z=head → rotation.y=π`，Tripo 座舱下位置 `(0,0.80,0.42)`）。缺 Tripo 图时隐藏 `TripoCarBody`、恢复 `ProceduralBody` 和原驾驶员位置；缺 Fox 时 `KartVisual._build_fallback_fox()` 用球/圆锥生成小狐狸，保证不空白。
 
 ### 6.2 AI
 
@@ -183,7 +199,7 @@ Main scene
 - 加速带：箱体底座 + 4 边发光框 + 三组人字形箭头；可用时脉冲，冷却时降亮。
 - 起跑拱门：方格横幅、三盏红→绿起跑灯、气球、`Label3D` 青岚杯字牌、旗子。
 - 起跑拱门、路肩、护栏、树/花/山/云仍是原创程序化几何；Tripo 只替换车体与风车塔身，场景元素没有从参考视频截取贴图。
-- 车队色：Tripo 卡丁车贴图的奶油/青色/深海军蓝由 `shaders/tripo_kart.gdshader` 映射成 body/accent/dark 三色；玩家奶油+青绿、AI A 珊瑚+奶油、AI B 金+藏蓝。色块蒙版同时保留贴图明暗，避免三辆车完全相同。
+- 车队色：H3.1 跑车的 PBR base color 由 `shaders/tripo_car.gdshader` 做亮度/饱和度蒙版，只把高亮度中性漆面重着成每辆车的 body 色，保留 ORM 金属度/粗糙度与法线；玩家奶油+青绿、AI A 珊瑚+奶油、AI B 金+藏蓝。红尾灯、蓝玻璃、深色包围/轮拱保持原贴图，避免三车只是纯色换皮。
 - 风车：Tripo H3.1 塔身（10.7m，18,758 tris）+ 程序化四叶转子；土台、干草、旋转动画保留。
 
 ## 8. 验收
@@ -194,9 +210,9 @@ Main scene
 godot --headless --path godot-ai-3d-game -s tools/smoke_ai_3d_game.gd
 ```
 
-最后一行：`AI_3D_GAME_SMOKE_OK checks=66`
+最后一行：`AI_3D_GAME_SMOKE_OK checks=68`
 
-覆盖：Fox 资源加载 + AnimationPlayer；Tripo kart/windmill GLB 加载、节点挂载、程序化回退节点隐藏、4 轮仍存在、风车叶片仍存在、AABB 尺寸；3 车/2 AI/3 加速带；倒计时→RACING；真实输入加速/转向；玩家/AI 位移；护栏夹回；加速带触发、计数与冷却；暂停计时冻结与恢复；玩家第 1 冲线 → 胜利 + HUD 结算；重开回到 COUNTDOWN 且清空状态；两名 AI 先完赛 → 玩家第 3 → 失败遮罩。
+覆盖：Fox 资源加载 + AnimationPlayer；Tripo car/windmill GLB 加载、节点挂载、程序化回退节点隐藏、跑车 10k–35k tris、PBR 车队色 ShaderMaterial、4 轮仍存在、风车叶片仍存在、AABB 尺寸；3 车/2 AI/3 加速带；倒计时→RACING；真实输入加速/转向；玩家/AI 位移；护栏夹回；加速带触发、计数与冷却；暂停计时冻结与恢复；玩家第 1 冲线 → 胜利 + HUD 结算；重开回到 COUNTDOWN 且清空状态；两名 AI 先完赛 → 玩家第 3 → 失败遮罩。
 
 ### 8.2 自动驾驶整圈
 
@@ -204,7 +220,7 @@ godot --headless --path godot-ai-3d-game -s tools/smoke_ai_3d_game.gd
 godot --headless --path godot-ai-3d-game -s tools/playtest_autopilot.gd
 ```
 
-本项目交付时使用允许复现的 `tools/playtest_autopilot.gd` 验证：完赛 **13.45s**，3 次加速带，第 1 名，最终两人距离 275.2 / 281.9m（玩家 334.6m）。Tripo 资产接入前后完赛时间/AI 距离一致（父任务 13.46s）。自动寻线仅用于验收/录制，正常游戏默认 `auto_drive=false`。
+本项目交付时使用允许复现的 `tools/playtest_autopilot.gd` 验证：完赛 **13.45s**，3 次加速带，第 1 名，最终两人距离 275.2 / 281.9m（玩家 334.5m）。Tripo 资产接入前后完赛时间/AI 距离一致（父任务 13.46s）。自动寻线仅用于验收/录制，正常游戏默认 `auto_drive=false`。
 
 ### 8.3 截图
 
@@ -212,8 +228,8 @@ godot --headless --path godot-ai-3d-game -s tools/playtest_autopilot.gd
 godot --path godot-ai-3d-game --resolution 1280x720 -s tools/screenshot_race.gd
 ```
 
-输出 `docs/shots/01_start_grid.png` … `08_windmill_closeup.png`，全部 1920×1080。  
-本次运行 `RACE_SHOTS_OK count=8 fps=43`；截图线程中的 PNG 编码会拉低 HUD FPS 读数，不作为性能结论，性能以 `perf_ai_3d_game.gd` 为准。八张图均为 **1920×1080**。新增 `07_kart_closeup` 展示 Tripo 车体/程序化轮组/Fox，`08_windmill_closeup` 展示 Tripo 塔身/旋转叶片。
+输出 `docs/shots/01_start_grid.png` … `09_car_rear3q.png`，全部 1920×1080。  
+本次运行 `RACE_SHOTS_OK count=9 fps=57`；截图线程中的 PNG 编码会拉低 HUD FPS 读数，不作为性能结论，性能以 `perf_ai_3d_game.gd` 为准。九张图均为 **1920×1080**。`07_car_closeup` 展示 H3.1 跑车 PBR 车体/程序化轮组/Fox，`09_car_rear3q` 展示侧后轮拱、尾灯/尾旗与 AI 车队色，`08_windmill_closeup` 展示 Tripo 塔身/旋转叶片。
 
 ### 8.4 性能
 
@@ -226,10 +242,11 @@ Intel HD Graphics 6000、vsync 关、自动驾驶、3 车 + HUD + 全场景：
 
 | 视口 | 帧数/采样 | 平均 FPS | 中位 FPS | P95 | 最差帧 | 瞬时最低 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1920×1080 | 399 / 6.00s | **66.47** | 67.39 | 94.97 | 25.39ms | **39.39** |
-| 1280×720 | 433 / 6.01s | **72.09** | 73.58 | 106.30 | 27.64ms | **36.18** |
+| 1920×1080（run 1） | 375 / 6.02s | **62.34** | 64.76 | 99.90 | 306.83ms | **3.26** |
+| 1920×1080（run 2） | 343 / 6.01s | **57.11** | 62.48 | 86.74 | 515.83ms | **1.94** |
+| 1280×720 | 391 / 6.01s | **65.11** | 71.11 | 104.67 | 520.64ms | **1.92** |
 
-接入 Tripo 后平均 FPS 相比父任务基本持平（1080p 65.49→66.47，720p 74.91→72.09），瞬时最低从 46.9/42.3 降到 39.4/36.2，仍高于 Intel HD 30fps+ 目标。所有场景在报告中均为真实 GPU 运行；没有用 headless 数据冒充渲染性能。
+T-002 跑车（30k tris + 2048 PBR 贴图 + 程序化轮组）接入后，1080p 平均 **57–62 FPS**、720p 平均 **65 FPS**，仍高于 Intel HD 30fps+ 目标；相比 T-001 的 66.47/72.09 约下降 5–10 FPS，主要来自 PBR 法线/ORM 与三张贴图，已通过 decimate + 2048 贴图降档。6 秒采样在赛道 ~200m 处出现一次 **0.3–0.5s 的 hitch**（`PERF_WORST at≈1.3–1.5s, dist≈200m`）；临时禁用 `TripoCarBody` 后同一 hitch 仍复现（avg 58.6，worst 292.9ms），因此判断为既有场景/引擎事件而非跑车资产；父任务未记录该 hitch，作为已知风险保留。所有场景在报告中均为真实 GPU 运行；没有用 headless 数据冒充渲染性能。
 
 ### 8.5 真实 GPU 控制台
 
@@ -244,9 +261,9 @@ godot --path godot-ai-3d-game --resolution 1280x720 --quit-after 600
 `tools/capture_race_video.gd` 用真实 1920×1080 GPU 帧录完整一圈（含倒计时/加速/冲线/结算），按 20fps 采样到 `/tmp/race_video_frames`；ffmpeg 加速/编码成 10s MP4：
 
 - 源帧：380 帧 / 19.00s（20fps），冲线在第 334 帧；冲线后固定保留 46 帧结算。
-- 成片：`docs/media/qinglan_cup_10s.mp4`，1920×1080、30fps、10.000s（300 帧）、4.6MB、H.264。
+- 成片：`docs/media/qinglan_cup_10s.mp4`，1920×1080、30fps、10.000s（300 帧）、4.5MB、H.264。
 - 录制时隐藏 FPS 标签：PNG 回读会让 `Engine` 瞬时 FPS 掉到个位数，不代表游戏性能；正常游玩与截图仍显示真实 FPS。
-- 加速倍率约 1.9×，因此成片 HUD 时间会跑得比真实时间快；完赛计时本身仍是真实模拟结果（13.40s）。
+- 加速倍率约 1.9×，因此成片 HUD 时间会跑得比真实时间快；完赛计时本身仍是真实模拟结果（13.40s；自动驾驶验收 13.45s）。
 
 ### 8.7 Tripo 资产检查
 
@@ -254,15 +271,17 @@ godot --path godot-ai-3d-game --resolution 1280x720 --quit-after 600
 godot --headless --path godot-ai-3d-game -s tools/inspect_tripo_assets.gd
 ```
 
-- `kart.glb`：1 个 mesh、18,857 tris、1 个带贴图 surface，AABB 0.9995 × 0.2778 × 0.6753m，中心在原点。
+- `car.glb`：1 个 mesh、**30,000 tris**、1 个带贴图 surface（base color + ORM + NormalGL），AABB **1.0000 × 0.2749 × 0.5178m**，中心在原点；纹理导入为 2048²。
+- `kart.glb`（T-001 归档）：1 个 mesh、18,857 tris、1 个带贴图 surface，AABB 0.9995 × 0.2778 × 0.6753m，中心在原点。
 - `windmill.glb`：1 个 mesh、18,758 tris、1 个带贴图 surface，AABB 0.5858 × 1.0 × 0.6218m，中心在原点。
-- 两个文件都被导入为 `PackedScene`；纹理在 Godot 导入时抽出为同目录 `*_Color_*.jpg`。smoke 与 `tools/tripo_turntable.gd` 都基于真实导入结果，不只看任务状态。
+- 三个文件都被导入为 `PackedScene`；纹理在 Godot 导入时抽出为同目录 `car_Color/ORM/NormalGL` 等文件。smoke 与 `tools/tripo_turntable.gd` 都基于真实导入结果，不只看任务状态。
 
 ## 9. 已知风险 / 未做
 
 - 玩家与 AI 之间没有硬物理碰撞；并排时可能视觉重叠。
 - 没有音效/音乐、手柄、触屏、设置菜单、回放。
-- Tripo P2 车体是单网格，车轮不能独立旋转；游戏内保留程序化轮组解决滚动/转向。车体有侧裙长条、尾翼支撑略碎等 AI 拓扑瑕疵；H3.1 风车屋顶有烘焙明暗。未做二次重拓扑。
+- Tripo H3.1 跑车是单网格，车轮不能独立旋转；参考图隐藏车轮、游戏内保留程序化轮组解决滚动/转向。车体有轮拱边缘/后翼子板折线等轻微 AI 拓扑瑕疵；H3.1 风车屋顶有烘焙明暗。未做二次手工重拓扑。
+- 1080p 性能采样在赛道 ~200m 处有一次 0.3–0.5s hitch；禁用 Tripo 车体后仍复现，判断为既有场景/引擎事件，但父任务未记录，保留为风险。
 - 未生成第三个 Tripo 道具/驾驶员：预算优先核心车+风车；驾驶员仍是 CC0/CC-BY Fox + `Run`。
 - 完全使用系统 CJK 字体，跨机器字形可能不同。
 - 自动驾驶是验收/录制辅助，不暴露在 HUD；正常输入仍由 smoke 与人工试玩覆盖。

@@ -93,7 +93,7 @@ func _initialize() -> void:
 	await create_timer(0.5).timeout
 	await _shot("05_circuit_aerial")
 
-	# 07 车辆特写：Tripo 车体 + 程序化轮组 + Fox 驾驶员
+	# 07 车辆特写：Tripo H3.1 车体 + 程序化轮组 + Fox 驾驶员
 	world.debug_place_player_at_distance(world.track.length * 0.40, 0.0)
 	world.player.speed = 0.0
 	world.player.visual.update_motion(0.016, 0.0, 0.0, false)
@@ -101,10 +101,17 @@ func _initialize() -> void:
 	var close_fwd := world.player.forward()
 	var close_right := world.track.right_at(close_progress)
 	world.set_film_camera(
-		world.player.global_position + close_fwd * 3.4 + close_right * 3.6 + Vector3.UP * 1.65,
-		world.player.global_position + Vector3.UP * 0.72)
+		world.player.global_position + close_fwd * 2.9 + close_right * 3.1 + Vector3.UP * 1.50,
+		world.player.global_position + Vector3.UP * 0.70)
 	await create_timer(0.35).timeout
-	await _shot("07_kart_closeup")
+	await _shot("07_car_closeup")
+
+	# 09 车辆侧后：轮组接轮拱、尾灯/尾翼/尾旗、Fox 剪影
+	world.set_film_camera(
+		world.player.global_position - close_fwd * 3.1 + close_right * 3.2 + Vector3.UP * 1.55,
+		world.player.global_position + Vector3.UP * 0.70)
+	await create_timer(0.35).timeout
+	await _shot("09_car_rear3q")
 
 	# 08 风车特写：Tripo 塔身 + 程序化旋转叶片
 	world.set_film_camera(Vector3(16.0, 7.4, -0.4), Vector3(2.0, 4.9, -8.0))

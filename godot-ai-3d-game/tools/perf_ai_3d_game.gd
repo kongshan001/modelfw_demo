@@ -42,6 +42,7 @@ func _initialize() -> void:
 	var last_us := sample_start
 	var frames := 0
 	var worst_us := 0
+	var worst_at := 0.0
 	var samples: Array[float] = []
 	while Time.get_ticks_usec() - sample_start < 6_000_000:
 		_autopilot()
@@ -50,7 +51,9 @@ func _initialize() -> void:
 		var frame_us := now - last_us
 		last_us = now
 		frames += 1
-		worst_us = maxi(worst_us, frame_us)
+		if frame_us > worst_us:
+			worst_us = frame_us
+			worst_at = float(now - sample_start) / 1_000_000.0
 		samples.append(1_000_000.0 / maxf(1.0, float(frame_us)))
 	var elapsed := float(Time.get_ticks_usec() - sample_start) / 1_000_000.0
 	samples.sort()
@@ -61,6 +64,8 @@ func _initialize() -> void:
 	Input.action_release("accelerate")
 	Input.action_release("steer_left")
 	Input.action_release("steer_right")
+	print("PERF_WORST at=%.2fs state=%d dist=%.1f boost=%.2f" % [
+		worst_at, world.state, world.player.race_distance, world.player.boost_timer])
 	print("PERF_RESULT viewport=%dx%d frames=%d elapsed=%.2fs avg_fps=%.2f median_fps=%.2f p95_fps=%.2f worst_frame_ms=%.2f min_fps=%.2f speed=%.1f kmh" % [
 		vp_size.x, vp_size.y, frames, elapsed, avg, median, p95, float(worst_us) / 1000.0, min_fps,
 		world.player.speed_kmh(),

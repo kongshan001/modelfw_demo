@@ -38,17 +38,35 @@ func _initialize() -> void:
 	if fox_driver != null:
 		_check(fox_driver.find_child("AnimationPlayer", true, false) != null, "FoxDriver should have an AnimationPlayer")
 	# ── Tripo 资产：车体/风车加载、程序化回退节点、车轮与叶片保留 ──
-	_check(ResourceLoader.exists(KartVisual.TRIPO_KART_PATH), "Tripo kart.glb should exist")
-	var tripo_kart_pack := load(KartVisual.TRIPO_KART_PATH) as PackedScene
-	_check(tripo_kart_pack != null, "kart.glb should load as PackedScene")
-	var tripo_body := world.player.visual.get_node_or_null("Body/TripoKartBody") as Node3D
-	_check(tripo_body != null, "player kart should mount TripoKartBody")
+	_check(ResourceLoader.exists(KartVisual.TRIPO_CAR_PATH), "Tripo car.glb should exist")
+	var tripo_car_pack := load(KartVisual.TRIPO_CAR_PATH) as PackedScene
+	_check(tripo_car_pack != null, "car.glb should load as PackedScene")
+	var tripo_body := world.player.visual.get_node_or_null("Body/TripoCarBody") as Node3D
+	_check(tripo_body != null, "player kart should mount TripoCarBody")
 	if tripo_body != null:
 		# 在 Body 空间量尺寸，排除起跑格 yaw/lean 对世界 AABB 的放大。
 		var body_root := world.player.visual.get_node_or_null("Body") as Node3D
 		var kart_box := _combined_aabb(tripo_body, body_root)
-		_check(kart_box.size.x > 1.4 and kart_box.size.x < 2.4, "Tripo kart width should be 1.4–2.4m, got %.2f" % kart_box.size.x)
-		_check(kart_box.size.z > 2.8 and kart_box.size.z < 3.8, "Tripo kart length should be 2.8–3.8m, got %.2f" % kart_box.size.z)
+		_check(kart_box.size.x > 1.4 and kart_box.size.x < 2.4, "Tripo car width should be 1.4–2.4m, got %.2f" % kart_box.size.x)
+		_check(kart_box.size.z > 2.8 and kart_box.size.z < 3.8, "Tripo car length should be 2.8–3.8m, got %.2f" % kart_box.size.z)
+		var car_tris := 0
+		var car_shader := false
+		var car_stack: Array[Node] = [tripo_body]
+		while not car_stack.is_empty():
+			var car_node: Node = car_stack.pop_back()
+			for child in car_node.get_children():
+				car_stack.append(child)
+			if car_node is MeshInstance3D:
+				var car_mi := car_node as MeshInstance3D
+				if car_mi.mesh != null:
+					car_tris += int(car_mi.mesh.get_faces().size() / 3)
+				if car_mi.material_override is ShaderMaterial:
+					car_shader = true
+				for s in car_mi.mesh.get_surface_count():
+					if car_mi.get_surface_override_material(s) is ShaderMaterial:
+						car_shader = true
+		_check(car_tris > 10000 and car_tris < 35000, "Tripo car should be decimated to 10k–35k tris, got %d" % car_tris)
+		_check(car_shader, "Tripo car should use the PBR team tint shader")
 	var procedural_kart := world.player.visual.get_node_or_null("Body/ProceduralBody") as Node3D
 	_check(procedural_kart != null and not procedural_kart.visible, "procedural kart body should be hidden when Tripo body is active")
 	var wheel_root := world.player.visual.get_node_or_null("Wheels")

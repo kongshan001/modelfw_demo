@@ -8,6 +8,7 @@ const SIZE := Vector2i(768, 768)
 
 const ASSETS := {
 	"kart": "res://assets/ai/tripo/kart/kart.glb",
+	"car": "res://assets/ai/tripo/car/car.glb",
 	"windmill": "res://assets/ai/tripo/windmill/windmill.glb",
 }
 

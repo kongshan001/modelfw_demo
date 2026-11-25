@@ -1,0 +1,47 @@
+{
+  "asset": "qinglan-realistic-car",
+  "task_id": "856e0f6e-f6aa-49ff-bdd5-c056c3d662ff",
+  "type": "image_to_model",
+  "model": "v3.1-20260211",
+  "model_alias": "H3.1",
+  "input_reference": "../refs/realistic_car/realistic_car_3q.png",
+  "input_reference_sheet": "../refs/realistic_car/realistic_car_sheet.png",
+  "input_note": "Original Blender render of a brand-free concept roadster built from scratch by tools/blender/realistic_car_refs.py (front/side/3q/rear3q). Wheels were intentionally omitted so the game keeps its procedurally animated wheels. No third-party images, photos, logos or game assets.",
+  "parameters": {
+    "face_limit": 100000,
+    "texture": true,
+    "texture_quality": "detailed",
+    "pbr": true,
+    "quad": false,
+    "delight": false,
+    "geometry_quality": "standard"
+  },
+  "credits_consumed": 40,
+  "balance_before": 65,
+  "balance_after": 25,
+  "triangles_source": 94256,
+  "decimation": {
+    "tool": "Blender 3.4.1 Decimate modifier (COLLAPSE, use_collapse_triangulate)",
+    "ratio": 0.3183,
+    "triangles_final": 30000,
+    "script": "tools/blender/decimate_car.py"
+  },
+  "result_file": "car.glb",
+  "textures": {
+    "base_color": "car_Color_856e0f6e-*.jpg (2048² after import size_limit, embedded in GLB; Godot extracts it beside the GLB)",
+    "orm": "car_ORM_856e0f6e-*.jpg (2048²; G=roughness, B=metallic)",
+    "normal": "car_NormalGL_856e0f6e-*.png (2048²; imported as normal map)"
+  },
+  "integration": {
+    "target_size_m": [3.25, 0.95, 1.8],
+    "source_aabb_size_m": [1.0, 0.274865, 0.5178],
+    "scale": [3.25, 3.4557, 3.4762],
+    "rotation_y_deg": 90,
+    "offset_m": [0.0, 0.595, 0.0],
+    "wheel_track_m": 0.735,
+    "wheelbase_m": 1.9,
+    "wheel_radius_m": 0.345,
+    "team_colors": "shaders/tripo_car.gdshader"
+  },
+  "license": "Tripo image-to-3D output generated for this original project. The input is an original Blender render built from scratch by this project. No third-party characters, logos, photos or game assets. Tripo service terms apply."
+}
