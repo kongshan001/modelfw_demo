@@ -27,11 +27,33 @@
 
 Godot 4.6（MIT），项目只使用引擎内置 API，无第三方运行时库。
 
-## AI 生成资产
+## AI 生成资产（Tripo 图生 3D）
 
-**无。** Hyper3D Rodin 在本机不可用；允许的 Tripo 凭据来源（env / team secret）为空，因此 Tripo 图生 3D 未执行，credits 消耗为 0。
-卡丁车车身、轮组、赛道、路肩、护栏、拱门、风车、树木、云、山、加速带、HUD 与特效均为本项目的 GDScript 程序化几何/绘制。
-详见 `docs/TECH.md` 与 `assets/ai/README.md`。
+2026-11-25（T-20261125-001）通过已登录的 Tripo CLI（`--profile cn`）生成两项原创资产。输入参考图均为本项目的程序化模型在真实 GPU 上的原创渲染，不含参考视频、Hyper3D 或原作素材。
+
+### 卡丁车车体
+
+- 位置：`assets/ai/tripo/kart/kart.glb`（纹理抽取为同目录 `kart_Color_*.jpg`）
+- task id：`f7ef8737-d179-451a-b858-8ad024d14183`
+- 模型/参数：P2-20260801，`face_limit=18000`、`texture_quality=detailed`、`pbr=false`、`quad=false`
+- 三角面：18,857；credits：120
+- 输入：`assets/ai/tripo/refs/kart_3q.png`（本项目程序化卡丁车车体的 1024² 渲染）
+- 用途：替换程序化车体；车轮/转向/尾焰/尾旗仍程序化，驾驶员仍为 Fox。
+
+### 风车塔身
+
+- 位置：`assets/ai/tripo/windmill/windmill.glb`（纹理抽取为同目录 `windmill_Color_*.jpg`）
+- task id：`cbdc4d8b-e6e1-43f9-9838-932b78f5c26d`
+- 模型/参数：v3.1-20260211（H3.1），`face_limit=20000`、`texture_quality=detailed`、`pbr=false`、`quad=false`
+- 三角面：18,758；credits：40
+- 输入：`assets/ai/tripo/refs/windmill_3q.png`（本项目程序化风车塔身的 1024² 渲染）
+- 用途：替换程序化塔身；旋转叶片/土台/干草仍程序化。
+
+- 合计实际消耗 **160 credits**（余额 225 → 65）；两次生成均成功，无额外转换/重试。
+- Tripo 输出用于本原创项目；输入是项目自己的程序化渲染，不含第三方 IP；Tripo 服务条款适用于生成资产。
+- 未生成第三个 Tripo 道具/驾驶员；驾驶员保留 CC0/CC-BY Fox。
+- 其余轮组、赛道、路肩、护栏、拱门、树木、云、山、加速带、HUD 与特效仍为 GDScript 程序化几何/绘制。
+- 任务 id、参数与已知 mesh 瑕疵详见 `docs/TECH.md`、`assets/ai/README.md`、`assets/ai/tripo/README.md`。
 
 ## 字体
 

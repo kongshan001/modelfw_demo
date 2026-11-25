@@ -37,6 +37,34 @@ func _initialize() -> void:
 	_check(fox_driver != null, "player kart should mount FoxDriver")
 	if fox_driver != null:
 		_check(fox_driver.find_child("AnimationPlayer", true, false) != null, "FoxDriver should have an AnimationPlayer")
+	# ── Tripo 资产：车体/风车加载、程序化回退节点、车轮与叶片保留 ──
+	_check(ResourceLoader.exists(KartVisual.TRIPO_KART_PATH), "Tripo kart.glb should exist")
+	var tripo_kart_pack := load(KartVisual.TRIPO_KART_PATH) as PackedScene
+	_check(tripo_kart_pack != null, "kart.glb should load as PackedScene")
+	var tripo_body := world.player.visual.get_node_or_null("Body/TripoKartBody") as Node3D
+	_check(tripo_body != null, "player kart should mount TripoKartBody")
+	if tripo_body != null:
+		# 在 Body 空间量尺寸，排除起跑格 yaw/lean 对世界 AABB 的放大。
+		var body_root := world.player.visual.get_node_or_null("Body") as Node3D
+		var kart_box := _combined_aabb(tripo_body, body_root)
+		_check(kart_box.size.x > 1.4 and kart_box.size.x < 2.4, "Tripo kart width should be 1.4–2.4m, got %.2f" % kart_box.size.x)
+		_check(kart_box.size.z > 2.8 and kart_box.size.z < 3.8, "Tripo kart length should be 2.8–3.8m, got %.2f" % kart_box.size.z)
+	var procedural_kart := world.player.visual.get_node_or_null("Body/ProceduralBody") as Node3D
+	_check(procedural_kart != null and not procedural_kart.visible, "procedural kart body should be hidden when Tripo body is active")
+	var wheel_root := world.player.visual.get_node_or_null("Wheels")
+	_check(wheel_root != null and wheel_root.get_child_count() == 4, "4 procedural wheels should remain for spin/steer")
+	_check(ResourceLoader.exists(RaceWorld.TRIPO_WINDMILL_PATH), "Tripo windmill.glb should exist")
+	var tripo_windmill_pack := load(RaceWorld.TRIPO_WINDMILL_PATH) as PackedScene
+	_check(tripo_windmill_pack != null, "windmill.glb should load as PackedScene")
+	var tripo_windmill := world.get_node_or_null("Windmill/TripoWindmill") as Node3D
+	_check(tripo_windmill != null, "windmill should mount TripoWindmill")
+	if tripo_windmill != null:
+		var mill_root := world.get_node_or_null("Windmill") as Node3D
+		var mill_box := _combined_aabb(tripo_windmill, mill_root)
+		_check(mill_box.size.y > 9.0 and mill_box.size.y < 12.0, "Tripo windmill height should be 9–12m, got %.2f" % mill_box.size.y)
+	var procedural_mill := world.get_node_or_null("Windmill/ProceduralBody") as Node3D
+	_check(procedural_mill != null and not procedural_mill.visible, "procedural windmill body should be hidden when Tripo body is active")
+	_check(world.get_node_or_null("Windmill/Rotor") != null, "procedural windmill rotor should remain for animation")
 	_check(world.racers.size() == 3, "there should be 1 player + 2 rivals")
 	_check(world.rivals.size() == 2, "there should be 2 AI rivals")
 	_check(world.boost_pads.size() == 3, "there should be 3 boost pads")
@@ -205,3 +233,27 @@ func _check(condition: bool, message: String) -> void:
 	_checks += 1
 	if not condition:
 		_fails.append(message)
+
+
+func _combined_aabb(root: Node3D, space: Node3D = null) -> AABB:
+	var box := AABB()
+	var first := true
+	var inv := Transform3D.IDENTITY
+	if space != null:
+		inv = space.global_transform.affine_inverse()
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		for child in node.get_children():
+			stack.append(child)
+		if node is MeshInstance3D:
+			var mi := node as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var part := (inv * mi.global_transform) * mi.get_aabb()
+			if first:
+				box = part
+				first = false
+			else:
+				box = box.merge(part)
+	return box

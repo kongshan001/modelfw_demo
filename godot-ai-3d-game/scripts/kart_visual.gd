@@ -1,11 +1,21 @@
 class_name KartVisual
 extends Node3D
 
-# 原创低模卡丁车。车身/轮组/尾翼/加速尾焰全部程序化；
+# 原创低模卡丁车。车体优先使用 Tripo P2 图生 GLB，轮组/尾翼/尾焰/旗子仍程序化，
+# 因此 Tripo 车体替换外观的同时保留车轮滚动/转向、boost 尾焰与缺图回退。
 # 玩家驾驶员优先使用 CC0 Fox.glb（带 Run 动画），缺图时退回程序化小狐狸。
 
 const FOX_PATH := "res://assets/ai/cc0/fox/Fox.glb"
+const TRIPO_KART_PATH := "res://assets/ai/tripo/kart/kart.glb"
+const TRIPO_KART_SHADER := preload("res://shaders/tripo_kart.gdshader")
 const WHEEL_RADIUS := 0.33
+
+# Tripo GLB 源包围盒（Godot 导入后）：长 × 高 × 宽 = 0.9995 × 0.2778 × 0.6753m，
+# 长度沿 X、车头朝 +X、AABB 以原点为中心。非均匀缩放把它整理成
+# 3.25m 长 / 0.95m 高 / 1.80m 宽的车体；rotation.y=+90° 让车头对准游戏内的 -Z。
+const TRIPO_KART_SOURCE_SIZE := Vector3(0.999512, 0.277832, 0.675293)
+const TRIPO_KART_TARGET_SIZE := Vector3(3.25, 0.95, 1.80)
+const TRIPO_KART_OFFSET := Vector3(0.0, 0.645, -0.03)
 
 static var _blob_texture: ImageTexture
 
@@ -14,12 +24,14 @@ var accent_color := Color("#24cfd1")
 var is_player := true
 
 var _body_root: Node3D
+var _body_geo: Node3D
 var _wheel_root: Node3D
 var _front_pivots: Array[Node3D] = []
 var _spinners: Array[Node3D] = []
 var _boost_flames: Array[MeshInstance3D] = []
 var _driver_anim: AnimationPlayer
 var _driver_model: Node3D
+var _uses_tripo_body := false
 var _wheel_spin := 0.0
 var _steer_smooth := 0.0
 var _lean := 0.0
@@ -73,30 +85,33 @@ func _build_kart() -> void:
 	_body_root = Node3D.new()
 	_body_root.name = "Body"
 	add_child(_body_root)
+	_body_geo = Node3D.new()
+	_body_geo.name = "ProceduralBody"
+	_body_root.add_child(_body_geo)
 	_wheel_root = Node3D.new()
 	_wheel_root.name = "Wheels"
 	add_child(_wheel_root)
 
 	# 低矮的卡丁车底盘，司机上半身从座舱里露出来。
-	_box(_body_root, "Floorpan", Vector3(1.48, 0.11, 2.52), Vector3(0, 0.23, 0), _mat_dark)
-	_box(_body_root, "Chassis", Vector3(1.32, 0.27, 1.84), Vector3(0, 0.38, 0.04), _mat_body)
-	_box(_body_root, "Nose", Vector3(1.02, 0.24, 0.84), Vector3(0, 0.43, -1.26), _mat_accent)
-	_box(_body_root, "NoseTip", Vector3(1.48, 0.14, 0.18), Vector3(0, 0.31, -1.70), _mat_cream)
-	_box(_body_root, "FrontLip", Vector3(1.78, 0.09, 0.25), Vector3(0, 0.22, -1.78), _mat_dark)
-	_box(_body_root, "FrontNumberPlate", Vector3(0.56, 0.18, 0.07), Vector3(0, 0.48, -1.70), _mat_cream)
+	_box(_body_geo, "Floorpan", Vector3(1.48, 0.11, 2.52), Vector3(0, 0.23, 0), _mat_dark)
+	_box(_body_geo, "Chassis", Vector3(1.32, 0.27, 1.84), Vector3(0, 0.38, 0.04), _mat_body)
+	_box(_body_geo, "Nose", Vector3(1.02, 0.24, 0.84), Vector3(0, 0.43, -1.26), _mat_accent)
+	_box(_body_geo, "NoseTip", Vector3(1.48, 0.14, 0.18), Vector3(0, 0.31, -1.70), _mat_cream)
+	_box(_body_geo, "FrontLip", Vector3(1.78, 0.09, 0.25), Vector3(0, 0.22, -1.78), _mat_dark)
+	_box(_body_geo, "FrontNumberPlate", Vector3(0.56, 0.18, 0.07), Vector3(0, 0.48, -1.70), _mat_cream)
 	for side in [-1.0, 1.0]:
-		_box(_body_root, "SidePod", Vector3(0.30, 0.20, 1.10), Vector3(side * 0.80, 0.39, 0.04), _mat_accent)
-		_box(_body_root, "SideStripe", Vector3(0.04, 0.10, 1.72), Vector3(side * 0.66, 0.46, 0.0), _mat_cream)
-		_box(_body_root, "RearPod", Vector3(0.42, 0.20, 0.44), Vector3(side * 0.70, 0.37, 0.96), _mat_body)
+		_box(_body_geo, "SidePod", Vector3(0.30, 0.20, 1.10), Vector3(side * 0.80, 0.39, 0.04), _mat_accent)
+		_box(_body_geo, "SideStripe", Vector3(0.04, 0.10, 1.72), Vector3(side * 0.66, 0.46, 0.0), _mat_cream)
+		_box(_body_geo, "RearPod", Vector3(0.42, 0.20, 0.44), Vector3(side * 0.70, 0.37, 0.96), _mat_body)
 
 	# 开放座舱、低靠背，给狐狸驾驶员留出清晰的剪影。
-	_box(_body_root, "CockpitRim", Vector3(1.06, 0.14, 0.94), Vector3(0, 0.54, 0.10), _mat_cream)
-	_box(_body_root, "CockpitWell", Vector3(0.84, 0.10, 0.70), Vector3(0, 0.59, 0.10), _mat_dark)
-	_box(_body_root, "Seat", Vector3(0.54, 0.30, 0.42), Vector3(0, 0.72, 0.40), _mat_dark)
-	_box(_body_root, "SeatBack", Vector3(0.58, 0.30, 0.14), Vector3(0, 0.86, 0.58), _mat_accent)
+	_box(_body_geo, "CockpitRim", Vector3(1.06, 0.14, 0.94), Vector3(0, 0.54, 0.10), _mat_cream)
+	_box(_body_geo, "CockpitWell", Vector3(0.84, 0.10, 0.70), Vector3(0, 0.59, 0.10), _mat_dark)
+	_box(_body_geo, "Seat", Vector3(0.54, 0.30, 0.42), Vector3(0, 0.72, 0.40), _mat_dark)
+	_box(_body_geo, "SeatBack", Vector3(0.58, 0.30, 0.14), Vector3(0, 0.86, 0.58), _mat_accent)
 
 	# 发动机、排气管、双尾灯
-	_box(_body_root, "Engine", Vector3(0.60, 0.26, 0.40), Vector3(0, 0.43, 1.02), _mat_dark)
+	_box(_body_geo, "Engine", Vector3(0.60, 0.26, 0.40), Vector3(0, 0.43, 1.02), _mat_dark)
 	var pipe_mesh := CylinderMesh.new()
 	pipe_mesh.top_radius = 0.06
 	pipe_mesh.bottom_radius = 0.08
@@ -109,17 +124,17 @@ func _build_kart() -> void:
 		pipe.position = Vector3(side * 0.26, 0.43, 1.30)
 		pipe.rotation.x = PI * 0.5
 		pipe.material_override = _mat_dark
-		_body_root.add_child(pipe)
+		_body_geo.add_child(pipe)
 		_box(_body_root, "TailLamp", Vector3(0.20, 0.10, 0.05), Vector3(side * 0.53, 0.35, 1.56), _mat_flame)
 	# 中央留空的双尾翼，不挡驾驶员。
 	for side in [-1.0, 1.0]:
-		_box(_body_root, "Winglet", Vector3(0.50, 0.08, 0.32), Vector3(side * 0.62, 0.98, 1.16), _mat_accent)
-		_box(_body_root, "WingPost", Vector3(0.06, 0.26, 0.08), Vector3(side * 0.55, 0.84, 1.13), _mat_dark)
-		_box(_body_root, "WingEnd", Vector3(0.08, 0.20, 0.34), Vector3(side * 0.89, 1.02, 1.16), _mat_cream)
-	_box(_body_root, "RearBumper", Vector3(1.78, 0.10, 0.16), Vector3(0, 0.29, 1.48), _mat_cream)
-	_box(_body_root, "BumperStripe", Vector3(0.55, 0.12, 0.19), Vector3(0, 0.33, 1.50), _mat_accent)
+		_box(_body_geo, "Winglet", Vector3(0.50, 0.08, 0.32), Vector3(side * 0.62, 0.98, 1.16), _mat_accent)
+		_box(_body_geo, "WingPost", Vector3(0.06, 0.26, 0.08), Vector3(side * 0.55, 0.84, 1.13), _mat_dark)
+		_box(_body_geo, "WingEnd", Vector3(0.08, 0.20, 0.34), Vector3(side * 0.89, 1.02, 1.16), _mat_cream)
+	_box(_body_geo, "RearBumper", Vector3(1.78, 0.10, 0.16), Vector3(0, 0.29, 1.48), _mat_cream)
+	_box(_body_geo, "BumperStripe", Vector3(0.55, 0.12, 0.19), Vector3(0, 0.33, 1.50), _mat_accent)
 
-	# 方向盘压在胸前，不遮住狐狸的头。
+	# 方向盘压在胸前，不遮住狐狸的头；Tripo 车体参考图里隐藏了方向盘，因此不重复。
 	var wheel_torus := TorusMesh.new()
 	wheel_torus.inner_radius = 0.14
 	wheel_torus.outer_radius = 0.21
@@ -170,8 +185,8 @@ func _build_kart() -> void:
 			if wz < 0.0:
 				_front_pivots.append(pivot)
 		# 前后挡泥板，补足玩具卡丁车的轮廓
-		_box(_body_root, "FrontFender", Vector3(0.44, 0.10, 0.56), Vector3(wx, 0.58, -0.88), _mat_cream)
-		_box(_body_root, "RearFender", Vector3(0.46, 0.10, 0.58), Vector3(wx, 0.57, 0.88), _mat_accent)
+		_box(_body_geo, "FrontFender", Vector3(0.44, 0.10, 0.56), Vector3(wx, 0.58, -0.88), _mat_cream)
+		_box(_body_geo, "RearFender", Vector3(0.46, 0.10, 0.58), Vector3(wx, 0.57, 0.88), _mat_accent)
 
 	# 车尾小旗，让玩家从追尾镜头一眼识别自己的车。
 	var pole := _box(_body_root, "Antenna", Vector3(0.035, 0.90, 0.035), Vector3(-0.60, 1.14, 1.26), _mat_dark)
@@ -202,6 +217,66 @@ func _build_kart() -> void:
 		flame.visible = false
 		_body_root.add_child(flame)
 		_boost_flames.append(flame)
+
+	if _mount_tripo_body():
+		_body_geo.visible = false
+
+
+func _mount_tripo_body() -> bool:
+	# Tripo 车体只替换外观；车轮/尾焰/旗子/驾驶员仍由上面的程序化节点驱动。
+	if not ResourceLoader.exists(TRIPO_KART_PATH):
+		return false
+	var packed := load(TRIPO_KART_PATH) as PackedScene
+	if packed == null:
+		push_warning("KartVisual: %s failed to load, using procedural body" % TRIPO_KART_PATH)
+		return false
+	var model := packed.instantiate() as Node3D
+	if model == null:
+		push_warning("KartVisual: %s is not a Node3D scene, using procedural body" % TRIPO_KART_PATH)
+		return false
+	var fit_scale := Vector3(
+		TRIPO_KART_TARGET_SIZE.x / TRIPO_KART_SOURCE_SIZE.x,
+		TRIPO_KART_TARGET_SIZE.y / TRIPO_KART_SOURCE_SIZE.y,
+		TRIPO_KART_TARGET_SIZE.z / TRIPO_KART_SOURCE_SIZE.z)
+	var mount := Node3D.new()
+	mount.name = "TripoKartBody"
+	mount.rotation.y = PI * 0.5
+	mount.scale = fit_scale
+	mount.position = TRIPO_KART_OFFSET
+	model.name = "Model"
+	mount.add_child(model)
+	_apply_team_materials(model)
+	_body_root.add_child(mount)
+	_uses_tripo_body = true
+	# Tripo 座舱位于车身中后部：方向盘跟着后移，避免悬在车头外。
+	var steering := _body_root.get_node_or_null("SteeringWheel") as Node3D
+	if steering != null:
+		steering.position = Vector3(0.0, 0.88, 0.02)
+	return true
+
+
+func _apply_team_materials(model: Node3D) -> void:
+	# 同一张 GLB 贴图分给三辆车；用色块蒙版还原玩家奶油/青绿、AI 珊瑚/金/藏蓝的识别色。
+	var stack: Array[Node] = [model]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		for child in node.get_children():
+			stack.append(child)
+		if node is not MeshInstance3D:
+			continue
+		var mi := node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for surface in mi.mesh.get_surface_count():
+			var source := mi.mesh.surface_get_material(surface) as StandardMaterial3D
+			if source == null or source.albedo_texture == null:
+				continue
+			var mat := ShaderMaterial.new()
+			mat.shader = TRIPO_KART_SHADER
+			mat.set_shader_parameter("albedo_tex", source.albedo_texture)
+			mat.set_shader_parameter("body_color", body_color)
+			mat.set_shader_parameter("accent_color", accent_color)
+			mi.set_surface_override_material(surface, mat)
 
 
 func _build_shadow() -> void:
@@ -252,7 +327,8 @@ func _build_fox_driver() -> void:
 	_driver_model.name = "FoxDriver"
 	_driver_model.rotation.y = PI
 	_driver_model.scale = Vector3.ONE * 0.0078
-	_driver_model.position = Vector3(0.0, 0.63, 0.08)
+	# Tripo 座舱位于车身中后部，且比程序化座舱高；驾驶员整体后移+上移。
+	_driver_model.position = Vector3(0.0, 0.78, 0.40) if _uses_tripo_body else Vector3(0.0, 0.63, 0.08)
 	_body_root.add_child(_driver_model)
 	_driver_model.add_child(model)
 	_driver_anim = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
@@ -260,7 +336,8 @@ func _build_fox_driver() -> void:
 		_driver_anim.play("Run", 0.15, 1.35)
 		_driver_anim.get_animation("Run").loop_mode = Animation.LOOP_LINEAR
 	# 小围巾（不依赖骨骼，作为整体色块）
-	var scarf := _box(_body_root, "Scarf", Vector3(0.34, 0.11, 0.46), Vector3(0.0, 0.94, 0.44), _mat_accent)
+	var scarf_pos := Vector3(0.0, 1.08, 0.72) if _uses_tripo_body else Vector3(0.0, 0.94, 0.44)
+	var scarf := _box(_body_root, "Scarf", Vector3(0.34, 0.11, 0.46), scarf_pos, _mat_accent)
 	scarf.rotation.x = -0.10
 
 
@@ -305,6 +382,7 @@ func _build_fallback_fox() -> void:
 func _build_robot_driver() -> void:
 	_driver_model = Node3D.new()
 	_driver_model.name = "RivalDriver"
+	_driver_model.position = Vector3(0.0, 0.10, 0.30) if _uses_tripo_body else Vector3.ZERO
 	_body_root.add_child(_driver_model)
 	_sphere_node(_driver_model, "Helmet", 0.25, Vector3(0, 1.04, 0.22), _mat_accent)
 	var visor := _box(_driver_model, "Visor", Vector3(0.34, 0.11, 0.09), Vector3(0, 1.05, -0.02), _mat_dark)

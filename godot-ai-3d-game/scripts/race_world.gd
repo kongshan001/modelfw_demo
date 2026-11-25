@@ -12,6 +12,11 @@ const RIVAL_A_BODY := Color("#f26758")
 const RIVAL_A_ACCENT := Color("#ffe7bb")
 const RIVAL_B_BODY := Color("#f6c84d")
 const RIVAL_B_ACCENT := Color("#275275")
+# Tripo H3.1 风车：源包围盒高 1.0m、底边在 -0.5；缩放到与程序化塔身同高 10.7m。
+const TRIPO_WINDMILL_PATH := "res://assets/ai/tripo/windmill/windmill.glb"
+const TRIPO_WINDMILL_SOURCE_HEIGHT := 1.0
+const TRIPO_WINDMILL_TARGET_HEIGHT := 10.7
+const TRIPO_WINDMILL_BOTTOM := 0.20
 
 enum RaceState { COUNTDOWN, RACING, PAUSED, FINISHED }
 
@@ -384,53 +389,58 @@ func _build_windmill() -> void:
 	mound.height = 0.38
 	mound.radial_segments = 12
 	_mesh_inst(mill, mound, Vector3(0, 0.19, 0), grass_mat, "Mound")
+
+	# 塔身/屋顶/门窗/阳台放进可隐藏组；Tripo GLB 可用时整组停用。
+	var body := Node3D.new()
+	body.name = "ProceduralBody"
+	mill.add_child(body)
 	var tower := CylinderMesh.new()
 	tower.top_radius = 2.05
 	tower.bottom_radius = 3.0
 	tower.height = 7.8
 	tower.radial_segments = 8
 	tower.rings = 1
-	_mesh_inst(mill, tower, Vector3(0, 4.1, 0), cream, "Tower")
+	_mesh_inst(body, tower, Vector3(0, 4.1, 0), cream, "Tower")
 	var band_a := CylinderMesh.new()
 	band_a.top_radius = 2.55
 	band_a.bottom_radius = 2.62
 	band_a.height = 0.28
 	band_a.radial_segments = 8
-	_mesh_inst(mill, band_a, Vector3(0, 2.1, 0), coral, "BandA")
+	_mesh_inst(body, band_a, Vector3(0, 2.1, 0), coral, "BandA")
 	var band_b := CylinderMesh.new()
 	band_b.top_radius = 2.10
 	band_b.bottom_radius = 2.17
 	band_b.height = 0.24
 	band_b.radial_segments = 8
-	_mesh_inst(mill, band_b, Vector3(0, 5.5, 0), coral, "BandB")
+	_mesh_inst(body, band_b, Vector3(0, 5.5, 0), coral, "BandB")
 	var roof := CylinderMesh.new()
 	roof.top_radius = 0.0
 	roof.bottom_radius = 2.55
 	roof.height = 2.7
 	roof.radial_segments = 8
 	roof.rings = 1
-	_mesh_inst(mill, roof, Vector3(0, 9.35, 0), coral, "Roof")
+	_mesh_inst(body, roof, Vector3(0, 9.35, 0), coral, "Roof")
 	var hub_base := CylinderMesh.new()
 	hub_base.top_radius = 0.38
 	hub_base.bottom_radius = 0.38
 	hub_base.height = 0.7
 	hub_base.radial_segments = 8
-	var hub_mesh := _mesh_inst(mill, hub_base, Vector3(0, 7.9, 2.75), navy, "HubBase")
+	var hub_mesh := _mesh_inst(body, hub_base, Vector3(0, 7.9, 2.75), navy, "HubBase")
 	hub_mesh.rotation.x = PI * 0.5
 	var door := BoxMesh.new()
 	door.size = Vector3(1.1, 2.2, 0.25)
-	_mesh_inst(mill, door, Vector3(0, 1.35, -2.90), wood, "Door").rotation.x = -0.05
+	_mesh_inst(body, door, Vector3(0, 1.35, -2.90), wood, "Door").rotation.x = -0.05
 	var window_mesh := BoxMesh.new()
 	window_mesh.size = Vector3(0.62, 0.75, 0.18)
-	_mesh_inst(mill, window_mesh, Vector3(0, 4.3, -2.55), navy, "Window")
+	_mesh_inst(body, window_mesh, Vector3(0, 4.3, -2.55), navy, "Window")
 	# 侧面阳台
 	var balcony := BoxMesh.new()
 	balcony.size = Vector3(3.7, 0.22, 1.1)
-	_mesh_inst(mill, balcony, Vector3(0, 3.4, -2.7), wood, "Balcony")
+	_mesh_inst(body, balcony, Vector3(0, 3.4, -2.7), wood, "Balcony")
 	for x in [-1.65, 0.0, 1.65]:
 		var rail := BoxMesh.new()
 		rail.size = Vector3(0.10, 0.75, 0.10)
-		_mesh_inst(mill, rail, Vector3(x, 3.8, -3.18), cream, "BalconyPost")
+		_mesh_inst(body, rail, Vector3(x, 3.8, -3.18), cream, "BalconyPost")
 
 	# 风车叶片：四片木叶 + 珊瑚叶尖，绕本地 Z 轴旋转。
 	_windmill_rotor = Node3D.new()
@@ -473,6 +483,32 @@ func _build_windmill() -> void:
 		var hay_mesh := _mesh_inst(mill, hay, Vector3(-6.0 + float(i) * 2.2, 0.72, -4.0), _solid(Color("#e5c15e"), 1.0), "Hay%d" % i)
 		hay_mesh.rotation.z = PI * 0.5
 		hay_mesh.rotation.y = _rng.randf_range(-0.4, 0.4)
+
+	# Tripo 塔身可用时隐藏程序化塔身；土台、干草与旋转叶片继续保留。
+	if _mount_tripo_windmill(mill):
+		body.visible = false
+
+
+func _mount_tripo_windmill(mill: Node3D) -> bool:
+	if not ResourceLoader.exists(TRIPO_WINDMILL_PATH):
+		return false
+	var packed := load(TRIPO_WINDMILL_PATH) as PackedScene
+	if packed == null:
+		push_warning("RaceWorld: %s failed to load, using procedural windmill" % TRIPO_WINDMILL_PATH)
+		return false
+	var model := packed.instantiate() as Node3D
+	if model == null:
+		push_warning("RaceWorld: %s is not a Node3D scene, using procedural windmill" % TRIPO_WINDMILL_PATH)
+		return false
+	var factor := TRIPO_WINDMILL_TARGET_HEIGHT / TRIPO_WINDMILL_SOURCE_HEIGHT
+	var mount := Node3D.new()
+	mount.name = "TripoWindmill"
+	mount.scale = Vector3.ONE * factor
+	mount.position = Vector3(0.0, TRIPO_WINDMILL_BOTTOM + TRIPO_WINDMILL_TARGET_HEIGHT * 0.5, 0.0)
+	model.name = "Model"
+	mount.add_child(model)
+	mill.add_child(mount)
+	return true
 
 
 func _build_boost_pads() -> void:

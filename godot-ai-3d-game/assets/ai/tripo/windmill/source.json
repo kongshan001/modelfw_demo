@@ -1,0 +1,30 @@
+{
+  "asset": "qinglan-windmill",
+  "task_id": "cbdc4d8b-e6e1-43f9-9838-932b78f5c26d",
+  "type": "image_to_model",
+  "model": "v3.1-20260211",
+  "input_reference": "../refs/windmill_3q.png",
+  "input_note": "Original GPU render of this project's procedural windmill tower (rotor, mound and hay hidden so the rotor stays animated). No third-party image.",
+  "parameters": {
+    "face_limit": 20000,
+    "texture": true,
+    "texture_quality": "detailed",
+    "pbr": false,
+    "quad": false,
+    "delight": false,
+    "geometry_quality": "standard (server default)"
+  },
+  "credits_consumed": 40,
+  "triangles": 18758,
+  "result_file": "windmill.glb",
+  "texture": "windmill_Color_cbdc4d8b-e6e1-43f9-9838-932b78f5c26d.jpg (embedded in GLB; extracted by Godot's glTF importer)",
+  "integration": {
+    "target_height_m": 10.7,
+    "source_aabb_height_m": 1.0,
+    "scale": 10.7,
+    "rotation_y_deg": 0,
+    "bottom_m": 0.20,
+    "procedural_rotor": "kept at Windmill/Rotor (0, 7.9, 3.18)"
+  },
+  "license": "Tripo image-to-3D output generated for this original project. Input is an original render of the project's own procedural windmill. No third-party characters, logos, or game assets. Tripo service terms apply."
+}

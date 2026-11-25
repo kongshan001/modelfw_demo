@@ -2,6 +2,18 @@
 
 ## 进行中
 
+## T-20261125-001 · 用 Tripo 重建《青岚杯》赛车资产（T-004 follow-up）
+- 来源: 飞书消息（2026-11-25，“用tripo建模”，针对 T-20261124-004 卡丁车 demo）
+- 线程: T-20261124-004（GPT-6 + Hyper3D 3D 游戏）
+- 父任务: T-20261124-004（done）
+- 类型: game-demo（AI 3D 资产 / 整合）
+- 目标: 用 Tripo 生成原创卡丁车/地标等资产，替换程序化/CC0 视觉并保持现有赛车玩法与性能
+- 交付: 更新 `godot-ai-3d-game/`；Tripo GLB + 来源/credits/许可；截图/GIF/MP4；README/TECH/迭代记录/CREDITS 更新；smoke + 真实 GPU 验证
+- 约束: Tripo 预算 ≤180 credits（当前 225）；`profile=cn` + 代理；原创参考图；不复制 Hyper3D/视频/原作素材；不改玩法/FPS 目标；Godot 4.6 GL Compatibility
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- depends_on: T-20261124-004
+
 ## T-20261124-005 · 雾效 Demo 追加角色与动态驱散（T-002 follow-up）
 - 来源: 飞书消息（2026-11-24，“雾效期望追加角色模型并做交互，例如移动过程中雾效会变动驱散”）
 - 线程: T-20261124-002（雾林大气 Demo）
