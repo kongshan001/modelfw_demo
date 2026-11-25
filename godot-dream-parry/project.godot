@@ -1,0 +1,40 @@
+; Engine configuration file.
+; 梦隙 · 残响 — 原创等轴类魂/银河城 vertical slice。
+; 只复刻抽象机制，不使用任何商业作品的角色、场景、名称或素材。
+
+config_version=5
+
+[application]
+
+config/name="梦隙 · 残响"
+config/description="原创等轴类魂动作切片：雨伞弹反、闪避、共享忆能、窥梦遗物与隐藏通路。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/resizable=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.035, 0.045, 0.075, 1)
+
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="player"
+3d_physics/layer_3="enemy"
