@@ -1,0 +1,14 @@
+苔光浮庭 · Mosslight Isle — 真实窗口 FPS
+renderer: GL Compatibility / OpenGL
+gpu: Intel(R) HD Graphics 6000
+cpu: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+logical viewport: 1280x720 (canvas_items stretch); 1080p 为窗口/最终 blit 尺寸
+actual_window_size_1080_run: 1920x762
+vsync: off / max_fps: 0 / HUD + markers visible
+draw_calls: 167 / primitives: 133554 / nodes: 182
+high_night_720p: avg=40.2 median=42.0 min=35.0 best_2s=43.0 samples=[42.0, 42.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 39.0, 39.0, 39.0, 39.0, 39.0, 39.0, 39.0, 37.0, 37.0, 37.0, 37.0, 35.0, 35.0, 35.0]
+high_day_720p: avg=35.9 median=35.0 min=33.0 best_2s=37.2 samples=[34.0, 37.0, 37.0, 37.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 35.0, 38.0, 38.0, 38.0, 38.0, 37.0, 37.0, 37.0, 33.0]
+high_night_rain_720p: avg=34.0 median=36.0 min=10.0 best_2s=36.5 samples=[10.0, 36.0, 36.0, 36.0, 36.0, 35.0, 35.0, 35.0, 35.0, 36.0, 36.0, 36.0, 36.0, 37.0, 37.0, 37.0, 37.0, 34.0, 34.0, 34.0, 32.0, 32.0, 32.0, 32.0]
+low_night_720p: avg=41.6 median=42.0 min=34.0 best_2s=43.5 samples=[34.0, 34.0, 34.0, 44.0, 44.0, 44.0, 44.0, 42.0, 42.0, 42.0, 42.0, 45.0, 45.0, 45.0, 45.0, 41.0, 41.0, 41.0, 42.0, 42.0]
+high_night_1080p_window: avg=24.2 median=24.0 min=19.0 best_2s=26.8 samples=[28.0, 27.0, 27.0, 27.0, 27.0, 26.0, 26.0, 26.0, 23.0, 23.0, 23.0, 23.0, 24.0, 24.0, 24.0, 22.0, 22.0, 22.0, 22.0, 19.0]
+note: 共享主机有外部负载尖峰；以 median 与 best_2s 为主要参考。

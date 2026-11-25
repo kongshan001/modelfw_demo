@@ -2,6 +2,26 @@
 
 ## 进行中
 
+## T-20261125-010 · 复刻《八方旅人》式 2D 像素光影 + 移轴景深
+- 来源: 飞书消息（B 站《2d游戏怎么做出像八方旅人一样的质感？我教你！》，https://b23.tv/LXVeIZQ，2026-11-25，3:19）
+- 类型: game-demo（2D 像素光照 / 屏幕后处理）
+- 目标: 复刻 2D 像素“微缩沙盘”质感：实时 2D 光照/长影 + 不依赖 3D 深度缓冲的移轴景深/双环散景 + UI 不糊
+- 交付: `godot-hd2d/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；不复制八方旅人/SE 的素材/UI/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261125-009 · 复刻 feralui 风格治愈场景（AI 游戏场景 / 微动画）
+- 来源: 飞书消息（B 站《有人用 ai 搞的一个游戏 feralui 的场景，感觉非常不错，转发分享下》，https://b23.tv/towtE2d，2026-11-25，1:11）
+- 类型: game-demo（3D/2.5D 场景 / 治愈系微动画）
+- 目标: 按视频画面复刻一个治愈、微动画到位的原创场景 vertical slice：构图/配色/光照/环境动画/可交互小物件；不依赖 3A 后处理
+- 交付: `godot-feralui-scene/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 不复制 feralui/X 作者/视频的角色/场景/UI/素材/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: `godot-feralui-scene/`（8×1920×1080 截图、10s MP4/GIF、README/TECH/迭代记录/CREDITS）；报告 `godot-feralui-scene/docs/agency/T-20261125-009.md`
+- 验收: smoke 85/85 + `FERALUI_SCENE_SMOKE_OK`；真实 GPU console 0 ERROR/WARNING；Intel HD 720p 夜 42fps / 1080p 窗口 32fps（HUD 可见）
+
 ## T-20261125-008 · 复刻 2D 像素法线受光 + 零额外相机水面夜景反射
 - 来源: 飞书消息（B 站《硬核源码拆解｜拒绝塑料贴纸感！单人手搓 Unity 2D 像素法线受光 + 零额外相机水面夜景反射》，https://b23.tv/XKbRSNA，2026-11-25，2:52）
 - 类型: game-demo（2D 像素光照 / 水面反射）

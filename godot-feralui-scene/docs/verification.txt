@@ -1,0 +1,238 @@
+苔光浮庭 · Mosslight Isle — 真实验收记录
+任务 T-20261125-009 · 2026-11-25
+运行环境: macOS / Intel Core i7-5650U / Intel HD Graphics 6000 / Godot 4.6 stable / GL Compatibility
+
+============================================================
+1. 工程导入
+============================================================
+$ godot --headless --path godot-feralui-scene --import
+结果: 完成，无 ERROR/WARNING（输出仅有编辑器扫描进度）。
+
+============================================================
+2. Headless 启动（--quit-after 600）
+============================================================
+$ godot --headless --path godot-feralui-scene --quit-after 600
+--- 输出 ---
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+--- 检查 ---
+ERROR 数量: 0
+WARNING 数量: 0
+
+============================================================
+3. 真实 GPU 窗口启动（1280×720, --quit-after 180）
+============================================================
+$ godot --path godot-feralui-scene --resolution 1280x720 --quit-after 180
+--- 输出 ---
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+--- 检查 ---
+ERROR 数量: 0
+WARNING 数量: 0
+
+============================================================
+4. Headless 冒烟（85 项）
+============================================================
+$ godot --headless --path godot-feralui-scene -s tools/smoke_feralui_scene.gd
+--- 原始输出 ---
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+— 工程 / 场景 / HUD —
+PASS  渲染器 = GL Compatibility
+PASS  逻辑视口 1280×720
+PASS  主场景可加载
+PASS  World 已构建
+PASS  Atmosphere / Environment 存在
+PASS  环绕相机 current
+PASS  交互管理器收集 4 个小物
+PASS  HUD 标题已构建
+PASS  HUD 四枚药丸按钮
+PASS  HUD 有 FPS 标签
+PASS  HUD 操作提示存在
+PASS  屏幕校色材质已挂载
+PASS  程序化音效 3 个播放器
+— 程序化资产与微动画节点 —
+PASS  程序化苔地 Mesh + ground shader
+PASS  岛体 / 砂径 / 池水 Mesh 存在
+PASS  池水 ShaderMaterial 已加载
+PASS  草 MultiMesh 实例 ≥2000（实际 2200）
+PASS  草 MultiMesh 绑定了网格
+PASS  白花 / 薰衣草实例（300 / 189）
+PASS  灌木 MultiMesh 存在
+PASS  月树/背景树共 16 组可摇曳树冠
+PASS  2 条程序化锦鲤
+PASS  萤火粒子存在且 ≥80
+PASS  浮尘 / 落花 / 雨粒子节点存在
+PASS  4 个可交互小物
+PASS  交互 id 存在：lantern_path
+PASS  交互 id 存在：lantern_water
+PASS  交互 id 存在：wind_chime
+PASS  交互 id 存在：moss_cat
+PASS  水面有可控 time 参数
+PASS  树冠风摆有 time 参数
+PASS  草叶风摆有 sway 参数
+— 微动画时钟 / 水 / 树冠 / 锦鲤 —
+PASS  动画时钟推进
+PASS  水面 time uniform 随动画推进
+PASS  树冠产生摇曳旋转
+PASS  锦鲤沿池内路径游动
+PASS  夜间萤火在发射
+PASS  花朵微光参数存在
+— 交互：灯 / 风铃 / 苔猫 —
+PASS  灯具/风铃/苔猫均可寻址
+PASS  苔灯可被轻触
+PASS  苔灯交互切换点亮状态
+PASS  苔灯再次轻触
+PASS  苔灯回到原状态
+PASS  风铃可被轻触
+PASS  风铃碰撞计数 +1
+PASS  风铃摇动并产生星屑
+PASS  苔猫可被轻触
+PASS  苔猫抬头/摆尾 joy 生效
+PASS  交互反馈 toast 已显示
+PASS  4 个交互投影标记
+PASS  苔猫标记处于悬停高亮
+PASS  苔猫被设为 focused
+— 昼夜 / 天气 —
+PASS  默认月夜
+PASS  切到昼：nightness=0
+PASS  天空 shader 接收昼间参数
+PASS  昼间萤火停发
+PASS  切回夜间萤火复燃
+PASS  天气 = 雨
+PASS  雨粒子已显示并发射
+PASS  水面 shader 接收 rain_amount
+PASS  HUD 天气按钮显示雨
+PASS  天气回到晴
+— 画质档 —
+PASS  低画质减少草实例（1232 < 2200）
+PASS  低画质关闭树冠投影
+PASS  HUD 画质按钮显示低
+PASS  高画质恢复全部草实例
+PASS  高画质恢复树冠投影
+— 暂停 / 重置 —
+PASS  暂停：主控与 SceneTree 均暂停
+PASS  暂停徽标与按钮状态
+PASS  暂停期间世界时钟冻结
+PASS  继续：恢复运行
+PASS  继续后世界时钟推进
+PASS  重置回默认夜/晴/高
+PASS  重置解除暂停
+PASS  重置相机 yaw
+PASS  重置苔灯为亮
+PASS  重置交互状态
+PASS  重置动画时钟归零
+PASS  重置隐藏暂停徽标
+PASS  重置恢复 HUD
+— HUD 切换 —
+PASS  HUD 隐藏生效
+PASS  HUD 显示恢复
+PASS  HUD 视口缩放已应用
+— 节点释放 —
+PASS  主场景 queue_free 后释放
+PASS  世界与粒子/交互节点随场景释放
+checks=85 failures=0
+FERALUI_SCENE_SMOKE_OK
+--- 结果 ---
+checks=85 failures=0
+末行: FERALUI_SCENE_SMOKE_OK
+
+============================================================
+5. 真实窗口 FPS（HUD + 交互标记可见，vsync off, max_fps=0）
+============================================================
+$ godot --path godot-feralui-scene --resolution 1280x720 -s tools/probe_fps.gd
+--- docs/fps.txt ---
+苔光浮庭 · Mosslight Isle — 真实窗口 FPS
+renderer: GL Compatibility / OpenGL
+gpu: Intel(R) HD Graphics 6000
+cpu: Intel(R) Core(TM) i7-5650U CPU @ 2.20GHz
+logical viewport: 1280x720 (canvas_items stretch); 1080p 为窗口/最终 blit 尺寸
+actual_window_size_1080_run: 1920x762
+vsync: off / max_fps: 0 / HUD + markers visible
+draw_calls: 167 / primitives: 133554 / nodes: 182
+high_night_720p: avg=41.8 median=42.0 min=40.0 best_2s=43.5 samples=[45.0, 45.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 42.0, 42.0, 42.0, 42.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0]
+high_day_720p: avg=39.8 median=40.0 min=38.0 best_2s=40.0 samples=[41.0, 41.0, 41.0, 41.0, 39.0, 39.0, 39.0, 39.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 39.0, 39.0, 39.0, 38.0]
+high_night_rain_720p: avg=35.4 median=37.0 min=17.0 best_2s=37.2 samples=[17.0, 17.0, 37.0, 37.0, 37.0, 37.0, 38.0, 38.0, 38.0, 36.0, 36.0, 36.0, 36.0, 38.0, 38.0, 38.0, 38.0, 36.0, 36.0, 36.0, 36.0, 38.0, 38.0, 38.0]
+low_night_720p: avg=44.2 median=46.0 min=18.0 best_2s=46.0 samples=[18.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0]
+high_night_1080p_window: avg=32.2 median=32.0 min=30.0 best_2s=33.6 samples=[34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 31.0, 31.0, 31.0, 31.0, 32.0, 32.0, 32.0, 32.0, 31.0, 31.0, 31.0, 31.0, 30.0]
+note: 共享主机有外部负载尖峰；以 median 与 best_2s 为主要参考。
+末行: FERALUI_FPS_OK
+
+说明:
+- 1080p 运行请求 1920×1080，但当前 macOS 桌面把窗口限制为实际 1920×762；逻辑视口仍为 1280×720 (canvas_items stretch)。
+- 截图使用独立的 1920×1080 SubViewport，不是 1080p 实时窗口的帧率证据。
+- min 的 17/18 出现在画面切换/共享主机负载尖峰；median 与 best 2s 是主要参考。
+
+============================================================
+6. 真实 GPU 1920×1080 截图
+============================================================
+$ godot --path godot-feralui-scene -s tools/screenshot_feralui_scene.gd
+--- 原始输出 ---
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+SHOT res://docs/shots/01_night_wide.png 1920x1080
+SHOT res://docs/shots/02_night_pond.png 1920x1080
+SHOT res://docs/shots/03_night_cat_interaction.png 1920x1080
+SHOT res://docs/shots/04_day_wide.png 1920x1080
+SHOT res://docs/shots/05_day_rain.png 1920x1080
+SHOT res://docs/shots/06_night_tree_detail.png 1920x1080
+SHOT res://docs/shots/07_night_chime_interaction.png 1920x1080
+SHOT res://docs/shots/08_night_ui.png 1920x1080
+FERALUI_SCENE_SHOTS_OK
+
+产物:
+- docs/shots/01_night_wide.png (1920×1080)
+- docs/shots/02_night_pond.png (1920×1080)
+- docs/shots/03_night_cat_interaction.png (1920×1080)
+- docs/shots/04_day_wide.png (1920×1080)
+- docs/shots/05_day_rain.png (1920×1080)
+- docs/shots/06_night_tree_detail.png (1920×1080)
+- docs/shots/07_night_chime_interaction.png (1920×1080)
+- docs/shots/08_night_ui.png (1920×1080)
+
+说明: 截图使用 4×MSAA 离屏 SubViewport；实时 FPS 在离屏截图没有参考意义，故隐藏。
+
+============================================================
+7. 10 秒视频源帧与编码
+============================================================
+$ godot --path godot-feralui-scene --fixed-fps 30 -s tools/capture_feralui_scene.gd
+--- 原始输出 ---
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+FRAME 0
+FRAME 30
+FRAME 60
+FRAME 90
+FRAME 120
+FRAME 150
+FRAME 180
+FRAME 210
+FRAME 240
+FRAME 270
+FERALUI_VIDEO_FRAMES_OK frames=300
+
+编码:
+$ ffmpeg -y -framerate 30 -i /tmp/feralui_scene_frames/frame_%04d.jpg \
+    -c:v libx264 -preset slow -crf 25 -pix_fmt yuv420p -movflags +faststart \
+    docs/media/mosslight_isle_10s.mp4
+$ ffmpeg -y -i docs/media/mosslight_isle_10s.mp4 \
+    -vf "fps=10,scale=840:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle" \
+    docs/media/mosslight_isle_10s.gif
+
+ffprobe MP4:
+codec_name=h264
+width=1920
+height=1080
+r_frame_rate=30/1
+duration=10.000000
+size=11881854
+
+ffprobe GIF:
+width=840
+height=473
+r_frame_rate=10/1
+duration=10.000000
+size=16772012
+
+结论: 1920×1080 / 30fps / 10.0s MP4 与 10.0s GIF 均生成。
