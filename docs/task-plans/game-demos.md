@@ -2,6 +2,24 @@
 
 ## 进行中
 
+## T-20261125-013 · 复刻 Godot 法线贴图精灵光照教程
+- 来源: 飞书消息（B 站《Godot 法线贴图：实现精灵光照效果》，https://b23.tv/3eSeHcH，2026-11-25，4:16）
+- 类型: game-demo（2D 精灵光照 / 法线贴图）
+- 目标: 按教程复刻 2D 精灵法线贴图光照：法线生成/导入、方向/点光、漫反射/高光、法线调试与前后对比
+- 交付: `godot-sprite-normal-light/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创精灵/法线/场景，不复制教程/原作素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261125-012 · 复刻 LDtk 式 2D 关卡编辑器（Godot 工具）
+- 来源: 飞书消息（B 站《免费开源！3 分钟认识 2D 关卡编辑器 LDtk》，https://b23.tv/SpeXw3f，2026-11-25，3:04）
+- 类型: game-demo（2D 关卡编辑器 / 工具）
+- 目标: 复刻 LDtk 的核心工作流：画关卡结构 → 规则自动铺砖 → 放置出生点/敌人/宝箱并配置属性 → 保存/加载 → 预览
+- 交付: `godot-level-editor/` 可运行 Godot 4.6 编辑器 demo；JSON schema + 保存/加载；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创瓦片/UI/代码，不复制 LDtk 品牌/素材/源码；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不做完整 LDtk 克隆，只做核心 MVP
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
 ## T-20261125-010 · 复刻《八方旅人》式 2D 像素光影 + 移轴景深
 - 来源: 飞书消息（B 站《2d游戏怎么做出像八方旅人一样的质感？我教你！》，https://b23.tv/LXVeIZQ，2026-11-25，3:19）
 - 类型: game-demo（2D 像素光照 / 屏幕后处理）
