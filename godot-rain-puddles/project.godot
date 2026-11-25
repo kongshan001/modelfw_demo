@@ -1,0 +1,29 @@
+; Engine configuration file.
+; Rain Puddles · 雨落青苔 — clean-room 2D pixel rain / puddle study.
+; Original code and procedurally generated pixel art only.
+
+config_version=5
+
+[application]
+
+config/name="Rain Puddles · 雨落青苔"
+config/description="A 2D pixel rain study: 360 dynamic-mesh rain streaks, a basin-noise puddle field with 22s fill / 75s drain, 72 double-ring ripples, and an atlas reflection cropped by one shared puddle mask."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.035, 0.06, 0.055, 1)
