@@ -6,11 +6,15 @@
 - 线程: T-20261126-009（Action Forge）
 - 父任务: T-20261126-013（深度复测）
 - 类型: 3d-asset（动画修复 / 创作）
-- 目标: 修 `action-forge-test/` 走路动作与移动方向不一致；追加 6–8s 原创“偶像鸡舞”（鸡你太美梗的氛围，但不使用原曲/原编舞/姓名/肖像），Godot 预览可切换播放
+- 目标: 修 `action-forge-test/` 走路动作与移动方向不一致；追加 6–8s 原创“偶像鸡舞”（偶像舞台/小鸡梗的通用氛围，有 IP 边界），Godot 预览可切换播放
 - 交付: 更新 `action-forge-test/`（GLB、预览、录屏、截图、docs）；走路前后对比 + 舞蹈视频/GIF；媒体
-- 约束: 原创舞蹈/动作；不使用蔡徐坤姓名/肖像/原曲/原编舞；只用 CC0/仓库资产；Godot 4.6；真实可复现
+- 约束: 原创舞蹈/动作；不使用任何艺人姓名/肖像/原曲/歌词/原编舞；只用 CC0/仓库资产；Godot 4.6；真实可复现
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-023/result.md
+  - 关键数字: 模型 rest forward **+Z**；Quat Walk hips yaw **0.1°**、root 旋转 identity、root-motion **+Z 0.3371 m**；Michelle raw hips yaw **178°**（身体/靴 −Z）→ `glb_yaw_fix.py` 烘焙 **hips +180°** 输出 `Rogue_MichelleWalk_AF_inplace_yawfix.glb`；8 方向 smoke：FIXED body **1.2–6.4°**/boot 0.5–9.5°，RAW **173.3–179.2°/172.4–178.6°**，QUAT 0.1–2.0°/0.0–0.1°，位移点积 1.000；原创偶像鸡舞 **8.000 s / 30 fps**、4 小节、41 骨/12 mesh、Godot 27 轨、循环 seam **0.0010 rad**（最终；早期采样 0.0164）、scale dev 0、Blender 骨长偏差 **1e-06**；1280×720 真实 GPU **78.3 FPS**（min 77/max 80，Intel HD 6000）；walk/dance 各 600 帧 headless **0 ERROR**；`SMOKE_WALKMOVE_OK`。
+  - 交付: `action-forge-test/exports/Rogue_MichelleWalk_AF_inplace_yawfix.glb`、`Rogue_IdolChickenDance_original.glb`、`source/*.blend`、`godot/walkmove.tscn` + `scripts/walkmove.gd`、诊断/smoke 工具、`scripts/glb_yaw_fix.py`、`scripts/blender_idol_dance.py`、`docs/WALK_FORWARD_CALIBRATION.md`、T-023 报告/README/CREDITS、`recordings/t023_walk_direction.mp4`（12 s）+ `t023_idol_dance.mp4`（10 s）+ GIF、`screenshots/t023_*`（1280/1920/contact）。
+  - 结论: 走路方向错在 **Michelle clip 的 180° hips yaw**，不是模型/预览移动代码/导出根旋转；修正层为 hips，8 向验证通过。舞蹈为原创偶像鸡舞（展翅/摆胯/抖肩/按胸比心/360° 转圈/膝盖弹跳），不使用任何艺人姓名/肖像/原曲/歌词/原编舞、无音乐；舞蹈 GLB/Blend/脚本可复现。
 
 ## T-20261126-013 · Action Forge 深度复测：250+ 动画/分层/姿势/导出（T-009 follow-up）
 - 来源: 飞书消息（B 站《终于有一款真正好用的免费3D动画工具了！》，https://b23.tv/X1qGE6U，2026-11-26，24:16，UP 海盗CG；ActionForge 250+ 动画、layering/posing/retargeting/export）

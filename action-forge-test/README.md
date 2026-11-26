@@ -124,3 +124,63 @@ godot --path action-forge-test/godot --resolution 1280x720 \
 ```
 
 注意：`t013_af_layer_operation.mp4` 的真实 session 段演示的是早期 **Full body** 层（含拖拽踩坑）；最终 upper-body 层在后续 session 重建，数据以 docs §2 和 `Rogue_Walk_IdleTalkLayer_AF_inplace.glb` 为准。
+
+---
+
+## T-023 走路朝向修复 + 原创偶像鸡舞（2026-11-26，follow-up of T-013）
+
+> 详细诊断/参数：[`docs/WALK_FORWARD_CALIBRATION.md`](docs/WALK_FORWARD_CALIBRATION.md) · 报告：[`docs/action-forge-test.md`](docs/action-forge-test.md) 的 “T-023” 章节。
+
+**结论**：
+
+- **模型 forward = +Z**（KayKit Rogue rest：脚/趾 +Z、髋线 +Z、hips yaw 0°）。**不是** Godot 相机常用的 −Z。
+- **Quaternius `Walk Loop` 是 +Z（0.1°）**，root 旋转 identity，root-motion **+Z 0.3371 m** → 方向本来就对。
+- **Mixamo `Michelle Walk_fit` 带 180° hips yaw**（身体/靴子朝 −Z）→ 在 +Z 控制器上就是倒走。根因不是预览没转身，也不是模型朝错。
+- **修复在 hips 层**：`scripts/glb_yaw_fix.py` 给 hips 旋转轨道左乘 180°，输出 `Rogue_MichelleWalk_AF_inplace_yawfix.glb`；不改 mesh/root，不只手转上半身。
+- **8 方向验证**：FIXED 身体误差 1.2–6.4° / 靴子 0.5–9.5°；RAW 173.3–179.2° / 172.4–178.6°；QUAT 0.1–2.0° / 0.0–0.1°；位移方向点积 1.000。
+- **原创偶像鸡舞**：8.000 s / 30 fps，4 小节（展翅+膝盖弹跳 / 摆胯+抖肩 / 比心+点头 / 360° 转圈+落心）；Godot 41 骨/12 mesh/27 轨；循环 seam 0.0010 rad（最终；早期采样 0.0164）；scale dev 0；Blender 骨长偏差 1e-06。**不使用任何艺人姓名/肖像/原曲/歌词/原编舞；视频无音乐**。
+- **性能**：1280×720 平均 **78.3 FPS**（min 77 / max 80，Intel HD 6000）；walk/dance 各 600 帧 headless **0 ERROR**。
+
+**新文件**：
+
+```text
+exports/
+  Rogue_MichelleWalk_AF_inplace_yawfix.glb   180° hips 修正（before/after 用）
+  Rogue_IdolChickenDance_original.glb        8 s 原创舞蹈（角色+动画）
+source/
+  Rogue_IdolChickenDance_original.blend      Blender 源
+godot/
+  walkmove.tscn + scripts/walkmove.gd         RAW/FIXED 双人、4/8 向、Dance 舞台
+  tools/diag_facing.gd, diag_gait.gd          朝向/步态采样
+  tools/smoke_walkmove.gd                     8 向 + 舞蹈循环 smoke
+scripts/
+  glb_yaw_fix.py                              通用 bone yaw 烘焙
+  blender_idol_dance.py                       原创舞蹈生产（Blender 3.4.1）
+recordings/
+  t023_walk_direction.mp4/.gif                12 s RAW vs FIXED 4 向
+  t023_idol_dance.mp4/.gif                    10 s 原创舞蹈
+screenshots/
+  t023_walk_data_1280.png, t023_walk_duo_1920.png, t023_walk_world_1920.png,
+  t023_dance_contact.png, t023_dance_1280.png, t023_dance_1920.png
+```
+
+**运行**：
+
+```bash
+# 交互（WASD 8 向；3=舞蹈；5=RAW/FIXED；P=自动路径）
+godot --path action-forge-test/godot --resolution 1280x720 res://walkmove.tscn
+
+# 12 s RAW vs FIXED 4 向对照
+godot --path action-forge-test/godot --resolution 1280x720 res://walkmove.tscn -- --demo=walk --speed=1.0
+
+# 10 s 原创舞蹈
+godot --path action-forge-test/godot --resolution 1280x720 res://walkmove.tscn -- --demo=dance
+
+# 验收
+godot --headless --path action-forge-test/godot -s tools/smoke_walkmove.gd   # → SMOKE_WALKMOVE_OK
+godot --path action-forge-test/godot --resolution 1280x720 -- --bench --demo=walk --speed=1.0
+```
+
+**操作**：`WASD/方向键` 8 向移动 · `Shift` 加速 · `1` Idle · `2` Walk · `3` Dance · `4` Clip · `5` RAW/FIXED · `P` 自动路径 · `C` 相机 · `H` HUD · `R` Reset · `Space` 暂停。绿箭头=移动方向，红箭头=实测身体朝向，脚下红/绿环区分 RAW/FIXED。
+
+**IP/许可**：舞蹈为本任务原创编排；不使用任何艺人的姓名、肖像、原曲、歌词、原编舞；无音轨。角色 KayKit Rogue CC0；`yawfix` 是 Mixamo 样例动画的衍生（沿用 `animation-retarget-kit` 的样例条款，内部评测）。详见 [`CREDITS.md`](CREDITS.md)。

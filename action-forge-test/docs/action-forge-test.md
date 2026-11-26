@@ -549,3 +549,170 @@ SMOKE_LAYERED_OK
 - `exports/`：base in-place/root-motion、layered in-place、FBX。
 
 > 素材：Action Forge UI 截图/录屏仅用于工具评测；库预览帧只放 `/tmp`，未入库；参考视频未复制。
+
+---
+
+# T-023 走路朝向修复 + 原创偶像鸡舞（2026-11-26）
+
+> follow-up of T-20261126-013 · 同一 Action Forge Beta build · KayKit Rogue（CC0） · Godot 4.6 GL Compatibility · Blender 3.4.1
+> 目标：① 修“走路动作与移动方向不一致（侧走/倒走/脚朝错）”；② 追加 6–8 s 原创“偶像鸡舞”，Godot 预览可播放/循环/切回 idle/walk。
+> 详细标定见 [`WALK_FORWARD_CALIBRATION.md`](WALK_FORWARD_CALIBRATION.md)。
+
+## 0. 结论（先看）
+
+1. **不是模型朝错，也不是预览移动代码没转身。** KayKit Rogue 的 rest forward 实测是 **+Z**（脚/趾 +Z、髋线 +Z、hips yaw 0°）；Action Forge 的 `Walk Loop`（Quaternius）也是 **+Z（hips yaw 0.1°）**、root 旋转 identity、root-motion **+Z 0.3371 m**，方向一致。
+2. **真正的 bug 是 Mixamo→Rogue 的 `Michelle Walk_fit` 保留了源骨架的 180° hips yaw**：身体/靴子朝 **−Z**（hips yaw 178°），root 旋转仍是 identity，且是 in-place。用 +Z 控制器移动时，角色永远背对移动方向 = 倒走；如果只对上半身/全局 mesh 补，才会出现“侧走/脚朝错”。
+3. **修正在 hips 层**：`scripts/glb_yaw_fix.py` 给 hips rotation 轨道左乘 180° Y，输出 `Rogue_MichelleWalk_AF_inplace_yawfix.glb`。不改 mesh、不改 root、不只手转上半身；Blender 骨长偏差仍 **1e-06**。
+4. **8 方向实测**（actor yaw = `atan2(dir.x, dir.z)`，0.65 s/方向、0.8 m/s）：FIXED 身体误差 **1.2–6.4°**、靴子 **0.5–9.5°**；RAW 身体 **173.3–179.2°**、靴子 **172.4–178.6°**；QUAT **0.1–2.0°/0.0–0.1°**。位移方向点积 **1.000**。headless `SMOKE_WALKMOVE_OK`。
+5. **原创偶像鸡舞**：8.000 s / 30 fps 循环，4 小节（展翅+膝盖弹跳 / 摆胯+抖肩 / 比心+点头 / 360° 转圈+落心），16 根骨、51 条 Blender fcurve；Godot 41 骨/12 mesh/27 轨，循环 seam **0.0010 rad**（最终；早期采样 0.0164），骨骼 scale 偏差 **0.000000**。**不使用任何艺人姓名/肖像/原曲/歌词/原编舞；无音乐**。舞蹈 GLB + `.blend` 源 + Blender 脚本均可复现。
+6. **性能/稳定性**：1280×720 真实 GPU 平均 **78.3 FPS**（min 77 / max 80，Intel HD 6000）；headless 600 帧（walk/dance 两个 demo）**0 SCRIPT/engine ERROR**。
+
+## 1. 诊断：错在哪一层
+
+采样方法（`godot/tools/diag_facing.gd`、`diag_gait.gd`）：在 skeleton-local 空间取 9/31 个相位，计算
+
+- `toe`：`toes.l/r − foot.l/r`（脚/靴子指向）；
+- `facing`：`up × (upperleg.r − upperleg.l)`（身体朝向）；
+- `hips_yaw`：hips 全局旋转的 +Z 方向；
+- `root` 位置/旋转：root 轨道；
+- `boot_fwd`：foot 骨骼相对 rest 的旋转增量（先在 skeleton-local，再乘 actor yaw）。
+
+| 层 | 测量 | 判定 |
+|---|---|---|
+| KayKit Rogue 模型 | 脚/趾 **+Z**；髋线 forward **+Z**；hips yaw **0°** | 模型 forward = **+Z** |
+| AF `walk_loop_fit`（Quaternius） | 身体/靴子 **+Z**；hips yaw **0.1°**；root rotation **identity**；root-motion **+Z 0.3371 m** | **0° 标定；正确** |
+| AF `Michelle Walk_fit`（T-009 主产物） | 身体/靴子 **−Z**；hips yaw **178°**；root rotation identity；in-place（root 平移恒定 z=0.0501） | **clip 带 180° yaw；倒走** |
+| AF `Michelle Walk_fit_yawfix` | 身体/靴子 **−2°**；hips yaw **−2°**；root 同 raw | **0° 标定；修复** |
+| 旧 `main.tscn` | 对整个 visual 根 `AF_YAW=180°`，只做静态构图 | **全局 mesh 转会掩盖 clip 偏移**；不能用于移动标定 |
+| 移动代码 | 本次用 `rotation.y = atan2(dir.x, dir.z)`（+Z 模型） | 8 向验证通过 |
+
+**为什么不是“预览移动代码没转身”？** 在 8 方向 smoke 里，actor 的位置确实沿输入方向移动（点积 1.000），FIXED clip 的身体/靴子跟着移动方向（<7°）；同一套移动代码换 RAW clip 就 180° 反向。所以输入/转身链路是对的，错在 clip 的 hips yaw。
+
+**为什么不是导出根旋转？** 三个 clip 的 `root` rotation track 都是 identity（`diag_facing` 的 `root_yaw=0`）。Michelle 的 in-place root 平移恒为 z=0.0501；Quat 的 root-motion 是 +Z 0.3371 m。根旋转不是原因。
+
+## 2. 修复：hips yaw（不是 mesh / root）
+
+`scripts/glb_yaw_fix.py`：
+
+```bash
+python3 action-forge-test/scripts/glb_yaw_fix.py \
+  action-forge-test/exports/Rogue_MichelleWalk_AF_inplace.glb \
+  action-forge-test/exports/Rogue_MichelleWalk_AF_inplace_yawfix.glb \
+  --bone hips --yaw 180 --anim "Michelle Walk_fit" --rename "Michelle Walk_fit_yawfix"
+```
+
+- 只改 hips rotation 的 float32 四元数：`q' = q_yaw(180°) * q`；其余轨道（hips 平移、root、手臂/腿）原样保留。
+- 为什么 hips：hips 是骨盆枢轴，旋转会带动躯干/手臂/腿/脚一起转，步态相位关系不变；转 root 会绕 z=0.0501 的点转，身体中心会偏 10 cm；转 mesh 会破坏 root-motion 方向；只转上半身会留下下肢朝 −Z 的“侧走”。
+- 产物：raw 保留作 before；yawfix 作 after。Blender validator 两者都是 41 骨/12 mesh/**1e-06**。
+
+**标定常量**（写进 [`WALK_FORWARD_CALIBRATION.md`](WALK_FORWARD_CALIBRATION.md)）：
+
+```gdscript
+MODEL_FORWARD_DEG = 0.0                 # Rogue rest forward +Z
+controller yaw = atan2(dir.x, dir.z)    # 不要用 look_at 的 -Z
+clip_forward = {quat: 0, michelle_raw: 180, michelle_fix: 0}
+root_yaw = 0; root_motion = +Z 0.3371 m (Quat)
+```
+
+## 3. 移动预览：`godot/walkmove.tscn`
+
+- **RAW vs FIXED 双人**：同一套移动代码、同一条 4 向方形路径（3.2 m × 3.2 m 等效，lane 偏移 ±0.9 m），RAW 用 raw clip，FIXED 用 yawfix clip；脚下红/绿识别环，地面上绿色箭头=移动方向、红色箭头=实测身体朝向。
+- **4 向路径 + 8 向 WASD**：路径按 +X/+Z/−X/−Z 四条腿循环；WASD/方向键是相机相对 8 向（支持斜向），Shift 加速。
+- **按键/按钮**：`1` Idle、`2` Walk、`3` Dance、`4` Clip、`5` RAW/FIXED、`P` 自动路径、`C` 相机、`H` HUD、`R` Reset、`Space` 暂停；右上角同样有可点击按钮。
+- **HUD**：clip / 标定、逐角色 body err / boot err / body yaw / move yaw、判定（OK / SIDE-STEP / BACK-WALK）、FPS、root 与 clip forward 表；视频模式 3 s 后收起详细面板，底部保留 compact bar。
+- **舞蹈舞台**：`3`/按钮切到 Dance 时隐藏路径/箭头/走路标签，显示圆形舞台、双环与舞台灯；鼠标/按键可切回。
+
+截图/录屏：
+
+- `screenshots/t023_walk_data_1280.png`：完整 HUD 的 RAW 177° BACK-WALK vs FIXED 3° OK。
+- `screenshots/t023_walk_duo_1920.png`：1080p 干净双人对照。
+- `screenshots/t023_walk_world_1920.png`：1080p 世界画面（SubViewport 不含 HUD）。
+- `recordings/t023_walk_direction.mp4` / `.gif`：12 s，RAW vs FIXED 走 4 向路径。
+- `screenshots/t023_dance_contact.png`：8 相位 contact sheet。
+- `screenshots/t023_dance_1280.png` / `t023_dance_1920.png`：舞蹈静帧。
+- `recordings/t023_idol_dance.mp4` / `.gif`：10 s 舞蹈循环。
+
+## 4. 原创偶像鸡舞（IP 边界）
+
+**编舞**（原创、4 小节 × 2 s，120 BPM 的视觉节拍；无音乐）：
+
+| 小节 | 动作 |
+|---|---|
+| 0–2 s | 小鸡展翅（上臂外展 + 前臂上折）、膝盖弹跳、头左右倾 |
+| 2–4 s | 摆胯（hips yaw ±22°、侧倾 ±8°）、抖肩（chest 2 Hz）、step-touch 抬脚 |
+| 4–6 s | 比心/双手按胸（拳形，无手指骨）、点头、心跳脉冲 |
+| 6–7.2 s | 360° 转圈（hips yaw 0→360，smoothstep 分段 90°） |
+| 7.2–8 s | 落心收势，回到起始姿态（hips yaw 360 ≡ 0） |
+
+- **IP**：不使用任何艺人的姓名、肖像、原曲、歌词、原编舞；不使用原梗的歌词/编舞/音频；只保留“偶像+小鸡展翅+比心+转圈”的通用舞台语汇。视频无音轨。
+- **生产**：`scripts/blender_idol_dance.py` 导入 `Rogue_WalkLoop_AF_inplace.glb`（41 骨、AF 0.8032× 比例），清空原 action，按 16 根骨的局部 Euler 关键帧逐帧烘焙（含 2 Hz 弹跳与 loop-safe 二次摆动），导出 `exports/Rogue_IdolChickenDance_original.glb`（885 KB）与 `source/Rogue_IdolChickenDance_original.blend`。
+- **Godot 侧**：按骨骼名把舞蹈 Animation 嫁接到 AF 走路角色（同一 rig，无缩放）；武器 mesh（Knife/Crossbow/Throwable）在预览中隐藏（视觉选择，未改资产）。
+- **数据**：8.000 s / 30 fps / 144 glTF channels / 27 Godot 轨；41 骨/12 mesh；循环 seam **0.0010 rad**（最终；早期采样 0.0164）；骨骼 scale 偏差 **0.000000**；Blender 骨长偏差 **1e-06**。
+
+## 5. 验证（可复现）
+
+```bash
+# 8 方向 + 舞蹈循环
+godot --headless --path action-forge-test/godot -s tools/smoke_walkmove.gd
+#  → SMOKE_WALKMOVE_OK
+#  FIXED body_err 1.2–6.4° / boot 0.5–9.5°
+#  RAW   body_err 173.3–179.2° / boot 172.4–178.6°
+#  QUAT  body_err 0.1–2.0° / boot 0.0–0.1°
+#  SMOKE_DANCE name=IdolChickenDance_original len=8.0000 tracks=27
+#  SMOKE_DANCE_SEAM 0.00098 rad（同场景早期 0.01640）/ SMOKE_DANCE_SCALE_DEV 0.000000
+
+# 诊断采样
+godot --headless --path action-forge-test/godot -s tools/diag_facing.gd
+godot --headless --path action-forge-test/godot -s tools/diag_gait.gd
+
+# 600 帧 console（walk / dance）
+godot --headless --path action-forge-test/godot --quit-after 600 res://walkmove.tscn -- --demo=walk --speed=1.0
+godot --headless --path action-forge-test/godot --quit-after 600 res://walkmove.tscn -- --demo=dance
+#  → 0 SCRIPT / engine ERROR
+
+# 真实 GPU
+godot --path action-forge-test/godot --resolution 1280x720 -- --bench --demo=walk --speed=1.0
+#  → BENCH_FPS_AVG=78.3 MIN=77 MAX=80 RENDERER=Intel HD Graphics 6000
+
+# Blender 骨长
+bash animation-retarget-kit/tools/blender_validate.sh action-forge-test/exports/Rogue_IdolChickenDance_original.glb
+bash animation-retarget-kit/tools/blender_validate.sh action-forge-test/exports/Rogue_MichelleWalk_AF_inplace_yawfix.glb
+#  → max_bone_length_deviation = 1e-06
+```
+
+## 6. 限制 / 未覆盖
+
+- 180° 修正是刚性 hips yaw，不做接触/步幅 IK；AF 17 骨自动映射的屈膝/步幅小/脚滑仍在（T-009/T-013 已记录）。yawfix 只是让方向正确，不提升步态质量。
+- 其他 Mixamo→Rogue clip 不能默认 180°；每个 clip 都要用 `diag_gait` 实测 `forward_yaw`。
+- 舞蹈是程序化/手工关键帧的 stylized idol-chick，不是专业编舞；无手指骨，“比心”是拳头按胸的近似；无音乐。
+- 预览里隐藏了武器 mesh；正式游戏若保留武器，需要检查舞蹈时武器与手臂的穿插。
+- 旧 `main.tscn` 的 `AF_YAW=180` 保留给静态构图，不要用于移动；移动场景以 `walkmove.tscn` 为准。
+- 未做 Unity/UE 的朝向标定复测；未测 1080p 实时窗口 FPS（显示器限制），只测 1280×720 与 1080p 离屏静帧。
+- Blender validator 把舞蹈 GLB 的每个物体导入为独立 action（8 条），这是 Blender 导入器的拆分，不代表 GLB 有多条 clip；Godot 侧是 1 条 8.0 s / 27 轨。
+
+## 7. 新增文件
+
+```text
+exports/
+  Rogue_MichelleWalk_AF_inplace_yawfix.glb   180° hips 修正（blend 内导出）
+  Rogue_IdolChickenDance_original.glb        8 s 原创舞蹈（角色+动画）
+source/
+  Rogue_IdolChickenDance_original.blend      Blender 源
+godot/
+  walkmove.tscn + scripts/walkmove.gd         RAW/FIXED、4/8 向、舞舞台
+  tools/diag_facing.gd, diag_gait.gd          朝向/步态采样
+  tools/compare_rest.gd, test_graft.gd         rest 对比 / idle 嫁接验证
+  tools/smoke_walkmove.gd                     8 向 + 舞蹈 smoke
+  tools/debug_duo.gd                          RAW/FIXED 双人调试
+scripts/
+  glb_yaw_fix.py                              通用 bone-rotation yaw 烘焙
+  blender_idol_dance.py                       原创舞蹈生产（Blender 3.4.1）
+recordings/
+  t023_walk_direction.mp4/.gif                12 s RAW vs FIXED 4 向
+  t023_idol_dance.mp4/.gif                    10 s 原创舞蹈
+screenshots/
+  t023_walk_data_1280.png, t023_walk_duo_1920.png, t023_walk_world_1920.png,
+  t023_dance_contact.png, t023_dance_1280.png, t023_dance_1920.png
+docs/
+  WALK_FORWARD_CALIBRATION.md                  标定/修复/接线说明
+```
