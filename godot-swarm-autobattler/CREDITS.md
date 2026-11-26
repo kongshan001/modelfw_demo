@@ -29,7 +29,7 @@
 - Godot 4.6 headless：逻辑自测、真实 GPU 截图/性能/录像。
 - `yt-dlp` 2026.08.19、`curl`、Bilibili 公开 API（view/playurl/videoshot）：参考研究；未下载到完整视频。
 - Python 3.13 + Pillow：从 storyboard 雪碧图裁切研究帧（未入库）。
-- `ffmpeg`：将 7 张真实 GPU 截图做 10 秒 Ken Burns 剪影并编码 MP4/GIF；另有 720p/15fps 实时帧采集工具，因共享主机高负载未完成。
+- `ffmpeg`：将 `tools/video_swarm.gd` 采集的 150 帧真实 gameplay（720p/15fps）编码为 10s MP4（上采 1080p）与 960×540 GIF。
 - macOS Intel HD 6000、`RenderingServer.get_video_adapter_name()` 记录的真实 GPU 环境。
 - 飞书 `cc-connect send`：最终发送截图/视频附件。
 

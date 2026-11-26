@@ -270,7 +270,7 @@ godot --headless --path godot-swarm-autobattler -s tools/smoke_swarm_battler.gd
 - `godot --headless --path godot-swarm-autobattler --quit-after 5` 无 SCRIPT ERROR；
 - 真实 GPU 运行 `tools/screenshot_swarm.gd`，7 张 1920×1080 PNG，末行 `SWARM_SHOTS_OK`；
 - `tools/perf_swarm.gd`，末行 `SWARM_PERF_OK`，JSON 写入 `docs/perf_measurements.json`；
-- `tools/video_swarm.gd`，输出 150 帧 720p/15fps，末行 `SWARM_VIDEO_OK`，再用 ffmpeg 编码 MP4/GIF。本次共享主机高负载时 Godot 无法稳定出帧（load average ~19），交付视频改为 7 张真实 GPU 截图的 10 秒 Ken Burns 剪影；实时玩法可用 `godot --path godot-swarm-autobattler` 复现，未伪造实时录像。
+- `tools/video_swarm.gd`，输出 150 帧 720p/15fps，末行 `SWARM_VIDEO_OK`，再用 ffmpeg 编码 MP4/GIF。第一次尝试在共享主机 load average ~19 时无法稳定出帧；负载回落后重试成功，交付的 10s MP4 是真实 gameplay 采集（720p 源上采到 1080p，GIF 960×540/10fps）。
 
 ## 10. 原创边界
 

@@ -24,7 +24,7 @@ godot --path godot-swarm-autobattler -s tools/screenshot_swarm.gd
 # 真实 GPU 性能测量（100/1000/3000 单位，720p/1080p）
 godot --path godot-swarm-autobattler -s tools/perf_swarm.gd
 
-# 10 秒帧采集工具（15fps/720p，空闲 GPU 上运行；之后用 ffmpeg 编码）
+# 10 秒 gameplay 帧采集（720p/15fps；之后用 ffmpeg 编码）
 godot --path godot-swarm-autobattler -s tools/video_swarm.gd
 ```
 
@@ -109,10 +109,10 @@ SWF1:eyJjYXJkcyI6W3siaWQiOiJzcGFya19mbGVhIiwic3RhciI6Mn1dLCJmbG9vZCI6ZmFsc2UsImd
 - `tools/smoke_swarm_battler.gd`：123 项 headless 断言
 - `tools/screenshot_swarm.gd`：真实 GPU 1080p 截图
 - `tools/perf_swarm.gd`：720p/1080p 性能测量
-- `tools/video_swarm.gd`：10 秒 720p/15fps 帧采集工具（需要空闲 GPU；本次交付视频改用截图剪影）
+- `tools/video_swarm.gd`：10 秒 720p/15fps 真实 gameplay 帧采集（`SWARM_VIDEO_OK`，150 帧）
 - `docs/TECH.md`、`docs/迭代记录.md`、`docs/perf_measurements.json`
 - `docs/shots/01_shop.png` … `07_roster_code.png`
-- `docs/swarmforge_demo_10s.mp4` / `.gif`（10s；MP4 1920×1080/30fps，GIF 960×540/10fps；由 7 张真实 GPU 截图做 Ken Burns 剪影。实时帧采集工具因共享主机高负载未能完成，未伪造实时录像）
+- `docs/swarmforge_demo_10s.mp4` / `.gif`（10s 实际 gameplay；MP4 1920×1080/15fps，由 720p/15fps 采集上采；GIF 960×540/10fps）
 
 ## 原创边界
 
