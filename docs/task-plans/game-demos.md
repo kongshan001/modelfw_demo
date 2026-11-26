@@ -10,7 +10,7 @@
 - 交付: 更新 `godot-stylized-ocean-v2/`；同机位 before/after 截图 ≥6；10s GIF/MP4；docs 更新；smoke + 真实 GPU
 - 约束: 只改岸线/浅水/泡沫/湿沙/接触阴影；保留现有波浪/交互/UI/性能；原创素材，不复制参考视频/作者素材；Godot 4.6 GL Compatibility，Intel 30fps+
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
 
 ## T-20261126-020 · 3D 像素水景修复独立复评（T-008 follow-up）
 - 线程: T-20261126-008（3D 像素水面与鱼）
@@ -40,7 +40,7 @@
 - 交付: 更新 `godot-3d-pixel-water-fish/`；同机位 before/after 截图 ≥6 组；TECH/迭代记录；GIF/MP4；smoke + 真实 GPU
 - 约束: 不改鱼模型/关卡/交互/整体美术方向；不复制参考素材；真实 GPU；Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-017 · 复刻《全军出鸡》式百倍单位自走棋
 - 来源: 飞书消息（B 站《酒馆战旗，但场上单位数量×100倍……》，https://b23.tv/2vtJIfx，2026-11-26，27:06，UP 独立游戏蜥蜴君；游戏《全军出鸡：鸡械绿洲自走棋》demo）
