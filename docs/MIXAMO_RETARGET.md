@@ -75,3 +75,12 @@ for mesh in target_meshes:
 
 - Mixamo 自动绑定仍需 Adobe ID；Adobe 官方 FAQ 明确**中国大陆国家/地区代码的账号不可用**。本验证只覆盖“已有 Mixamo 骨架 + 动画”的重定向，不覆盖上传 Tripo 模型自动绑定。
 - 目标视频的 Unity 链路靠 Humanoid retarget；Godot 链路用本文件的 `RetargetModifier3D` 或导入期 BoneMap，效果等价。
+
+## Action Forge 补充（2026-11-26）
+
+实测报告：`action-forge-test/docs/action-forge-test.md`；可运行预览：`action-forge-test/godot/`。
+
+- **结论**：Action Forge 网页版（免登录、文件本地读取）可以完成“Mixamo 样例动画 → KayKit Rogue 自有骨架 → GLB”的重定向与导出：41 骨 / 12 mesh，动画 1.0333 s，Godot 4.6 可播放，Blender 骨长偏差 1e-06。自动映射把 Rogue 识别成 UE4 Mannequin，只映射 17 骨；chibi 比例下行走明显屈膝/前倾，需要手工修映射或 rest pose，不能直接替代 Mixamo 的自动绑定质量。
+- **in-place / root motion**：In place 勾选后 root XZ=0；不勾选约 2.0 cm。源片本身根位移很小，未覆盖大位移片段。
+- **坑**：Adjust 的 Speed 1.5× 不烘焙（导出仍 1.0333 s）；仅动画 GLB 在 Godot 中节点名被清洗（`upperarm.l`→`upperarm_l`，无 Skeleton3D），不能直接挂到 Rogue 骨架；Michelle.glb 作为角色上传在无头环境卡在纹理缩放。
+- **对比基线**：本文的 `RetargetModifier3D`（Michelle 正常 / Xbot 倾斜）仍是 Godot 运行时方案；Action Forge 的优势在免账号/无上传/一体化编辑导出，适合作为补充工具。

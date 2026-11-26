@@ -2,6 +2,31 @@
 
 ## 进行中
 
+## T-20261126-013 · Action Forge 深度复测：250+ 动画/分层/姿势/导出（T-009 follow-up）
+- 来源: 飞书消息（B 站《终于有一款真正好用的免费3D动画工具了！》，https://b23.tv/X1qGE6U，2026-11-26，24:16，UP 海盗CG；ActionForge 250+ 动画、layering/posing/retargeting/export）
+- 线程: T-20261126-009（Action Forge 实测）
+- 父任务: T-20261126-009
+- 类型: 3d-asset（动画工具深度实测）
+- 目标: 在 T-009 基础上验证 250+ 动画库、分层/姿势、重定向与导出 Blender/Godot 的实际可用性；做一条分层合成（如走路 + 上半身姿势）的演示动画，给出是否替代 Mixamo 的结论
+- 交付: 更新 `action-forge-test/`（导出 GLB、Godot 预览、Action Forge 录屏、截图、docs 追加）；媒体
+- 约束: 只用 CC0/仓库样例；不登录/不绕过付费；真实可复现；不复制视频/软件素材
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-009 · 实测 Action Forge（Mixamo 免费替代）动画效果
+- 来源: 飞书消息（B 站《这款免费软件，可能要让Mixamo失业了》，https://b23.tv/6hQ7yHY，2026-11-26，16:29，UP 海盗CG；介绍 Action Forge https://actionforge.app/）
+- 类型: 3d-asset（动画工具实测 / 重定向）
+- 目标: 实测 Action Forge 的动画编辑/重定向效果：本地 CC0 角色 + 现有 Mixamo 样例动画，走通导入→调整→导出 GLB→Godot 预览；与 Mixamo 做同条件对比，给出可用性/质量/限制结论
+- 交付: `action-forge-test/`（脚本、导出 GLB、Action Forge 录屏、Godot 预览工程、截图/GIF/MP4）+ 项目 docs（结论先行、步骤、参数、许可/账号限制、对比表）；媒体
+- 约束: 只用原创/CC0 资产（KayKit/Mixamo 样例）；不把敏感/私有数据上传；遵守 Action Forge 条款，不绕过登录/付费；若需登录则记录阻塞并给可验证的替代；Godot 4.6 GL Compatibility，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-009/result.md
+  - 关键数字: Rogue 41 骨/12 mesh/5901 verts；动画 `Michelle Walk_fit` 1.0333s；in-place root XZ 0 / root-motion 0.0197m；Blender 骨长偏差 1e-06；Godot 720p 平均 52.4 FPS（Intel HD 6000）；headless 600 帧 0 ERROR；smoke `SMOKE_OK`
+  - 结论: 可完成重定向/编辑/GLB 导出，免登录免上传；自动映射 KayKit Rogue 仅 17 骨且行走屈膝/前倾，需手工修正；Speed 1.5× 不烘焙；仅动画 GLB 的 Godot 骨名坑；不替代 Mixamo 的自动绑定/库质量
+  - 媒体: `recordings/af_operation.mp4`（14s）、`recordings/godot_preview.mp4`（12s）、`screenshots/godot_clean_pair.png`、`godot_clean_bones.png`、`rogue_retarget_ui.png`
+- 后续: T-20261126-013 深度复测 250+ 动画/分层/姿势/导出（依赖 T-009 完成）
+
 ## T-20261125-011 · 原创角色眨眼动画能力测试（Blender 形态键）
 - 来源: 飞书消息（2026-11-25，“一般模型做眨眼动画需要注意什么”→“可以试试”）
 - 类型: 3d-asset（面部动画 / 形态键）

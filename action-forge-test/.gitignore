@@ -1,0 +1,5 @@
+# recorded browser sessions / derived media intermediates
+recordings/af_raw*/
+recordings/*.webm
+recordings/*.avi
+*.tmp
