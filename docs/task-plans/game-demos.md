@@ -68,7 +68,8 @@
 - 交付: `godot-swarm-autobattler/` 可玩 vertical slice；100/1000/3000 单位性能数据；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制；不复制 Hearthstone Battlegrounds / 全军出鸡 / 鸡械绿洲 的角色/UI/卡牌/美术/品牌；原创单位/卡牌/主题；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；用实例化渲染，禁止每单位 Node
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: `godot-swarm-autobattler/`；`SWARM_BATTLER_SMOKE_OK`（123 checks）；7×1920×1080 真实 GPU 截图（docs/shots/）；`SWARM_PERF_OK`（1000 单位 56.9fps@1080p / 98.2fps@720p；3000 单位 46.9/77.3；并行负载下限 21.4fps）；10s MP4/GIF 为真实截图剪影（实时帧采集受共享主机 load ~19 阻塞，已如实记录）
 
 ## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
 - 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）
