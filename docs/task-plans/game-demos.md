@@ -40,7 +40,7 @@
 - 交付: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md` + 标注图；不改代码/资产
 - 约束: 不复制 TFT/Hearthstone/全军出鸡 角色/UI/卡牌/品牌；MultiMesh/3000 单位 30fps 是硬约束；fail-closed 验收
 - 指派: game-art-director worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-024 · 复刻 Claude+Codex+Godot 3D 动作游戏（3h25m）
 - 来源: 飞书消息（B 站《Claude + Codex + Godot，3小时25分钟做出一款3D游戏！》，https://b23.tv/huVtu9e，2026-11-26，7:26，UP AI前沿君；封面为低多边形芽苗勇者 vs 蘑菇怪）
@@ -58,7 +58,7 @@
 - 交付: `web-html-tower-defense/index.html`（HTML+CSS+原生 JS 全内联，无外部依赖/素材）；AI 托管/手动切换；2–3 地图过渡；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；Playwright 验证
 - 约束: 单文件、零后端、零外部美术/字体/音频/CDN；原创程序化抖动像素；不复制 Cinderwatch 代码/素材/名称（MIT 仅作参考，若复用必须署名）；浏览器 1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 产出: `web-html-tower-defense/`（单文件 124,212B；README/TECH/迭代记录/CREDITS；captures/10×1920 截图 + 10s MP4/GIF + verification.json）；Playwright 48 项检查通过，AI 双图无人值守胜利（204 击杀 / 20 生命 / 0 漏）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-022/result.md
 - 状态: done
 
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
