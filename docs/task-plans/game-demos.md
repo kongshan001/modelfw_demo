@@ -40,7 +40,7 @@
 - 交付: `godot-emberhold-3d/` 可玩项目；HTML→Godot parity 表；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 不改 HTML 版；原创低模/程序化；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；保留原 AI 行为/参数
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-028 · Swarmforge 美术升级独立复评（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
@@ -80,7 +80,7 @@
 - 交付: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md` + 标注图；不改代码/资产
 - 约束: 不复制 TFT/Hearthstone/全军出鸡 角色/UI/卡牌/品牌；MultiMesh/3000 单位 30fps 是硬约束；fail-closed 验收
 - 指派: game-art-director worker（dispatcher）
-- 产出: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md`；标注图 3 张（`docs/shots/art-review/annotated_01_shop.png`、`annotated_04_battle.png`、`unit_silhouette_brief.png`）；真实 GPU 重跑 `fresh_01_shop.png` / `fresh_04_battle_3000.png`（`SWARM_SHOTS_OK`，04 与既有截图逐字节一致）；GL Compatibility `INSTANCE_CUSTOM` 探针通过；未改代码/资产。
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-025/result.md
 - 状态: done
 
 ## T-20261126-024 · 复刻 Claude+Codex+Godot 3D 动作游戏（3h25m）
@@ -101,6 +101,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-022/result.md
 - 状态: done
+- 后续: T-20261126-029 Godot 3D 移植 → T-20261126-030 3D 美术 → T-20261126-031 QA → T-20261126-032 独立复评
 
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
 - 线程: T-20261126-010（风格化海洋）
