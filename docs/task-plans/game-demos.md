@@ -2,6 +2,46 @@
 
 ## 进行中
 
+## T-20261126-032 · Emberhold 3D 版独立美术复评（T-022 follow-up）
+- 线程: T-20261126-022（Emberhold 单文件塔防）
+- 父任务: T-20261126-031（QA）
+- 类型: game-demo（美术复评）
+- 目标: 独立复评 Godot 3D 版是否达到“3D 场景/模型迭代”的目标；塔/敌人/地形/光照/VFX/UI 与性能；PASS/REJECT
+- 交付: `godot-emberhold-3d/docs/art-review-final-T-20261126-032.md`；证据
+- 约束: 不改代码/资产；1920×1080 目标尺寸
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261126-031 · Emberhold 3D 版 QA 验收（T-022 follow-up）
+- 线程: T-20261126-022（Emberhold）
+- 父任务: T-20261126-030（3D 美术）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收 Godot 3D 版：HTML→Godot 玩法/AI 一致性、2 地图、4 塔/敌人、12 波、AI 托管、性能/console/smoke；PASS/REJECT
+- 交付: `godot-emberhold-3d/docs/qa-T-20261126-031.md`；可复现证据
+- 约束: 不改美术/实现；1920×1080 真实 GPU
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261126-030 · Emberhold 3D 场景/模型美术升级（T-022 follow-up）
+- 线程: T-20261126-022（Emberhold）
+- 父任务: T-20261126-029（Godot 3D 移植）
+- 类型: game-demo（美术实现）
+- 目标: 在 Godot 3D 版上做 3D 美术 pass：塔/敌人/地形/路径/道具/出生门/光照/阴影/雾/VFX/UI skin；保持玩法/AI 不变，Intel 30fps+
+- 交付: 更新 `godot-emberhold-3d/`；before/after 截图/GIF/MP4；docs；性能数据
+- 约束: 原创低模/材质；不复制 Cinderwatch/第三方资产；不改玩法/数值/AI；Godot 4.6 GL Compatibility
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
+## T-20261126-029 · Emberhold 移植 Godot 4.6 3D（T-022 follow-up）
+- 线程: T-20261126-022（Emberhold 单文件塔防）
+- 父任务: T-20261126-022（done）
+- 类型: game-demo（Godot 3D 移植）
+- 目标: 把 `web-html-tower-defense/` 的完整玩法/AI 移植到 Godot 4.6 3D：2 地图、4 塔、敌人/12 波、金币/生命、升级/出售、暂停/倍速、AI 指挥官、地图过渡、UI；3D 场景/相机/低模/光照
+- 交付: `godot-emberhold-3d/` 可玩项目；HTML→Godot parity 表；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 不改 HTML 版；原创低模/程序化；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；保留原 AI 行为/参数
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-028 · Swarmforge 美术升级独立复评（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
 - 父任务: T-20261126-027（QA）
@@ -40,7 +80,8 @@
 - 交付: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md` + 标注图；不改代码/资产
 - 约束: 不复制 TFT/Hearthstone/全军出鸡 角色/UI/卡牌/品牌；MultiMesh/3000 单位 30fps 是硬约束；fail-closed 验收
 - 指派: game-art-director worker（dispatcher）
-- 状态: running
+- 产出: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md`；标注图 3 张（`docs/shots/art-review/annotated_01_shop.png`、`annotated_04_battle.png`、`unit_silhouette_brief.png`）；真实 GPU 重跑 `fresh_01_shop.png` / `fresh_04_battle_3000.png`（`SWARM_SHOTS_OK`，04 与既有截图逐字节一致）；GL Compatibility `INSTANCE_CUSTOM` 探针通过；未改代码/资产。
+- 状态: done
 
 ## T-20261126-024 · 复刻 Claude+Codex+Godot 3D 动作游戏（3h25m）
 - 来源: 飞书消息（B 站《Claude + Codex + Godot，3小时25分钟做出一款3D游戏！》，https://b23.tv/huVtu9e，2026-11-26，7:26，UP AI前沿君；封面为低多边形芽苗勇者 vs 蘑菇怪）

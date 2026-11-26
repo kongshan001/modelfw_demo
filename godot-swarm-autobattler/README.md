@@ -97,6 +97,15 @@ SWF1:eyJjYXJkcyI6W3siaWQiOiJzcGFya19mbGVhIiwic3RhciI6Mn1dLCJmbG9vZCI6ZmFsc2UsImd
 
 > 说明：macOS 会把这个窗口限制在约 1440×762；1920×1080 截图与性能测量在 `SubViewport(1920×1080)` 中真实渲染（1280×720 设计稿 1.5×），不是拉伸 PNG。
 
+## 美术状态（2026-11-26 · T-20261126-025 评审）
+
+当前 build 的美术仍是 vertical slice 原型级：**3.0/10，REJECT（未达生产环境）**。玩法/性能基线保留；单位、棋盘环境、卡牌、VFX、UI 微文案 5 个 P0 待按 brief 落地。
+
+- 评审与生产标准：`docs/art-review-T-20261126-025.md`
+- 标注图：`docs/shots/art-review/annotated_01_shop.png`、`annotated_04_battle.png`
+- 8 族剪影 / atlas / 实例化预算：`docs/shots/art-review/unit_silhouette_brief.png`
+- 生产门槛：100% 截图可读 8 族单位；25% 稀有度可辨；3000 单位 1080p ≥30fps；battle ≤800 draw calls；console 0 error。
+
 ## 文件
 
 - `scripts/swarm_main.gd`：UI/流程/调试钩子
