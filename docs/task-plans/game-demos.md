@@ -18,7 +18,7 @@
 - 交付: `web-html-tower-defense/index.html`（HTML+CSS+原生 JS 全内联，无外部依赖/素材）；AI 托管/手动切换；2–3 地图过渡；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；Playwright 验证
 - 约束: 单文件、零后端、零外部美术/字体/音频/CDN；原创程序化抖动像素；不复制 Cinderwatch 代码/素材/名称（MIT 仅作参考，若复用必须署名）；浏览器 1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
 - 线程: T-20261126-010（风格化海洋）
@@ -119,7 +119,7 @@
 - 约束: 不改美术/实现；1280×720/1920×1080 真实 GPU
 - 指派: game-qa-lead worker（dispatcher）
 - 状态: done
-- 产出: `godot-stylized-ocean-v2/docs/qa-T-20261126-011.md`；`docs/qa/`（18 张 1280/1920 截图 + 交互 GIF + 礁石裁剪）；`tools/qa_acceptance_stylized_ocean.gd`
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-011/result.md
 - 结论: **REJECT（视觉）**；功能/交互/性能/回归/资产 PASS。P0-1 太阳高光在 720/1080 不可见（水面 0 个 >0.8 亮斑）；P0-2 礁石泡沫环过亮过完整（白色甜甜圈/平板光晕）；P1 泡沫蕾丝/焦散/帆船；P2 文档默认值漂移。证据与复现命令见报告。
 
 ## T-20261126-010 · 复刻《风格化海洋第二版》交互水景
