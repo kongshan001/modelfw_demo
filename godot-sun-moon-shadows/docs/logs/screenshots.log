@@ -1,0 +1,22 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+SUN_MOON_WORLD_READY casters=12 heightmap=R8 (640, 360) shadow=union
+SUN_MOON_SHADOWS_READY hour=8.00 speed=16 viewport=(1920.0, 1080.0) scale=3
+SHOTS scale=3 hud_scale=(3.0, 3.0) viewport=(1920, 1080)
+SHOT 01_0800_clean
+SHOT 02_noon_clean
+SHOT 03_dusk_clean
+SHOT 03b_handoff_1900
+SHOT 04_night_2100_clean
+SHOT 05_midnight_moon_clean
+SHOT 06_overlap_markers
+OVERLAP_CROP ["oak", "pine"] (459.5, 306.5) (505.732, 307.8921)
+SHOT 07_heightmap
+SHOT 08_occlusion_heat
+SHOT 09_mesh_wireframe
+SHOT 10_debug_panel_curve_soft
+SHOT 11_debug_panel_curve_hard
+SHOT 12_noon_ui
+SHOT 13_night_ui
+SUN_MOON_SHADOW_SHOTS_OK
