@@ -1,0 +1,29 @@
+; Engine configuration file.
+; 风格化海洋 · 第二版 —— 原创低模卡通海岛海洋互动 demo。
+; 视觉语言参考公开视频（构图/色阶/交互），代码、网格、贴图、材质全部原创。
+
+config_version=5
+
+[application]
+
+config/name="风格化海洋 · 第二版"
+config/description="Stylized wild ocean v2: Gerstner ocean, turquoise depth ramp, shoreline foam, wet sand, palm island, orbiting camera, mouse ripples, rock splash, rain and day/night."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+environment/defaults/default_clear_color=Color(0.55, 0.82, 0.9, 1)
+textures/canvas_textures/default_texture_filter=1

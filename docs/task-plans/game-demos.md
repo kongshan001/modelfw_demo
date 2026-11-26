@@ -2,6 +2,36 @@
 
 ## 进行中
 
+## T-20261126-020 · 3D 像素水景修复独立复评（T-008 follow-up）
+- 线程: T-20261126-008（3D 像素水面与鱼）
+- 父任务: T-20261126-019（鱼/场景美术修复）
+- 类型: game-demo（美术复评）
+- 目标: 独立复评修复后的 3D 像素水景：黑点/脏噪、鱼轮廓/鱼群、水色/焦散/泡沫、构图与像素稳定；对照参考视频，PASS/REJECT
+- 交付: `godot-3d-pixel-water-fish/docs/art-review-final-T-20261126-020.md`；1280×720/1920×1080 证据
+- 约束: 不改代码/资产；只审查与结论
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261126-019 · 3D 像素水景鱼/场景美术修复（T-008 follow-up）
+- 线程: T-20261126-008（3D 像素水面与鱼）
+- 父任务: T-20261126-018（渲染修复）
+- 类型: game-demo（美术实现）
+- 目标: 重做可读的低模鱼（身体/眼/鳍/尾）、鱼群间距/游动，以及水色/岸线/岛/水草/睡莲/光感；保持 3D 像素量化风格
+- 交付: 更新 `godot-3d-pixel-water-fish/`；before/after 截图/GIF/MP4；docs 更新；smoke + 真实 GPU
+- 约束: 原创素材；不复制参考视频/作者素材；只改视觉/资产，不改交互/玩法；1280×720/1920×1080，Intel 30fps+
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
+## T-20261126-018 · 3D 像素水景渲染异常修复（T-008 follow-up）
+- 线程: T-20261126-008（3D 像素水面与鱼）
+- 父任务: T-20261126-008（done）
+- 类型: game-demo（渲染修复）
+- 目标: 修掉水面/草地/岛上的黑色碎点（dither/hash/outline 过强）、水下黑线与折射越界、水体浑浊/焦散泡沫不可读；保留像素管线与性能
+- 交付: 更新 `godot-3d-pixel-water-fish/`；同机位 before/after 截图 ≥6 组；TECH/迭代记录；GIF/MP4；smoke + 真实 GPU
+- 约束: 不改鱼模型/关卡/交互/整体美术方向；不复制参考素材；真实 GPU；Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-017 · 复刻《全军出鸡》式百倍单位自走棋
 - 来源: 飞书消息（B 站《酒馆战旗，但场上单位数量×100倍……》，https://b23.tv/2vtJIfx，2026-11-26，27:06，UP 独立游戏蜥蜴君；游戏《全军出鸡：鸡械绿洲自走棋》demo）
 - 类型: game-demo（自走棋 / 大规模单位）
@@ -27,7 +57,7 @@
 - 交付: `godot-knotline-puzzle/` 可玩 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制，不复制 Trifolium/EmptyMatter 素材/品牌/关卡；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；结检测可近似但须在 TECH 说明
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-014 · 复刻《SideStamp》滚块涂色解谜
 - 来源: 飞书消息（B 站《〈SideStamp〉官方预告片 | 一款关于色彩与旋转的解谜游戏》，https://b23.tv/CKwXd38，2026-11-26，80s，1920×1080，GoodHeartGames；简介：roll blocks into pools of paint to color the proper tiles）
@@ -65,7 +95,9 @@
 - 交付: `godot-stylized-ocean-v2/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 原创低模/贴图/代码，不复制视频/原作者素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不做重型流体模拟
 - 指派: game-artist worker（dispatcher；视觉主导，QA/复评独立）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-010/result.md
+- 备注: 视觉主导；水面/岛屿/道具/涟漪/落石/雨/昼夜/中文 UI 全部实现；真实阴影关闭（GL Compat 下方向光不稳定），使用手绘方向光 + 软接触阴影；夜/雨/调试视图齐全。交接 T-20261126-011（QA）、T-20261126-012（美术独立复评）
 
 ## T-20261126-008 · 复刻 3D 像素水面与鱼（t3ssel8r 风格）
 - 来源: 飞书消息（B 站《做了水和鱼》，https://b23.tv/fnj2fKz，2026-11-26，49s，UP 迷茫Mmang_；简介：3D 像素渲染，借鉴 t3ssel8r，主要使用 GPT-6 编程）
@@ -76,6 +108,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-008/result.md
+- 后续: T-20261126-018 渲染异常修复 → T-20261126-019 鱼/场景美术 → T-20261126-020 独立复评
 
 ## T-20261126-007 · 水面视觉整改独立复评（T-001 follow-up）
 - 线程: T-20261126-001（水面 Shader）
