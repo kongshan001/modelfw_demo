@@ -58,7 +58,7 @@
 - 交付: `godot-foldpath-puzzle/` 可玩 vertical slice（3 关）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制；不复制 Monument Valley/ustwo 的关卡/角色/美术/音乐/品牌；原创低模/色板/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-015 · 复刻《Trifolium》3D 一笔画打结解谜
 - 来源: 飞书消息（B 站《【解谜游戏】可以打结的一笔画〈Trifolium〉Demo试玩》，https://b23.tv/PGfHEPL，2026-11-26，23:58，UP GT阿某；Trifolium / EmptyMatter，Steam demo）
@@ -78,7 +78,7 @@
 - 约束: 只复刻抽象机制，不复制 SideStamp/GoodHeartGames 角色/UI/关卡/品牌/素材；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-hueroll-puzzle/`；6 关（par 5/13/17/17/17/25）；`HUEROLL_SMOKE_OK checks=525 levels=6`；1920×1080 截图 7 张 + 10s GIF/MP4；1080p 关 vsync avg 84.7/71.4 FPS（draw 119/128）；headless/真实 GPU 0 ERROR
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-014/result.md
 
 ## T-20261126-012 · 风格化海洋第二版 独立美术复评
 - 线程: T-20261126-010（风格化海洋）
