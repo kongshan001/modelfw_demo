@@ -2,6 +2,16 @@
 
 ## 进行中
 
+## T-20261126-033 · Swarmforge 3D 场景/模型性能压测（T-017 follow-up）
+- 线程: T-20261126-017（百倍单位自走棋）
+- 父任务: T-20261126-026（美术资产）
+- 类型: game-demo（3D 渲染 / 性能压测）
+- 目标: 把 Swarmforge 战斗视图增加 Godot 4.6 3D 场景 + 3D 模型，保留 2D 回退；用 MultiMeshInstance3D 压测 100/1000/3000 单位 FPS/draw calls/CPU，对比 2D，给出 3D 是否可行
+- 交付: 更新 `godot-swarm-autobattler/`（3D 模式）；3D 截图/GIF/MP4；性能表；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 保持玩法/AI/UI/2D 模式不回归；真 3D 低模（禁止 billboard 冒充）；原创资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+ 目标
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-032 · Emberhold 3D 版独立美术复评（T-022 follow-up）
 - 线程: T-20261126-022（Emberhold 单文件塔防）
 - 父任务: T-20261126-031（QA）
@@ -10,7 +20,7 @@
 - 交付: `godot-emberhold-3d/docs/art-review-final-T-20261126-032.md`；证据
 - 约束: 不改代码/资产；1920×1080 目标尺寸
 - 指派: game-art-director worker（dispatcher）
-- 状态: queued
+- 状态: canceled（目标误判：用户指的是 Swarmforge；T-029 额外产物保留，不做后续）
 
 ## T-20261126-031 · Emberhold 3D 版 QA 验收（T-022 follow-up）
 - 线程: T-20261126-022（Emberhold）
@@ -20,7 +30,7 @@
 - 交付: `godot-emberhold-3d/docs/qa-T-20261126-031.md`；可复现证据
 - 约束: 不改美术/实现；1920×1080 真实 GPU
 - 指派: game-qa-lead worker（dispatcher）
-- 状态: queued
+- 状态: canceled（目标误判：用户指的是 Swarmforge；T-029 额外产物保留，不做后续）
 
 ## T-20261126-030 · Emberhold 3D 场景/模型美术升级（T-022 follow-up）
 - 线程: T-20261126-022（Emberhold）
@@ -30,7 +40,7 @@
 - 交付: 更新 `godot-emberhold-3d/`；before/after 截图/GIF/MP4；docs；性能数据
 - 约束: 原创低模/材质；不复制 Cinderwatch/第三方资产；不改玩法/数值/AI；Godot 4.6 GL Compatibility
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: canceled（目标误判：用户指的是 Swarmforge；T-029 额外产物保留，不做后续）
 
 ## T-20261126-029 · Emberhold 移植 Godot 4.6 3D（T-022 follow-up）
 - 线程: T-20261126-022（Emberhold 单文件塔防）
@@ -50,7 +60,7 @@
 - 交付: `godot-swarm-autobattler/docs/art-review-final-T-20261126-028.md`；证据
 - 约束: 不改代码/资产；1920×1080 目标尺寸审查
 - 指派: game-art-director worker（dispatcher）
-- 状态: queued
+- 状态: canceled（2D 美术复评取消；改为 T-033 Swarmforge 3D 性能压测）
 
 ## T-20261126-027 · Swarmforge 美术升级 QA 验收（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
@@ -60,7 +70,7 @@
 - 交付: `godot-swarm-autobattler/docs/qa-T-20261126-027.md`；可复现证据
 - 约束: 不改美术/实现；1920×1080 真实 GPU
 - 指派: game-qa-lead worker（dispatcher）
-- 状态: queued
+- 状态: canceled（2D 美术 QA 取消；改为 T-033 Swarmforge 3D 性能压测）
 
 ## T-20261126-026 · Swarmforge 生产级美术资产升级（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
@@ -70,7 +80,7 @@
 - 交付: 更新 `godot-swarm-autobattler/`；before/after 截图/GIF/MP4；docs；性能数据；smoke
 - 约束: 原创资产；不复制 TFT/Hearthstone/全军出鸡 IP；不改玩法/数值；Godot 4.6 GL Compatibility，Intel 30fps+
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-025 · Swarmforge 生产级美术 brief（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
@@ -91,7 +101,7 @@
 - 约束: 复刻游戏不复制视频流程/素材/角色设计/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；视频不明确处写假设
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-sproutbound/`；smoke 54 checks PASS；1280×720 42/44 FPS；8×1920×1080 截图；10s MP4/GIF；README/TECH/迭代记录/CREDITS；`docs/agency/T-20261126-024-sproutbound.md`
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-024/result.md
 
 ## T-20261126-022 · 复刻单文件 HTML 塔防 + AI 指挥官
 - 来源: 飞书消息（B 站《Fable 5.2 把一个完整塔防塞进单个 HTML：零后端零美术资源，AI 指挥官能自己守塔（带试玩地址）》，https://b23.tv/ech1X6H，2026-11-26，27s，UP eddieliugd；原 Demo Cinderwatch，MIT）
@@ -102,7 +112,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-022/result.md
 - 状态: done
-- 后续: T-20261126-029 Godot 3D 移植 → T-20261126-030 3D 美术 → T-20261126-031 QA → T-20261126-032 独立复评
+- 后续: T-20261126-029 Godot 3D 移植（running，额外产物保留）；T-030~T-032 取消（目标误判，用户指的是 Swarmforge）
 
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
 - 线程: T-20261126-010（风格化海洋）
@@ -154,7 +164,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-017/result.md
-- 后续: T-20261126-025 美术 brief → T-20261126-026 美术升级 → T-20261126-027 QA → T-20261126-028 独立复评
+- 后续: T-20261126-025 美术 brief → T-20261126-026 美术资产（running，作为 3D 素材基础）→ T-20261126-033 Swarmforge 3D 性能压测；2D QA/复评 T-027/T-028 取消
 
 ## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
 - 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）
