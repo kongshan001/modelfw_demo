@@ -2,6 +2,16 @@
 
 ## 进行中
 
+## T-20261126-023 · 修走路朝向 + 追加原创偶像鸡舞（T-013 follow-up）
+- 线程: T-20261126-009（Action Forge）
+- 父任务: T-20261126-013（深度复测）
+- 类型: 3d-asset（动画修复 / 创作）
+- 目标: 修 `action-forge-test/` 走路动作与移动方向不一致；追加 6–8s 原创“偶像鸡舞”（鸡你太美梗的氛围，但不使用原曲/原编舞/姓名/肖像），Godot 预览可切换播放
+- 交付: 更新 `action-forge-test/`（GLB、预览、录屏、截图、docs）；走路前后对比 + 舞蹈视频/GIF；媒体
+- 约束: 原创舞蹈/动作；不使用蔡徐坤姓名/肖像/原曲/原编舞；只用 CC0/仓库资产；Godot 4.6；真实可复现
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-013 · Action Forge 深度复测：250+ 动画/分层/姿势/导出（T-009 follow-up）
 - 来源: 飞书消息（B 站《终于有一款真正好用的免费3D动画工具了！》，https://b23.tv/X1qGE6U，2026-11-26，24:16，UP 海盗CG；ActionForge 250+ 动画、layering/posing/retargeting/export）
 - 线程: T-20261126-009（Action Forge 实测）
@@ -11,7 +21,11 @@
 - 交付: 更新 `action-forge-test/`（导出 GLB、Godot 预览、Action Forge 录屏、截图、docs 追加）；媒体
 - 约束: 只用 CC0/仓库样例；不登录/不绕过付费；真实可复现；不复制视频/软件素材
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-013/result.md
+  - 关键数字: 库 UI 85 / manifest 89（250+ 不成立）；分层 upper-body mask 上半身差 0.40–1.26 rad、腿 ≤0.0008 rad；base Walk→Rogue root 0.3371 m（标称 1.30 m 的 26%）、脚底 +3.03 cm、支撑滑 0.417 m；Michelle 目标识别 Mixamo、52/62 骨映射全对，但 raw 导出 AABB 2.692 m（源 1.664 m 的 1.618×），0.618× 修正后 in-place 脚底 +1.1 cm/支撑滑 0.663 m，rootmotion 异常；GLB 41 骨/21 轨，FBX Godot 28 轨、Unity 2022.3.49f1 导入 1.3333 s/30 fps/Generic；Blender 骨长偏差 1e-06；`SMOKE_LAYERED_OK`、`BASE_SMOKE_OK`、600 帧 headless 0 ERROR。
+  - 结论: 分层/导出可用但 composite root-motion 不烘焙；自动 17 骨映射仍限制 Rogue 步态；Michelle 有 1.618× 尺度 bug/rootmotion 异常；FBX 进 Blender/Godot/Unity、GLB 进 Blender/Godot 均已验证（Unity 仅 FBX 结构导入，未配 Humanoid）。
+- 后续: T-20261126-023 走路朝向修复 + 原创偶像鸡舞（依赖 T-013 完成）
 
 ## T-20261126-009 · 实测 Action Forge（Mixamo 免费替代）动画效果
 - 来源: 飞书消息（B 站《这款免费软件，可能要让Mixamo失业了》，https://b23.tv/6hQ7yHY，2026-11-26，16:29，UP 海盗CG；介绍 Action Forge https://actionforge.app/）

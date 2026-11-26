@@ -68,3 +68,59 @@ godot --path action-forge-test/godot --resolution 1280x720 --write-movie /tmp/pr
 ## 许可
 
 Action Forge 代码 © CGstuff；库动画 CC0（Quaternius）；生成的 GLB 含 KayKit Rogue（CC0）和 Mixamo 样例动画（沿用仓库现有样例条款）。详见 [`CREDITS.md`](CREDITS.md)。UI 截图/录屏仅用于本次工具评测，不包含软件本体或库素材。
+
+---
+
+## T-013 深度复测（2026-11-26，follow-up of T-009）
+
+> 参考视频 BV1LR4g68EmY（24:16，仅研究）；详细报告见 [`docs/action-forge-test.md`](docs/action-forge-test.md) 的 “T-013 深度复测”。
+
+**结论**：
+
+- “250+ 动画”**不成立**：当前 build UI 85 clips / manifest 89（含 3 个手指 pose + 1 个 FPS 测试）；分类/搜索/预览可用，抽样 16 个动作总体能用，但武器类没有道具。
+- **分层可用**：base `Walk Loop` + upper-body `Idle Talking Loop`，自动 mask 到 Head/Neck/Spine/Clavicle/Arms/Hands；导出 GLB 里上半身差 0.40–1.26 rad、腿部差 ≤0.0008 rad；weight 0% 时与 base 等价。
+- **限制**：layer 被裁到 base 长度（0.45 cycle）；拖 strip 会把 mask 重置为 Full body；composite root-motion 不烘焙；未保存的层重载会丢。
+- **重定向**：内置 Walk Loop → Rogue 可播放；root 0.3371 m（标称 1.30 m 的 26%）、脚底 +3.03 cm、root-motion 支撑滑 0.417 m；仍是 17 骨自动映射的 chibi 步态。
+- **Michelle 目标（重要 bug）**：应用识别 Mixamo、52/62 骨映射全对；但 1.8 m 的修正模型显示 **63 cm**，raw 导出 AABB **2.692 m**（源的 1.664 m 的 1.618×）；手动 0.618× 根缩放后 in-place 身高/姿态回到源水平（脚底 +1.1 cm、支撑滑 0.663 m ≈ 源 0.660 m），但 **rootmotion 导出异常**（hips Y 2.357 m）。raw + corrected 文件都在 exports；详见 docs §4。
+- **导出**：GLB/FBX 均可用；Blender 骨长偏差 1e-06；Godot 4.6 GLB 21 轨 / FBX 28 轨；Unity 2022.3.49f1 headless FBX 导入成功（1.3333 s / 30 fps / Generic）。
+
+**新增文件**：
+
+```text
+exports/
+  Rogue_WalkLoop_AF_inplace.glb            base Walk，in-place
+  Rogue_WalkLoop_AF_rootmotion.glb         base Walk，root 0.3371 m
+  Rogue_Walk_IdleTalkLayer_AF_inplace.glb  base Walk + upper-body Idle Talking
+  Rogue_Walk_IdleTalkLayer_AF.fbx          同上，FBX（Blender Units）
+  Michelle_WalkLoop_AF_inplace.glb         raw（AABB 2.692 m，尺度 bug）
+  Michelle_WalkLoop_AF_inplace_scaled.glb  0.618× 根缩放修正（AABB 1.664 m）
+  Michelle_WalkLoop_AF_rootmotion.glb      raw root-motion（hips Y 2.357 m，不可用）
+  Michelle_WalkLoop_AF.fbx                 65 骨 / 1 mesh / 650 fcurves
+godot/
+  layered.tscn + scripts/layered_preview.gd    base vs layered 预览；V 显示 base root-motion
+  tools/smoke_layered.gd                       分层/root/脚滑/循环 smoke
+  tools/smoke_base_walk.gd                     base smoke
+  tools/inspect_fbx.gd                         FBX 直接导入检查
+recordings/
+  t013_af_layer_operation.mp4   61 s，真实 Action Forge 层权重/mask/导出段（2×）
+  t013_godot_layered.mp4/.gif   12 s，Godot 4.6 base vs layered
+screenshots/
+  t013_library_85.png, t013_layers_mask.png, t013_export_panel.png,
+  t013_godot_front_1280.png, t013_godot_front_1920.png,
+  t013_michelle_retarget.png, t013_michelle_app_63cm.png
+scripts/
+  af_library_audit.py           拉 manifest/统计 85/89
+  af_layer_export.py            分层导出 Playwright 参考流程（base + upper-body layer + GLB/FBX）
+  af_character_retarget.py      Michelle 上传/识别/导出参考流程（含 0.618× 说明）
+```
+
+**分层预览**：
+
+```bash
+godot --path action-forge-test/godot --resolution 1280x720 res://layered.tscn
+godot --headless --path action-forge-test/godot -s tools/smoke_layered.gd   # → SMOKE_LAYERED_OK
+godot --path action-forge-test/godot --resolution 1280x720 \
+  --write-movie /tmp/layered.avi --fixed-fps 30 --quit-after 360 res://layered.tscn -- --demo
+```
+
+注意：`t013_af_layer_operation.mp4` 的真实 session 段演示的是早期 **Full body** 层（含拖拽踩坑）；最终 upper-body 层在后续 session 重建，数据以 docs §2 和 `Rogue_Walk_IdleTalkLayer_AF_inplace.glb` 为准。

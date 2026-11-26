@@ -84,3 +84,14 @@ for mesh in target_meshes:
 - **in-place / root motion**：In place 勾选后 root XZ=0；不勾选约 2.0 cm。源片本身根位移很小，未覆盖大位移片段。
 - **坑**：Adjust 的 Speed 1.5× 不烘焙（导出仍 1.0333 s）；仅动画 GLB 在 Godot 中节点名被清洗（`upperarm.l`→`upperarm_l`，无 Skeleton3D），不能直接挂到 Rogue 骨架；Michelle.glb 作为角色上传在无头环境卡在纹理缩放。
 - **对比基线**：本文的 `RetargetModifier3D`（Michelle 正常 / Xbot 倾斜）仍是 Godot 运行时方案；Action Forge 的优势在免账号/无上传/一体化编辑导出，适合作为补充工具。
+
+## Action Forge T-013 深度复测补充（2026-11-26）
+
+> 报告：`action-forge-test/docs/action-forge-test.md` §T-013；预览：`action-forge-test/godot/layered.tscn`。
+
+- **动画库**：当前 build UI 85 clips / manifest 89（3 个零时长手指 pose + 1 个 FPS 测试）；简介“250+”不成立于免费内置库。分类/搜索/预览可用，武器动作无道具。
+- **分层**：base `Walk Loop` + upper-body `Idle Talking Loop` 自动 mask 到 Head/Neck/Spine/Clavicle/Arms/Hands；导出 GLB 上半身旋转差 0.40–1.26 rad，腿骨 ≤0.0008 rad；weight 0% 与 base 等价。限制：layer 被裁到 base 长度（0.45 cycle）、拖 strip 重置 mask 为 Full body、composite root-motion 不烘焙。
+- **内置 Walk Loop → KayKit Rogue**（Quaternius 71 骨 → 41 骨；沿用 17 骨映射）：`walk_loop_fit` 1.3333 s / 43 glTF channels / 21 Godot 轨；root in-place 0.000 m、root-motion **0.3371 m**（库标称 1.30 m 的 26%）；脚底 **+3.03 cm**；root-motion 支撑脚世界滑移 **0.417 m**；loop seam 0.0000/0.0127 rad；Blender 骨长偏差 1e-06。视觉上仍偏低/屈膝，属 chibi + 自动映射的同类问题。
+- **与本文基线对比**：T-009 的 Mixamo Michelle Walk → Rogue root 0.0197 m、脚底 +1.1–3.9 cm；T-013 的内置源有更大的 root 位移，但缩到 26% 且支撑滑 0.417 m。`RetargetModifier3D` 的 rotation-only 在 Michelle 上更干净（Xbot 仍需 rest 修正）。Action Forge 是“快速重定向/分层/导出”的补充，不是接触/步幅 IK 级方案。
+- **FBX**：Godot 4.6 直接导入 41 骨 / 12 mesh / 28 轨；Unity 2022.3.49f1 headless FBX 导入 54 transforms / 6 SkinnedMeshRenderer / 1.3333 s / 30 fps / Generic（未配 Humanoid）；Blender 3.4.1 41 骨 / 410 fcurves / frame 1–41。
+- **Michelle 目标实时测试**：识别 Mixamo，**52/62 骨映射全对**（10 根指尖骨未蒙皮被忽略），可导出 65 骨/1 mesh/17,342 verts/1.3333 s 的 GLB+FBX；但 **1.8 m 的目标在应用里显示 63 cm，raw 导出 AABB 2.692 m（源的 1.664 m 的 1.618×）**。手动 0.618× 根缩放后身高/姿态回到源水平（脚底 +1.1 cm、in-place 支撑滑 0.663 m ≈ 源 0.660 m），但 **rootmotion 导出不可用**（hips Y 范围 2.357 m，缩放后支撑滑 1.451 m）。结论：AF→Michelle 的骨骼映射可用，尺度/根运动需后处理，不能直接替代 Mixamo 的自动绑定链路。

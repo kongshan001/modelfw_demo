@@ -214,3 +214,338 @@ python3 action-forge-test/scripts/glb_inspect.py \
 - Mixamo 样例的许可：沿用仓库现有样例条款；公开发布/再分发前确认。
 - 本次只测了一个角色/一个近 in-place 的片段；未测大位移、Motion Lab、Y Bot/X Bot、Unrigged 自动绑定、Godot 插件本体。
 - 无头 SwiftShader/慢网络下的加载与导出耗时**不代表**正常桌面浏览器；性能数字只代表本机 Godot 预览（Intel HD 6000）。
+
+---
+
+# T-013 深度复测（2026-11-26）
+
+> follow-up of T-20261126-009 · 同一 Action Forge Beta build `20261125.274ae9a7` · 参考视频：[BV1LR4g68EmY](https://www.bilibili.com/video/BV1LR4g68EmY)（24:16，UP 海盗CG）· 仅研究，不复制视频/软件素材
+> 新验证：250+ 动画库、分层/姿势、内置动作→KayKit/Michelle 重定向、GLB/FBX→Blender/Godot/Unity 导入。
+
+## 0. 结论（先看）
+
+1. **“250+ 动画”在当前 build 不成立。** UI 显示 `LIBRARY · 85` / `85 CLIPS`；公开 manifest 是 **89** 条（85 个身体动作 + 3 个零时长手指 pose + 1 个 FPS 测试）。分类、搜索、缩略预览可用；抽样的 16 个动作总体可用，但库规模比 Mixamo 小，武器类动作**没有道具**（只有手部姿态），个别命名/分类不准。
+2. **分层可用，且能导出真正“上半身层”。** base `Walk Loop` + layer `Idle Talking Loop`，图层自动 mask 到 **Head · Neck 1 · Spine 3/2/1 · Clavicle L/R · Upperarm L/R · Lowerarm L/R · Hand L/R**；weight 100% 时导出 GLB 里上半身旋转差 **0.40–1.26 rad**，腿部与 base 差 **≤0.0008 rad**。weight 0% 时与 base 完全一致（≤0.001 rad）。
+3. **分层有 4 个实际限制**：① layer 被裁到 base 长度（2.93 s 的 Idle Talking 在 1.33 s 的 Walk 里只保留 **0.45 cycle**）；② 把 strip 拖到另一条 layer 会把 mask 重置为 **Full body**；③ **composite 的 root-motion 不烘焙**（In place 取消勾选后导出的 layered GLB 仍是 in-place，root 范围 0；base 的 root-motion 导出正常）；④ 未保存的 strip/layer 重新加载会丢失，必须 `Save to my animations`。
+4. **内置 Walk Loop → KayKit Rogue 可播放，但仍是“比例+自动映射”问题**：41 骨 / 12 mesh / 5901 verts，1.3333 s，root-motion 仅 **0.337 m**（库标称 1.30 m，缩到 26%），脚底 **+3.03 cm**，root-motion 支撑脚世界滑移 **0.417 m**；自动映射仍是 T-009 的 **17 骨**级映射，chibi 步态在部分相位仍低/屈膝。与 `docs/MIXAMO_RETARGET.md` 的 `RetargetModifier3D` 基线相比：AF 胜在免账号/一体化，输在自动映射与根运动一致性。
+   **→ Michelle 目标有更严重的尺度 bug**：1.8 m 的修正模型在应用里显示 **63 cm**，原始导出网格 AABB **2.692 m**（源的 1.664 m 的 **1.618×**）；手动 0.618× 根缩放后可回到 1.664 m，in-place 脚底 +1.1 cm / 支撑滑 0.663 m（源 0.660 m），但 **rootmotion 导出不可用**（hips Y 范围 2.357 m）。详见 §4。
+5. **GLB 进 Blender/Godot；FBX 进 Blender/Godot/Unity。** GLB：41 骨 / 21 轨 / 1.3333 s；FBX：41 骨 / 12 mesh / action 1–41 帧 / 410 fcurves，Godot 4.6 直接导入 FBX（28 轨）。Blender 骨长偏差 **1e-06**，无拉伸。Unity 2022.3.49f1 headless 导入 FBX 成功：54 transforms、6 SkinnedMeshRenderer、2 clips（含 `__preview__`）、正片 **1.3333 s / 30 fps / 170 curves**、Generic；未测 GLB（Unity 无内置 glTF 导入）与 Humanoid。见 §5.4。
+
+## 1. 动画库审计（250+ 的实际数字）
+
+### 1.1 数量与分类
+
+数据源：网页实际加载的 `https://actionforge.app/assets/animation-library/manifests/library.json`（generatedAt `2026-10-08T15:41:33Z`）以及 UI 文案；脚本 `scripts/af_library_audit.py` 可复现。
+
+| 项 | 实测 |
+|---|---|
+| UI 计数 | `LIBRARY · 85` / `85 CLIPS`（My animations 另计） |
+| manifest clips | **89**：human rig 88 + fps rig 1 |
+| 其中 UI 不显示的 | `fist` / `open_palm` / `open_palm_natural` 三个 duration=0 的手指 pose；`fps_test` 1 条 |
+| 分类（manifest category） | interaction 28、locomotion 23、combat 19、aim 6、Reactions 5、gestures 2、未分类 5、fps 1 |
+| 标签（tags） | locomotion 30、interaction 28、combat 20、gestures 6、aim 6、reactions 5、zombie 3、open/closed/grip 各 1–2 |
+| 循环标记 | loops=true 58 / false 31（manifest 全量） |
+| 带 root motion | 27 条；如 walk 1.30 m、jog 5.00 m、sprint 5.50 m、slide 9.00 m、sword heavy combo 5.32 m |
+
+**“250+”来源判断**：视频简介写的是 250+，但当前 build 的网页内置库只有 85/89；Quaternius 的 Universal Animation Library 在站点外还有更多包，不能算进本工具免费内置库。我们只按实测数字记录，不把 250+ 当已验证事实。
+
+### 1.2 搜索与预览
+
+- 搜索框按名字/标签过滤：`walk` → **4 OF 85 CLIPS**；`talking` → **3 OF 85 CLIPS**。TAGS 下拉可过滤标签；字母大小写不敏感。
+- 预览是 400×480 的 `.webm` 自动循环缩略图（`previews/<id>.webm`），在 Mannequin 上渲染；没有道具/场景，武器动作只有手型。
+- 抽样 16 个动作（每类至少 2 个）逐帧看过（5 帧/动作，原始预览只放 `/tmp`，未入库）：
+
+| 类别 | 抽样 | 可用性 / 名不副实处 |
+|---|---|---|
+| locomotion | walk_loop, jog_fwd_loop, sprint_loop, jump_start, roll, swim_fwd_loop | 可用；步态/跳跃/翻滚/游泳动作清晰。`walk/jog/sprint/slide` 标称 travels，但重定向到 Rogue 后 root 位移显著缩小（见 §3） |
+| combat | sword_regular_combo, punch_jab, zombie_scratch | 可用；剑动作动势好，但**没有剑模型**，只是手部姿态；`sword_attack` 同时标 loop+travels，语义混 |
+| aim | pistol_idle_loop, pistol_shoot | 姿态可用；同样没有手枪；`pistol_shoot` 只有很轻的后坐，5 帧采样时不明显 |
+| interaction | farm_harvest, sitting_idle_loop, idle_lantern_loop | 可用；farm 弯腰/起身清楚；`idle_lantern` 没有灯笼道具 |
+| reactions | hit_head, death01 | `hit_head` 0.43 s 很短、动作幅度小；death 2.4 s 可用 |
+| gestures | dance_loop, idle_talking_loop | `dance_loop` 只有 1.0 s，循环偏短/简单；`idle_talking` 更像单手比划/拿东西，不是完整对话 |
+| fps | fps_test | 只有 1 条，属于第一人称相机测试，不是第三人称身体动作 |
+| 未分类/命名 | idle_no_loop, yes, crouch_fwd_loop | `Idle No Loop` 在 manifest/UI 里仍标 `loop`（名不副实）；`Yes` 语义模糊；5 条 category=null |
+
+**结论**：作为免费库，85 条覆盖常见游戏动作，质量算“能用”；但离 Mixamo 的规模/成品度/道具/分类严谨度还有差距，250+ 不成立。
+
+## 2. 分层与姿势（base Walk + upper-body Idle Talking）
+
+### 2.1 实际 UI 流程（当前 build 与视频的 Compose 面板等价）
+
+视频里是旧的 `TOOL LAB / COMPOSE` 面板（+ ADD SELECTED、HEAD/ARMS/HANDS/CHEST/LEGS mask chips）。当前 build 把它拆成 **Setup › Mask + Animate › Adjust › LAYERS + 底部 STRIPS**，能力等价：
+
+1. `Setup › Character`：确认 Rogue 为 worn。
+2. `Library › ANIMATIONS`：搜索 `walk`，勾选 `Walk Loop`；`Setup › Mask` → `+ ADD SELECTED` → 成为 **Base** strip。
+3. `Animate › Adjust` → `+ LAYER` 新建空层；在右侧 LAYERS 里选中 `Layer 1`（不要在时间轴层头 x≈60 处点，可能点到 mini weight 滑杆把权重设为 0）。
+4. `Library` 搜索 `talking`，勾选 `Idle Talking Loop`；`Setup › Mask` → `+ ADD SELECTED` → 进入所选 layer。
+5. **不要拖 strip**：拖动会把该层的自动 mask 重置为 `Full body`（本次 v4/v6 复现）。
+6. 需要调权重时用 LAYERS 的 Weight 或层头 mini 滑杆；`Download` 选 GLB/FBX、In place。
+
+### 2.2 结果与 mask/权重
+
+最终 layer 的层头 mask 摘要（真实 session v9）：
+
+```text
+Head · Neck 1 · Spine 3 · Spine 2 · Spine 1 · Clavicle (left) · Upperarm (left) ·
+Lowerarm (left) · Hand (left) · Clavicle (right) · Upperarm (right) ·
+Lowerarm (right) · Hand (right)
+```
+
+即自动识别为“上半身”。Mask 面板还提供逐骨 `lib-picker__spot`（`Upperarm (left): plays it, 100%` 等）与 `Weight influence`，以及逐轨 `Layer weight`。
+
+导出 `Rogue_Walk_IdleTalkLayer_AF_inplace.glb`（461,708 B）与 base 的逐通道对比（glTF rotation，9 个采样点最大四元数角差）：
+
+| 部位 | base vs layered 最大角差 |
+|---|---:|
+| lowerarm.l | **1.261 rad** |
+| lowerarm.r | 1.017 rad |
+| upperarm.r | 0.864 rad |
+| upperarm.l | 0.724 rad |
+| hand.l / hand.r | 0.527 / 0.400 rad |
+| head | 0.288 rad |
+| chest / spine | 0.123 / 0.038 rad |
+| 所有腿骨（upperleg/lowerleg/foot/toes） | **≤0.0008 rad** |
+| hips translation / root translation | 0 / 0（与 base 相同） |
+
+Godot `tools/smoke_layered.gd` 复核：`leg_delta=0.0000 rad`，`arm_delta=0.4032 rad`，`loop_seam=0.0000 rad`，`max_scale_dev=0.000000` → **SMOKE_LAYERED_OK**（详见 §5）。
+
+权重实测（同一层，仅改 `Layer weight`）：
+
+- 0%：导出文件与 base 逐通道差 <0.001 rad（v5 的 461,732 B 文件，sha 与 base 不同但动作等价）。
+- 50%：仅做 UI 预览/截图，未单独导出。
+- 100%：v6/v9 的上半身差异（上表）。
+- **注意**：层头 x≈60 处点击会命中 mini weight；v5 误把权重设为 0，导致“加了层但导出与 base 一样”。排查时先看 `input.lib-seq__hweight` 的值。
+
+### 2.3 时长/循环限制
+
+base Walk Loop 1.3333 s；layer Idle Talking 2.9333 s。Mask 面板显示：
+
+```text
+1.33 s @ 30 fps · one-shot
+walk_loop 1.33 s ✓ base
+idle_talking_loop 2.93 s · ✗ 0.45 cycles
+Length: 1.33 s base / 2.93 s nothing cut / 14.67 s every cycle whole
+```
+
+实际导出仍是 **1.3333 s**：工具把 layer 裁到 base 的长度（0.45 个 Idle Talking 循环），**不会**把 base 扩展到 2.93 s。循环标记：base 循环 seam 0.0000 rad；layered in-place seam 0.0000 rad（腿骨采样）。要做长循环，需要自行在 base 侧加长/在 Blender/引擎里重定时。
+
+### 2.4 姿势（Pose）说明
+
+- 当前 build 有 Pose 工具、Auto-key、Graph/Keys、Adjust 滑杆（Arms/Posture/Chest/Head、Speed）。本次用**上半身动画层**作为“姿势/层”的实测对象；**没有**单独手 K 一个静态 pose 再导出（时间/自动化限制），因此本报告不宣称“手工 pose 导出已验证”。
+- Adjust 的 Speed 在 T-009 已实测为预览不烘焙；本次未重复。
+- 分层合成之外，`Mirror/Reverse`、`Strips` 拖拽/切分、`Onion skin/Trails` 等未深测。
+
+## 3. 重定向：内置 Walk Loop → KayKit Rogue
+
+### 3.1 结果
+
+- 目标：KayKit Rogue（41 骨 / 12 mesh / 5901 verts；应用内 own skeleton，沿用 T-009 的 17 骨自动映射）。
+- 源：内置 `Walk Loop`（Quaternius 71 骨，1.33 s，标称 travels 1.30 m）。
+- 导出：`Rogue_WalkLoop_AF_inplace.glb` / `Rogue_WalkLoop_AF_rootmotion.glb`，各 461,676 B；动画名 `walk_loop_fit`，**43 glTF channels → Godot 21 tracks**，1.3333 s，41 joints。
+- Root XZ：in-place **0.000 m**；root-motion **0.3371 m**（glTF root 轨道；库标称 1.30 m，缩到约 26%）。
+- 脚底（Godot 世界）：最低 **+3.03 cm**（略浮空，与 T-009 的 +1.1–3.9 cm 同级）。
+- Root-motion 支撑脚：最长连续触地 20/41 帧，世界 XZ 滑移 **0.417 m** → 根运动与步幅不匹配，滑步明显（这是本次最重要的重定向质量发现之一）。
+- 循环：最终 Godot 采样 in-place seam **0.0254 rad**、root-motion seam **0.0264 rad**（均 <0.03 rad；早期脚本另一采样为 0.0000/0.0127，属帧采样差异）。
+- 骨长：Blender validator `max_bone_length_deviation = 1e-06`（无拉伸/扭曲）。
+- 视觉：整体直立，但部分相位仍低/屈膝（chibi + 17 骨自动映射）；与 T-009 的“屈膝/前倾”同类问题，程度略有不同，未手工修映射。
+
+### 3.2 与 T-009 / `RetargetModifier3D` 基线对比
+
+| 链路 | 骨骼/映射 | 时长 | Root XZ | 脚底 | 备注 |
+|---|---|---:|---:|---:|---|
+| T-009：Mixamo Michelle Walk → Rogue | 65→41，自动 17 骨 | 1.0333 s | in-place 0 / root 0.0197 m | +1.1–3.9 cm | 屈膝/前倾 |
+| T-013：内置 Walk Loop → Rogue | 71→41，沿用 17 骨 | 1.3333 s | in-place 0 / root 0.3371 m | +3.03 cm | 部分相位低/屈膝；root-motion 支撑滑 0.417 m |
+| `MIXAMO_RETARGET.md`：Soldier Walk → Michelle（Godot `RetargetModifier3D`，rotation-only） | 65 骨同名 | 1.03 s | 未测 | 未测 | Michelle 正常；Xbot rest 轴倾斜 |
+| T-013：内置 Walk Loop → Michelle | 65 骨，52/62 映射 | 1.3333 s | in-place 0 / root 异常（hips 2.357 m） | +1.1 cm（0.618× 修正后） | raw AABB 2.692 vs 源 1.664（1.618×）；rootmotion 不可用 |
+
+**对比结论**：Action Forge 能完成“内置库→自有骨架”的重定向，且比 T-009 的 Mixamo 源提供了更大的根位移（0.337 m vs 0.0197 m）；但根运动被缩到标称的 26%，支撑脚仍滑 0.417 m，说明它是“按骨骼映射直接套 + 缩小根”，不是按步幅/接触做 IK 修正。`RetargetModifier3D` 的 rotation-only 基线在 Michelle 上更干净；Xbot 需要 rest 修正。两者都不是“零配置”生产级。
+
+## 4. 重定向：Walk Loop → Michelle（Mixamo 65 骨）
+
+目标文件准备：
+- `/tmp/Michelle_notex.glb`：`animation-retarget-kit/assets/target/Michelle.glb` 去纹理副本（65 骨 / 17,289 verts，1.0 MB），避免无头环境 “Shrinking big textures” 卡住。
+- `/tmp/Michelle_scaled.glb`：在 Blender 3.4.1 里把 armature 的 0.01 缩放 apply 到骨骼/网格后导出（AABB 1.799 m，65 骨 / 1 mesh，1.09 MB）。
+
+### 4.1 导入与映射（真实 UI）
+
+- `Michelle_notex.glb` 上传后：`Own skeleton Michelle_notex` · **1 cm** · `Mixamo · worn`。应用没有像 Rogue 那样按身高自动放大；源 GLB 的根节点 scale=0.01 被保留，应用把角色当成 1 cm。
+- `Michelle_scaled.glb` 上传后：`Own skeleton Michelle_scaled` · **63 cm** · `Mixamo · worn`；导出 AABB 却是 **2.692 m**（见 §4.2）——应用内部的 size/scale 处理不一致。
+- Retarget 面板（`screenshots/t013_michelle_retarget.png`）：
+
+```text
+“Michelle_scaled” · 52 of ours mapped · ✓ all correct — clips play on it
+Recognised: Mixamo.
+This skeleton has 62 bones, but only 52 are listed: the other 10 have no skin weights,
+so they move nothing (mixamorig:LeftHandThumb4, ... ) — weight the mesh to them ...
+```
+
+即：52/62 骨映射，全部方向正确；10 根指尖骨因未蒙皮被忽略。左右 leg/foot/toes 均 mapped。这个映射质量本身比 Rogue 的 17 骨好。
+
+### 4.2 导出数据
+
+| 文件 | 大小 | 数据 |
+|---|---:|---|
+| `exports/Michelle_WalkLoop_AF_inplace.glb` | 1,189,572 B | 65 joints / 1 mesh / 17,342 verts / 1 skin / 66 channels / `walk_loop_fit` 1.3333 s；网格 AABB 高 **2.692 m** |
+| `exports/Michelle_WalkLoop_AF_inplace_scaled.glb` | 1,189,712 B | 同上，根节点 Character 加 0.618 均匀缩放 → AABB **1.664 m**（与源一致；本仓库提供的修正版） |
+| `exports/Michelle_WalkLoop_AF_rootmotion.glb` | 1,189,568 B | 同 raw；hips Y 范围 **2.357 m**；不提供 scaled 版本（根运动本身异常） |
+| `exports/Michelle_WalkLoop_AF.fbx` | 1,669,020 B | 65 骨 / 1 mesh / 14,245 verts / action `Character / walk_loop_fit` / frame 1–41 / 650 fcurves；无纹理 |
+
+Blender validator（raw in-place）：`bones=65 meshes=1 vertices=17342 max_bone_length_deviation=2e-06`（无拉伸）。
+
+Godot 4.6（`tools/inspect_michelle.gd`；raw 强制 0.618× 归一化，scaled 文件用根缩放）：
+
+```text
+MICHELLE Michelle_WalkLoop_AF_inplace.glb bones=65 meshes=1 aabb_height=1.664
+  hips_y=0.974 head_y=1.313 foot_y=0.130 anim=walk_loop_fit len=1.3333 tracks=52
+MICHELLE_FOOT ... min_foot_y=0.011 stance_slide=0.663 longest=21
+MICHELLE Michelle_Walk_source.glb bones=65 meshes=1 aabb_height=1.664
+  hips_y=0.999 head_y=1.333 foot_y=0.186 anim=Animation len=1.0333 tracks=89
+MICHELLE_FOOT ... min_foot_y=-0.023 stance_slide=0.660 longest=17
+```
+
+**解读**：
+
+- 修正 0.618× 后，姿态/身高与源一致；in-place 的脚底 **+1.1 cm**（源 -2.3 cm，AF 略浮空），支撑滑 0.663 m（源 0.660 m）——in-place 的“滑”是指跑步机式的原地滑动，源本身也如此，不能据此说 AF 更差。
+- **raw 导出是 1.618× 过大**；这是本次 Michelle 测试的 blocker，不能直接进游戏。
+- **rootmotion 导出不可用**：hips Y 范围 2.357 m（raw），缩 0.618 后脚支撑滑 1.451 m；与 Rogue 的 0.337 m root 也不同。判断为 composite/根骨缩放处理 bug，未伪造为可用。
+- 与 `RetargetModifier3D` 基线（Soldier Walk → Michelle 正常）相比：AF 的 **映射本身 52/62 全对**，结构/骨长也正常；输在 **尺度校正和根运动烘焙**，不是骨骼映射方向。
+
+### 4.3 结论
+
+Action Forge 能识别 Mixamo Michelle、映射 52/62 骨并导出 65 骨/1 mesh 的 GLB/FBX；但 1.8 m 目标在应用内显示 63 cm、raw 导出 2.692 m，必须手动 0.618× 缩放；rootmotion 导出异常。**Michelle 目标当前只能作为“映射可用、尺度/根运动需后处理”的半成品**，不能直接替代 Mixamo 的自动绑定/缩放链路。
+
+## 5. 导出与引擎导入
+
+### 5.1 GLB
+
+| 文件 | 内容 |
+|---|---|
+| `exports/Rogue_WalkLoop_AF_inplace.glb` | base Walk，41 骨/12 mesh/5901 verts，1.3333 s，root 0 |
+| `exports/Rogue_WalkLoop_AF_rootmotion.glb` | 同上，root 0.3371 m |
+| `exports/Rogue_Walk_IdleTalkLayer_AF_inplace.glb` | base Walk + upper-body Idle Talking layer，41 骨/12 mesh，1.3333 s，root 0 |
+
+Blender 3.4.1（`animation-retarget-kit/tools/blender_validate.sh`）：
+
+```text
+VALIDATION_REPORT {"armatures":1,"bones":41,"meshes":12,"vertices":5901,
+ "actions":["walk_loop+idle_talking_loop_fit_Rig"],"frames":[0,32],
+ "max_bone_length_deviation":1e-06,"worst_bone":["lowerleg.r",0.12,0.12,4]}
+```
+
+Godot 4.6：GLB 直接 `load()`；base/layered 均 41 骨/12 mesh/21 轨/1.3333 s。完整 smoke 见 §6。
+
+### 5.2 FBX
+
+- `exports/Rogue_Walk_IdleTalkLayer_AF.fbx`（781 KB，Blender Units）由同一 composite 导出。
+- Blender 3.4.1 导入：41 骨（含 IK helper）、12 mesh、5901 verts、action `Rig|walk_loop+idle_talking_loop_fit`、frame 1–41、410 fcurves；1024² 纹理随 FBX 带入。
+- **Godot 4.6 直接导入 FBX**（内置 ufbx 路径，无需 FBX2glTF）：41 骨、12 mesh（部分为 `BoneAttachment3D`）、1 个 `AnimationPlayer`、动画 `walk_loop+idle_talking_loop_fit`、1.3333 s、**28 轨**（与 GLB 的 21 轨不同，导入器映射差异）。`tools/inspect_fbx.gd` 可复现。
+- 注意：FBX 的 In place 与 GLB 的 In place 语义应一致；本次 layered FBX 是 in-place（composite root-motion 未烘焙）。
+
+### 5.3 Unity / UE / 其他
+
+- 环境：Unity Hub + **Unity 2022.3.49f1 / 6000.0.22f1** 已安装，license 文件存在；UE/Maya/Houdini/3ds Max 未发现。
+- Unity 验证见 §5.4。
+- UE/Maya/Houdini/3ds Max：**未安装，未验证**；只记录官方支持（站点 Download 的 Format/Units/Skeleton 选项，FBX 面向 Blender/Unreal/Unity）。不把“官方说支持”写成“已跑通”。
+
+### 5.4 Unity（FBX）
+
+Unity 2022.3.49f1，`-batchmode -nographics`，`Assets/Rogue_Walk_IdleTalkLayer_AF.fbx`，Editor 脚本 `InspectFbx.cs`（`/tmp/unity_af_test`，未入库）：
+
+```text
+UNITY_AF_FBX version=2022.3.49f1 transforms=54 skinnedMeshes=6 bonesSum=246
+  verts=4099 clips=2 rootCurves=340 animationType=Generic
+UNITY_AF_CLIP name=__preview__walk_loop+idle_talking_loop_fit length=1.3333 frameRate=30 curves=170
+UNITY_AF_CLIP name=walk_loop+idle_talking_loop_fit length=1.3333 frameRate=30 curves=170
+```
+
+解读：
+
+- **导入成功**，动画时长/帧率与源一致（1.3333 s / 30 fps）；默认 `Generic`，不是 Humanoid（未做 Avatar 配置）。
+- Unity 侧统计为 **6 个 SkinnedMeshRenderer**、骨骼数求和 246（6 × 41），顶点 4099；与 GLB 的 12 mesh / 5901 verts 不同，属于 Unity FBX 导入器的合并/顶点拆分差异，不是文件损坏。
+- `rootCurves=340`（两段 clip 合计，含 `__preview__`）说明 root 相关曲线被导入；但**未做 root-motion 位移/循环的运行时验证**，只验证了导入结构。
+- 未配置 Unity Humanoid/Avatar、未做 Timeline/Animator 播放验收；这部分留给后续。
+
+## 6. 自测（可复现）
+
+```bash
+# 库审计：数量/分类/root motion/零时长 pose
+python3 action-forge-test/scripts/af_library_audit.py
+
+# 分层 smoke（可选 rootmotion 文件缺失会打印警告，不 fail）
+godot --headless --path action-forge-test/godot -s tools/smoke_layered.gd
+#  → SMOKE_LAYERED_OK
+
+# base smoke
+godot --headless --path action-forge-test/godot -s tools/smoke_base_walk.gd
+#  → BASE_SMOKE_OK
+
+# 主预览 600 帧 headless
+godot --headless --path action-forge-test/godot --quit-after 600
+#  → 0 SCRIPT/engine ERROR
+
+# 分层预览（真实 GPU；前台）
+godot --path action-forge-test/godot --resolution 1280x720 res://layered.tscn
+# 12 s 录屏
+godot --path action-forge-test/godot --resolution 1280x720 \
+  --write-movie /tmp/t013_layered.avi --fixed-fps 30 --quit-after 360 res://layered.tscn -- --demo
+
+# FBX 导入检查
+godot --headless --path action-forge-test/godot -s tools/inspect_fbx.gd
+
+# Blender 验证
+bash animation-retarget-kit/tools/blender_validate.sh \
+  action-forge-test/exports/Rogue_Walk_IdleTalkLayer_AF_inplace.glb
+```
+
+关键输出（实测）：
+
+```text
+SMOKE_L_FILE base_inplace bones=41 meshes=12 clip=walk_loop_fit len=1.3333 tracks=21
+SMOKE_L_FILE base_root bones=41 meshes=12 clip=walk_loop_fit len=1.3333 tracks=21
+SMOKE_L_FILE layer_inplace bones=41 meshes=12 clip=walk_loop+idle_talking_loop_fit len=1.3333 tracks=21
+SMOKE_L_ROOT base_inplace=0.0000 base_root=0.3371 layer_inplace=0.0000
+SMOKE_L_LAYER_ROOT missing=Rogue_Walk_IdleTalkLayer_AF_rootmotion.glb (composite root-motion not baked in this build)
+SMOKE_L_LAYER leg_delta=0.0000 rad arm_delta=0.4032 rad loop_seam=0.0000 rad max_scale_dev=0.000000
+SMOKE_L_FOOT base_root min_foot_y=0.0303 longest_contact=20 stance_slide=0.417 m hip_y=0.3274
+SMOKE_L_FOOT layer_inplace min_foot_y=0.0303 longest_contact=20 stance_slide=0.225 m hip_y=0.3274
+SMOKE_L_FOOT_WARN base root-motion stance slide 0.417 m > 0.30 m (recorded limitation)
+SMOKE_LAYERED_OK
+```
+
+`BASE_SMOKE`：in-place root 0.0000 / root-motion 0.3371；脚底 0.0302/0.0301；loop seam 0.0254/0.0264（均 <0.03 rad）。
+
+## 7. 复现脚本与文件
+
+| 文件 | 用途 |
+|---|---|
+| `scripts/af_library_audit.py` | 拉 manifest、统计 85/89、分类、root motion、零时长 pose；可下载指定预览 |
+| `scripts/af_layer_export.py` | （落盘时从本次稳定脚本整理）加载/base/layer/mask/weight/导出 GLB+FBX 的 Playwright 参考流程 |
+| `scripts/af_character_retarget.py` | （待整理）Michelle_notex 上传、识别、穿戴、Walk Loop 导出 |
+| `godot/scripts/layered_preview.gd` + `godot/layered.tscn` | base vs layered Godot 4.6 预览；`V` 显示 base root-motion |
+| `godot/tools/smoke_layered.gd` | 分层/root/腿 vs 臂/脚滑/循环 smoke |
+| `godot/tools/smoke_base_walk.gd` | base GLB smoke |
+| `godot/tools/inspect_fbx.gd` | FBX 直接导入检查 |
+
+## 8. 失败、坑与限制（真实记录）
+
+1. **250+ 不成立**：当前 build 85/89；不要对外写成 250+。
+2. **Layer 裁剪**：2.93 s 的 layer 在 1.33 s base 里只保留 0.45 cycle；base 不会被拉长。
+3. **拖 strip 重置 mask**：自动上半身 mask 在拖动后变 `Full body`；最终正确导出必须“新层 + 选中层 + +ADD SELECTED，不拖动”。
+4. **层头 mini 滑杆误触**：在时间轴层头左侧点击会把 `Layer weight` 设成 0；v5 因此导出与 base 等价。用右侧 LAYERS 的 Weight 或 `input.lib-seq__hweight` 精确设置。
+5. **composite root-motion 不烘焙**：layered 的 In place 取消后，root 范围仍 0，且与 in-place 同 sha；base root-motion 正常。需要 root motion 的 layered 动画请在 Blender/引擎里后处理。
+6. **重载丢未保存层**：浏览器 profile 重新打开后，未 `Save to my animations` 的 strip/layer 可能消失；本次靠重新构建（v9）拿到最终层。
+7. **Download 面板提示**：写着 “Set exports on Mannequin — the view shows it while it writes, then Rogue again.”，但实际 GLB/FBX 是 Rogue（41 骨/12 mesh）；提示文案容易误导，以导入结果为准。
+8. **FBX/GLB 轨道数不同**：Godot GLB 21 轨 vs FBX 28 轨；以实际导入/播放为准。
+9. **脚滑**：base root-motion 支撑脚 0.417 m 世界滑移，属实录限制；不是测试阈值问题。
+10. **未深测**：Motion Lab、Y Bot/X Bot、Unrigged 自动绑定、Godot 插件本体、手工静态 pose 导出、Unity 之外的引擎、Alpha/透明材质。Unity 见 §5.4。
+
+## 9. 媒体/产物
+
+- `recordings/t013_af_layer_operation.mp4`：61 s，Action Forge 真实 session 的 layer weight/mask/export 段（2× 加速；该段演示的是早期 full-body 层，最终 upper-body 层在 v9 重建，见 §2）。
+- `recordings/t013_godot_layered.mp4` / `.gif`：12 s，Godot 4.6 base vs layered；含骨骼/root-motion 切换。
+- `screenshots/t013_library_85.png`：动画库 UI（85 clips）。
+- `screenshots/t013_layers_mask.png`：Layers + Mask + upper-body 层头。
+- `screenshots/t013_godot_front_1280.png` / `_1920.png`：Godot 前视对照静帧（1080p 离屏）。
+- `exports/`：base in-place/root-motion、layered in-place、FBX。
+
+> 素材：Action Forge UI 截图/录屏仅用于工具评测；库预览帧只放 `/tmp`，未入库；参考视频未复制。
