@@ -322,7 +322,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				set_rain(not rain_on)
 			KEY_C:
 				set_auto_orbit(not cam.auto_orbit)
-			KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7:
+			KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8:
 				set_debug_view(key.keycode - KEY_F1)
 
 

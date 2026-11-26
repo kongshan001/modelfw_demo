@@ -59,28 +59,30 @@ var _rng := RandomNumberGenerator.new()
 
 # ── 三套调色板（对照参考帧采样） ────────────────────────────────
 const DAY := {
-	"deep": Color("#12669d"), "mid": Color("#1a74a8"), "shelf": Color("#1e95b4"),
-	"lagoon": Color("#3fc9cf"), "sandwater": Color("#b3e6d2"),
+	"deep": Color("#12669d"), "mid": Color("#1a74a8"), "shelf": Color("#1a97b3"),
+	"lagoon": Color("#3fc4c5"), "sandwater": Color("#a8cbb8"),
 	"sky_reflect": Color("#c2e9f2"), "foam": Color("#fbffff"),
-	"caustic": Color("#b8fff4"), "fog": Color("#b9dce8"),
+	"caustic": Color("#eafff6"), "fog": Color("#b9dce8"),
 	"sun": Color("#fff3dd"), "sky_zenith": Color("#2a7bc4"),
 	"sky_horizon": Color("#cfeff7"), "sky_ground": Color("#8fc6d4"),
 	"cloud_light": Color("#fffdf8"), "cloud_shade": Color("#c2d2e2"),
-	"ambient": Color("#e2f0f5"), "sand_dry": Color("#efe7d4"),
-	"sand_light": Color("#fbf4e3"), "sand_wet": Color("#cdb894"),
-	"sand_under": Color("#a9cfbf"),
+	"ambient": Color("#e2f0f5"), "sand_dry": Color("#ece5d3"),
+	"sand_light": Color("#f6efdf"), "sand_damp": Color("#d3cbbc"),
+	"sand_wet": Color("#b4ab98"), "sand_edge": Color("#8e948e"),
+	"sand_under": Color("#c3ba9e"), "sand_deep": Color("#5f7c78"),
 }
 const DUSK := {
 	"deep": Color("#1b4a6e"), "mid": Color("#2c6f8f"), "shelf": Color("#3f93a2"),
-	"lagoon": Color("#67b8b4"), "sandwater": Color("#e0cfae"),
+	"lagoon": Color("#67b8b4"), "sandwater": Color("#cbb999"),
 	"sky_reflect": Color("#ffd2a6"), "foam": Color("#fff3e2"),
-	"caustic": Color("#ffe0b8"), "fog": Color("#e8c6a2"),
+	"caustic": Color("#ffe6c4"), "fog": Color("#e8c6a2"),
 	"sun": Color("#ffb16a"), "sky_zenith": Color("#4b6fa8"),
 	"sky_horizon": Color("#ffc48c"), "sky_ground": Color("#a8795f"),
 	"cloud_light": Color("#ffe6c9"), "cloud_shade": Color("#b58f9a"),
 	"ambient": Color("#e9c4a3"), "sand_dry": Color("#eedcbf"),
-	"sand_light": Color("#f8e8cc"), "sand_wet": Color("#c7ae8f"),
-	"sand_under": Color("#96b3a4"),
+	"sand_light": Color("#f8e8cc"), "sand_damp": Color("#d9c4a4"),
+	"sand_wet": Color("#b7a58a"), "sand_edge": Color("#918b7d"),
+	"sand_under": Color("#b8a98b"), "sand_deep": Color("#5c716e"),
 }
 const NIGHT := {
 	"deep": Color("#0a2a4e"), "mid": Color("#0c3559"), "shelf": Color("#0f4767"),
@@ -91,8 +93,9 @@ const NIGHT := {
 	"sky_horizon": Color("#132842"), "sky_ground": Color("#0a1826"),
 	"cloud_light": Color("#9fb3c9"), "cloud_shade": Color("#4a5c74"),
 	"ambient": Color("#5f7fa8"), "sand_dry": Color("#8f9cae"),
-	"sand_light": Color("#a4b0c1"), "sand_wet": Color("#76869a"),
-	"sand_under": Color("#5c7f8b"),
+	"sand_light": Color("#a4b0c1"), "sand_damp": Color("#7d8b9d"),
+	"sand_wet": Color("#6f7f92"), "sand_edge": Color("#5c6d7c"),
+	"sand_under": Color("#6f7c85"), "sand_deep": Color("#40545f"),
 }
 
 
@@ -114,6 +117,7 @@ func build(p_parent: Node3D, p_field: IslandField, p_ocean: StylizedOcean) -> vo
 	_build_rain()
 	set_time(hour)
 	_build_blob_shadows()
+	_bake_shore_map()
 
 
 # ───────────────────────── 环境 / 天空 / 光 ─────────────────────────
@@ -218,18 +222,28 @@ func _build_environment() -> void:
 
 
 func _build_terrain() -> void:
-	var rings := 112
-	var segs := 200
-	var max_r := 38.0
+	# 近岸加密 + 水下环带延伸到 72 m：浅水改为真透明后，海底沙床要真实出现在水下，
+	# 且要在水体 alpha 到 1 之前覆盖到 ~5.5 m 水深处，避免看到天空背景。
+	var segs := 288
+	var radii := PackedFloat32Array()
+	var inner := 128
+	for i in inner + 1:
+		radii.append(38.0 * float(i) / float(inner))
+	var r := 38.0
+	var growth := pow(72.0 / 38.0, 1.0 / 28.0)
+	for k in 28:
+		r *= growth
+		radii.append(r)
+	var rings := radii.size() - 1
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var indices := PackedInt32Array()
-	for i in rings + 1:
-		var r := max_r * float(i) / float(rings)
+	for i in radii.size():
+		var rr := radii[i]
 		for j in segs:
 			var a := TAU * float(j) / float(segs)
-			var x := cos(a) * r
-			var z := sin(a) * r
+			var x := cos(a) * rr
+			var z := sin(a) * rr
 			var h := field.height(x, z)
 			verts.append(Vector3(x, h, z))
 			var e := 0.28
@@ -257,8 +271,10 @@ func _build_terrain() -> void:
 	terrain_material = ShaderMaterial.new()
 	terrain_material.shader = preload("res://shaders/terrain.gdshader")
 	terrain_material.set_shader_parameter("foam_tex", TexFactory.foam_texture())
-	terrain_material.set_shader_parameter("height_area", IslandField.AREA)
-	terrain_material.set_shader_parameter("max_depth", IslandField.MAX_DEPTH)
+	terrain_material.set_shader_parameter("caustic_tex", TexFactory.caustic_texture())
+	terrain_material.set_shader_parameter("shore_area", IslandField.AREA)
+	terrain_material.set_shader_parameter("shore_range", IslandField.SHORE_RANGE * 2.0)
+	terrain_material.set_shader_parameter("foam_amount", 0.85)
 	terrain.material_override = terrain_material
 	terrain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	parent.add_child(terrain)
@@ -266,6 +282,20 @@ func _build_terrain() -> void:
 
 # ───────────────────────── 棕榈 ─────────────────────────
 var palm_positions: Array[Vector3] = []
+
+
+# 岸距场烘焙：等棕榈/礁石都摆好后进行，把道具接触带一起写入 G 通道。
+func _bake_shore_map() -> void:
+	var t0 := Time.get_ticks_msec()
+	var extras: Array[Dictionary] = []
+	for p in palm_positions:
+		if field.height(p.x, p.z) < 1.9:
+			extras.append({"pos": Vector2(p.x, p.z), "core": 0.55, "width": 0.75, "weight": 0.5})
+	var tex := field.bake_shore_texture(extras)
+	ocean.set_shore_map(tex)
+	if terrain_material != null:
+		terrain_material.set_shader_parameter("shore_map", tex)
+	print("[ocean] shore map 1024² baked in %d ms" % (Time.get_ticks_msec() - t0))
 
 
 func _build_palms() -> void:
@@ -370,6 +400,8 @@ func _build_rocks() -> void:
 		idxs[k] += 1
 	rock_material = ShaderMaterial.new()
 	rock_material.shader = preload("res://shaders/rock.gdshader")
+	rock_material.set_shader_parameter("foam_tex", TexFactory.foam_texture())
+	rock_material.set_shader_parameter("foam_color", Color("#fbffff"))
 	for k in 3:
 		var mi := MultiMeshInstance3D.new()
 		mi.name = "Rocks%d" % k
@@ -713,9 +745,14 @@ func set_time(p_hour: float) -> void:
 
 	terrain_material.set_shader_parameter("sand_dry", palette["sand_dry"])
 	terrain_material.set_shader_parameter("sand_light", palette["sand_light"])
+	terrain_material.set_shader_parameter("sand_damp", palette["sand_damp"])
 	terrain_material.set_shader_parameter("sand_wet", palette["sand_wet"])
+	terrain_material.set_shader_parameter("sand_edge", palette["sand_edge"])
 	terrain_material.set_shader_parameter("sand_under", palette["sand_under"])
+	terrain_material.set_shader_parameter("sand_deep", palette["sand_deep"])
 	terrain_material.set_shader_parameter("foam_color", palette["foam"])
+	terrain_material.set_shader_parameter("caustic_color", palette["caustic"])
+	terrain_material.set_shader_parameter("sky_sheen", palette["sky_reflect"])
 	terrain_material.set_shader_parameter("sun_dir", current_sun_dir)
 	terrain_material.set_shader_parameter("sun_tint", Color("#fffaf0"))
 	terrain_material.set_shader_parameter("shade_tint", Color("#b8c8da"))
@@ -728,6 +765,8 @@ func set_time(p_hour: float) -> void:
 		rock_material.set_shader_parameter("sun_tint", fake_sun)
 		rock_material.set_shader_parameter("shade_tint", fake_shade)
 		rock_material.set_shader_parameter("light_level", fake_level)
+		rock_material.set_shader_parameter("foam_color", palette["foam"])
+		rock_material.set_shader_parameter("night_level", night_weight)
 	for fm in [palm_crown_material, grass_material, shrub_material]:
 		if fm is ShaderMaterial:
 			fm.set_shader_parameter("sun_dir", current_sun_dir)
@@ -815,10 +854,14 @@ func set_rain(on: bool) -> void:
 		return
 	rain.visible = on
 	rain.emitting = on
+	if terrain_material != null:
+		terrain_material.set_shader_parameter("rain", 1.0 if on else 0.0)
 
 
 func set_waves_time(t: float) -> void:
 	terrain_material.set_shader_parameter("time", t)
+	if rock_material != null:
+		rock_material.set_shader_parameter("time", t)
 
 
 func boat_position() -> Vector3:

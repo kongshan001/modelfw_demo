@@ -37,6 +37,36 @@ func _run() -> void:
 	_check(d_land < 0.05, "island should not have water depth")
 	_check(d_far > d6, "deep water should be deeper than shelf")
 
+	# ── 岸距场 / 透明浅水构成（T-20261126-021） ─────────────────
+	# 岸距场纹理：中心为内陆（R→1），南侧 40 m 为水中（R→0）
+	_check(field.shore_texture != null, "shore map not baked")
+	if field.shore_texture != null:
+		var simg: Image = field.shore_texture.get_image()
+		_check(simg.get_width() == IslandField.SHORE_TEX_SIZE, "shore map size wrong")
+		_check(simg.get_pixel(512, 512).r > 0.9, "island center should encode inland")
+		var sea_py := clampi(int((40.0 / IslandField.AREA + 0.5) * IslandField.SHORE_TEX_SIZE), 0, 1023)
+		_check(simg.get_pixel(512, sea_py).r < 0.5, "sea point should encode water")
+	_check(field.shore_distance_at(0.0, 0.0) > 4.0, "center signed shore distance")
+	_check(field.shore_distance_at(0.0, 40.0) < -2.0, "sea signed shore distance")
+	_check(ocean.material.get_shader_parameter("shore_map") != null, "water shore map uniform")
+	_check(is_equal_approx(float(ocean.material.get_shader_parameter("shore_range")), 16.0),
+			"water shore range uniform")
+	_check(ocean.material.shader.code.contains("blend_mix"), "water shader should alpha-blend")
+	_check(builder.terrain_material.get_shader_parameter("shore_map") != null,
+			"terrain shore map uniform")
+	_check(builder.terrain_material.get_shader_parameter("caustic_tex") != null,
+			"terrain caustic texture uniform")
+	_check(builder.rock_material.get_shader_parameter("foam_tex") != null,
+			"rock foam texture uniform")
+	var tverts: PackedVector3Array = builder.terrain.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	_check(tverts.size() > 40000, "terrain mesh densified and extended: %d verts" % tverts.size())
+	_check(hud._debug_captions.size() == 8, "debug captions should include shore layers")
+	scene.set_debug_view(6)
+	_check(ocean.get_debug_view() == 6 and hud.debug_label.visible, "shore sdf debug view")
+	scene.set_debug_view(7)
+	_check(ocean.get_debug_view() == 7 and hud.debug_label.visible, "shore layer debug view")
+	scene.set_debug_view(0)
+
 	# ── 海面网格 / 波浪参数 ───────────────────────────────────────
 	var verts: PackedVector3Array = ocean.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
 	_check(verts.size() == (StylizedOcean.RING_COUNT + 1) * StylizedOcean.SEGMENT_COUNT,

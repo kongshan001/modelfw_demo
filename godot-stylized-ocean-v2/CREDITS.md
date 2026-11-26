@@ -11,6 +11,7 @@
 
 - **TechFusion（B 站）《风格化海洋第二版》**，BV1AE4u6KEAR，2026，31s，1920×1080。仅作为视觉语言、构图、色阶、泡沫、交互类型的参考。**未复制**视频画面、UP 主或原作者的代码、模型、贴图、音频、UI 或任何素材；项目内截图均为本 demo 在真实 GPU 上的渲染结果。
 - 视频中的 “Dynamic Wet Sand / Shoreline Authoring / Stylized Clouds / Animated Fish Schools / Day/Night Lighting / Rain & Water Ripples / Stylized Wild Ocean” 等展示点提供了功能方向；本项目的具体实现、参数、资产与代码均为独立原创。
+- 2026-11-26 岸线整改（T-20261126-021）重新抽取了参考视频 0/5/10/15/20/25/30 s 的岸线帧做视觉分析；抽帧与参考文件仅存于 `/tmp/ocean_v2_ref/`，**不进入仓库**，项目内 before/after 截图均为本 demo 自己在真实 GPU 上的渲染结果。
 
 ## 许可
 

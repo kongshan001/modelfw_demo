@@ -1,6 +1,6 @@
 extends SceneTree
 
-# 10 秒展示片：固定 15fps 步进，广角环绕 → 岸线涟漪 → 落石水花 → 黄昏 → 夜晚。
+# 10 秒展示片：固定 15fps 步进，广角 → 岸线微距（湿沙/泡沫/透明浅水）→ 礁石 → 黄昏 → 夜晚。
 # 输出 /tmp/ocean_v2_frames/frame_000.png...，再由 tools/build_media.sh 编码。
 # 用法：godot --path godot-stylized-ocean-v2 -s tools/capture_stylized_ocean.gd
 
@@ -52,41 +52,37 @@ func _run() -> void:
 
 
 func _apply_timeline(t: float) -> void:
-	# 0–2.6s 广角绕岛
-	if t < 2.6:
-		var k := t / 2.6
+	# 0–2.4s 广角绕岛（新岸线全景）
+	if t < 2.4:
+		var k := t / 2.4
 		scene.set_camera_target(0.0, 0.0, 1.2)
-		scene.set_camera_orbit(lerpf(84.0, 96.0, k), lerpf(58.0, 56.0, k), 118.0)
+		scene.set_camera_orbit(lerpf(84.0, 94.0, k), lerpf(58.0, 56.0, k), 118.0)
 		scene.set_hour(11.5)
-	# 2.6–4.4s 推近岸线，画涟漪
-	elif t < 4.4:
-		var k := (t - 2.6) / 1.8
-		scene.set_camera_target(0.0, lerpf(6.0, 24.0, k), 0.6)
-		scene.set_camera_orbit(lerpf(96.0, 102.0, k), lerpf(56.0, 52.0, k), lerpf(118.0, 58.0, minf(1.0, k * 1.6)))
-		scene.set_virtual_cursor(Vector2(620.0, 430.0))
-		if not _drop_done and t > 3.1:
-			_drop_done = true
-			scene._drop_rock(Vector3(4.0, 0.0, 28.0), Vector2(4.0, 28.0))
-		if t > 3.4 and int(t * 15.0) % 3 == 0:
-			scene.debug_paint_arc(Vector2(-2.0, 25.0), 3.5, 3, 0.65)
-	# 4.4–6.4s 拉远，黄昏过渡
-	elif t < 6.4:
-		var k := (t - 4.4) / 2.0
-		scene.set_virtual_cursor(Vector2(-99999, -99999))
-		scene.set_camera_target(0.0, 0.0, 1.2)
-		scene.set_camera_orbit(lerpf(102.0, 110.0, k), lerpf(52.0, 57.0, k), lerpf(58.0, 105.0, k))
-		scene.set_hour(lerpf(11.5, 17.9, smoothstep(0.0, 1.0, k)))
-	# 6.4–8.2s 黄昏→夜晚
+	# 2.4–5.2s 推近岸线：湿沙/水线/多层泡沫/沙底焦散
+	elif t < 5.2:
+		var k := smoothstep(0.0, 1.0, clampf((t - 2.4) / 1.05, 0.0, 1.0))
+		scene.set_camera_target(lerpf(0.0, 0.0, k), lerpf(0.0, 27.0, k), lerpf(1.2, 0.2, k))
+		scene.set_camera_orbit(lerpf(94.0, 70.0, k), lerpf(56.0, 40.0, k), lerpf(118.0, 24.0, k))
+		scene.set_hour(11.5)
+		if t > 3.6 and int(t * 15.0) % 5 == 0:
+			scene.debug_paint_arc(Vector2(-1.0, 27.8), 1.6, 2, 0.5)
+	# 5.2–7.0s 移到礁石小岛：泡沫环/湿岩基座/透明浅水
+	elif t < 7.0:
+		var k := smoothstep(0.0, 1.0, (t - 5.2) / 1.4)
+		scene.set_camera_target(lerpf(0.0, 13.0, k), lerpf(27.0, 30.0, k), 0.2)
+		scene.set_camera_orbit(lerpf(70.0, 100.0, k), lerpf(40.0, 42.0, k), 24.0)
+		scene.set_hour(11.5)
+	# 7.0–8.2s 拉远到黄昏全景
 	elif t < 8.2:
-		var k := (t - 6.4) / 1.8
-		scene.set_camera_target(0.0, 0.0, 1.2)
-		scene.set_camera_orbit(lerpf(110.0, 98.0, k), lerpf(57.0, 54.0, k), 106.0)
-		scene.set_hour(lerpf(17.9, 20.4, smoothstep(0.0, 1.0, k)))
-	# 8.2–10s 夜景 + 涟漪
+		var k := smoothstep(0.0, 1.0, (t - 7.0) / 1.2)
+		scene.set_camera_target(lerpf(13.0, 0.0, k), lerpf(30.0, 4.0, k), lerpf(0.2, 1.0, k))
+		scene.set_camera_orbit(lerpf(100.0, 112.0, k), lerpf(42.0, 52.0, k), lerpf(24.0, 82.0, k))
+		scene.set_hour(lerpf(11.5, 17.9, k))
+	# 8.2–10s 夜景岸线：泡沫与水线在月光下的层次
 	else:
-		var k := (t - 8.2) / 1.8
-		scene.set_camera_target(0.0, 0.0, 1.2)
-		scene.set_camera_orbit(lerpf(98.0, 94.0, k), lerpf(54.0, 57.0, k), 108.0)
-		scene.set_hour(20.4)
-		if int(t * 15.0) % 4 == 0:
-			scene.debug_paint_arc(Vector2(16.0, 28.0), 4.0, 2, 0.5)
+		var k := smoothstep(0.0, 1.0, (t - 8.2) / 1.5)
+		scene.set_camera_target(lerpf(0.0, 0.0, k), lerpf(4.0, 27.0, k), lerpf(1.0, 0.2, k))
+		scene.set_camera_orbit(lerpf(112.0, 72.0, k), lerpf(52.0, 40.0, k), lerpf(82.0, 27.0, k))
+		scene.set_hour(lerpf(17.9, 20.4, k))
+		if t > 9.0 and int(t * 15.0) % 6 == 0:
+			scene.debug_paint_arc(Vector2(2.0, 28.0), 1.4, 1, 0.35)

@@ -1,11 +1,17 @@
-// 风格化海面：Gerstner 波 + 深度色阶 + 岸线泡沫 + 焦散 + 卡通日光 + 鼠标/雨滴涟漪。
-// 原创实现；颜色与层级按参考帧逐帧对照调参（见 docs/TECH.md）。
+// 风格化海面：Gerstner 波 + 深度色阶 + 岸距场泡沫 + 焦散 + 卡通日光 + 鼠标/雨滴涟漪。
+// 浅水使用真透明（alpha 随水深上升），沙底由地形真实透出；岸线泡沫/湿沙/接触带共用
+// 同一张 1024² 岸距场（SDF）纹理，保证交界不错位。颜色按参考帧逐帧对照调参（见 docs/TECH.md）。
 shader_type spatial;
-render_mode unshaded, depth_draw_opaque, cull_back, shadows_disabled, fog_disabled, specular_disabled;
+render_mode unshaded, blend_mix, depth_draw_never, cull_back, shadows_disabled, fog_disabled, specular_disabled;
 
 uniform sampler2D height_map : filter_linear, repeat_disable;
 uniform float height_area = 180.0;
 uniform float max_depth = 12.0;
+
+// R = 有符号岸距（0.5 = 水线，±8 m），G = 道具接触掩码，B = 泡沫宽度系数，A = 拍岸相位
+uniform sampler2D shore_map : filter_linear, repeat_disable;
+uniform float shore_area = 180.0;
+uniform float shore_range = 16.0;
 
 uniform sampler2D foam_tex : filter_linear, repeat_enable;
 uniform sampler2D detail_tex : filter_linear, repeat_enable;
@@ -46,8 +52,6 @@ uniform int debug_view = 0;
 
 varying vec3 v_world;
 varying vec3 v_nrm;
-varying float v_depth;
-varying vec2 v_shore_grad;
 varying float v_crest;
 varying float v_ripple_field;
 
@@ -89,14 +93,6 @@ void vertex() {
 	vec2 uv = p / height_area + 0.5;
 	float depth = decode_depth(texture(height_map, uv).r);
 	float shore_damp = smoothstep(0.0, 2.2, depth);
-
-	// 岸线法线 ≈ 深度梯度，泡沫带沿它向岸推进
-	float texel = 1.2 / height_area;
-	float dx = decode_depth(texture(height_map, uv + vec2(texel, 0.0)).r)
-			- decode_depth(texture(height_map, uv - vec2(texel, 0.0)).r);
-	float dz = decode_depth(texture(height_map, uv + vec2(0.0, texel)).r)
-			- decode_depth(texture(height_map, uv - vec2(0.0, texel)).r);
-	v_shore_grad = vec2(dx, dz);
 
 	vec3 disp = vec3(0.0);
 	float crest = 0.0;
@@ -145,22 +141,32 @@ void vertex() {
 	VERTEX = wp + disp;
 	v_world = VERTEX;
 	v_nrm = normalize(n);
-	v_depth = depth;
 	v_crest = crest;
 	v_ripple_field = ripple_field;
 }
 
 void fragment() {
 	vec3 p = v_world;
-	float depth = v_depth;
 	vec3 V = normalize(CAMERA_POSITION_WORLD - p);
+	vec2 duv = p.xz / height_area + 0.5;
+	float depth = decode_depth(texture(height_map, duv).r);
 
-	// ── 深度色阶（参考帧：浅水青绿 → 礁盘青蓝 → 深海蔚蓝） ───────────
-	vec3 col = mix(lagoon_color, shelf_color, smoothstep(0.2, 2.4, depth));
-	col = mix(col, mid_color, smoothstep(2.4, 5.0, depth));
-	col = mix(col, deep_color, smoothstep(5.0, 8.6, depth));
-	float sand_glow = 1.0 - smoothstep(0.0, 0.9, depth);
-	col = mix(col, sandwater_color, sand_glow * 0.2);
+	vec4 shore = texture(shore_map, p.xz / shore_area + 0.5);
+	float sd = (shore.r - 0.5) * shore_range;     // + 内陆 / − 水中（米）
+	float prop = shore.g;                          // 岸线道具接触/泡沫环
+	float wfac = 0.55 + shore.b * 0.9;             // 泡沫宽度 0.55–1.45
+	float phase = shore.a;                         // 沿岸拍岸相位
+	float sea = max(-sd, 0.0);                     // 离水线距离（水中为正）
+
+	// ── 水体色阶（浅水为透明水膜，沙底由地形透出） ─────────────────
+	vec3 col = mix(lagoon_color, shelf_color, smoothstep(0.4, 2.8, depth));
+	col = mix(col, mid_color, smoothstep(2.8, 5.2, depth));
+	col = mix(col, deep_color, smoothstep(5.2, 9.0, depth));
+	float film = 1.0 - smoothstep(0.0, 0.9, depth);
+	col = mix(col, sandwater_color, film * 0.62);
+	// 水线暗带：交界处的接触阴影，避免水像贴片
+	float contact = (1.0 - smoothstep(0.0, 0.55, sea)) * (1.0 - smoothstep(0.7, 1.6, depth));
+	col *= 1.0 - 0.20 * contact;
 	// 深海低对比大尺度纹理（避免纯色平面）
 	float deep_var = texture(foam_tex, p.xz * 0.012 + vec2(time * 0.0015, 0.0)).r;
 	col *= 0.965 + deep_var * 0.07;
@@ -170,26 +176,56 @@ void fragment() {
 	float fn1 = texture(foam_tex, fp + vec2(time * 0.0035, -time * 0.0022)).r;
 	fn1 = fn1 * 0.7 + texture(foam_tex, p.xz * 0.11 + vec2(time * 0.005, -time * 0.004)).r * 0.3;
 	float fn2 = texture(foam_tex, p.xz * 0.37 + vec2(-time * 0.012, time * 0.008)).r;
-	float fnoise = fn1 * 0.66 + fn2 * 0.34;
+	float fn3 = texture(foam_tex, p.xz * 1.15 + vec2(time * 0.02, -time * 0.015)).r;
+	float fn4 = texture(foam_tex, p.xz * 0.75 - vec2(0.41, 0.13) + vec2(-time * 0.008, time * 0.006)).r;
+	float fnoise = fn1 * 0.52 + fn2 * 0.26 + fn3 * 0.12 + fn4 * 0.10;
 
-	float shore_phase = sin(depth * 5.2 - time * 1.0 + fnoise * 6.0);
-	float shore = 1.0 - smoothstep(0.012, 0.065 + fnoise * 0.05, depth);
-	float band_a = smoothstep(0.55, 0.93, shore_phase)
-			* (1.0 - smoothstep(0.6, 1.5, depth)) * smoothstep(0.12, 0.3, depth);
-	float band_b = smoothstep(0.78, 0.98, sin(depth * 1.85 + 1.8 - time * 0.38 + fnoise * 4.5))
-			* (1.0 - smoothstep(2.2, 4.2, depth)) * smoothstep(0.8, 1.5, depth);
-	float foam = max(shore * 0.2, band_a * 0.15 * foam_amount + band_b * 0.12 * foam_amount);
-	// 岸线细白线（参考帧最明确的一层泡沫）
-	float line_depth = 0.05 + fnoise * 0.07;
-	float crisp = 1.0 - smoothstep(0.0, 0.045 + 0.03 * fn2, abs(depth - line_depth));
-	foam = max(foam, crisp * 0.5 * foam_amount);
-	// 离岸的零散泡沫弧（参考帧里沙脊上的细白纹）
-	float curls = smoothstep(0.78, 0.9, fn2) * smoothstep(0.55, 0.85, sin(depth * 3.1 - time * 0.5 + fn1 * 9.0));
-	foam += curls * 0.18 * foam_amount * smoothstep(0.35, 0.8, depth) * (1.0 - smoothstep(2.0, 4.0, depth));
+	// ── 岸线泡沫：2–3 条不规则带 + 礁石泡沫环（SDF 驱动，随岸线变化） ──
+	// 拍岸相位：沿岸不同段落相位/宽度不同，叠加涨落
+	float swash = 0.20 * sin(time * 0.85 + phase * 6.2831853)
+			+ 0.08 * sin(time * 1.7 + phase * 17.0);
+	float run = 0.16 + 0.12 * wfac + swash * 0.5;
+	float lace = smoothstep(0.26, 0.60, fn1 * 0.50 + fn2 * 0.32 + fn3 * 0.18);
+	float lobe = smoothstep(0.30, 0.66, texture(foam_tex, p.xz * 0.17 + vec2(0.31, 0.07)).r
+			* 0.6 + fn1 * 0.4);
+	// 主泡沫带：水线外侧 0.3–1.6 m，宽度随岸线/低噪声成团变化，内部有蕾丝孔洞
+	float c0 = 0.32 + 0.45 * wfac + run;
+	float h0 = 0.26 + 0.28 * wfac + 0.16 * lace;
+	float bwarp = (fn1 - 0.5) * 0.55 + (fn2 - 0.5) * 0.22;
+	float b0 = 1.0 - smoothstep(0.0, h0, abs(sea - c0 + bwarp));
+	b0 *= (0.62 + 0.38 * lace) * (0.55 + 0.45 * lobe);
+	// 泡沫成团 + 蕾丝孔洞：低频团块决定哪里有一坨白沫，高频孔洞把白沫打穿
+	float clump = smoothstep(0.36, 0.54, texture(foam_tex, p.xz * 0.10 + vec2(0.17, 0.63) - vec2(time * 0.003, 0.0)).r);
+	float clump2 = smoothstep(0.34, 0.56, texture(foam_tex, p.xz * 0.26 - vec2(0.51, 0.29)).r);
+	float clumpM = clamp(clump * 0.62 + clump2 * 0.38 + 0.12, 0.0, 1.0);
+	float holehi = smoothstep(0.38, 0.62, fn4);
+	b0 *= 0.16 + 0.84 * clumpM * (0.55 + 0.45 * holehi);
+	// 岸线泛白水膜：主带两侧淡淡的洗白（平滑，不要变成白点）
+	float wash = (1.0 - smoothstep(0.0, 1.4 + 0.8 * wfac, sea - run * 0.4))
+			* 0.07 * (0.65 + 0.35 * fn1) * (0.5 + 0.5 * foam_amount);
+	b0 = max(b0, wash);
+	// 第二条：离岸 1.5–2.8 m 的断续细线（参考帧里的“第二道白线”）
+	float c1 = 1.55 + 1.20 * wfac + 0.35 * sin(time * 0.55 + phase * 11.0);
+	float h1 = 0.08 + 0.14 * fn2;
+	float b1 = 1.0 - smoothstep(0.0, h1, abs(sea - c1 + (fn4 - 0.5) * 0.30));
+	b1 *= smoothstep(0.46, 0.66, fn1 * 0.7 + fn2 * 0.4) * 0.50;
+	// 第三条：更远的稀疏泡沫弧
+	float c2 = 3.1 + 1.8 * wfac + 0.30 * sin(time * 0.33 + phase * 7.0);
+	float h2 = 0.08 + 0.14 * fn2;
+	float b2 = 1.0 - smoothstep(0.0, h2, abs(sea - c2));
+	b2 *= smoothstep(0.60, 0.72, fn2 * 0.8 + fn1 * 0.3) * 0.28;
+	// 礁石/岸线道具泡沫环：掩码外缘 + 噪声刻蚀，随水深淡出
+	float ring = smoothstep(0.30, 0.70, prop) * (1.0 - smoothstep(0.75, 0.97, prop));
+	float collar = ring * (0.30 + 0.70 * smoothstep(0.22, 0.54, fn2 * 0.5 + fn3 * 0.35 + lobe * 0.15 + 0.12))
+			* smoothstep(0.04, 0.20, depth) * (1.0 - smoothstep(2.8, 4.4, depth));
+	float dolly = smoothstep(0.70, 0.82, texture(foam_tex, p.xz * 0.33 + vec2(0.61, 0.23) - vec2(time * 0.006, time * 0.004)).r)
+			* smoothstep(0.15, 0.55, fn1) * smoothstep(3.6, 0.9, sea) * 0.55;
+	float shore_foam = max(max(b0, b1), max(b2, max(collar * 0.62, dolly))) * (0.62 + 0.42 * foam_amount);
+	shore_foam = max(shore_foam, collar * 0.75 * foam_amount);
 
 	// 浪尖泡沫（浪高滑条拉高时才出现，贴近参考的“平静海面”默认值）
 	float crest_foam = smoothstep(0.22, 0.78, v_crest) * smoothstep(0.85, 1.5, wave_height);
-	foam += crest_foam * 0.7 * foam_amount;
+	crest_foam *= 0.7 * foam_amount;
 
 	// 涟漪泡沫环
 	float ring_a = 0.0;
@@ -212,20 +248,21 @@ void fragment() {
 		float m = 1.0 - smoothstep(0.3, 0.85, fnoise);
 		ring_a += (r1 + r2) * fade * rp.w * (0.35 + 0.65 * m);
 	}
-	foam += ring_a * 1.15 * ripple_amp;
-	foam *= smoothstep(0.18, 0.5, fnoise + 0.16);
+	float foam = max(shore_foam, crest_foam);
+	foam = max(foam, ring_a * 1.15 * ripple_amp);
+	foam *= smoothstep(0.10, 0.40, fnoise + 0.22);
 	foam = clamp(foam, 0.0, 1.25);
 
-	// ── 浅水焦散（参考帧：沙底光网） ─────────────────────────────────
+	// ── 浅水焦散（沙底光网由地形负责，这里只留很淡的水体光感） ──────
 	float caustic = 0.0;
-	if (depth < 5.2) {
+	if (depth < 4.2) {
 		vec2 cuv = p.xz * 0.085;
-		float c1 = texture(caustic_tex, cuv + vec2(time * 0.005, -time * 0.004)).r;
-		float c2 = texture(caustic_tex, cuv * 1.57 - vec2(time * 0.0035, time * 0.006)).r;
-		caustic = max(c1, c2 * 0.8);
+		float ca1 = texture(caustic_tex, cuv + vec2(time * 0.005, -time * 0.004)).r;
+		float ca2 = texture(caustic_tex, cuv * 1.57 - vec2(time * 0.0035, time * 0.006)).r;
+		caustic = max(ca1, ca2 * 0.8);
 		caustic = smoothstep(0.15, 0.85, caustic);
-		float mask = (1.0 - smoothstep(0.6, 2.8, depth)) * smoothstep(0.08, 0.45, depth);
-		col += caustic_color * caustic * mask * 0.12;
+		float mask = (1.0 - smoothstep(0.4, 2.6, depth)) * smoothstep(0.10, 0.5, depth);
+		col += caustic_color * caustic * mask * 0.03;
 	}
 
 	// ── 水面法线：几何法线 + 细节法线 ──────────────────────────────
@@ -275,7 +312,9 @@ void fragment() {
 		col *= 1.0 - 0.08 * rain;
 	}
 
-	col = mix(col, foam_color * (0.94 + 0.06 * fnoise), clamp(foam, 0.0, 1.0) * 0.92);
+	vec3 foam_tint = mix(foam_color, foam_color * vec3(0.86, 0.94, 0.95), 0.35 * (1.0 - fn3));
+	float foam_key = smoothstep(0.10, 0.55, foam);
+	col = mix(col, foam_tint * (0.95 + 0.05 * fnoise), foam_key * 0.96);
 
 	// 夜晚整体压暗并偏冷（颜色 uniform 已由脚本按时间插值）
 	col = mix(col, col * vec3(0.72, 0.82, 1.0), night * 0.35);
@@ -285,25 +324,55 @@ void fragment() {
 	float fog = 1.0 - exp(-max(dist_cam - 110.0, 0.0) * 0.0022);
 	col = mix(col, fog_color, clamp(fog, 0.0, 0.55));
 
+	// ── 透明度：浅水透出沙底/礁石，岸边一层薄水膜 ─────────────────
+	float water_a = 0.14 + 0.86 * smoothstep(0.06, 3.9, depth);
+	water_a = max(water_a, 0.18 * (1.0 - smoothstep(0.0, 0.30, sea)));
+	water_a *= 0.96 + 0.08 * detail_n.x;   // 细微折射抖动
+	float foam_a = foam_key * 0.98;
+	float alpha = max(water_a, foam_a);
+	alpha = max(alpha, clamp(ring_a * 0.55 * ripple_amp, 0.0, 0.9));
+	alpha = clamp(alpha, 0.0, 1.0);
+
 	// ── 调试视图 ───────────────────────────────────────────────────
 	if (debug_view == 1) {
 		float hh = clamp(v_crest * 0.5 + 0.5, 0.0, 1.0);
 		col = vec3(pow(hh, 1.6));
+		alpha = 1.0;
 	} else if (debug_view == 2) {
 		col = n * 0.5 + 0.5;
+		alpha = 1.0;
 	} else if (debug_view == 3) {
 		col = vec3(clamp(foam, 0.0, 1.0));
+		alpha = 1.0;
 	} else if (debug_view == 4) {
 		col = vec3(0.02, 0.05, 0.08) + vec3(0.2, 0.9, 1.0) * (ring_a * 1.2 + v_ripple_field * 0.35);
+		alpha = 1.0;
 	} else if (debug_view == 5) {
 		float dn2v = clamp(depth / max_depth, 0.0, 1.0);
 		vec3 heat = mix(vec3(0.05, 0.25, 0.55), vec3(0.2, 0.85, 0.7), smoothstep(0.0, 0.4, dn2v));
 		heat = mix(heat, vec3(1.0, 0.85, 0.3), smoothstep(0.4, 0.75, dn2v));
 		col = heat;
+		alpha = 1.0;
 	} else if (debug_view == 6) {
-		float g = length(v_shore_grad);
-		col = vec3(0.08, 0.1, 0.12) + vec3(1.0, 0.55, 0.25) * smoothstep(0.0, 1.2, g);
+		// 岸距场：白色为水线，陆侧暖沙色，海侧按离岸距离分层
+		vec3 sc = vec3(0.10, 0.20, 0.24);
+		if (sd >= 0.0) {
+			sc = mix(vec3(0.95, 0.90, 0.78), vec3(0.66, 0.60, 0.48),
+					smoothstep(0.0, 6.0, sd));
+			sc *= 0.9 + 0.1 * sin(sd * 8.0);
+		} else {
+			sc = mix(vec3(0.92, 0.98, 0.96), vec3(0.06, 0.34, 0.50),
+					smoothstep(0.0, 5.0, sea));
+			sc += vec3(0.1, 0.25, 0.2) * b0;
+		}
+		float line = 1.0 - smoothstep(0.0, 0.10, abs(sd));
+		col = mix(sc, vec3(1.0), line * 0.9);
+		alpha = 1.0;
+	} else if (debug_view == 7) {
+		col = vec3(clamp(b0, 0.0, 1.0), clamp(b1 + collar, 0.0, 1.0), clamp(b2, 0.0, 1.0));
+		alpha = 1.0;
 	}
 
 	ALBEDO = col;
+	ALPHA = alpha;
 }

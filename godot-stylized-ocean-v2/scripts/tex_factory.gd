@@ -161,39 +161,27 @@ static func shadow_texture() -> ImageTexture:
 static func caustic_texture() -> ImageTexture:
 	if _cache.has("caustic"):
 		return _cache["caustic"]
+	# 细线焦散光网：两组可平铺的干涉驻波取零值脊线（sin·sin ≈ 0 → 细亮线），
+	# 比旧的“斑块”更接近参考岸边沙底的水下光网；整数频率保证四方连续。
 	var n := 256
-	var vals := PackedFloat32Array()
-	vals.resize(n * n)
-	var t1 := TAU
-	for y in n:
-		for x in n:
-			var u := float(x) / float(n) * t1
-			var v := float(y) / float(n) * t1
-			var a1 := sin(u * 3.0 + sin(v * 2.0 + 1.6) * 1.15 + sin(u * 5.0 + v * 3.0) * 0.55)
-			a1 *= sin(v * 3.0 + sin(u * 2.0 - 1.6) * 1.05 + cos(u * 3.0 - v * 5.0) * 0.5)
-			var u2 := u + 1.7
-			var v2 := v + 0.9
-			var a2 := sin(u2 * 4.0 + sin(v2 * 3.0 + 0.7) * 1.15 + sin(u2 * 2.0 + v2 * 4.0) * 0.55)
-			a2 *= sin(v2 * 4.0 + sin(u2 * 3.0 - 0.7) * 1.05 + cos(u2 * 4.0 - v2 * 2.0) * 0.5)
-			var a := absf(a1) * 0.75 + absf(a2) * 0.55
-			a = pow(clampf(a, 0.0, 1.0), 2.6)
-			vals[y * n + x] = a
-	var lo := 1e9
-	var hi := -1e9
-	for val2 in vals:
-		lo = minf(lo, val2)
-		hi = maxf(hi, val2)
 	var data := PackedByteArray()
 	data.resize(n * n * 4)
-	for i in n * n:
-		var val := (vals[i] - lo) / maxf(hi - lo, 0.0001)
-		val = pow(val, 1.4)
-		var c := int(clampf(val, 0.0, 1.0) * 255.0)
-		var o := i * 4
-		data[o] = c
-		data[o + 1] = c
-		data[o + 2] = c
-		data[o + 3] = 255
+	for y in n:
+		for x in n:
+			var u := TAU * float(x) / float(n)
+			var v := TAU * float(y) / float(n)
+			var a1 := sin(u * 3.0 + sin(v * 3.0 + 1.3) * 1.6)
+			a1 *= sin(v * 3.0 + sin(u * 4.0 - 0.7) * 1.6)
+			var a2 := sin((u + v) * 3.0 + sin((u - v) * 2.0) * 1.44)
+			a2 *= sin((u - v) * 4.0 + sin((u + v) * 2.0) * 1.44)
+			var r := minf(absf(a1), absf(a2))
+			var val := pow(clampf(1.0 - r / 0.65, 0.0, 1.0), 2.4)
+			var c := int(clampf(val, 0.0, 1.0) * 255.0)
+			var o := (y * n + x) * 4
+			data[o] = c
+			data[o + 1] = c
+			data[o + 2] = c
+			data[o + 3] = 255
 	var img := Image.create_from_data(n, n, false, Image.FORMAT_RGBA8, data)
 	var tex := ImageTexture.create_from_image(img)
 	_cache["caustic"] = tex

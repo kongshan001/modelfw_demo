@@ -36,8 +36,8 @@ var _palette_day := {
 	"deep": Color("#12669d"),
 	"mid": Color("#1a74a8"),
 	"shelf": Color("#1e95b4"),
-	"lagoon": Color("#3fc9cf"),
-	"sandwater": Color("#b3e6d2"),
+	"lagoon": Color("#55c9c6"),
+	"sandwater": Color("#b5cdbb"),
 	"sky_reflect": Color("#c2e9f2"),
 	"foam": Color("#fbffff"),
 	"caustic": Color("#b8fff4"),
@@ -65,6 +65,8 @@ func setup(p_field: IslandField) -> void:
 	material.set_shader_parameter("caustic_tex", TexFactory.caustic_texture())
 	material.set_shader_parameter("ripple_life", ripple_life)
 	material.set_shader_parameter("ripple_speed", ripple_speed)
+	material.set_shader_parameter("shore_area", IslandField.AREA)
+	material.set_shader_parameter("shore_range", IslandField.SHORE_RANGE * 2.0)
 
 	_waves = [
 		Vector4(1.0, 0.28, 0.30, 22.0),
@@ -239,6 +241,15 @@ func set_rain(v: float) -> void:
 func set_debug_view(v: int) -> void:
 	_debug_view = v
 	material.set_shader_parameter("debug_view", _debug_view)
+
+
+# 岸距场纹理在场景道具/棕榈生成后烘焙，再注入水面材质（泡沫/接触带与地形共用）。
+func set_shore_map(tex: ImageTexture) -> void:
+	if tex == null:
+		return
+	material.set_shader_parameter("shore_map", tex)
+	material.set_shader_parameter("shore_area", IslandField.AREA)
+	material.set_shader_parameter("shore_range", IslandField.SHORE_RANGE * 2.0)
 
 
 func get_debug_view() -> int:

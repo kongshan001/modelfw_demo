@@ -24,7 +24,8 @@ var _syncing := false
 var _panel_open := true
 var _debug_captions := [
 	"", "调试 · 浪高视图", "调试 · 法线视图", "调试 · 泡沫视图",
-	"调试 · 涟漪源视图", "调试 · 水深视图", "调试 · 岸线梯度视图",
+	"调试 · 涟漪源视图", "调试 · 水深视图", "调试 · 岸距场视图",
+	"调试 · 岸线分层视图（主带/外线/焦散环）",
 ]
 
 const PANEL_W := 306.0
@@ -366,7 +367,7 @@ func _build_panel() -> void:
 	_slider("distance", "相机距离", 40.0, 200.0, 1.0, 108.0, "%.0f m", func(v): world.set_camera_distance(v))
 
 	_section("调试")
-	_option("debug", "视图", PackedStringArray(["关闭", "浪高", "法线", "泡沫", "涟漪源", "水深", "岸线梯度"]), 0,
+	_option("debug", "视图", PackedStringArray(["关闭", "浪高", "法线", "泡沫", "涟漪源", "水深", "岸距场", "岸线分层"]), 0,
 			func(idx): world.set_debug_view(idx))
 	_row_buttons([
 		["重置参数", func(): world.reset_params()],
@@ -376,7 +377,7 @@ func _build_panel() -> void:
 
 func _build_hints() -> void:
 	hints = Label.new()
-	hints.text = "左键拖拽  水面涟漪 / 尾迹      单击  落石水花\n右键拖拽  旋转视角      滚轮  缩放\nH 隐藏界面   Space 暂停   R 下雨   F1–F7 调试视图"
+	hints.text = "左键拖拽  水面涟漪 / 尾迹      单击  落石水花\n右键拖拽  旋转视角      滚轮  缩放\nH 隐藏界面   Space 暂停   R 下雨   F1–F8 调试视图"
 	hints.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	hints.offset_left = MARGIN * scale_factor
 	hints.offset_bottom = -MARGIN * scale_factor

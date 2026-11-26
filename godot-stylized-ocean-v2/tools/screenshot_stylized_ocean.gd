@@ -156,6 +156,51 @@ func _initialize() -> void:
 	await create_timer(1.2).timeout
 	await _shot("12_ui_panel")
 
+	# ── 岸线整改对照机位（T-20261126-021） ──────────────────────────
+	scene.set_paused(true)
+	scene.set_ui_visible(false)
+	scene.set_ui_scale(1.0)
+	scene.hud.set_panel_open(true)
+	scene.hud.set_caption("")
+	scene.set_hour(11.5)
+	scene.ocean.clear_ripples()
+
+	# 13 岸线微距：湿沙/水线暗带/多层泡沫/沙底
+	scene.set_camera_target(0.0, 27.0, 0.2)
+	scene.set_camera_orbit(70.0, 40.0, 24.0)
+	_tick(30)
+	await _shot("13_shore_macro")
+
+	# 14 礁石小岛：泡沫环 + 湿岩基座 + 透明浅水
+	scene.set_camera_target(13.0, 30.0, 0.2)
+	scene.set_camera_orbit(100.0, 42.0, 24.0)
+	_tick(30)
+	await _shot("14_rock_isle")
+
+	# 15 浅水透明：沙底/焦散/水面波光
+	scene.ocean.set_wave_height(0.45)
+	scene.set_camera_target(6.0, 33.5, 0.1)
+	scene.set_camera_orbit(105.0, 50.0, 30.0)
+	_tick(30)
+	await _shot("15_shallow_caustics")
+	scene.ocean.set_wave_height(0.72)
+
+	# 16 夜景岸线
+	scene.set_hour(20.4)
+	scene.set_camera_target(0.0, 27.0, 0.2)
+	scene.set_camera_orbit(70.0, 40.0, 26.0)
+	_tick(30)
+	await _shot("16_night_shore")
+	scene.set_hour(11.5)
+
+	# 17 拍岸泡沫相位 a/b（同一机位，1.2 s 间隔）
+	scene.set_camera_target(0.0, 27.0, 0.2)
+	scene.set_camera_orbit(70.0, 40.0, 24.0)
+	_tick(30)
+	await _shot("17_swash_a")
+	_tick(36)
+	await _shot("17_swash_b")
+
 	print("STYLIZED_OCEAN_SHOTS_OK")
 	quit(0)
 

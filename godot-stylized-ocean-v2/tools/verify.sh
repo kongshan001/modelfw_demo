@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 风格化海洋第二版验收：
 #   1) 编辑器导入（脚本/资源解析）
-#   2) headless smoke（53 项，STYLIZED_OCEAN_SMOKE_OK）
+#   2) headless smoke（69 项，STYLIZED_OCEAN_SMOKE_OK）
 #   3) 600 帧无窗口启动，扫描 SCRIPT ERROR / ERROR
 #   4) 真实 GPU 1920×1080 截图矩阵
 #   5) 可选 --probe：真实 GPU 性能探针

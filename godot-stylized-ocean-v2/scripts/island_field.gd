@@ -4,8 +4,11 @@ extends RefCounted
 # 海岛高度场：同一函数驱动地形网格与水深贴图，保证岸线与泡沫严格对齐。
 # 全程程序化、确定性种子，无外部资产。
 
-const AREA := 180.0          # 水深贴图覆盖 -90..90 m
-const TEX_SIZE := 512
+const AREA := 180.0          # 水深/岸距贴图覆盖 -90..90 m
+const TEX_SIZE := 512        # 水深贴图（平滑色阶用）
+const SHORE_TEX_SIZE := 1024 # 岸距场贴图（泡沫/湿沙边界用，0.176 m/px）
+const SHORE_RANGE := 8.0     # 岸距编码范围 ±8 m
+const WATERLINE_SEGMENTS := 2048
 const MAX_DEPTH := 12.0
 const COAST_BASE := 26.5
 
@@ -16,6 +19,15 @@ var detail_noise: FastNoiseLite
 
 # 每块礁石：pos(Vector2 世界 xz), size, water(bool), bump(高出水面米数), radius
 var rock_sites: Array[Dictionary] = []
+
+# 岸距场：R = 有符号岸距（0.5 = 水线，内陆为正，±8 m 线性），
+# G = 岸线道具接触/泡沫环掩码，B = 沿岸泡沫宽度系数，A = 沿岸拍岸相位。
+var shore_texture: ImageTexture
+var _waterline_r := PackedFloat32Array()
+var _waterline_slope := PackedFloat32Array()
+var _shore_width_tab := PackedByteArray()
+var _shore_phase_tab := PackedByteArray()
+var _prop_mask_noise: FastNoiseLite
 
 
 func _init(p_seed := 20261126) -> void:
@@ -37,8 +49,11 @@ func _init(p_seed := 20261126) -> void:
 	detail_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	detail_noise.frequency = 0.55
 
+	_prop_mask_noise = FastNoiseLite.new()
+	_prop_mask_noise.seed = p_seed + 515
+	_prop_mask_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	_prop_mask_noise.frequency = 0.30
 	_build_rock_sites()
-
 
 static func wrap_pi(a: float) -> float:
 	return atan2(sin(a), cos(a))
@@ -126,13 +141,13 @@ func _build_rock_sites() -> void:
 			var in_water := base < 0.30
 			var bump := 0.0
 			if in_water:
-				bump = rng.randf_range(0.45, 0.95)
+				bump = rng.randf_range(0.22, 0.48)
 			rock_sites.append({
 				"pos": pos,
 				"size": size,
 				"water": in_water or base < 0.0,
 				"bump": bump,
-				"radius": size * 1.35 + 0.8,
+				"radius": size * 1.05 + 0.35,
 				"land": not in_water,
 			})
 	# 浅滩礁石（参考帧里离岸的深色礁岩，带一圈白沫）
@@ -145,8 +160,8 @@ func _build_rock_sites() -> void:
 			"pos": Vector2(cos(theta) * rr, sin(theta) * rr),
 			"size": size,
 			"water": true,
-			"bump": 0.55,
-			"radius": size * 1.5 + 1.2,
+			"bump": 0.05,
+			"radius": size * 0.8 + 0.1,
 			"land": false,
 		})
 
@@ -203,6 +218,147 @@ func bake_height_texture() -> ImageTexture:
 		data[o + 3] = 255
 	img.set_data(TEX_SIZE, TEX_SIZE, false, Image.FORMAT_RGBA8, data)
 	var tex := ImageTexture.create_from_image(img)
+	return tex
+
+
+# ───────────────────── 岸距场（SDF，供水面泡沫/湿沙/接触带共用） ─────────────────────
+# 海岛近似星形，用极坐标水线半径表 + 法向修正得到有符号岸距，精度高于逐像素距离变换，
+# 且能把沙丘/细节噪声造成的水线弯曲完整带进来；1024² 烘焙约 1.2 s（GDScript）。
+
+func _ensure_waterline_table() -> void:
+	if _waterline_r.size() == WATERLINE_SEGMENTS:
+		return
+	var n := WATERLINE_SEGMENTS
+	_waterline_r.resize(n)
+	_waterline_slope.resize(n)
+	for i in n:
+		var th := TAU * float(i) / float(n)
+		var cr := coast_radius(th)
+		var lo := cr * 0.55
+		var hi := cr * 1.38
+		for k in 26:
+			var mid := (lo + hi) * 0.5
+			if base_height(cos(th) * mid, sin(th) * mid) > 0.0:
+				lo = mid
+			else:
+				hi = mid
+		_waterline_r[i] = (lo + hi) * 0.5
+	var dth := TAU / float(n)
+	for i in n:
+		var rp := _waterline_r[(i - 1 + n) % n]
+		var rn := _waterline_r[(i + 1) % n]
+		_waterline_slope[i] = (rn - rp) / (2.0 * dth)
+	_shore_width_tab.resize(n)
+	_shore_phase_tab.resize(n)
+	var width_noise := FastNoiseLite.new()
+	width_noise.seed = seed_value + 303
+	width_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	var phase_noise := FastNoiseLite.new()
+	phase_noise.seed = seed_value + 909
+	phase_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	for i in n:
+		var th := TAU * float(i) / float(n)
+		# 在圆上采样 2D 噪声，天然首尾相接
+		var wn := width_noise.get_noise_2d(cos(th) * 1.9, sin(th) * 1.9)
+		var pn := phase_noise.get_noise_2d(cos(th) * 3.3, sin(th) * 3.3)
+		_shore_width_tab[i] = int(clampf(0.5 + 0.5 * wn * 1.35, 0.0, 1.0) * 255.0)
+		_shore_phase_tab[i] = int(clampf(0.5 + 0.5 * pn * 1.25, 0.0, 1.0) * 255.0)
+
+
+func waterline_radius(theta: float) -> float:
+	_ensure_waterline_table()
+	var u: float = theta * (float(WATERLINE_SEGMENTS) / TAU)
+	if u < 0.0:
+		u += float(WATERLINE_SEGMENTS)
+	var i0 := int(u) % WATERLINE_SEGMENTS
+	var i1 := (i0 + 1) % WATERLINE_SEGMENTS
+	return lerpf(_waterline_r[i0], _waterline_r[i1], u - floor(u))
+
+
+# 有符号岸距（米）：内陆 > 0，水中 < 0；按极坐标曲线法向修正。
+func shore_distance_at(x: float, z: float) -> float:
+	_ensure_waterline_table()
+	var rr := sqrt(x * x + z * z)
+	var th := atan2(z, x)
+	var u: float = th * (float(WATERLINE_SEGMENTS) / TAU)
+	if u < 0.0:
+		u += float(WATERLINE_SEGMENTS)
+	var i0 := int(u) % WATERLINE_SEGMENTS
+	var i1 := (i0 + 1) % WATERLINE_SEGMENTS
+	var f: float = u - floor(u)
+	var r0 := lerpf(_waterline_r[i0], _waterline_r[i1], f)
+	var slope := lerpf(_waterline_slope[i0], _waterline_slope[i1], f)
+	var q := slope / maxf(r0, 1.0)
+	return (r0 - rr) / sqrt(1.0 + q * q)
+
+
+# 烘焙岸距场纹理。extra_sites: [{pos: Vector2, radius: float, weight: float}]，
+# 用于棕榈/木屋等岸线道具的接触湿痕与局部泡沫（礁石自动加入）。
+func bake_shore_texture(extra_sites: Array[Dictionary] = []) -> ImageTexture:
+	_ensure_waterline_table()
+	var n := SHORE_TEX_SIZE
+	var half := AREA * 0.5
+	var step := AREA / float(n)
+	var data := PackedByteArray()
+	data.resize(n * n * 4)
+	var nseg := WATERLINE_SEGMENTS
+	for py in n:
+		var wz := -half + (float(py) + 0.5) * step
+		var row := py * n
+		for px in n:
+			var wx := -half + (float(px) + 0.5) * step
+			var rr := sqrt(wx * wx + wz * wz)
+			var th := atan2(wz, wx)
+			var u: float = th * (float(nseg) / TAU)
+			if u < 0.0:
+				u += float(nseg)
+			var i0 := int(u) % nseg
+			var i1 := (i0 + 1) % nseg
+			var f: float = u - floor(u)
+			var r0 := lerpf(_waterline_r[i0], _waterline_r[i1], f)
+			var slope := lerpf(_waterline_slope[i0], _waterline_slope[i1], f)
+			var q := slope / maxf(r0, 1.0)
+			var sd := (r0 - rr) / sqrt(1.0 + q * q)
+			var o := (row + px) * 4
+			data[o] = int(clampf(0.5 + sd / (SHORE_RANGE * 2.0), 0.0, 1.0) * 255.0)
+			data[o + 1] = 0
+			data[o + 2] = _shore_width_tab[i0]
+			data[o + 3] = _shore_phase_tab[i0]
+	# 道具接触掩码（G）：礁石（水中/岸线）+ 岸线附近棕榈，软圆盘，供泡沫环与湿痕使用
+	var sites: Array[Dictionary] = []
+	for site in rock_sites:
+		var p: Vector2 = site["pos"]
+		var sz: float = site["size"]
+		sites.append({"pos": p, "core": sz * 0.82 + 0.08, "width": sz * 0.25 + 0.15, "weight": 1.0})
+	for site in extra_sites:
+		sites.append(site)
+	for site in sites:
+		var pos: Vector2 = site["pos"]
+		var core: float = site["core"]
+		var wid: float = site["width"]
+		var weight: float = site["weight"]
+		var rad: float = core + wid * 1.8
+		var px0 := clampi(int(floor((pos.x - rad + half) / step)), 0, n - 1)
+		var px1 := clampi(int(ceil((pos.x + rad + half) / step)), 0, n - 1)
+		var py0 := clampi(int(floor((pos.y - rad + half) / step)), 0, n - 1)
+		var py1 := clampi(int(ceil((pos.y + rad + half) / step)), 0, n - 1)
+		for py in range(py0, py1 + 1):
+			var wz2 := -half + (float(py) + 0.5) * step
+			for px in range(px0, px1 + 1):
+				var wx2 := -half + (float(px) + 0.5) * step
+				var dd := sqrt((wx2 - pos.x) * (wx2 - pos.x) + (wz2 - pos.y) * (wz2 - pos.y))
+				if dd >= rad:
+					continue
+				var kk := (dd - core) / maxf(wid, 0.05)
+				var patch := 0.55 + 0.45 * clampf(_prop_mask_noise.get_noise_2d(wx2, wz2) * 0.9 + 0.5, 0.0, 1.0)
+				var val_f := exp(-kk * kk) * weight * patch
+				var val := int(clampf(val_f, 0.0, 1.0) * 255.0)
+				var o := (py * n + px) * 4
+				if val > data[o + 1]:
+					data[o + 1] = val
+	var img := Image.create_from_data(n, n, false, Image.FORMAT_RGBA8, data)
+	var tex := ImageTexture.create_from_image(img)
+	shore_texture = tex
 	return tex
 
 
