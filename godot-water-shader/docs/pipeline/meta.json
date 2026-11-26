@@ -1,0 +1,64 @@
+{
+  "bodies": [
+    {
+      "avg_width": 19.7333333333333,
+      "cells": 888,
+      "center": [
+        176.0,
+        360.0
+      ],
+      "enclosed": false,
+      "label": "海域",
+      "max_depth": 18.5563468933105,
+      "pct": 24.6666666666667,
+      "type": "sea"
+    },
+    {
+      "avg_width": 7.37142857142857,
+      "cells": 210,
+      "center": [
+        1000.0,
+        160.0
+      ],
+      "enclosed": false,
+      "label": "河流",
+      "max_depth": 4.0,
+      "pct": 5.83333333333333,
+      "type": "river"
+    },
+    {
+      "avg_width": 10.8,
+      "cells": 216,
+      "center": [
+        1040.0,
+        552.0
+      ],
+      "enclosed": true,
+      "label": "内陆湖",
+      "max_depth": 6.0,
+      "pct": 6.0,
+      "type": "lake"
+    }
+  ],
+  "body_count": 3,
+  "bridge_cells": 57,
+  "cell": 16,
+  "cols": 80,
+  "hashes": {
+    "category": "a061280ecc63ded9b6ae6f206137e3c50e1c6191cd5e6eb1bafd12c6ccffcbd3",
+    "depth": "47484e0399fcd4baa9852aa5d0f3996a5a4458dc434f152586585826732d5fb5",
+    "flow": "9f656a8bb585a38e4ec3caa075bd9ff28fd54967305623b76539e97baa48f82b",
+    "mask": "a2cd965582b94761a66eb5d03ef484624c7cde71d05864d91e946f1fdca3ea3d",
+    "puddle_depth": "13721e7de344167c45ec48dc726411f266e53188552cd80a8e8f954ef6194a82",
+    "puddle_mask": "e6dcf2c6bb1d584ac94de221542b658b2d91329bb4dd6ccae030abd5e3849dc0"
+  },
+  "lake_caustic_off": true,
+  "lake_count": 1,
+  "puddle_cells": 88,
+  "rows": 45,
+  "source": [
+    1280,
+    720
+  ],
+  "water_cells": 1314
+}

@@ -2,6 +2,24 @@
 
 ## 进行中
 
+## T-20261126-002 · 复刻 2D 太阳/月亮动态影子（零额外灯光）
+- 来源: 飞书消息（B 站《2D游戏太阳和月亮影子怎么做？零额外灯光源码拆解》，https://b23.tv/2btzuwT，2026-11-26，3:28，UP 小武同学贼下饭）
+- 类型: game-demo（2D 像素光照 / 动态影子）
+- 目标: 复刻零额外灯光的日月接力影子：太阳/月亮沿同一南侧天空东升西落 → 3 个全局 Shader 向量 → 顶点坍缩零叠黑地面影 + 单通道 RHalf 2.5D 高度遮挡图 + 60% 软膝限长；夜景暖黄路灯与冷蓝月影共存
+- 交付: `godot-sun-moon-shadows/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不依赖逐物 Light2D/内置 2D 阴影组件
+- 指派: game-engineer worker（dispatcher）
+- 状态: running
+
+## T-20261126-001 · 复刻 2D 海/河/湖共用 1 个水面 Shader（零额外网格）
+- 来源: 飞书消息（B 站《2D游戏海河湖共用1个水面Shader？零额外网格源码拆解》，https://b23.tv/KYEA6ng，2026-11-26，3:54）
+- 类型: game-demo（2D 水面 Shader / 程序化水深场）
+- 目标: 复刻一套水面方案：手绘岸线 16px 抠图 → 2-Pass 8 邻域水深 → 零分配 BFS 区分海/河/湖 → 单一 Shader 表现浅滩/焦散/双波前白沫/桥面裁切/雨积水
+- 交付: `godot-water-shader/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不额外建水面网格
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+
 ## T-20261125-013 · 复刻 Godot 法线贴图精灵光照教程
 - 来源: 飞书消息（B 站《Godot 法线贴图：实现精灵光照效果》，https://b23.tv/3eSeHcH，2026-11-25，4:16）
 - 类型: game-demo（2D 精灵光照 / 法线贴图）
