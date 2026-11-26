@@ -1,0 +1,90 @@
+{
+  "id": "double_loop",
+  "name": "双环庭",
+  "subtitle": "第二结 · 双柱上下",
+  "blurb": "青柱与珊瑚柱各绕一圈，并让绳子在两根柱子之间与自己交叉一次、分出上下。",
+  "palette": {
+    "sky_top": "#9EC6E3",
+    "sky_bottom": "#F9E2CB",
+    "island_top": "#D5E1B2",
+    "island_edge": "#CF946C",
+    "rock": "#9B6C55",
+    "accent": "#3E8E8A",
+    "petal": "#E5836C",
+    "leaf": "#7CAF70",
+    "sun": "#FFE0AC"
+  },
+  "start": [
+    -2.8,
+    0.12,
+    1.45
+  ],
+  "goal": [
+    2.75,
+    0.06,
+    1.45
+  ],
+  "goal_radius": 0.62,
+  "start_radius": 0.62,
+  "pillars": [
+    {
+      "id": "qing",
+      "name": "青柱",
+      "pos": [
+        -1.35,
+        0.25
+      ],
+      "radius": 0.28,
+      "height": 1.8,
+      "turns": 1,
+      "required": true,
+      "color": "#3E8E8A",
+      "top_color": "#F2CC8F"
+    },
+    {
+      "id": "coral",
+      "name": "珊瑚柱",
+      "pos": [
+        1.35,
+        -0.35
+      ],
+      "radius": 0.28,
+      "height": 1.6,
+      "turns": 1,
+      "required": true,
+      "color": "#E08A6E",
+      "top_color": "#F6E7C8"
+    },
+    {
+      "id": "moss",
+      "name": "苔柱",
+      "pos": [
+        0.1,
+        -1.95
+      ],
+      "radius": 0.18,
+      "height": 1.1,
+      "turns": 1,
+      "required": false,
+      "color": "#7FAE7A",
+      "top_color": "#EBD9AE"
+    }
+  ],
+  "crossings_required": 1,
+  "camera": {
+    "yaw": -36.0,
+    "pitch": 40.0,
+    "distance": 10.8,
+    "focus": [
+      0.0,
+      0.55,
+      0.0
+    ]
+  },
+  "hints": [
+    "先绕青柱一整圈，再绕珊瑚柱一整圈。",
+    "绕第二根柱子回来时，按住 Shift 抬笔，从自己第一段绳子的上方跨过去。",
+    "交叉处上下要分开；HUD 会显示『自交上下』是否达成。",
+    "最后把绳头放到结台，按空格收笔；如果还差条件，可以继续画。"
+  ]
+}

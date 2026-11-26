@@ -1,0 +1,37 @@
+; Knotline · 线屿 — an original 3D one-stroke rope puzzle vertical slice.
+; Godot 4.6 / GL Compatibility. Geometry, materials, UI and audio are generated at runtime.
+
+config_version=5
+
+[application]
+
+config/name="Knotline · 线屿"
+config/description="一根不断的线，绕过彩柱，与自己一上一下，结成小小的结。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/vsync/vsync_mode=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+environment/defaults/default_clear_color=Color(0.84, 0.91, 0.88, 1)
+textures/default_filters/use_nearest_mipmap_filter=false
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true

@@ -2,6 +2,16 @@
 
 ## 进行中
 
+## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
+- 线程: T-20261126-010（风格化海洋）
+- 父任务: T-20261126-010（done）
+- 类型: game-demo（美术优化 / 岸线）
+- 目标: 结合参考视频分析并优化海岛与水的交接：湿沙带、浅水透明/深度色阶、岸线泡沫多带+噪声、礁石湿基/泡沫环、接触阴影/水线；去掉硬切色块与平板光晕
+- 交付: 更新 `godot-stylized-ocean-v2/`；同机位 before/after 截图 ≥6；10s GIF/MP4；docs 更新；smoke + 真实 GPU
+- 约束: 只改岸线/浅水/泡沫/湿沙/接触阴影；保留现有波浪/交互/UI/性能；原创素材，不复制参考视频/作者素材；Godot 4.6 GL Compatibility，Intel 30fps+
+- 指派: game-artist worker（dispatcher）
+- 状态: running
+
 ## T-20261126-020 · 3D 像素水景修复独立复评（T-008 follow-up）
 - 线程: T-20261126-008（3D 像素水面与鱼）
 - 父任务: T-20261126-019（鱼/场景美术修复）
@@ -57,7 +67,8 @@
 - 交付: `godot-knotline-puzzle/` 可玩 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制，不复制 Trifolium/EmptyMatter 素材/品牌/关卡；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；结检测可近似但须在 TECH 说明
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-015/result.md
 
 ## T-20261126-014 · 复刻《SideStamp》滚块涂色解谜
 - 来源: 飞书消息（B 站《〈SideStamp〉官方预告片 | 一款关于色彩与旋转的解谜游戏》，https://b23.tv/CKwXd38，2026-11-26，80s，1920×1080，GoodHeartGames；简介：roll blocks into pools of paint to color the proper tiles）
@@ -98,6 +109,7 @@
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-010/result.md
 - 备注: 视觉主导；水面/岛屿/道具/涟漪/落石/雨/昼夜/中文 UI 全部实现；真实阴影关闭（GL Compat 下方向光不稳定），使用手绘方向光 + 软接触阴影；夜/雨/调试视图齐全。交接 T-20261126-011（QA）、T-20261126-012（美术独立复评）
+- 后续: T-20261126-021 海岛-水交接优化 → T-20261126-011 QA → T-20261126-012 美术复评
 
 ## T-20261126-008 · 复刻 3D 像素水面与鱼（t3ssel8r 风格）
 - 来源: 飞书消息（B 站《做了水和鱼》，https://b23.tv/fnj2fKz，2026-11-26，49s，UP 迷茫Mmang_；简介：3D 像素渲染，借鉴 t3ssel8r，主要使用 GPT-6 编程）
