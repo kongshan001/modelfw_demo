@@ -36,7 +36,7 @@
 - 交付: `godot-hueroll-puzzle/` 可玩 Godot 4.6 vertical slice；≥6 关；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 只复刻抽象机制，不复制 SideStamp/GoodHeartGames 角色/UI/关卡/品牌/素材；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-012 · 风格化海洋第二版 独立美术复评
 - 线程: T-20261126-010（风格化海洋）
@@ -75,7 +75,7 @@
 - 约束: 原创低模/贴图/代码，不复制 t3ssel8r/原作者素材或代码；Godot 4.6 GL Compatibility（若需换渲染器须说明），1280×720/1920×1080 显示，Intel 30fps+；不用付费资产
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-3d-pixel-water-fish/`；1920×1080 截图 11 张、10s MP4/GIF；README/TECH/迭代记录/CREDITS；`docs/agency/T-20261126-008.md`；smoke `WATER_FISH_SMOKE_OK`；Intel HD 6000 1280 avg 64.3 FPS / 1920 合成 avg 44.4 FPS
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-008/result.md
 
 ## T-20261126-007 · 水面视觉整改独立复评（T-001 follow-up）
 - 线程: T-20261126-001（水面 Shader）
