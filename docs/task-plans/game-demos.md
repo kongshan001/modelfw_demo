@@ -49,7 +49,7 @@
 - 交付: `godot-swarm-autobattler/` 可玩 vertical slice；100/1000/3000 单位性能数据；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制；不复制 Hearthstone Battlegrounds / 全军出鸡 / 鸡械绿洲 的角色/UI/卡牌/美术/品牌；原创单位/卡牌/主题；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；用实例化渲染，禁止每单位 Node
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
 - 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）
@@ -58,7 +58,8 @@
 - 交付: `godot-foldpath-puzzle/` 可玩 vertical slice（3 关）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻抽象机制；不复制 Monument Valley/ustwo 的关卡/角色/美术/音乐/品牌；原创低模/色板/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-016/result.md
 
 ## T-20261126-015 · 复刻《Trifolium》3D 一笔画打结解谜
 - 来源: 飞书消息（B 站《【解谜游戏】可以打结的一笔画〈Trifolium〉Demo试玩》，https://b23.tv/PGfHEPL，2026-11-26，23:58，UP GT阿某；Trifolium / EmptyMatter，Steam demo）

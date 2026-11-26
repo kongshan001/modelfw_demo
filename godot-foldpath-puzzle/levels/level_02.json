@@ -1,0 +1,402 @@
+{
+  "id": "L2",
+  "order": 2,
+  "name": "旋桥庭",
+  "subtitle": "Turning Bridge",
+  "objective": "登上旋桥，再把桥转向对岸，让两端依次在屏幕上重合。",
+  "camera": {
+    "focus": [
+      0.4,
+      1.08,
+      0.28
+    ],
+    "size": 6.7,
+    "zoom_min": 0.82,
+    "zoom_max": 1.22
+  },
+  "palette": {
+    "sky": "#8FACA7",
+    "horizon": "#EEE0C8",
+    "fog": "#B6C7C1",
+    "sun": "#FFE1B2",
+    "accent": "#B95538"
+  },
+  "soft_shadows": [
+    {
+      "pos": [
+        0.15,
+        0.535,
+        1.0
+      ],
+      "size": [
+        2.3,
+        1.2
+      ],
+      "rot": 18,
+      "alpha": 0.26
+    },
+    {
+      "pos": [
+        1.35,
+        1.112,
+        0.45
+      ],
+      "size": [
+        1.4,
+        1.0
+      ],
+      "rot": 0,
+      "alpha": 0.24
+    }
+  ],
+  "link_px": 18.0,
+  "link_depth": 0.35,
+  "start": "s",
+  "goal": "g",
+  "platforms": [
+    {
+      "id": "high",
+      "name": "高台",
+      "pivot": [
+        2.0833,
+        1.9083,
+        0.1583
+      ],
+      "initial": 0.0,
+      "rotatable": false,
+      "shape": "deck",
+      "size": [
+        1.7,
+        0.34,
+        2.5
+      ],
+      "color": "stone",
+      "trim": "brass",
+      "addons": [
+        {
+          "pos": [
+            0.55,
+            0.28,
+            -0.85
+          ],
+          "size": [
+            0.42,
+            1.5,
+            0.42
+          ],
+          "color": "teal"
+        },
+        {
+          "pos": [
+            0.55,
+            1.08,
+            -0.85
+          ],
+          "size": [
+            0.85,
+            0.14,
+            0.85
+          ],
+          "color": "coral"
+        },
+        {
+          "pos": [
+            -0.45,
+            -0.55,
+            0.1
+          ],
+          "size": [
+            0.8,
+            0.7,
+            1.4
+          ],
+          "color": "stone_2"
+        }
+      ],
+      "ribbons": [
+        {
+          "pos": [
+            -0.4,
+            0.0,
+            0.95
+          ],
+          "len": 1.2,
+          "width": 0.22,
+          "color": "teal"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "name": "旋桥",
+      "pivot": [
+        0.0,
+        1.1,
+        0.0
+      ],
+      "initial": 0.0,
+      "rotatable": true,
+      "step": 15.0,
+      "shape": "bridge",
+      "size": [
+        3.5,
+        0.36,
+        0.8
+      ],
+      "color": "stone",
+      "trim": "brass",
+      "addons": [
+        {
+          "pos": [
+            0.0,
+            -0.95,
+            0.0
+          ],
+          "size": [
+            0.34,
+            1.4,
+            0.34
+          ],
+          "color": "teal"
+        },
+        {
+          "pos": [
+            -1.62,
+            -0.12,
+            0.0
+          ],
+          "size": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "color": "coral"
+        },
+        {
+          "pos": [
+            1.62,
+            -0.12,
+            0.0
+          ],
+          "size": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "color": "mustard"
+        },
+        {
+          "pos": [
+            0.0,
+            -0.5,
+            0.0
+          ],
+          "size": [
+            2.3,
+            0.16,
+            0.36
+          ],
+          "color": "brass"
+        }
+      ],
+      "ribbons": [
+        {
+          "pos": [
+            0.0,
+            -0.3,
+            0.3
+          ],
+          "len": 0.8,
+          "width": 0.16,
+          "color": "teal"
+        }
+      ]
+    },
+    {
+      "id": "low",
+      "name": "低庭",
+      "pivot": [
+        0.0726,
+        0.5226,
+        0.9726
+      ],
+      "initial": 0.0,
+      "rotatable": false,
+      "shape": "deck",
+      "size": [
+        2.6,
+        0.38,
+        1.9
+      ],
+      "color": "stone_2",
+      "trim": "brass",
+      "addons": [
+        {
+          "pos": [
+            -0.35,
+            0.32,
+            0.5
+          ],
+          "size": [
+            0.5,
+            1.2,
+            0.5
+          ],
+          "color": "coral"
+        },
+        {
+          "pos": [
+            -0.35,
+            1.0,
+            0.5
+          ],
+          "size": [
+            0.95,
+            0.12,
+            0.95
+          ],
+          "color": "teal"
+        },
+        {
+          "pos": [
+            0.5,
+            -0.7,
+            -0.2
+          ],
+          "size": [
+            1.0,
+            0.5,
+            1.4
+          ],
+          "color": "teal"
+        }
+      ],
+      "ribbons": [
+        {
+          "pos": [
+            0.75,
+            0.0,
+            0.6
+          ],
+          "len": 0.9,
+          "width": 0.2,
+          "color": "mustard"
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "s",
+      "platform": "high",
+      "pos": [
+        -0.275,
+        0.0,
+        -0.65
+      ],
+      "kind": "start"
+    },
+    {
+      "id": "a",
+      "platform": "high",
+      "pos": [
+        0.275,
+        0.0,
+        0.65
+      ],
+      "kind": "path"
+    },
+    {
+      "id": "i",
+      "platform": "bridge",
+      "pos": [
+        1.55,
+        0.0,
+        0.0
+      ],
+      "kind": "path"
+    },
+    {
+      "id": "m",
+      "platform": "bridge",
+      "pos": [
+        0.6,
+        0.0,
+        0.0
+      ],
+      "kind": "path"
+    },
+    {
+      "id": "o",
+      "platform": "bridge",
+      "pos": [
+        -1.55,
+        0.0,
+        0.0
+      ],
+      "kind": "path"
+    },
+    {
+      "id": "b",
+      "platform": "low",
+      "pos": [
+        -0.65,
+        0.0,
+        0.0
+      ],
+      "kind": "path"
+    },
+    {
+      "id": "g",
+      "platform": "low",
+      "pos": [
+        0.65,
+        0.0,
+        0.0
+      ],
+      "kind": "goal"
+    }
+  ],
+  "edges": [
+    [
+      "s",
+      "a"
+    ],
+    [
+      "i",
+      "m"
+    ],
+    [
+      "m",
+      "o"
+    ],
+    [
+      "b",
+      "g"
+    ]
+  ],
+  "fold_pairs": [
+    [
+      "a",
+      "i"
+    ],
+    [
+      "o",
+      "b"
+    ]
+  ],
+  "hints": [
+    {
+      "text": "先走上高台尽头：高台与旋桥在屏幕上重合，可以直接折过去。",
+      "focus": "a"
+    },
+    {
+      "text": "站上旋桥后，拖动桥面或按 Q/E，把它转向左边低庭的上方。",
+      "focus": "bridge"
+    },
+    {
+      "text": "桥的两端都对齐后，点击低庭节点，跨过屏幕上的折环到达终点。",
+      "focus": "o"
+    }
+  ]
+}
