@@ -2,6 +2,46 @@
 
 ## 进行中
 
+## T-20261126-007 · 水面视觉整改独立复评（T-001 follow-up）
+- 线程: T-20261126-001（水面 Shader）
+- 父任务: T-20261126-006（QA）
+- 类型: game-demo（美术复评）
+- 目标: 对整改后的水面 demo 做独立复评：P0/P1 是否关闭、是否达到参考视频的视觉语言、是否可外放
+- 交付: `godot-water-shader/docs/art-review-final-T-20261126-007.md`；pass/reject + 证据
+- 约束: 不改代码/资产；在 1280×720 与 1920×1080 目标尺寸审查；对照 T-20261126-004 brief
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261126-006 · 水面视觉整改 QA 验收（T-001 follow-up）
+- 线程: T-20261126-001（水面 Shader）
+- 父任务: T-20261126-005（整改）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收整改后水面 demo：P0/P1 关闭情况、海/河/湖/桥/雨积水回归、真实 GPU FPS/console、smoke
+- 交付: `godot-water-shader/docs/qa-T-20261126-006.md`；放行/打回 + 可复现证据
+- 约束: 不改美术方向/实现；only 验收；1280×720/1920×1080
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261126-005 · 按 brief 整改水面 Demo 视觉（T-001 follow-up）
+- 线程: T-20261126-001（水面 Shader）
+- 父任务: T-20261126-004（视觉诊断 brief）
+- 类型: game-demo（美术实现 / 水面视觉）
+- 目标: 按 art-review 的 P0/P1 整改 `godot-water-shader/`：水深色阶/透明沙底、焦散、双波前白沫、湿沙岸线、反射/高光、场景美术与光感，去掉“调试线”观感；保留 16px mask/8 邻域/BFS/单 shader 管线
+- 交付: 更新项目；before/after 截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU；commit_paths `godot-water-shader/` + 计划文件
+- 约束: 原创素材；不复制视频/Unity 素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不新增额外相机/Viewport
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
+## T-20261126-004 · 水面 Demo 视觉诊断与 P0–P2 整改 brief（T-001 follow-up）
+- 线程: T-20261126-001（水面 Shader）
+- 父任务: T-20261126-001（done）
+- 类型: game-demo（美术评审）
+- 目标: 在目标显示尺寸审查当前水面 demo（截图/GIF/实机），量化“效果差”的维度，产出带证据与参数的 P0–P2 整改 brief
+- 交付: `godot-water-shader/docs/art-review-T-20261126-004.md` + 标注图；不改代码/资产
+- 约束: 对照参考视频帧只提取视觉语言，不复制素材；fail-closed 验收口径
+- 指派: game-art-director worker（dispatcher）
+- 状态: done
+
 ## T-20261126-002 · 复刻 2D 太阳/月亮动态影子（零额外灯光）
 - 来源: 飞书消息（B 站《2D游戏太阳和月亮影子怎么做？零额外灯光源码拆解》，https://b23.tv/2btzuwT，2026-11-26，3:28，UP 小武同学贼下饭）
 - 类型: game-demo（2D 像素光照 / 动态影子）
@@ -19,6 +59,7 @@
 - 约束: 原创像素场景/素材，不复制 Unity/C# 源码或视频素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不额外建水面网格
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
+- 后续: T-20261126-004 视觉诊断 → T-20261126-005 整改 → T-20261126-006 QA → T-20261126-007 独立复评
 
 ## T-20261125-013 · 复刻 Godot 法线贴图精灵光照教程
 - 来源: 飞书消息（B 站《Godot 法线贴图：实现精灵光照效果》，https://b23.tv/3eSeHcH，2026-11-25，4:16）
