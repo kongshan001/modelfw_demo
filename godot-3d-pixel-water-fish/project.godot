@@ -1,0 +1,53 @@
+; Godot 4.6 · GL Compatibility
+; 像素水塘 · Pixel Pond — 低分辨率 3D、量化抖动、风格化水面与原创鱼群。
+; 全部几何/材质/代码均为本项目原创，无外部美术资产。
+
+config_version=5
+
+[application]
+
+config/name="像素水塘 · Pixel Pond"
+config/description="A 3D pixel pond study: 640x360 render target, depth/luma outlines, ordered dithering, stylized water and procedural fish."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="disabled"
+window/vsync/vsync_mode=1
+window/size/resizable=true
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/canvas_textures/default_texture_filter=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+anti_aliasing/quality/use_debanding=false
+environment/defaults/default_clear_color=Color(0.42, 0.65, 0.73, 1)
+environment/defaults/default_environment=""
+
+[shader_globals]
+
+g_time={"type":"float","value":0.0}
+g_light_steps={"type":"float","value":3.0}
+g_pixel_snap={"type":"float","value":1.0}
+g_res_x={"type":"float","value":640.0}
+g_res_y={"type":"float","value":360.0}
+g_underwater={"type":"float","value":0.0}
+g_rain={"type":"float","value":0.0}
+g_caustics={"type":"float","value":1.0}
+g_sun_dir_x={"type":"float","value":0.33}
+g_sun_dir_y={"type":"float","value":0.82}
+g_sun_dir_z={"type":"float","value":0.47}
+g_sun_color={"type":"color","value":Color(1, 0.94, 0.82, 1)}
+g_sky_color={"type":"color","value":Color(0.63, 0.8, 0.86, 1)}
+g_fog_color={"type":"color","value":Color(0.42, 0.68, 0.7, 1)}
+g_fog_density={"type":"float","value":0.012}

@@ -2,6 +2,81 @@
 
 ## 进行中
 
+## T-20261126-017 · 复刻《全军出鸡》式百倍单位自走棋
+- 来源: 飞书消息（B 站《酒馆战旗，但场上单位数量×100倍……》，https://b23.tv/2vtJIfx，2026-11-26，27:06，UP 独立游戏蜥蜴君；游戏《全军出鸡：鸡械绿洲自走棋》demo）
+- 类型: game-demo（自走棋 / 大规模单位）
+- 目标: 复刻抽象循环：商店/升本/三合一金卡/高星核心卡 → 每张卡生成数百单位 → 同屏上千单位自动战斗；加入原创“贪婪潮”风险收益与阵容码镜像对战
+- 交付: `godot-swarm-autobattler/` 可玩 vertical slice；100/1000/3000 单位性能数据；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 只复刻抽象机制；不复制 Hearthstone Battlegrounds / 全军出鸡 / 鸡械绿洲 的角色/UI/卡牌/美术/品牌；原创单位/卡牌/主题；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；用实例化渲染，禁止每单位 Node
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
+- 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）
+- 类型: game-demo（等轴不可能几何 / 解谜）
+- 目标: 复刻视频展示的核心不可能几何体验：固定等轴相机、旋转建筑/路径、屏幕空间对齐后连接不同深度的路径；原创几何/角色/关卡，不复制 Monument Valley 的具体关卡/美术/品牌
+- 交付: `godot-foldpath-puzzle/` 可玩 vertical slice（3 关）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 只复刻抽象机制；不复制 Monument Valley/ustwo 的关卡/角色/美术/音乐/品牌；原创低模/色板/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-015 · 复刻《Trifolium》3D 一笔画打结解谜
+- 来源: 飞书消息（B 站《【解谜游戏】可以打结的一笔画〈Trifolium〉Demo试玩》，https://b23.tv/PGfHEPL，2026-11-26，23:58，UP GT阿某；Trifolium / EmptyMatter，Steam demo）
+- 类型: game-demo（3D 一笔画 / 打结解谜）
+- 目标: 复刻 3D 一笔画+打结核心：画连续线绕柱/套圈/打结，满足结条件而非只数圈；友好 undo；小开放区域与目标判定
+- 交付: `godot-knotline-puzzle/` 可玩 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 只复刻抽象机制，不复制 Trifolium/EmptyMatter 素材/品牌/关卡；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；结检测可近似但须在 TECH 说明
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-014 · 复刻《SideStamp》滚块涂色解谜
+- 来源: 飞书消息（B 站《〈SideStamp〉官方预告片 | 一款关于色彩与旋转的解谜游戏》，https://b23.tv/CKwXd38，2026-11-26，80s，1920×1080，GoodHeartGames；简介：roll blocks into pools of paint to color the proper tiles）
+- 类型: game-demo（3D 等轴解谜 / 滚块涂色）
+- 目标: 复刻核心循环：滚动方块 → 漆池给接触面染色 → 滚到目标砖盖章 → 旋转改变朝下面 → 完成目标图案/关卡；原创名称/美术/关卡
+- 交付: `godot-hueroll-puzzle/` 可玩 Godot 4.6 vertical slice；≥6 关；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 只复刻抽象机制，不复制 SideStamp/GoodHeartGames 角色/UI/关卡/品牌/素材；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-012 · 风格化海洋第二版 独立美术复评
+- 线程: T-20261126-010（风格化海洋）
+- 父任务: T-20261126-011（QA）
+- 类型: game-demo（美术复评）
+- 目标: 独立复评 `godot-stylized-ocean-v2/` 是否达到参考视频的视觉语言与交互效果，给出 PASS/REJECT
+- 交付: `godot-stylized-ocean-v2/docs/art-review-final-T-20261126-012.md`；1280×720/1920×1080 证据
+- 约束: 不改代码/资产；只审查与结论
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261126-011 · 风格化海洋第二版 QA 验收
+- 线程: T-20261126-010（风格化海洋）
+- 父任务: T-20261126-010（实现）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收风格化海洋：波浪/色阶/泡沫/高光、鼠标涟漪/点击交互、相机、性能、console、smoke；对照参考视频
+- 交付: `godot-stylized-ocean-v2/docs/qa-T-20261126-011.md`；PASS/REJECT + 可复现证据
+- 约束: 不改美术/实现；1280×720/1920×1080 真实 GPU
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261126-010 · 复刻《风格化海洋第二版》交互水景
+- 来源: 飞书消息（B 站《风格化海洋第二版》，https://b23.tv/WCH7Sow，2026-11-26，31s，1920×1080，UP TechFusion；简介：改版了之前的风格化海洋交互）
+- 类型: game-demo（3D 风格化海洋 / 交互水景）
+- 目标: 复刻视频的风格化海洋与交互：Gerstner/多层波浪、深度色阶、浪尖/岸边泡沫、卡通高光/菲涅尔、天空/岛屿/小船，以及鼠标涟漪/点击落石/扰动交互
+- 交付: `godot-stylized-ocean-v2/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创低模/贴图/代码，不复制视频/原作者素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不做重型流体模拟
+- 指派: game-artist worker（dispatcher；视觉主导，QA/复评独立）
+- 状态: running
+
+## T-20261126-008 · 复刻 3D 像素水面与鱼（t3ssel8r 风格）
+- 来源: 飞书消息（B 站《做了水和鱼》，https://b23.tv/fnj2fKz，2026-11-26，49s，UP 迷茫Mmang_；简介：3D 像素渲染，借鉴 t3ssel8r，主要使用 GPT-6 编程）
+- 类型: game-demo（3D 像素渲染 / 水面 / 鱼群）
+- 目标: 复刻视频的 3D 像素水景：低分辨率 RT + 最近邻放大、色彩量化/抖动/描边、风格化水面（深浅色阶/折射/泡沫/焦散/波纹）与原创低多边形鱼群游动
+- 交付: `godot-3d-pixel-water-fish/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
+- 约束: 原创低模/贴图/代码，不复制 t3ssel8r/原作者素材或代码；Godot 4.6 GL Compatibility（若需换渲染器须说明），1280×720/1920×1080 显示，Intel 30fps+；不用付费资产
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: `godot-3d-pixel-water-fish/`；1920×1080 截图 11 张、10s MP4/GIF；README/TECH/迭代记录/CREDITS；`docs/agency/T-20261126-008.md`；smoke `WATER_FISH_SMOKE_OK`；Intel HD 6000 1280 avg 64.3 FPS / 1920 合成 avg 44.4 FPS
+
 ## T-20261126-007 · 水面视觉整改独立复评（T-001 follow-up）
 - 线程: T-20261126-001（水面 Shader）
 - 父任务: T-20261126-006（QA）
@@ -20,7 +95,7 @@
 - 交付: `godot-water-shader/docs/qa-T-20261126-006.md`；放行/打回 + 可复现证据
 - 约束: 不改美术方向/实现；only 验收；1280×720/1920×1080
 - 指派: game-qa-lead worker（dispatcher）
-- 状态: queued
+- 状态: failed
 
 ## T-20261126-005 · 按 brief 整改水面 Demo 视觉（T-001 follow-up）
 - 线程: T-20261126-001（水面 Shader）
