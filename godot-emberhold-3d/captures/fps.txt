@@ -1,0 +1,17 @@
+Environment: macOS, Intel(R) HD Graphics 6000, OpenGL 4.1 Compatibility
+Load average at measurement: 3.00 4.85 5.77 (shared machine)
+Command: godot --path godot-emberhold-3d --resolution 1280x720 -- --bench
+Godot game simulation: AI self-play fast-forwarded to wave 8, then 7s measured.
+
+BENCH 1280x720 full HUD: 39.9 FPS  (draw calls 246, 12 towers)
+BENCH 1280x720 full HUD: 47.6 FPS  (draw calls 244, 12 towers)
+BENCH 1280x720 full HUD: 47.4 FPS  (draw calls 244, 12 towers)
+BENCH 1920x1080 full HUD: 39.2 FPS (draw calls 244, 12 towers)
+BENCH 1280x720 no HUD:    51.0 FPS (draw calls 126, 12 towers)
+
+Intel HD 6000 / GL Compatibility target >= 30 FPS: PASS for the measured runs.
+Real-time directional shadows are off by default (cost ~15-25 ms/frame on this GPU);
+contact shadows are always on. Enable real-time shadows with: -- --shadows.
+
+Screenshots in captures/ are 1920x1080 offscreen high-res captures; their in-HUD FPS
+counter is lower because of the 1392x1008 3D field + PNG readback path under shared load.

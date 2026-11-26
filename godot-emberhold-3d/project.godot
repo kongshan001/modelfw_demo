@@ -1,0 +1,49 @@
+; Engine configuration file.
+; 余烬堡 3D · Emberhold 3D — original low-poly tower defense.
+; Godot 4.6 / GL Compatibility / 1280x720 logical canvas.
+
+config_version=5
+
+[application]
+
+config/name="余烬堡 3D · Emberhold 3D"
+config/description="从单文件 HTML 塔防移植的 3D 低模塔防：2 图 12 波、4 塔 5 敌、AI 指挥官可无人值守。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.svg"
+run/max_fps=60
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/vsync/vsync_mode=0
+window/energy_saving/keep_screen_on=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method.web="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+lights_and_shadows/directional_shadow/size=512
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=0
+environment/defaults/default_clear_color=Color(0.035, 0.03, 0.05, 1)
+environment/glow/upscale_mode=0
+environment/defaults/default_environment=""
+
+[debug]
+
+gdscript/warnings/untyped_declaration=0
+gdscript/warnings/unsafe_property_access=0
+gdscript/warnings/unsafe_method_access=0
+gdscript/warnings/unsafe_cast=0
+gdscript/warnings/return_value_discarded=0

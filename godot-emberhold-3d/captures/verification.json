@@ -1,0 +1,245 @@
+{
+  "task": "T-20261126-029",
+  "game": "余烬堡 3D · Emberhold 3D",
+  "engine": "Godot 4.6 GL Compatibility",
+  "generated_at": "2026-11-26",
+  "inputs": {
+    "html_baseline": "web-html-tower-defense/index.html (unmodified)",
+    "html_baseline_version": "T-20261126-022"
+  },
+  "maps": {
+    "ashen": {
+      "total_len_px": 1120,
+      "build_cells": 532,
+      "samples": 186,
+      "props": 8,
+      "portal_px": [
+        10,
+        88
+      ],
+      "beacon_px": [
+        448,
+        264
+      ]
+    },
+    "frost": {
+      "total_len_px": 960,
+      "build_cells": 542,
+      "samples": 158,
+      "props": 8,
+      "portal_px": [
+        10,
+        264
+      ],
+      "beacon_px": [
+        448,
+        56
+      ]
+    }
+  },
+  "parity": {
+    "ashen": {
+      "win": true,
+      "kills": 204,
+      "lives": 20,
+      "leaks": 0,
+      "sim_time": 559.67,
+      "ai_actions": 72,
+      "gold": 1003,
+      "html": {
+        "sim_time": 559.67,
+        "ai_actions": 72,
+        "towers_identical": true
+      }
+    },
+    "frost": {
+      "win": true,
+      "kills": 204,
+      "lives": 20,
+      "leaks": 0,
+      "sim_time": 443.73,
+      "ai_actions": 61,
+      "gold": 1003,
+      "html": {
+        "sim_time": 444.75,
+        "ai_actions": 61,
+        "towers_identical": true,
+        "delta_s": -1.02
+      }
+    },
+    "note": "Both final 12-tower layouts (type/level/cx/cy) are identical to the HTML verification.json. Frost sim time differs by 1.02s due to floating point path/projectile boundaries; decisions/kills/lives/towers match."
+  },
+  "checks": {
+    "smoke": {
+      "command": "godot --headless --path godot-emberhold-3d -s tools/smoke_emberhold3d.gd",
+      "checks": 72,
+      "fails": 0,
+      "result": "EMBERHOLD3D_SMOKE_OK"
+    },
+    "probe": {
+      "command": "godot --path godot-emberhold-3d -s tools/probe_emberhold3d.gd",
+      "checks": 29,
+      "fails": 0,
+      "result": "EMBERHOLD3D_PROBE_OK",
+      "covers": [
+        "menu",
+        "shop/HUD clicks",
+        "field build",
+        "upgrade",
+        "sell",
+        "pause/resume",
+        "AI toggle",
+        "speed",
+        "map transition",
+        "restart",
+        "victory overlay",
+        "menu map/start watch AI",
+        "keyboard Space/F/A"
+      ]
+    },
+    "console": {
+      "command": "godot --path godot-emberhold-3d --resolution 1920x1080 --quit-after 600",
+      "errors": 0,
+      "script_errors": 0,
+      "warnings": 0
+    },
+    "gpu": "Intel(R) HD Graphics 6000 / OpenGL 4.1 Compatibility",
+    "loadavg": "3.00 4.85 5.77 (shared macOS host)"
+  },
+  "benchmarks": [
+    {
+      "resolution": "1280x720",
+      "hud": true,
+      "fps": 39.9,
+      "draw_calls": 246,
+      "towers": 12,
+      "wave": 8
+    },
+    {
+      "resolution": "1280x720",
+      "hud": true,
+      "fps": 47.6,
+      "draw_calls": 244,
+      "towers": 12,
+      "wave": 8
+    },
+    {
+      "resolution": "1280x720",
+      "hud": true,
+      "fps": 47.4,
+      "draw_calls": 244,
+      "towers": 12,
+      "wave": 8
+    },
+    {
+      "resolution": "1920x1080",
+      "hud": true,
+      "fps": 39.2,
+      "draw_calls": 244,
+      "towers": 12,
+      "wave": 8
+    },
+    {
+      "resolution": "1280x720",
+      "hud": false,
+      "fps": 51.0,
+      "draw_calls": 126,
+      "towers": 12,
+      "wave": 8
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "godot-emberhold-3d/captures/01-menu-ashen.png",
+      "bytes": 281751,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/02-menu-frost.png",
+      "bytes": 299650,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/03-map-transition.png",
+      "bytes": 443521,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/04-build-preview.png",
+      "bytes": 457472,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/05-wave-combat.png",
+      "bytes": 440669,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/06-frost-assault.png",
+      "bytes": 470618,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/07-boss-wave.png",
+      "bytes": 438786,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/08-pause.png",
+      "bytes": 386159,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "file": "godot-emberhold-3d/captures/09-victory.png",
+      "bytes": 225317,
+      "width": 1920,
+      "height": 1080
+    }
+  ],
+  "video": {
+    "file": "godot-emberhold-3d/captures/emberhold3d-demo.mp4",
+    "bytes": 865338,
+    "duration": 10.0,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "frames": 300
+  },
+  "gif": {
+    "file": "godot-emberhold-3d/captures/emberhold3d-demo.gif",
+    "bytes": 2646759,
+    "duration": 10.0,
+    "width": 960,
+    "height": 540,
+    "fps": 15
+  },
+  "visual": {
+    "camera": "orthographic 3/4, yaw -11 deg, pitch -57 deg, size 47",
+    "field_viewport": "928x672 logical; 1392x1008 at 1920 windows",
+    "lighting": "DirectionalLight3D sun + fill, WorldEnvironment ambient + depth fog; per-unit contact shadows; realtime directional shadows optional via --shadows (off by default for Intel HD 30fps+)",
+    "models": "procedural MeshKit vertex-colored low-poly; no billboard model substitutes",
+    "asset_interfaces": [
+      "scenes/tower_view.tscn",
+      "scenes/enemy_view.tscn",
+      "scenes/map_view.tscn",
+      "scenes/projectile_view.tscn",
+      "scenes/vfx.tscn",
+      "materials/*.tres"
+    ]
+  },
+  "known_risks": [
+    "Realtime directional shadows are disabled by default (Intel HD performance tradeoff); contact shadows/lighting/fog remain.",
+    "HUD redraw is 10Hz to keep CJK text shaping/batching cheap on Intel; numbers quantize ~100ms, interactions redraw immediately.",
+    "Screenshot in-HUD FPS values are capture-path artifacts (1920 offscreen high-res + PNG readback); use --bench for performance.",
+    "No audio; desktop mouse-first; no mobile-specific layout.",
+    "Full default runs use 5.6s first prep, so their timing differs from the autotest (2.5s first prep) baseline."
+  ]
+}
