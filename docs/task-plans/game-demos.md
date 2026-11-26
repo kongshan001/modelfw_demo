@@ -2,6 +2,46 @@
 
 ## 进行中
 
+## T-20261126-028 · Swarmforge 美术升级独立复评（T-017 follow-up）
+- 线程: T-20261126-017（百倍单位自走棋）
+- 父任务: T-20261126-027（QA）
+- 类型: game-demo（美术复评）
+- 目标: 对照 T-20261126-025 brief 判断升级后是否达到生产级；检查单位剪影/卡牌/棋盘/VFX/UI 与 3000 单位性能；PASS/REJECT
+- 交付: `godot-swarm-autobattler/docs/art-review-final-T-20261126-028.md`；证据
+- 约束: 不改代码/资产；1920×1080 目标尺寸审查
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261126-027 · Swarmforge 美术升级 QA 验收（T-017 follow-up）
+- 线程: T-20261126-017（百倍单位自走棋）
+- 父任务: T-20261126-026（美术升级）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收 P0/P1 关闭情况、3000 单位 FPS/draw calls、商店/战斗/阵容码回归、console/smoke；PASS/REJECT
+- 交付: `godot-swarm-autobattler/docs/qa-T-20261126-027.md`；可复现证据
+- 约束: 不改美术/实现；1920×1080 真实 GPU
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261126-026 · Swarmforge 生产级美术资产升级（T-017 follow-up）
+- 线程: T-20261126-017（百倍单位自走棋）
+- 父任务: T-20261126-025（brief）
+- 类型: game-demo（美术实现）
+- 目标: 按 brief 落地 P0/P1：6–8 种可读单位剪影/阵营色/攻击帧、卡牌插画+稀有度框、棋盘环境/光照、VFX/伤害数字、UI/字体/图标；保持 MultiMesh/3000 单位 30fps
+- 交付: 更新 `godot-swarm-autobattler/`；before/after 截图/GIF/MP4；docs；性能数据；smoke
+- 约束: 原创资产；不复制 TFT/Hearthstone/全军出鸡 IP；不改玩法/数值；Godot 4.6 GL Compatibility，Intel 30fps+
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
+## T-20261126-025 · Swarmforge 生产级美术 brief（T-017 follow-up）
+- 线程: T-20261126-017（百倍单位自走棋）
+- 父任务: T-20261126-017（done）
+- 类型: game-demo（美术总监 brief）
+- 目标: 在 1920×1080 审查当前美术，定义“生产级”可执行标准：单位剪影/阵营色、卡牌插画/稀有度框、棋盘环境、VFX、UI/字体/图标；给出 P0–P2 + 参数 + 3000 单位性能预算
+- 交付: `godot-swarm-autobattler/docs/art-review-T-20261126-025.md` + 标注图；不改代码/资产
+- 约束: 不复制 TFT/Hearthstone/全军出鸡 角色/UI/卡牌/品牌；MultiMesh/3000 单位 30fps 是硬约束；fail-closed 验收
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-024 · 复刻 Claude+Codex+Godot 3D 动作游戏（3h25m）
 - 来源: 飞书消息（B 站《Claude + Codex + Godot，3小时25分钟做出一款3D游戏！》，https://b23.tv/huVtu9e，2026-11-26，7:26，UP AI前沿君；封面为低多边形芽苗勇者 vs 蘑菇怪）
 - 类型: game-demo（3D 低多边形动作 / AI 开发复刻）
@@ -9,7 +49,7 @@
 - 交付: `godot-sproutbound/` 可玩项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 复刻游戏不复制视频流程/素材/角色设计/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；视频不明确处写假设
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: running
 
 ## T-20261126-022 · 复刻单文件 HTML 塔防 + AI 指挥官
 - 来源: 飞书消息（B 站《Fable 5.2 把一个完整塔防塞进单个 HTML：零后端零美术资源，AI 指挥官能自己守塔（带试玩地址）》，https://b23.tv/ech1X6H，2026-11-26，27s，UP eddieliugd；原 Demo Cinderwatch，MIT）
@@ -70,6 +110,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-017/result.md
+- 后续: T-20261126-025 美术 brief → T-20261126-026 美术升级 → T-20261126-027 QA → T-20261126-028 独立复评
 
 ## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
 - 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）
@@ -110,7 +151,7 @@
 - 约束: 不改代码/资产；只审查与结论
 - 指派: game-art-director worker（dispatcher）
 - 状态: done
-- 产出: `godot-stylized-ocean-v2/docs/art-review-final-T-20261126-012.md`（自拍 1280/1920 证据在 `/tmp/ocean_review_012/`，不入库）
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-012/result.md
 - 结论: **REJECT，6.2/10（外放门槛 7.0）**。P0-1 俯视太阳闪点 0 个 >0.65 亮像素（参考同区 2274；低机位 20° 有宽光路 17287 px >0.80）；P0-2 水中礁石白环 72 角分箱 50% 有 >0.93 白核（参考 1%），25% 缩略图成白点。P1：浅水 5–10 m 灰/橄榄（`#78aca2` vs 参考 `#1985ab`，焦散对比 0.049 vs 0.084）、主泡沫带偏细偏匀、拖尾叠成白弹簧/点击环实心 torus、“岸线编辑可视化”橙色样条被背面剔除不可见（运行时 cull_disabled 即可见）。岸线整改有效部分（湿沙/透明浅水/三带泡沫/陆地接触阴影）实测存在。
 - 备注: 独立自拍+量化判定，QA 报告仅引用性能/输入仿真；参考帧只存 `/tmp/ocean_v2_ref/`，未入库。修复清单、参数与验收阈值见报告。
 
