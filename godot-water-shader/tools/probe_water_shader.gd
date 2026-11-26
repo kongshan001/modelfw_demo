@@ -27,12 +27,18 @@ func _initialize() -> void:
 	await _read_draw_calls("world_only_rain")
 	var world: Dictionary = await _measure("world_only_rain", DURATION)
 	_scene.set_ui_visible(true)
+	# 默认 HUD（面板收起，只有左上参数 chip）——实际游戏态。
+	await create_timer(0.5).timeout
+	await _read_draw_calls("with_hud_default")
+	var hud_default: Dictionary = await _measure("with_hud_default", 2.5)
+	# 面板展开（开发者参数状态）——UI 验收的最坏情况。
+	_scene.get_hud().set_panel_open(true)
 	_scene.get_hud().set_stats_visible(true)
 	await create_timer(0.5).timeout
-	await _read_draw_calls("with_hud")
-	var hud: Dictionary = await _measure("with_hud", 3.0)
-	print("WATER_SHADER_PROBE avg=%.1f min=%.1f hud_avg=%.1f hud_min=%.1f" % [
-		world["avg"], world["min"], hud["avg"], hud["min"]])
+	await _read_draw_calls("with_hud_panel")
+	var hud: Dictionary = await _measure("with_hud_panel", 2.5)
+	print("WATER_SHADER_PROBE avg=%.1f min=%.1f hud_default_avg=%.1f hud_panel_avg=%.1f hud_panel_min=%.1f" % [
+		world["avg"], world["min"], hud_default["avg"], hud["avg"], hud["min"]])
 	if float(world["avg"]) >= 30.0 and float(hud["avg"]) >= 30.0:
 		print("WATER_SHADER_PROBE_OK")
 		quit(0)

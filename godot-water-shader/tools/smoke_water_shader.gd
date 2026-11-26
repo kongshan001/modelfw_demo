@@ -50,23 +50,31 @@ func _initialize() -> void:
 	_check(min_d >= 0.99 and min_d < 1.6, "shallowest water distance odd: %.2f" % min_d)
 	_check(max_d > 10.0, "deepest water distance too small: %.2f" % max_d)
 
-	# 2-Pass 8 邻域：合成 4×4 水格，挖掉左上角，检查 (2,2) 的斜向距离 = 1.414。
-	var synth := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	# 2-Pass 8 邻域：合成 5×5，陆地格 (1,1) 通过 (0,1) 连到地图边界（大陆），
+	# 检查 (2,2) 的斜向距离 = 1.414；另放一个封闭小岛 (3,3)，验证“岛屿不种子”。
+	var synth := Image.create(80, 80, false, Image.FORMAT_RGBA8)
 	synth.fill(Color(0, 0, 0, 1))
-	for y in 64:
-		for x in 64:
+	for y in 80:
+		for x in 80:
 			synth.set_pixel(x, y, Color(1, 0, 0, 1))
 	for y in range(16, 32):
-		for x in range(16, 32):
+		for x in range(0, 32):
+			synth.set_pixel(x, y, Color(0, 0, 0, 0))
+	for y in range(48, 64):
+		for x in range(48, 64):
 			synth.set_pixel(x, y, Color(0, 0, 0, 0))
 	var sp := WaterPipeline.new()
 	sp.build(synth, 16)
-	_check(sp.cols == 4 and sp.rows == 4, "synthetic grid wrong")
+	_check(sp.cols == 5 and sp.rows == 5, "synthetic grid wrong")
 	var diag := sp.get_depth_cells(Vector2i(2, 2))
 	_check(absf(diag - 1.41421356) < 0.02,
 			"8-neighbour diagonal distance should be 1.414, got %.3f" % diag)
-	_check(sp.get_depth_cells(Vector2i(3, 3)) > diag,
+	_check(sp.get_depth_cells(Vector2i(3, 2)) > diag,
 			"depth should increase away from the single land pocket")
+	_check(sp.get_depth_cells(Vector2i(3, 3)) > 1.0,
+			"enclosed islet must not seed the depth field")
+	_check(int(sp.stats.get("islet_cells", 0)) == 1,
+			"synthetic enclosed islet should be detected")
 
 	# ── BFS：三个水体 / 内陆湖关浪与焦散 / 流动方向 ────────────────────
 	var bodies: Array = scene.get_bodies()
@@ -88,6 +96,7 @@ func _initialize() -> void:
 	_check(bool(stats.get("lake_caustic_off", false)), "lake caustic flag missing")
 	_check(int(stats.get("body_count", 0)) == 3, "stats body_count != 3")
 	_check(int(stats.get("lake_count", 0)) == 1, "stats lake_count != 1")
+	_check(int(stats.get("islet_cells", 0)) > 0, "real map islet cells missing")
 
 	var lake_center := pipeline.cell_at(lake["center"])
 	var river_center := pipeline.cell_at(river["center"])
@@ -145,6 +154,55 @@ func _initialize() -> void:
 	_check(shader_code.contains("rain_rings"), "rain ripple logic missing")
 	_check(shader_code.contains("u_puddle_mask") and shader_code.contains("u_puddle_depth"),
 			"puddle uniforms missing from the shared shader")
+	# T-005 视觉层：5 档色阶 / 湿沙 / 泡沫 / 焦散色 / 2 octave。
+	_check(shader_code.contains("water_ramp") and shader_code.contains("seabed_ratio"),
+			"depth ramp / seabed ratio missing")
+	_check(shader_code.contains("u_sea0") and shader_code.contains("u_lake3"),
+			"5-stop water palette uniforms missing")
+	_check(shader_code.contains("u_foam_core") and shader_code.contains("u_foam_wash"),
+			"foam core/wash uniforms missing")
+	_check(shader_code.contains("u_waterline") and shader_code.contains("u_caustic_col"),
+			"waterline / caustic tints missing")
+	_check(shader_code.count("voronoi_edge") >= 2, "caustics should use 2 octaves")
+	_check(shader_code.contains("u_sheen") and shader_code.contains("u_sparkle"),
+			"sheen / warm sparkle missing")
+	var refl: Sprite2D = scene.get_reflections_sprite()
+	var shore: Sprite2D = scene.get_shore_sprite()
+	var reeds: Array = scene.get_reed_sprites()
+	_check(refl != null and refl.texture != null, "reflection layer missing")
+	_check(shore != null and shore.texture != null, "shore overlay missing")
+	_check(reeds.size() == 5, "expected 5 reed clusters, got %d" % reeds.size())
+	_check(refl.z_index > scene.get_water_layer().z_index and refl.z_index < fg.z_index,
+			"reflection layer should sit between water and foreground")
+	_check(shore.z_index > scene.get_water_layer().z_index and shore.z_index < fg.z_index,
+			"shore overlay should sit between water and foreground")
+	var shore_img: Image = shore.texture.get_image()
+	var shore_data := shore_img.get_data()
+	var shore_px := 0
+	var foam_px := 0
+	for i in range(3, shore_data.size(), 64):
+		if shore_data[i] > 0:
+			shore_px += 1
+			var j := i - 3
+			if shore_data[j] > 220 and shore_data[j + 1] > 230 and shore_data[j + 2] > 210:
+				foam_px += 1
+	_check(shore_px > 300, "shore overlay looks empty")
+	_check(foam_px > 60, "shore foam pixels missing")
+	var refl_img: Image = refl.texture.get_image()
+	var refl_data := refl_img.get_data()
+	var refl_px := 0
+	for i in range(3, refl_data.size(), 64):
+		if refl_data[i] > 0:
+			refl_px += 1
+	_check(refl_px > 100, "reflection layer looks empty")
+	var lm_all: Dictionary = scene.get_landmarks()
+	for hero in ["hero_shore", "hero_bridge", "hero_lake", "hero_rain"]:
+		_check(lm_all.has(hero), "hero landmark missing: %s" % hero)
+	# 湖心岛不种子：深度通道在礁石格应为非零，但硬水仍为 0。
+	var islet_cell := Vector2i(62, 32)
+	_check(not pipeline.get_hard(islet_cell), "lake islet should stay land")
+	_check(depth_img.get_pixel(islet_cell.x, islet_cell.y).g > 0.02,
+			"islet should not seed the depth field")
 
 	# ── 三套预设 / 全局倍率 / uniform 接线 ────────────────────────────
 	var p_sea: Dictionary = ctrl.effective(WaterController.CAT_SEA)
@@ -283,6 +341,32 @@ func _initialize() -> void:
 	_check(scene.get_fps() >= 0, "fps query failed")
 	_check(scene.get_draw_calls() >= 0, "draw calls query failed")
 	_check(scene.get_hud()._debug_option.item_count == 5, "debug option should have 5 entries")
+	# HUD（T-005）：默认收起、面板 ≤20% 屏、按钮 ≥32、字幕 48px 安全条。
+	_check(not scene.get_hud().is_panel_open(), "HUD panel should start collapsed")
+	var tab: Button = scene.get_hud().get_tab_button()
+	_check(tab != null and tab.custom_minimum_size.y >= 32.0, "HUD tab should be >=32px")
+	scene.get_hud().set_panel_open(true)
+	await process_frame
+	await process_frame
+	var ps: Vector2 = scene.get_hud().get_panel_size()
+	_check(ps.x > 0.0 and ps.x <= 360.0, "HUD panel width should be <=360 (got %.0f)" % ps.x)
+	_check(ps.x * ps.y <= 0.20 * 1280.0 * 720.0,
+			"HUD panel should cover <=20%% screen (%.0fx%.0f)" % [ps.x, ps.y])
+	print("HUD_PANEL size=%.0fx%.0f area=%.2f%%" % [
+		ps.x, ps.y, 100.0 * ps.x * ps.y / (1280.0 * 720.0)])
+	var buttons: Array = scene.find_children("*", "Button", true, false)
+	var min_h := 999.0
+	for b in buttons:
+		min_h = minf(min_h, b.custom_minimum_size.y)
+	_check(min_h >= 32.0, "all HUD buttons should be >=32px high (min %.0f)" % min_h)
+	print("HUD_BUTTON_MIN_HEIGHT %.0f" % min_h)
+	var bar: ColorRect = scene.get_hud()._caption_bar
+	_check(bar != null, "caption safe bar missing")
+	_check(bar != null and absf(bar.offset_top + 48.0) < 0.5, "caption bar should be 48px high")
+	_check(bar != null and absf(bar.color.a - 0.55) < 0.02, "caption bar alpha should be 0.55")
+	_check(scene.get_hud()._caption.get_theme_font_size("font_size") == 18,
+			"caption font size should be 18")
+	scene.get_hud().set_panel_open(false)
 
 	# 滑杆与按钮接线（改 HUD 值应写回主控）。
 	var rain_slider: HSlider = scene.get_hud()._sliders["rain"]

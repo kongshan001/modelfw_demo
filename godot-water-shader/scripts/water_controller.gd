@@ -23,16 +23,39 @@ const DEVICE_DEFAULTS := {
 
 const BASE_PRESETS := {
 	CAT_SEA: {"wave": 1.0, "flow": 0.55, "foam": 1.0, "caustic": 1.0},
-	CAT_RIVER: {"wave": 0.32, "flow": 1.35, "foam": 0.50, "caustic": 0.60},
-	CAT_LAKE: {"wave": 0.05, "flow": 0.0, "foam": 0.07, "caustic": 0.0},
-	CAT_PUDDLE: {"wave": 0.02, "flow": 0.0, "foam": 0.10, "caustic": 0.0},
+	CAT_RIVER: {"wave": 0.32, "flow": 1.35, "foam": 0.50, "caustic": 0.70},
+	CAT_LAKE: {"wave": 0.05, "flow": 0.0, "foam": 0.0, "caustic": 0.0},
+	CAT_PUDDLE: {"wave": 0.02, "flow": 0.0, "foam": 0.0, "caustic": 0.0},
 }
 
-const DEEP_COLORS := {
-	CAT_SEA: Color(0.16, 0.42, 0.46),
-	CAT_RIVER: Color(0.12, 0.34, 0.32),
-	CAT_LAKE: Color(0.10, 0.26, 0.24),
-}
+# 水体色板（T-20261126-005）。hex 与 brief 6.1 / 6.4–6.6 一致；
+# 全部以 sRGB Color8 传入 source_color uniform，避免 shader 常量做错色彩空间。
+static func palette() -> Dictionary:
+	return {
+		"sea0": Color8(116, 176, 161),   # #74B0A1  0–2.5 格（降到 L67，让白沫/波前可读）
+		"sea1": Color8(102, 171, 166),   # #66ABA6  2.5–4.5
+		"sea2": Color8(74, 127, 133),    # #4A7F85  4.5–8
+		"sea3": Color8(53, 111, 119),    # #356F77  8–12
+		"sea4": Color8(48, 86, 92),      # #30565C  >12
+		"river0": Color8(135, 186, 162), # #87BAA2
+		"river1": Color8(93, 149, 129),  # #5D9581
+		"river2": Color8(58, 114, 100),  # #3A7264
+		"river3": Color8(36, 82, 74),    # #24524A
+		"river4": Color8(26, 66, 60),    # #1A423C
+		"lake0": Color8(111, 162, 138),  # #6FA28A
+		"lake1": Color8(74, 128, 111),   # #4A806F
+		"lake2": Color8(45, 91, 82),     # #2D5B52
+		"lake3": Color8(27, 63, 61),     # #1B3F3D
+		"puddle0": Color8(92, 114, 104), # #5C7268
+		"puddle1": Color8(51, 76, 74),   # #334C4A
+		"sand_warm": Color8(201, 181, 126), # #C9B57E
+		"foam_core": Color8(244, 250, 238), # #F4FAEE（近白但不触发纯白>245 全通道）
+		"foam_wash": Color8(156, 205, 189), # #9CCDBD
+		"waterline": Color8(43, 74, 69),    # #2B4A45
+		"sparkle": Color8(255, 233, 176),   # #FFE9B0
+		"caustic_col": Color8(223, 243, 220),   # #DFF3DC
+		"sheen": Color8(169, 206, 198),     # #A9CEC6
+	}
 
 var tide := 0.5
 var flow_scale := 1.0
@@ -155,10 +178,9 @@ func apply_to(material: ShaderMaterial) -> void:
 	material.set_shader_parameter("u_flow_speed", v["flow"])
 	material.set_shader_parameter("u_foam", v["foam"])
 	material.set_shader_parameter("u_caustic", v["caustic"])
-	material.set_shader_parameter("u_sea_deep", DEEP_COLORS[CAT_SEA])
-	material.set_shader_parameter("u_river_deep", DEEP_COLORS[CAT_RIVER])
-	material.set_shader_parameter("u_lake_deep", DEEP_COLORS[CAT_LAKE])
-	material.set_shader_parameter("u_shallow", Color(0.67, 0.83, 0.71))
+	var p := palette()
+	for key in p:
+		material.set_shader_parameter("u_" + key, p[key])
 
 
 func focus_label() -> String:

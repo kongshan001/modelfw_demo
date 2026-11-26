@@ -3,7 +3,7 @@ extends CanvasLayer
 # 中文参数面板。像素世界固定 1280×720，HUD 用系统 CJK 字体绘制。
 # 滑杆只调“全局倍率”，海/河/湖的基础差异来自数据类别与控制器预设。
 
-const PANEL_WIDTH := 396
+const PANEL_WIDTH := 352
 const SUBTLE := Color(0.72, 0.86, 0.80)
 const WARM := Color(0.99, 0.84, 0.52)
 const ACCENT := Color(0.55, 0.90, 0.76)
@@ -12,6 +12,7 @@ const DIM := Color(0.52, 0.66, 0.62)
 var main: Node
 
 var _root: Control
+var _tab: Button
 var _panel: PanelContainer
 var _sliders: Dictionary = {}
 var _value_labels: Dictionary = {}
@@ -26,7 +27,9 @@ var _legend: Label
 var _stats_panel: PanelContainer
 var _caption_root: Control
 var _caption: Label
+var _caption_bar: ColorRect
 var _ui_visible := true
+var _panel_open := false
 var _syncing := false
 
 
@@ -46,8 +49,22 @@ func set_ui_visible(value: bool) -> void:
 		_root.visible = value
 
 
+func set_panel_open(value: bool) -> void:
+	_panel_open = value
+	if _panel != null:
+		_panel.visible = value
+	if _tab != null:
+		_tab.text = "收起参数 (H)" if value else "☰ 参数 (H)"
+	if value:
+		_refresh_stats()
+
+
+func is_panel_open() -> bool:
+	return _panel_open
+
+
 func toggle_ui() -> void:
-	set_ui_visible(not _ui_visible)
+	set_panel_open(not _panel_open)
 
 
 func set_stats_visible(value: bool) -> void:
@@ -60,14 +77,23 @@ func set_display_scale(s: float) -> void:
 	if _panel != null:
 		_panel.scale = Vector2(s, s)
 		_panel.pivot_offset = Vector2.ZERO
+	if _tab != null:
+		_tab.add_theme_font_size_override("font_size", int(round(13.0 * s)))
+		_tab.custom_minimum_size = Vector2(118.0 * s, 32.0 * s)
+		_tab.size = Vector2(118.0 * s, 32.0 * s)
 	if _caption != null:
 		_caption.add_theme_font_size_override("font_size", int(round(18.0 * s)))
+	if _caption_bar != null:
+		_caption_bar.offset_top = -48.0 * s
+		_caption_bar.custom_minimum_size = Vector2(0, 48.0 * s)
 
 
 func show_caption(text: String) -> void:
 	if _caption != null:
 		_caption.text = text
 		_caption.visible = text != ""
+	if _caption_bar != null:
+		_caption_bar.visible = text != ""
 
 
 func sync_from_main() -> void:
@@ -92,6 +118,9 @@ func sync_from_main() -> void:
 
 
 func tick() -> void:
+	# 面板收起时不做任何 UI 文本布局（性能：默认 HUD 只有参数 chip）。
+	if not _panel_open:
+		return
 	_refresh_stats()
 
 
@@ -119,9 +148,8 @@ func _refresh_stats() -> void:
 
 
 func _process(_delta: float) -> void:
-	if main == null or not _ui_visible:
-		return
-	_refresh_stats()
+	# 统计由 main 以 5Hz 调用 tick()；这里不再每帧重排字体。
+	return
 
 
 # ── 构建 ─────────────────────────────────────────────────────────────────
@@ -148,8 +176,24 @@ func _build_ui() -> void:
 	_root.theme = theme
 	add_child(_root)
 
+	# 默认收起：仅左上角一个 32px 高的参数 chip，避免 HUD 压景。
+	_tab = Button.new()
+	_tab.text = "☰ 参数 (H)"
+	_tab.position = Vector2(18, 18)
+	_tab.custom_minimum_size = Vector2(118, 32)
+	_tab.size = Vector2(118, 32)
+	_tab.add_theme_font_size_override("font_size", 13)
+	var tab_style := StyleBoxFlat.new()
+	tab_style.bg_color = Color(0.030, 0.068, 0.064, 0.90)
+	tab_style.border_color = Color(0.36, 0.68, 0.58, 0.85)
+	tab_style.set_border_width_all(2)
+	tab_style.set_corner_radius_all(5)
+	_tab.add_theme_stylebox_override("normal", tab_style)
+	_tab.pressed.connect(toggle_ui)
+	_root.add_child(_tab)
+
 	_panel = PanelContainer.new()
-	_panel.position = Vector2(18, 18)
+	_panel.position = Vector2(18, 58)
 	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, 0)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	var style := StyleBoxFlat.new()
@@ -157,22 +201,23 @@ func _build_ui() -> void:
 	style.border_color = Color(0.36, 0.68, 0.58, 0.85)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(5)
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
 	_panel.add_theme_stylebox_override("panel", style)
 	_root.add_child(_panel)
+	_panel.visible = _panel_open
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 6)
+	column.add_theme_constant_override("separation", 4)
 	_panel.add_child(column)
 
 	var title_row := HBoxContainer.new()
 	column.add_child(title_row)
 	var title := Label.new()
 	title.text = "潮汐花园"
-	title.add_theme_font_size_override("font_size", 23)
+	title.add_theme_font_size_override("font_size", 20)
 	title.add_theme_color_override("font_color", WARM)
 	title_row.add_child(title)
 	var title_tag := Label.new()
@@ -186,7 +231,7 @@ func _build_ui() -> void:
 
 	var subtitle := Label.new()
 	subtitle.text = "海 / 河 / 湖共用 1 个水面 Shader · 零额外水面网格"
-	subtitle.add_theme_font_size_override("font_size", 10)
+	subtitle.add_theme_font_size_override("font_size", 9)
 	subtitle.add_theme_color_override("font_color", SUBTLE)
 	column.add_child(subtitle)
 
@@ -206,22 +251,22 @@ func _build_ui() -> void:
 	stat_box.add_theme_constant_override("separation", 1)
 	_stats_panel.add_child(stat_box)
 	_fps_label = Label.new()
-	_fps_label.add_theme_font_size_override("font_size", 11)
+	_fps_label.add_theme_font_size_override("font_size", 10)
 	_fps_label.add_theme_color_override("font_color", ACCENT)
 	stat_box.add_child(_fps_label)
 	_body_label = Label.new()
-	_body_label.add_theme_font_size_override("font_size", 11)
+	_body_label.add_theme_font_size_override("font_size", 10)
 	_body_label.add_theme_color_override("font_color", SUBTLE)
 	stat_box.add_child(_body_label)
 	_state_label = Label.new()
-	_state_label.add_theme_font_size_override("font_size", 10)
+	_state_label.add_theme_font_size_override("font_size", 9)
 	_state_label.add_theme_color_override("font_color", DIM)
 	stat_box.add_child(_state_label)
 
 	_add_divider(column)
 	var focus_title := Label.new()
 	focus_title.text = "观察水体（1 / 2 / 3）· 只高亮，不改变分类"
-	focus_title.add_theme_font_size_override("font_size", 10)
+	focus_title.add_theme_font_size_override("font_size", 9)
 	focus_title.add_theme_color_override("font_color", DIM)
 	column.add_child(focus_title)
 	var focus_row := HBoxContainer.new()
@@ -246,16 +291,16 @@ func _build_ui() -> void:
 	column.add_child(row1)
 	_rain_button = Button.new()
 	_rain_button.text = "降 雨"
-	_rain_button.custom_minimum_size = Vector2(74, 26)
+	_rain_button.custom_minimum_size = Vector2(70, 32)
 	_rain_button.pressed.connect(_on_rain_toggle)
 	row1.add_child(_rain_button)
 	_pause_button = Button.new()
 	_pause_button.text = "暂停"
-	_pause_button.custom_minimum_size = Vector2(62, 26)
+	_pause_button.custom_minimum_size = Vector2(58, 32)
 	_pause_button.pressed.connect(_on_pause_toggle)
 	row1.add_child(_pause_button)
 	_debug_option = OptionButton.new()
-	_debug_option.custom_minimum_size = Vector2(154, 26)
+	_debug_option.custom_minimum_size = Vector2(154, 32)
 	for item in ["调试：关闭", "调试：水体掩码", "调试：水深场", "调试：类别", "调试：岸线"]:
 		_debug_option.add_item(item)
 	_debug_option.item_selected.connect(_on_debug_selected)
@@ -266,17 +311,17 @@ func _build_ui() -> void:
 	column.add_child(row2)
 	var rebuild := Button.new()
 	rebuild.text = "重建管线 (B)"
-	rebuild.custom_minimum_size = Vector2(144, 26)
+	rebuild.custom_minimum_size = Vector2(140, 32)
 	rebuild.pressed.connect(_on_rebuild)
 	row2.add_child(rebuild)
 	var reset := Button.new()
 	reset.text = "重置 (N)"
-	reset.custom_minimum_size = Vector2(96, 26)
+	reset.custom_minimum_size = Vector2(92, 32)
 	reset.pressed.connect(_on_reset)
 	row2.add_child(reset)
 	var hide := Button.new()
 	hide.text = "收起 (H)"
-	hide.custom_minimum_size = Vector2(86, 26)
+	hide.custom_minimum_size = Vector2(80, 32)
 	hide.pressed.connect(toggle_ui)
 	row2.add_child(hide)
 
@@ -285,7 +330,7 @@ func _build_ui() -> void:
 	_legend.add_theme_font_size_override("font_size", 9)
 	_legend.add_theme_color_override("font_color", DIM)
 	_legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_legend.custom_minimum_size = Vector2(PANEL_WIDTH - 28, 0)
+	_legend.custom_minimum_size = Vector2(PANEL_WIDTH - 22, 0)
 	column.add_child(_legend)
 
 	# 底部字幕独立于面板，隐藏 UI 时仍可用于截图 / 视频。
@@ -294,26 +339,33 @@ func _build_ui() -> void:
 	_caption_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_caption_root.theme = theme
 	add_child(_caption_root)
+	# 字幕：底部 48 逻辑 px 安全条 #0B1414 α0.55，正文 18px #F5F7E0 ≥4.5:1。
+	_caption_bar = ColorRect.new()
+	_caption_bar.color = Color(0.043, 0.078, 0.078, 0.55)
+	_caption_bar.visible = false
+	_caption_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_caption_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_caption_bar.anchor_top = 1.0
+	_caption_bar.anchor_bottom = 1.0
+	_caption_bar.offset_top = -48.0
+	_caption_bar.offset_bottom = 0.0
+	_caption_root.add_child(_caption_bar)
 	_caption = Label.new()
 	_caption.visible = false
 	_caption.text = ""
 	_caption.add_theme_font_size_override("font_size", 18)
 	_caption.add_theme_color_override("font_color", Color(0.96, 0.97, 0.88))
-	_caption.add_theme_color_override("font_shadow_color", Color(0.02, 0.05, 0.05, 0.9))
-	_caption.add_theme_constant_override("shadow_offset_x", 2)
-	_caption.add_theme_constant_override("shadow_offset_y", 2)
-	_caption.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_caption.anchor_top = 0.90
-	_caption.anchor_bottom = 0.97
+	_caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_caption_root.add_child(_caption)
+	_caption_bar.add_child(_caption)
 
 
 func _add_focus_button(row: HBoxContainer, text: String, cat: int) -> void:
 	var b := Button.new()
 	b.text = text
-	b.custom_minimum_size = Vector2(82, 26)
+	b.custom_minimum_size = Vector2(76, 32)
+	b.add_theme_font_size_override("font_size", 11)
 	b.pressed.connect(func() -> void:
 		if main != null:
 			main.set_focus(cat))
@@ -328,8 +380,8 @@ func _add_slider(parent: VBoxContainer, key: String, label_text: String,
 	parent.add_child(row)
 	var label := Label.new()
 	label.text = label_text
-	label.custom_minimum_size = Vector2(132, 18)
-	label.add_theme_font_size_override("font_size", 11)
+	label.custom_minimum_size = Vector2(118, 20)
+	label.add_theme_font_size_override("font_size", 10)
 	row.add_child(label)
 	var slider := HSlider.new()
 	slider.min_value = min_v
@@ -337,14 +389,14 @@ func _add_slider(parent: VBoxContainer, key: String, label_text: String,
 	slider.step = step
 	slider.value = default_v
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.custom_minimum_size = Vector2(150, 18)
+	slider.custom_minimum_size = Vector2(140, 20)
 	slider.value_changed.connect(func(value: float) -> void: _on_slider_changed(key, value))
 	row.add_child(slider)
 	_sliders[key] = slider
 	var value_label := Label.new()
-	value_label.custom_minimum_size = Vector2(48, 18)
+	value_label.custom_minimum_size = Vector2(42, 20)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.add_theme_font_size_override("font_size", 10)
+	value_label.add_theme_font_size_override("font_size", 9)
 	value_label.add_theme_color_override("font_color", ACCENT)
 	row.add_child(value_label)
 	_value_labels[key] = value_label
@@ -406,3 +458,11 @@ func _on_rebuild() -> void:
 func _on_reset() -> void:
 	if main != null:
 		main.reset()
+
+
+func get_panel_size() -> Vector2:
+	return _panel.size if _panel != null else Vector2.ZERO
+
+
+func get_tab_button() -> Button:
+	return _tab

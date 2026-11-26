@@ -30,7 +30,8 @@
 - 交付: 更新项目；before/after 截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU；commit_paths `godot-water-shader/` + 计划文件
 - 约束: 原创素材；不复制视频/Unity 素材；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；不新增额外相机/Viewport
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-005/result.md
 
 ## T-20261126-004 · 水面 Demo 视觉诊断与 P0–P2 整改 brief（T-001 follow-up）
 - 线程: T-20261126-001（水面 Shader）

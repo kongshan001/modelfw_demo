@@ -37,8 +37,9 @@ func _initialize() -> void:
 	_hud.set_stats_visible(false)
 	_scene.set_ui_visible(false)
 	_scene.set_focus(WaterController.CAT_ALL)
-	_scene.snap_camera()
-	_scene.show_caption("潮汐花园 · 海 / 河 / 湖共用 1 个水面 Shader · 零额外网格")
+	var lm0: Dictionary = _scene.get_landmarks()
+	_scene.set_camera_view(lm0["hero_shore"]["pos"], lm0["hero_shore"]["zoom"], true)
+	_scene.show_caption("")
 	await create_timer(0.5).timeout
 
 	for i in FRAMES:
@@ -57,27 +58,16 @@ func _initialize() -> void:
 
 func _apply_timeline(i: int) -> void:
 	var lm: Dictionary = _scene.get_landmarks()
-	if i == 66:
-		_scene.set_focus(WaterController.CAT_SEA)
-		_scene.set_camera_view(lm["shallow"]["pos"], lm["shallow"]["zoom"])
-		_scene.show_caption("海域 · 浅滩透沙 · Voronoi 焦散 · 两道波前拍岸白沫")
-	elif i == 126:
-		_scene.set_focus(WaterController.CAT_RIVER)
-		_scene.show_caption("河流 · 单向流动 · 木桥裁切与遮挡")
-	elif i == 186:
-		_scene.set_focus(WaterController.CAT_LAKE)
-		_scene.show_caption("内陆湖 · BFS 不贴边 → 自动关海浪 / 关焦散")
+	if i == 30:
+		# 1s 切到浅滩；t≈1.4s 两道波前同时处于中段（便于 GIF 抽帧验证）。
+		_scene.set_camera_view(lm["shallow"]["pos"], lm["shallow"]["zoom"], true)
+	elif i == 120:
+		_scene.set_camera_view(lm["hero_bridge"]["pos"], lm["hero_bridge"]["zoom"], true)
+	elif i == 180:
+		_scene.set_camera_view(lm["hero_lake"]["pos"], lm["hero_lake"]["zoom"], true)
 	elif i == 228:
-		_scene.set_focus(WaterController.CAT_ALL)
-		_scene.set_camera_view(lm["full"]["pos"], lm["full"]["zoom"], true)
+		_scene.set_camera_view(lm["hero_rain"]["pos"], lm["hero_rain"]["zoom"], true)
 		_scene.set_rain(0.95)
-		_scene.show_caption("降雨 · 低洼积水 / 雨点涟漪 · 复用同一套水面逻辑")
-	elif i == 276:
-		_scene.set_debug_view(2)
-		_scene.show_caption("调试 · 2-Pass 8 邻域水深场（直向 1 / 斜向 1.414）")
-	elif i == 288:
-		_scene.set_debug_view(3)
-		_scene.show_caption("调试 · 零分配 BFS：海 / 河 / 湖 / 积水")
 
 
 func _clear_frames() -> void:

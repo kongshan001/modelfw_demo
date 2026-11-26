@@ -16,6 +16,11 @@ var _water_mat: ShaderMaterial
 var _water_layer: ColorRect
 var _ground: Sprite2D
 var _foreground: Sprite2D
+var _reflections: Sprite2D
+var _shore: Sprite2D
+var _reeds: Array[Sprite2D] = []
+var _reed_base: Array[Vector2] = []
+var _canvas_mod: CanvasModulate
 var _camera: Camera2D
 var _hud
 var _cam_pos := WORLD * 0.5
@@ -77,6 +82,24 @@ func _build_world() -> void:
 	_water_layer.z_index = 0
 	world.add_child(_water_layer)
 
+	# 岸线覆盖层：解析湿沙带 + 水线暗线，压在水面之上、前景之下。
+	_shore = Sprite2D.new()
+	_shore.name = "ShoreLine"
+	_shore.centered = false
+	_shore.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_shore.z_index = 2
+	_shore.texture = _make_texture(_art["shore"])
+	world.add_child(_shore)
+
+	# 静态风格化倒影：桥/船/礁石/芦苇，压在水面（z=0）与前景（z=10）之间。
+	_reflections = Sprite2D.new()
+	_reflections.name = "Reflections"
+	_reflections.centered = false
+	_reflections.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_reflections.z_index = 5
+	_reflections.texture = _make_texture(_art["reflections"])
+	world.add_child(_reflections)
+
 	_foreground = Sprite2D.new()
 	_foreground.name = "Foreground"
 	_foreground.centered = false
@@ -84,6 +107,14 @@ func _build_world() -> void:
 	_foreground.z_index = 10
 	_foreground.texture = _make_texture(_art["foreground"])
 	world.add_child(_foreground)
+
+	# 芦苇簇单独 sprite：±2px / 2.4s 风摆（不影响水面/前景）。
+	_build_reed_sprites(world)
+
+	# 雨天地表湿化：世界层整体 -8% L / -5% S + 轻雾（不增加全屏 RT）。
+	_canvas_mod = CanvasModulate.new()
+	_canvas_mod.name = "WeatherTint"
+	world.add_child(_canvas_mod)
 
 	_bind_field_textures()
 	_water_mat.set_shader_parameter("u_ground", _make_texture(_art["ground"]))
@@ -107,6 +138,26 @@ func _make_texture(img: Image) -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
+func _build_reed_sprites(world: Node2D) -> void:
+	for s in _reeds:
+		s.queue_free()
+	_reeds.clear()
+	_reed_base.clear()
+	for entry in _art.get("reeds", []):
+		var sp := Sprite2D.new()
+		sp.name = "Reeds"
+		sp.centered = false
+		sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		sp.z_index = 11
+		sp.texture = _make_texture(entry["image"])
+		var anchor: Vector2 = entry["anchor"]
+		sp.position = entry["pos"] - anchor
+		sp.set_meta("phase", float(entry["phase"]))
+		world.add_child(sp)
+		_reeds.append(sp)
+		_reed_base.append(sp.position)
+
+
 func _save_pipeline() -> void:
 	var dir := "res://docs/pipeline"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
@@ -119,6 +170,10 @@ func _process(delta: float) -> void:
 	controller.advance(delta)
 	controller.apply_to(_water_mat)
 	_update_camera(delta)
+	_animate_flora()
+	# 雨态：地表 -8% L、-5% S + 淡雾；只用一个 CanvasModulate。
+	var wet := controller.rain
+	_canvas_mod.color = Color(1.0, 1.0, 1.0).lerp(Color(0.90, 0.93, 0.93), wet * 0.72)
 	_hud_accum += delta
 	if _hud_accum >= 0.20:
 		_hud_accum = 0.0
@@ -132,6 +187,14 @@ func _update_camera(delta: float) -> void:
 	_cam_zoom = lerpf(_cam_zoom, _cam_target_zoom, k)
 	_camera.position = _clamp_camera(p, _cam_zoom)
 	_camera.zoom = Vector2(_cam_zoom, _cam_zoom)
+
+
+func _animate_flora() -> void:
+	var t := controller.time_seconds
+	for i in _reeds.size():
+		var phase: float = float(_reeds[i].get_meta("phase", 0.0))
+		_reeds[i].position.x = _reed_base[i].x + sin(t * TAU / 2.4 + phase) * 2.0
+
 
 
 func _clamp_camera(p: Vector2, z: float) -> Vector2:
@@ -259,9 +322,15 @@ func cycle_debug() -> int:
 
 
 func _sync_debug_visibility() -> void:
-	# 调试视图看数据本身：把桥/芦苇等前景移开，桥面裁切以蓝色格显示。
+	# 调试视图看数据本身：把桥/芦苇/倒影等表现层移开，桥面裁切以蓝色格显示。
 	if _foreground != null:
 		_foreground.visible = controller.debug_view == 0
+	if _reflections != null:
+		_reflections.visible = controller.debug_view == 0
+	if _shore != null:
+		_shore.visible = controller.debug_view == 0
+	for sp in _reeds:
+		sp.visible = controller.debug_view == 0
 
 
 func set_time_seconds(seconds: float) -> void:
@@ -279,6 +348,9 @@ func rebuild_pipeline() -> bool:
 	pipeline = fresh
 	_ground.texture = _make_texture(_art["ground"])
 	_foreground.texture = _make_texture(_art["foreground"])
+	_reflections.texture = _make_texture(_art["reflections"])
+	_shore.texture = _make_texture(_art["shore"])
+	_build_reed_sprites($WorldViewport/World)
 	_bind_field_textures()
 	_water_mat.set_shader_parameter("u_ground", _ground.texture)
 	_save_pipeline()
@@ -336,6 +408,18 @@ func get_ground_sprite() -> Sprite2D:
 
 func get_foreground_sprite() -> Sprite2D:
 	return _foreground
+
+
+func get_reflections_sprite() -> Sprite2D:
+	return _reflections
+
+
+func get_shore_sprite() -> Sprite2D:
+	return _shore
+
+
+func get_reed_sprites() -> Array[Sprite2D]:
+	return _reeds
 
 
 func get_hud() -> CanvasLayer:

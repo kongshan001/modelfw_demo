@@ -10,6 +10,8 @@
 
 本实现是 clean-room 复刻：场景、像素图、数据管线、shader、UI 全部在本项目内原创生成。
 
+> **2026-11-26 T-20261126-005 视觉整改后**：第 5 节的旧视觉参数（两色水深、单层白沫、无湿沙/倒影）已被第 12 节取代；数据骨架（16px mask / 8 邻域 / BFS / 单水面 shader）不变。第 12 节同时记录 islet depth 处理、性能取舍与实测。
+
 ---
 
 ## 1. 场景与素材
@@ -139,7 +141,9 @@ else:                             sea
 
 ---
 
-## 5. 单一水面 Shader
+## 5. 单一水面 Shader（T-001 版本，视觉参数已被第 12 节取代）
+
+> 本节保留 T-001 的实现与公式作为基线；T-005 的 5 档色阶、透沙、湿沙、泡沫分层、2 octave 焦散、倒影与 HUD 以 **第 12 节** 为准。
 
 `shaders/water_surface.gdshader`，`shader_type canvas_item`，只挂在一个 1280×720 `ColorRect` 上。
 
@@ -351,3 +355,136 @@ flow    = base.flow    × flow_scale
   4. 构图无 hero、桥抢焦点、HUD 默认压景（面板 18.5% 屏、字幕 4.1:1）。
 - 详细 brief/参数/验收：`docs/art-review-T-20261126-004.md`；标注图：`docs/shots/art-review/`。
 - 本次未改代码/资产；仅新增评审文档与标注图。
+- **T-20261126-005 已按上述 brief 完成整改**：4 项 P0 关闭，P1 大部分完成；外放 6 图、25%/4×、metrics JSON 见第 12 节与 `docs/shots/art-review/after/`。QA T-006 / AD T-007 仍待独立验收，不能以本节替代评审。
+
+
+---
+
+## 12. T-20261126-005 视觉整改实现（以本节为准）
+
+> 角色：Game Artist（独立 worker）；输入 brief：`docs/art-review-T-20261126-004.md`。  
+> 原则：不改玩法/数值/AI；保留 16px 手绘 mask、8 邻域 depth、BFS 海/河/湖、单一水面 shader、零额外水面网格、单相机/单 Viewport。  
+> 新增的 `shore` / `reflections` / 芦苇簇是**前景/岸线美术图层**，不是水面网格；水面绘制节点仍为 1（smoke 断言）。
+
+### 12.1 视觉层与文件所有权
+
+| 层 | 文件/节点 | 作用 |
+| --- | --- | --- |
+| 地面 | `pixel_art.gd` → `Ground` Sprite2D（z=-10） | 沙底、草地、房屋、桥外景、树、石、花 |
+| 水面 | `water_surface.gdshader` → 唯一 `WaterLayer` ColorRect（z=0） | 海/河/湖/积水、色阶、透沙、焦散、泡沫、雨 |
+| 岸线覆盖 | `pixel_art.gd:_build_shore_overlay` → `ShoreLine` Sprite2D（z=2） | 水线暗线、湿沙带、白芯/青沫、礁石泡沫领 |
+| 倒影 | `_build_reflections` → `Reflections` Sprite2D（z=5） | 桥/船/礁石/芦苇/睡莲/石墙的静态风格化倒影 |
+| 前景 | `Foreground`（z=10） | 桥、栈桥、睡莲、船 |
+| 芦苇 | 5 个独立 Sprite2D（z=11） | ±2px / 2.4s 风摆；每簇 9–12 根 |
+| HUD | `hud.gd` | 默认收起的参数面板 + 48px 字幕条 |
+| 数据管线 | `water_pipeline.gd` | 新增 `_mark_islets()`；depth/flow 哈希随之更新（可复现） |
+
+### 12.2 水色阶与透沙（P0-1）
+
+- 色板在 `WaterController.palette()` 以 **sRGB Color8** 传入 `source_color` uniform，shader 常量不直接写 sRGB 值，避免色彩空间错误。
+- `water_ramp(cat, dc)`：
+  - 海：`#74B0A1 / #66ABA6 / #4A7F85 / #356F77 / #30565C`，断点 2.5/4.5/8/12 格；
+  - 河：`#87BAA2 / #5D9581 / #3A7264 / #24524A / #12332E`，断点 0.45/1.0/1.7/2.8 格（视觉压深）；
+  - 湖：`#6FA28A / #4A806F / #2D5B52 / #1B3F3D`，断点 0.8/1.8/3.2 格；视觉深度 ×1.3、沙底 ×0.55；
+  - 积水：`#5C7268 / #334C4A`。
+- `seabed_ratio(dc)`：0.55 / 0.40 / 0.18 / 0.10 / 0（0.75/1.75/3.5/5/6.5 格）；浅水混入 `#C9B57E`（0.18 权重）和暖沙，深水 0。
+- 折射：`refr_px = 1.5 × (1-smoothstep(0.5,4.5,dc))`，4.5 格归零；UV 结果 snap 到 2px 世界块；不再出现 4px 果冻岸线。
+- 实测：海深 34.1 / 浅 71.4 L*，S 0.478/0.165；06 浅水横断可见 ≥60 逻辑 px 的沙底/鹅卵石/海草。
+
+### 12.3 岸线、湿沙与泡沫（P0-2）
+
+**资产层 `_build_shore_overlay(mask)`**（z=2）：
+- 海：逐 y 从解析 shore 附近扫描 **真实 16px 掩码边缘** `edge_x`，避免资产层与 shader 数据边错位；
+- 水侧：2px `#2B4A45` 水线（α0.55/0.35）+ 白芯 2–3 base px（4–6 逻辑）+ shader 4–8px（#F4FAEE，α0.95，20–30% 行断口）+ 青沫 4–6 base px（#9CCDBD，α0.17–0.22）；
+- 陆侧：4–5 base px 湿沙 `#A89670`→`#82755A`（=8–10 逻辑 px），外缘 1px 暗湿沙，右上 1px 干沙亮边 `#F5E9C0`；
+- 河：两岸 1px 水线 + 断口白沫 1px + 湿土 4–5 base px；
+- 湖：1–2px 暗水线 + 陆侧湿土，**无泡沫环**；
+- 礁石：三块岩 + 2–4 逻辑 px 断续泡沫领 + 水侧接触影；湖心岛只 1px 水线/影（无泡沫）。
+
+**Shader 泡沫**：
+- `t = clamp((m.g - cut)/(1-cut),0,1)` + `dc` 联合；白芯在 t 0.20–0.52（约 3–8px），dc 领口兜住全水格；20–30% 8–18px 岸段断口；
+- 双波前：cycle 0.18、相位差 0.5、front 3.6→1.2 格、宽 0.50 格、振幅 1.0/0.65、`sin²` 包络；前缘加 0.85 格青沫光晕；河 ×0.35，湖 0；
+- 白芯 #F4FAEE（近白但不触发全通道 >245），青沫 `mix(#9CCDBD, #2B4A45, 0.28)` 保证在白水/浅水上可读；
+- 水线暗线在泡沫之后叠加（0.62），保证“沙→湿沙→白芯→青沫→水”层序。
+
+**数据侧**：`_mark_islets()` 识别被水包围、不贴边界的陆地块（海礁/湖心岛），在 `_chamfer_water()` 中让它们**参与距离传播但不作为 0 种子**。这消除了 T-004 指出的礁石/湖心岛同心浅水光晕（“月亮”），礁石泡沫改由覆盖层断口领提供。`stats.islet_cells` 可查；smoke 验证合成 5×5 岛屿不种子。
+
+### 12.4 焦散（P1-1）
+
+- 2 octave Voronoi：主 56 world px、次 23 world px（次权重 0.50）；`tq = floor(u_time*8)/8`（8Hz）；漂移随 flow。
+- `core = pow(smoothstep(0.035,0,e),1.15)` 细亮芯；`glow = smoothstep(0.17,0,e)` 柔光晕；`water += caustic_col*(core*0.20+glow*0.06)*window*amt`。
+- 窗口 `smoothstep(0.20,0.60,dc)*(1-smoothstep(3.4,4.2,dc))`，窗口外**直接跳过 Voronoi**（Intel 预算优化）；湖/积水 caustic=0。
+- 实测（`after/03_sea_caustics.png` 600,300–900,600 裁剪）：9×9 中值高通 p95 **4.52 L***，>2 L* 像素 **8.3%**（代理覆盖；测量窗口不同会在 8–9% 间浮动）；深水 0。
+- 流动亮纹从 0.32 → 0.07；暖色太阳闪 #FFE9B0 0.4%、6–8Hz；近岸 sheen #A9CEC6（海/河 0.04、湖 0.02）。
+
+### 12.5 反射与光（P1-1）
+
+- `Reflections` 是静态 sprite：桥端木板/栏杆向下 8–12 base px（α0.28，2px dither）、船 7px（α0.16）、礁石/湖心岛 6–13px（α0.11–0.24）、芦苇 4–6px 细线（α0.08–0.12）、睡莲下暗斑、石墙落影；z=5 位于水面与前景之间，调试视图隐藏。
+- 不是实时反射/屏幕空间反射；不会随相机变化。深水不加反射贴图。
+- 阴影：右上光，左下影；屋/树/枫 α0.56、桥 0.42、石 0.30、接触影 2–3px；实测影 L*35.0 vs 草地 47.8；25% 可读出方向。
+
+### 12.6 场景美术（P0-3 / P1-2）
+
+- 房屋：3/4 屋顶（约 70% 足迹）、4 条瓦带、屋脊/右缘高光、烟囱影 6px、暖窗 2px、整屋左下影；墙基湿边。
+- 桥：板面 +6 L*，4px 板缝，双侧 4px 栏杆 + 12px 立柱 + 端部湿木 + 桥影/倒影 + 两端石块。
+- 礁石：3 色叠块 + 右上 rim 1–2px + 接触影 + 断口泡沫领（2–4 逻辑 px）；湖心岛加草/花。
+- 芦苇：9–12 根/簇、5 簇、基部 2px 影、独立 sprite 风摆；睡莲：6 组、12–18 显示 px、2 色+缺口+1px 高光。
+- 草地 5 档大色块（20–40 base px）+ 8–12% 稀疏斑点 + 草簇/花丛；土路 10–14 base px，碎石/草侵边/左下影。
+- 新增沙滩贝壳/海玻璃、漂流木、湖岸石挡墙、栅栏/花丛影；密度提升但仍是程序化。
+
+### 12.7 河 / 湖 / 积水 / 雨（P1-1/P1-3）
+
+- 河：色阶压深 + 内部 `water_ramp(dc_vis+2.2) × 0.85`（3–4 格宽河流的视觉补偿），沙底 ×0.55；中心 L*35.0（30–42），草 47.2（Δ12.2）；25% 不靠白边也能读。
+- 湖：视觉深度 ×1.3、沙底 ×0.55；中心 L*24.1、湖缘 50.9；无焦散/泡沫，1–2px 水线 + 石墙/湿土/岛影/睡莲影。
+- 积水：`stone×0.45 + #5C7268→#334C4A`，右上小范围天空反光（α0.07）、2px glints、2px 水线；雨环 0.5s、10% 溅水；雨量 gate（`u_rain`）。不是体积积水。
+- 雨：全屏单层雨丝（T-005 性能取舍）+ 0.13 雨雾 + CanvasModulate（地表 -8% L / -5% S 近似）+ 水面粗糙化 5%；雨态 07/08 可见湿地/积水/溅水。
+
+### 12.8 HUD / 构图 / 机位（P0-4）
+
+- 外放 6 图无 HUD/字幕；HUD 默认收起，只留左上 32px “☰ 参数”chip。
+- 面板：352×424 = **16.19%** 屏（≤20%）；按钮全部 ≥32 逻辑 px；字号 9/10/11/20；焦点环/滑块未做 2px 金圈（P2）。
+- 字幕：底部 48 逻辑 px `#0B1414` α0.55 条 + 18px `#F5F7E0`，对比 ≥4.5:1；6s 自动隐藏未做（截图用 `show_caption("")`）。
+- 机位：`hero_shore (420,420,1.70)`、`hero_bridge (900,300,1.70)`、`hero_lake (866,468,1.55)`、`hero_rain (640,360,1.0)`；`sea/river/lake/shallow/islet` 保留旧机位做同机位对照（03/06）。
+- 图：`docs/shots/art-review/after/01_wide_hero…16_hero_lake`（1920×1080）；1280/720 为 LANCZOS 等比缩放（注明方法），480×270 为 25%，4× 为 NEAREST。
+
+### 12.9 性能与取舍（Intel HD 6000 / GL Compatibility / VSync off）
+
+| 场景 | world | 默认 HUD（收起） | 面板展开 |
+| --- | ---: | ---: | ---: |
+| 1280×720 满雨 | 172.7 | **156.1** | 116–137 |
+| 1920×1080 离屏满雨 | 137.4 | **122.7** | 86–103 |
+
+> 单独跑探针；verify/并行任务负载下会低 10–15%（720p 默认 HUD 曾测 146.6，1080p 119.4）。用户要求 30fps+ 全部通过；brief 的 150/90 以默认 HUD（收起）为准。
+
+- draw calls：world 11 / 默认 HUD 14 / 面板 75；水面节点 1；无新增相机/Viewport/水面网格。
+- 关键优化：浅水窗口内才做 2 octave Voronoi；水位/积水深度只在覆盖像素采样；低洼 mask 仅在雨天采样；雨丝单层；岸线/倒影/芦苇用静态 sprite（每帧只做芦苇 position 正弦）。
+- 取舍：面板展开 720p 116–137 <150，但默认 HUD 156.1 ≥150；1080p 面板 86–103（默认 122.7 ≥90）。若 QA 的 720p 硬门槛要求“面板展开 ≥150”，需把 HUD 改为自绘/减节点（技术/性能 → game-engineer）。HUD 收起时不再每帧重排文本（T-005 优化）。
+- 启动：`PixelArt.build()` ~3.0s + pipeline ~0.1s；verify 并行负载下 READY 4–7s；不影响 30fps。
+
+### 12.10 已知限制 / 未做
+
+1. 16px 岸线阶梯仍在；湿沙/泡沫/4px dither 遮大部分，8px 栅格是数据×4 的另预算。
+2. 倒影为静态 sprite，无实时反射/折射；2D 俯视限制。
+3. 地表仍是程序化手绘风，不是手绘资产；密度低于参考视频。
+4. 阴影是 2D 假 3/4；无动态光照/夜景/天气过渡（P2）。
+5. 湖心岛/石墙是 sprite 组合，不是几何体；桥无透视。
+6. 积水是即时水膜，无体积积累/排干。
+7. 分类是启发式，换图需重调 `RIVER_MAX_WIDTH`。
+8. P2 未做：6s 雨起停过渡、HUD 120ms 收展、3 段 3s GIF；已交付 6 张 hero/技术图 + 10s MP4/GIF。
+
+### 12.11 复现
+
+```bash
+godot --headless --path godot-water-shader -s tools/smoke_water_shader.gd
+godot --path godot-water-shader -s tools/screenshot_water_shader.gd
+godot --path godot-water-shader --resolution 1280x720 -s tools/probe_water_shader.gd
+godot --path godot-water-shader -s tools/probe_water_shader_1080.gd
+godot-water-shader/tools/verify.sh
+godot-water-shader/tools/build_media.sh
+python3 godot-water-shader/tools/make_after_evidence.py
+```
+
+- smoke：`WATER_SHADER_SMOKE_OK checks=151`（含 HUD 面板 16.19%/按钮 32/字幕 48、岸线泡沫像素、islet 不种子、2 octave 焦散、芦苇 5 簇、hero 机位）。
+- 截图：16 张 1920×1080；after/ 同时输出 1280/25%/4×/before-after。
+- 媒体：10s MP4（1920×1080/30fps）+ GIF（800×450/12fps/96 色，<5MB）。
+- 参考视频未入库；全部像素/色板/场景原创。

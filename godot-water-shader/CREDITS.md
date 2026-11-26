@@ -7,7 +7,9 @@
   - 海湾、沙滩、水下鹅卵石/海草、河流、木桥、内陆湖、小屋、松树、红枫、石灯笼、栅栏、花丛、低洼积水
   - 无外部图片、贴图或字体文件
 - HUD 中文：Godot `SystemFont`（PingFang SC / Hiragino Sans GB / Noto Sans CJK SC 等系统回退），不随项目分发字体
-- 本项目由 T-20261126-001 的 Game Engineer worker 于 2026-11-26 完成
+- 本项目由 T-20261126-001 的 Game Engineer worker 于 2026-11-26 完成；T-20261126-005 的 Game Artist worker 完成视觉整改（色板、水下沙底、湿沙岸线、泡沫、焦散、倒影、场景光照、HUD/构图）。
+  - 新增/重绘：5 档水色阶、沙底/鹅卵石/海草、湿沙带、白芯/青沫、礁石泡沫领、3/4 屋顶、桥栏杆/湿木、俯视小船、芦苇簇、睡莲组、静态倒影层。
+  - 所有像素/色板/几何均由 `scripts/pixel_art.gd` 以固定种子生成，无外部图片/贴图/模型。
 
 ## 技术参考
 
@@ -32,6 +34,12 @@
 ## 使用与 License
 
 本目录的代码与程序化美术为本次任务原创产出，按仓库既有约定使用；若需对外再分发，请同时保留本 CREDITS 与参考视频链接。
+
+## 视觉整改（T-20261126-005）
+
+- 角色：Game Artist worker；输入 brief `docs/art-review-T-20261126-004.md`。
+- 未引入任何第三方图片、贴图、字体文件或模型；参考视频仍只在 `/tmp/water_ref/` 做视觉语言分析。
+- 新增截图/指标：`docs/shots/art-review/after/`、`metrics_after.json`、`AFTER_before_after_sheet.png`；before 图来自 T-001/T-004 的真实 GPU 截图。
 
 ## 美术评审取样（T-20261126-004）
 

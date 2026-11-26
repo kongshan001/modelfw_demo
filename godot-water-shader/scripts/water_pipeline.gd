@@ -50,6 +50,8 @@ var _flow_y := PackedFloat32Array()
 var _comp := PackedInt32Array()
 var _queue := PackedInt32Array()
 var _low_queue := PackedInt32Array()
+var _islet := PackedByteArray()
+var islet_cells := 0
 
 
 func build(mask_source: Image, cell_size: int = CELL, source_bridge_rect: Rect2 = Rect2()) -> Dictionary:
@@ -77,8 +79,10 @@ func build(mask_source: Image, cell_size: int = CELL, source_bridge_rect: Rect2 
 	_comp.resize(total)
 	_queue.resize(total)
 	_low_queue.resize(total)
+	_islet.resize(total)
 
 	_downsample(mask_source)
+	_mark_islets()
 	_chamfer_water()
 	_chamfer_puddles()
 	_classify_and_fill()
@@ -145,14 +149,71 @@ func _downsample(src: Image) -> void:
 	bridge_cells = bridge_total
 
 
+func _mark_islets() -> void:
+	# 被水包围、且不与地图边界连通的陆地块 = 小岛/礁石。
+	# 它们仍然作为陆地绘制，但**不作为水深种子**：否则礁石周围会出现
+	# 同心浅水光晕（AD 指出的“湖心像月亮/礁石白环”根因之一）。
+	var total := cols * rows
+	var seen := PackedByteArray()
+	seen.resize(total)
+	seen.fill(0)
+	var queue := PackedInt32Array()
+	queue.resize(total)
+	var head := 0
+	var tail := 0
+	for y in rows:
+		for x in cols:
+			var i := y * cols + x
+			if seen[i] == 1:
+				continue
+			var border := x == 0 or y == 0 or x == cols - 1 or y == rows - 1
+			if not border:
+				continue
+			if _hard[i] == 1 or _bridge[i] == 1 or _conn[i] == 1:
+				continue
+			seen[i] = 1
+			queue[tail] = i
+			tail += 1
+	while head < tail:
+		var i := queue[head]
+		head += 1
+		var x: int = i % cols
+		var y: int = i / cols
+		for dy: int in [-1, 0, 1]:
+			for dx: int in [-1, 0, 1]:
+				if dx == 0 and dy == 0:
+					continue
+				var nx: int = x + dx
+				var ny: int = y + dy
+				if nx < 0 or ny < 0 or nx >= cols or ny >= rows:
+					continue
+				var ni: int = ny * cols + nx
+				if seen[ni] == 1:
+					continue
+				if _hard[ni] == 1 or _bridge[ni] == 1 or _conn[ni] == 1:
+					continue
+				seen[ni] = 1
+				queue[tail] = ni
+				tail += 1
+	islet_cells = 0
+	for i in total:
+		_islet[i] = 0
+		if _hard[i] == 0 and _bridge[i] == 0 and _conn[i] == 0 and seen[i] == 0:
+			_islet[i] = 1
+			islet_cells += 1
+	stats["islet_cells"] = islet_cells
+
+
 func _chamfer_water() -> void:
 	for i in _hard.size():
-		_depth_cells[i] = INF if _conn[i] == 1 else 0.0
+		# 岛屿/礁石格参与距离传播（避免浅水光晕），但仍作为陆地绘制。
+		var passable := _conn[i] == 1 or _islet[i] == 1
+		_depth_cells[i] = INF if passable else 0.0
 	# 正向：左 / 左上 / 上 / 右上。
 	for y in rows:
 		for x in cols:
 			var i := y * cols + x
-			if _conn[i] == 0:
+			if _conn[i] == 0 and _islet[i] == 0:
 				continue
 			var d := _depth_cells[i]
 			if x > 0:
@@ -168,7 +229,7 @@ func _chamfer_water() -> void:
 	for y in range(rows - 1, -1, -1):
 		for x in range(cols - 1, -1, -1):
 			var i := y * cols + x
-			if _conn[i] == 0:
+			if _conn[i] == 0 and _islet[i] == 0:
 				continue
 			var d := _depth_cells[i]
 			if x < cols - 1:
@@ -374,6 +435,7 @@ func _classify_and_fill() -> void:
 		"rows": rows,
 		"source": [src_size.x, src_size.y],
 		"bridge_cells": bridge_cells,
+		"islet_cells": islet_cells,
 		"bridge_rect": [bridge_rect.position.x, bridge_rect.position.y, bridge_rect.size.x, bridge_rect.size.y],
 		"water_cells": water_total,
 		"water_pct": 100.0 * float(water_total) / float(maxi(cols * rows, 1)),

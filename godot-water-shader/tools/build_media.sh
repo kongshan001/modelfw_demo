@@ -14,7 +14,7 @@ ffmpeg -y -framerate 30 -i /tmp/water_shader_frames/frame_%03d.png \
   docs/water_shader.mp4
 
 ffmpeg -y -framerate 30 -i /tmp/water_shader_frames/frame_%03d.png \
-  -filter_complex "fps=15,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=112[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" \
+  -filter_complex "fps=12,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=96[p];[s1][p]paletteuse=dither=bayer:bayer_scale=4" \
   docs/water_shader.gif
 
 ls -lh docs/water_shader.mp4 docs/water_shader.gif
