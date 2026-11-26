@@ -2,6 +2,24 @@
 
 ## 进行中
 
+## T-20261126-024 · 复刻 Claude+Codex+Godot 3D 动作游戏（3h25m）
+- 来源: 飞书消息（B 站《Claude + Codex + Godot，3小时25分钟做出一款3D游戏！》，https://b23.tv/huVtu9e，2026-11-26，7:26，UP AI前沿君；封面为低多边形芽苗勇者 vs 蘑菇怪）
+- 类型: game-demo（3D 低多边形动作 / AI 开发复刻）
+- 目标: 识别视频最终 3D 游戏的核心循环与表现，在 Godot 4.6 复刻成可玩 vertical slice：第三人称芽苗勇者、蘑菇敌人、近战/闪避、血量/击退、目标/胜负；原创名称/低模/关卡
+- 交付: `godot-sproutbound/` 可玩项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 复刻游戏不复制视频流程/素材/角色设计/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；视频不明确处写假设
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261126-022 · 复刻单文件 HTML 塔防 + AI 指挥官
+- 来源: 飞书消息（B 站《Fable 5.2 把一个完整塔防塞进单个 HTML：零后端零美术资源，AI 指挥官能自己守塔（带试玩地址）》，https://b23.tv/ech1X6H，2026-11-26，27s，UP eddieliugd；原 Demo Cinderwatch，MIT）
+- 类型: game-demo（Web 单文件塔防 / AI 托管）
+- 目标: 复刻“单 HTML + 零后端 + 零外部美术 + AI 指挥官自动守塔”的体验；原创名称/美术/代码，不照搬 Cinderwatch
+- 交付: `web-html-tower-defense/index.html`（HTML+CSS+原生 JS 全内联，无外部依赖/素材）；AI 托管/手动切换；2–3 地图过渡；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；Playwright 验证
+- 约束: 单文件、零后端、零外部美术/字体/音频/CDN；原创程序化抖动像素；不复制 Cinderwatch 代码/素材/名称（MIT 仅作参考，若复用必须署名）；浏览器 1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
 - 线程: T-20261126-010（风格化海洋）
 - 父任务: T-20261126-010（done）
@@ -11,6 +29,7 @@
 - 约束: 只改岸线/浅水/泡沫/湿沙/接触阴影；保留现有波浪/交互/UI/性能；原创素材，不复制参考视频/作者素材；Godot 4.6 GL Compatibility，Intel 30fps+
 - 指派: game-artist worker（dispatcher）
 - 状态: done
+- 备注: T-011 QA 验收 = REJECT（视觉）：岸线硬切/旧青色光晕已修好（湿沙/透明浅水/三条泡沫带 PASS），但太阳高光不可见（P0-1）、礁石泡沫环呈白色甜甜圈（P0-2）；报告 `godot-stylized-ocean-v2/docs/qa-T-20261126-011.md`
 
 ## T-20261126-020 · 3D 像素水景修复独立复评（T-008 follow-up）
 - 线程: T-20261126-008（3D 像素水面与鱼）
@@ -40,7 +59,7 @@
 - 交付: 更新 `godot-3d-pixel-water-fish/`；同机位 before/after 截图 ≥6 组；TECH/迭代记录；GIF/MP4；smoke + 真实 GPU
 - 约束: 不改鱼模型/关卡/交互/整体美术方向；不复制参考素材；真实 GPU；Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: failed
 
 ## T-20261126-017 · 复刻《全军出鸡》式百倍单位自走棋
 - 来源: 飞书消息（B 站《酒馆战旗，但场上单位数量×100倍……》，https://b23.tv/2vtJIfx，2026-11-26，27:06，UP 独立游戏蜥蜴君；游戏《全军出鸡：鸡械绿洲自走棋》demo）
@@ -99,7 +118,9 @@
 - 交付: `godot-stylized-ocean-v2/docs/qa-T-20261126-011.md`；PASS/REJECT + 可复现证据
 - 约束: 不改美术/实现；1280×720/1920×1080 真实 GPU
 - 指派: game-qa-lead worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 产出: `godot-stylized-ocean-v2/docs/qa-T-20261126-011.md`；`docs/qa/`（18 张 1280/1920 截图 + 交互 GIF + 礁石裁剪）；`tools/qa_acceptance_stylized_ocean.gd`
+- 结论: **REJECT（视觉）**；功能/交互/性能/回归/资产 PASS。P0-1 太阳高光在 720/1080 不可见（水面 0 个 >0.8 亮斑）；P0-2 礁石泡沫环过亮过完整（白色甜甜圈/平板光晕）；P1 泡沫蕾丝/焦散/帆船；P2 文档默认值漂移。证据与复现命令见报告。
 
 ## T-20261126-010 · 复刻《风格化海洋第二版》交互水景
 - 来源: 飞书消息（B 站《风格化海洋第二版》，https://b23.tv/WCH7Sow，2026-11-26，31s，1920×1080，UP TechFusion；简介：改版了之前的风格化海洋交互）
