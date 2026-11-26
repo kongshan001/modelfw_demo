@@ -1,0 +1,3496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>余烬堡 · Emberhold</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230b0a12'/%3E%3Cpath d='M8 2c2 3 4 4 3 7 2 0 3 2 2 4-1 2-3 3-5 2C4 14 2 11 3 8c1-3 4-3 5-6z' fill='%23ff8a3d'/%3E%3Cpath d='M8 8c1 1 1 3 0 4-1-1-1-3 0-4z' fill='%23ffd27a'/%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#06050a}
+  body{display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
+  #frame{position:relative;line-height:0}
+  canvas{display:block;width:640px;height:360px;image-rendering:pixelated;image-rendering:crisp-edges;
+    background:#0b0a12;outline:none;touch-action:none;cursor:crosshair}
+</style>
+</head>
+<body>
+<div id="frame"><canvas id="view" width="640" height="360" aria-label="余烬堡塔防"></canvas></div>
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   余烬堡 · Emberhold
+   单文件塔防 / 原生 Canvas 2D / 程序化抖动像素 / 零外部资源
+   全部代码与美术为原创；仅参考了同类塔防的通用玩法概念。
+   ============================================================ */
+
+// ---------- 基础常量 ----------
+const VW = 640, VH = 360;
+const TILE = 16, GY = 24, GW = 29, GH = 21;
+const FIELD_W = GW * TILE;           // 464
+const FIELD_H = GH * TILE;           // 336
+const PANEL_X = FIELD_W;
+const PANEL_W = VW - PANEL_X;        // 176
+const STEP = 1 / 60;
+const MAX_WAVE = 12;
+const START_GOLD = 140;
+const START_LIVES = 20;
+const SKILL_CD = 35;
+const SKILL_DMG = 30;
+const SANS = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif';
+const MONO = '"SFMono-Regular",Menlo,Consolas,"PingFang SC",monospace';
+const font = (size, weight = 'normal', mono = false) =>
+  `${weight} ${size}px ${mono ? MONO : SANS}`;
+
+const PAL = {
+  ink:      '#08070c',
+  deep:     '#121019',
+  night:    '#1a1725',
+  panel:    '#16131d',
+  panel2:   '#1d1926',
+  line:     '#3a3040',
+  lineHot:  '#6f4d3b',
+  bone:     '#e9dfc6',
+  boneDim:  '#b7a98e',
+  muted:    '#8a7f74',
+  dim:      '#5a524e',
+  gold:     '#f2c46b',
+  goldHi:   '#ffe7a8',
+  ember:    '#ff8a3d',
+  emberHi:  '#ffd27a',
+  emberRed: '#c94a34',
+  life:     '#e46a52',
+  frost:    '#7cd7d0',
+  frostHi:  '#d8f4ee',
+  frostDim: '#3c8d93',
+  green:    '#8fbf6a',
+  greenDim: '#55774b',
+  violet:   '#a58ad6',
+  red:      '#d66058',
+  white:    '#fff6e2',
+};
+
+// ---------- Bayer / 随机 / 数学 ----------
+const BAYER4 = [
+  [ 0,  8,  2, 10],
+  [12,  4, 14,  6],
+  [ 3, 11,  1,  9],
+  [15,  7, 13,  5],
+];
+const BAYER8 = [
+  [ 0, 32,  8, 40,  2, 34, 10, 42],
+  [48, 16, 56, 24, 50, 18, 58, 26],
+  [12, 44,  4, 36, 14, 46,  6, 38],
+  [60, 28, 52, 20, 62, 30, 54, 22],
+  [ 3, 35, 11, 43,  1, 33,  9, 41],
+  [51, 19, 59, 27, 49, 17, 57, 25],
+  [15, 47,  7, 39, 13, 45,  5, 37],
+  [63, 31, 55, 23, 61, 29, 53, 21],
+];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+const fmtTime = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function hash2(x, y, seed = 0) {
+  let h = (x * 374761393 + y * 668265263 + seed * 1442695041) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177 | 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+const bayer4 = (x, y) => (BAYER4[y & 3][x & 3] + 0.5) / 16;
+const bayer8 = (x, y) => (BAYER8[y & 7][x & 7] + 0.5) / 64;
+
+function makeNoise(seed) {
+  const S = 14, rng = mulberry32(seed);
+  const vals = new Float32Array((S + 1) * (S + 1));
+  for (let i = 0; i < vals.length; i++) vals[i] = rng();
+  return (x, y) => {
+    const gx = clamp(x, 0, 0.9999) * S, gy = clamp(y, 0, 0.9999) * S;
+    const x0 = gx | 0, y0 = gy | 0;
+    const fx = gx - x0, fy = gy - y0;
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    const i = y0 * (S + 1) + x0;
+    const a = vals[i], b = vals[i + 1], c = vals[i + S + 1], d = vals[i + S + 2];
+    return lerp(lerp(a, b, sx), lerp(c, d, sx), sy);
+  };
+}
+
+// ---------- 地图 ----------
+const MAP_DEFS = {
+  ashen: {
+    id: 'ashen',
+    name: '灰烬小径',
+    latin: 'ASHEN PATH',
+    diff: '普通',
+    desc: '折返长道 · 火力覆盖充足',
+    seed: 7319,
+    waypoints: [[-1, 5], [20, 5], [20, 12], [6, 12], [6, 17], [27, 17], [29, 17]],
+    art: {
+      ground: ['#1d251b', '#263021', '#313d29', '#3c4a30'],
+      groundDark: '#151a11',
+      speck: ['#12160f', '#34422b', '#4a5739', '#626845'],
+      pathEdge: '#120f0c',
+      pathBase: '#493e31',
+      pathMid: '#5c4c3a',
+      pathLit: '#7c664c',
+      feather: '#332d23',
+      accent: '#ff8a3d',
+      accent2: '#ffd27a',
+      water: null,
+      glow: 'rgba(255,138,61,',
+    },
+    decorSeed: 9137,
+  },
+  frost: {
+    id: 'frost',
+    name: '冻苔回廊',
+    latin: 'FROSTMOSS PASS',
+    diff: '险峻',
+    desc: '多弯近路 · 减速价值更高',
+    seed: 4271,
+    waypoints: [[-1, 16], [5, 16], [5, 6], [12, 6], [12, 15], [19, 15], [19, 4], [27, 4], [29, 4]],
+    art: {
+      ground: ['#1b2931', '#22353d', '#2c424a', '#39565f'],
+      groundDark: '#111b21',
+      speck: ['#0e171d', '#304650', '#4b6670', '#718b90'],
+      pathEdge: '#0c151b',
+      pathBase: '#3e555c',
+      pathMid: '#536e76',
+      pathLit: '#83a5a5',
+      feather: '#2a3f47',
+      accent: '#7cd7d0',
+      accent2: '#d8f4ee',
+      water: '#274b57',
+      glow: 'rgba(124,215,208,',
+    },
+    decorSeed: 5801,
+  },
+};
+
+// ---------- 塔与敌人 ----------
+const TOWERS = {
+  bolt: {
+    key: 'bolt', name: '燧石哨塔', short: '燧石', tag: '单体', hotkey: '1',
+    cost: 40, upgrades: [45, 70], color: PAL.ember,
+    desc: '灼热弩箭，优先攻击最靠前的敌人。',
+    levels: [
+      { dmg: 10, rate: 1.15, range: 58 },
+      { dmg: 16, rate: 1.30, range: 64 },
+      { dmg: 25, rate: 1.45, range: 70 },
+    ],
+  },
+  flame: {
+    key: 'flame', name: '焰心炉', short: '焰炉', tag: '范围', hotkey: '2',
+    cost: 65, upgrades: [60, 85], color: '#ff6b3a',
+    desc: '掷出炽炭，对落点周围造成溅射伤害。',
+    levels: [
+      { dmg: 13, rate: 0.55, range: 54, splash: 24 },
+      { dmg: 20, rate: 0.62, range: 58, splash: 28 },
+      { dmg: 30, rate: 0.70, range: 62, splash: 32 },
+    ],
+  },
+  frost: {
+    key: 'frost', name: '霜苔环', short: '霜环', tag: '减速', hotkey: '3',
+    cost: 55, upgrades: [45, 70], color: PAL.frost,
+    desc: '冻苔孢子命中后拖慢敌人，为火力争取时间。',
+    levels: [
+      { dmg: 3, rate: 0.95, range: 62, slow: 0.45, slowTime: 1.8 },
+      { dmg: 5, rate: 1.05, range: 70, slow: 0.55, slowTime: 2.0 },
+      { dmg: 8, rate: 1.15, range: 76, slow: 0.62, slowTime: 2.2 },
+    ],
+  },
+  mint: {
+    key: 'mint', name: '铸币圣坛', short: '圣坛', tag: '经济', hotkey: '4',
+    cost: 50, upgrades: [40, 60], color: PAL.gold,
+    desc: '每波结束时产出金币。越早建，回本越快。',
+    levels: [{ income: 6 }, { income: 10 }, { income: 15 }],
+  },
+};
+const TOWER_ORDER = ['bolt', 'flame', 'frost', 'mint'];
+
+const ENEMIES = {
+  walker: {
+    key: 'walker', name: '灰烬行者', hp: 30, speed: 32, reward: 7, leak: 1,
+    armor: 0, radius: 5, color: '#5b5268', dim: '#2e2938', slowResist: 0,
+  },
+  moth: {
+    key: 'moth', name: '幽火蛾', hp: 20, speed: 50, reward: 6, leak: 1,
+    armor: 0, radius: 4, color: '#9addc9', dim: '#458d86', slowResist: 0,
+  },
+  brute: {
+    key: 'brute', name: '锈甲兽', hp: 115, speed: 19, reward: 15, leak: 2,
+    armor: 2, radius: 6, color: '#b97358', dim: '#6f4034', slowResist: 0,
+  },
+  spore: {
+    key: 'spore', name: '孢母', hp: 205, speed: 15, reward: 24, leak: 3,
+    armor: 1, radius: 7, color: '#a58ad6', dim: '#5e4b7e', slowResist: 0.5,
+    heal: 6, healRadius: 38,
+  },
+  boss: {
+    key: 'boss', name: '无光巨像', hp: 1120, speed: 13, reward: 120, leak: 8,
+    armor: 4, radius: 11, color: '#e8784a', dim: '#6f3225', slowResist: 0.4,
+    boss: true,
+  },
+};
+
+const WAVES = [
+  { name: '灰烬初潮', groups: [{ type: 'walker', n: 6, gap: 1.0 }] },
+  { name: '踏火而行', groups: [{ type: 'walker', n: 9, gap: 0.85 }] },
+  { name: '蛾群夜巡', groups: [
+    { type: 'moth', n: 10, gap: 0.5 },
+    { type: 'walker', n: 4, gap: 1.0, delay: 4 },
+  ] },
+  { name: '锈甲压境', groups: [
+    { type: 'brute', n: 3, gap: 1.8 },
+    { type: 'walker', n: 8, gap: 0.8, delay: 3 },
+  ] },
+  { name: '群翼蔽月', groups: [
+    { type: 'moth', n: 14, gap: 0.35 },
+    { type: 'brute', n: 2, gap: 2.0, delay: 4 },
+  ] },
+  { name: '孢雾蔓延', groups: [
+    { type: 'spore', n: 1, gap: 1.0 },
+    { type: 'walker', n: 10, gap: 0.7, delay: 2 },
+    { type: 'moth', n: 6, gap: 0.45, delay: 7 },
+  ] },
+  { name: '重装推进', groups: [
+    { type: 'brute', n: 6, gap: 1.3 },
+    { type: 'walker', n: 10, gap: 0.6, delay: 5 },
+  ] },
+  { name: '暗翼狂潮', groups: [
+    { type: 'moth', n: 18, gap: 0.3 },
+    { type: 'brute', n: 4, gap: 1.6, delay: 7 },
+  ] },
+  { name: '腐殖之潮', groups: [
+    { type: 'spore', n: 2, gap: 3.0 },
+    { type: 'brute', n: 6, gap: 1.2, delay: 2 },
+    { type: 'walker', n: 10, gap: 0.6, delay: 7 },
+  ] },
+  { name: '孢子围城', groups: [
+    { type: 'moth', n: 20, gap: 0.26 },
+    { type: 'spore', n: 2, gap: 4.0, delay: 4 },
+    { type: 'brute', n: 6, gap: 1.2, delay: 8 },
+  ] },
+  { name: '铁苔洪流', groups: [
+    { type: 'brute', n: 12, gap: 0.8 },
+    { type: 'spore', n: 2, gap: 4.0, delay: 5 },
+    { type: 'walker', n: 12, gap: 0.5, delay: 9 },
+  ] },
+  { name: '无光降临', groups: [
+    { type: 'boss', n: 1, gap: 1.0 },
+    { type: 'brute', n: 6, gap: 1.4, delay: 5 },
+    { type: 'moth', n: 14, gap: 0.4, delay: 8 },
+  ] },
+];
+
+// 血量随波次成长（只影响敌人，不改变 AI 规则）
+const hpScale = w => 1 + 0.10 * (w - 1) + 0.005 * (w - 1) * (w - 1);
+
+// ---------- 路径准备 ----------
+function prepareMap(map) {
+  const pts = map.waypoints.map(([cx, cy]) => ({
+    x: cx * TILE + TILE / 2,
+    y: GY + cy * TILE + TILE / 2,
+  }));
+  map.points = pts;
+  map.segments = [];
+  let total = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    const len = dist(a.x, a.y, b.x, b.y);
+    map.segments.push({ a, b, len, start: total, end: total + len });
+    total += len;
+  }
+  map.totalLen = total;
+
+  // 路径采样，用于 AI 选点与可建造判定
+  map.samples = [];
+  for (const seg of map.segments) {
+    const n = Math.max(1, Math.floor(seg.len / 6));
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      map.samples.push({ x: lerp(seg.a.x, seg.b.x, t), y: lerp(seg.a.y, seg.b.y, t) });
+    }
+  }
+  map.samples.push({ x: pts[pts.length - 1].x, y: pts[pts.length - 1].y });
+
+  map.distanceToPath = (x, y) => {
+    let best = 1e9;
+    for (const seg of map.segments) {
+      const dx = seg.b.x - seg.a.x, dy = seg.b.y - seg.a.y;
+      const t = clamp(((x - seg.a.x) * dx + (y - seg.a.y) * dy) / (seg.len * seg.len), 0, 1);
+      const px = seg.a.x + dx * t, py = seg.a.y + dy * t;
+      const d = Math.hypot(x - px, y - py);
+      if (d < best) best = d;
+    }
+    return best;
+  };
+  map.pointAt = d => {
+    d = clamp(d, 0, map.totalLen);
+    for (const seg of map.segments) {
+      if (d <= seg.end || seg === map.segments[map.segments.length - 1]) {
+        const t = clamp((d - seg.start) / seg.len, 0, 1);
+        return { x: lerp(seg.a.x, seg.b.x, t), y: lerp(seg.a.y, seg.b.y, t), seg };
+      }
+    }
+  };
+  const mid = map.pointAt(map.totalLen - 24);
+  map.beacon = { x: Math.round(mid.x), y: Math.round(mid.y - 16) };
+  const entry = map.pointAt(18);
+  map.portal = { x: Math.round(entry.x), y: Math.round(entry.y) };
+
+  // 可建造草地：路径两侧；再放入少量不可建造的场景道具
+  const baseCells = [];
+  for (let cy = 0; cy < GH; cy++) {
+    for (let cx = 0; cx < GW; cx++) {
+      const x = cx * TILE + TILE / 2, y = GY + cy * TILE + TILE / 2;
+      if (map.distanceToPath(x, y) >= 15) baseCells.push({ cx, cy });
+    }
+  }
+  const propRng = mulberry32(map.decorSeed ^ 0x50a1);
+  const candidates = baseCells.filter(c => {
+    if (c.cx < 2 || c.cx > GW - 3 || c.cy < 2 || c.cy > GH - 2) return false;
+    const p = cellCenter(c.cx, c.cy);
+    const d = map.distanceToPath(p.x, p.y);
+    return d >= 27 && d <= 92;
+  });
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = (propRng() * (i + 1)) | 0;
+    const tmp = candidates[i]; candidates[i] = candidates[j]; candidates[j] = tmp;
+  }
+  map.props = [];
+  const blocked = new Set();
+  for (const c of candidates) {
+    if (map.props.length >= 8) break;
+    if (map.props.some(q => Math.abs(q.cx - c.cx) <= 1 && Math.abs(q.cy - c.cy) <= 1)) continue;
+    const roll = propRng();
+    let type;
+    if (map.id === 'frost') type = roll < 0.46 ? 'crystal' : roll < 0.76 ? 'stones' : 'bones';
+    else type = roll < 0.48 ? 'tree' : roll < 0.78 ? 'stones' : 'bones';
+    map.props.push({ cx: c.cx, cy: c.cy, type, seed: propRng() });
+    blocked.add(c.cx + ',' + c.cy);
+  }
+  map.blocked = blocked;
+  map.buildCells = baseCells.filter(c => !blocked.has(c.cx + ',' + c.cy));
+  map.buildableSet = new Set(map.buildCells.map(c => c.cx + ',' + c.cy));
+  return map;
+}
+
+function drawProp(b, map, prop) {
+  const p = cellCenter(prop.cx, prop.cy);
+  const art = map.art;
+  const px = Math.round(p.x), py = Math.round(p.y);
+  b.save();
+  // 阴影与苔土底座
+  b.fillStyle = 'rgba(4,4,8,0.38)';
+  b.fillRect(px - 7, py + 2, 14, 3);
+  for (let dy = -4; dy <= 6; dy += 2) {
+    for (let dx = -7; dx <= 7; dx += 2) {
+      if (Math.abs(dx) + Math.abs(dy) > 11) continue;
+      if (bayer4(px + dx, py + dy) < 0.42) {
+        b.fillStyle = art.groundDark;
+        b.fillRect(px + dx, py + dy, 1, 1);
+      }
+    }
+  }
+  if (prop.type === 'tree') {
+    const h = 20 + Math.floor(prop.seed * 9);
+    // 扭曲的枯树
+    b.fillStyle = '#09080d';
+    b.fillRect(px - 2, py - h, 5, h + 3);
+    b.fillRect(px - 6, py - h + 6, 5, 2);
+    b.fillRect(px + 3, py - h + 10, 5, 2);
+    b.fillRect(px - 4, py - h + 2, 4, 2);
+    b.fillRect(px + 1, py - h + 2, 5, 2);
+    b.fillStyle = '#4a3c32';
+    b.fillRect(px - 1, py - h + 1, 2, h + 1);
+    b.fillStyle = '#6b5543';
+    b.fillRect(px - 1, py - h + 1, 1, 8);
+    b.fillRect(px - 4, py - h + 6, 3, 1);
+    b.fillRect(px + 3, py - h + 10, 3, 1);
+    b.fillRect(px + 1, py - h + 2, 2, 1);
+    // 根与苔
+    b.fillStyle = '#2f4a2e';
+    b.fillRect(px - 4, py + 2, 3, 1);
+    b.fillRect(px + 2, py + 2, 4, 1);
+    b.fillStyle = art.accent;
+    b.fillRect(px + 4, py, 2, 1);
+    b.fillStyle = art.accent2;
+    b.fillRect(px + 4, py - 1, 1, 1);
+  } else if (prop.type === 'stones') {
+    const h1 = 9 + Math.floor(prop.seed * 5), h2 = 6 + Math.floor(prop.seed * 3);
+    b.fillStyle = '#0a090d';
+    b.fillRect(px - 6, py - h1, 5, h1 + 2);
+    b.fillRect(px - 1, py - h1 + 3, 6, h1 - 1);
+    b.fillRect(px + 5, py - h2, 3, h2 + 2);
+    b.fillStyle = '#50463f';
+    b.fillRect(px - 5, py - h1 + 1, 3, h1);
+    b.fillRect(px, py - h1 + 4, 4, h1 - 2);
+    b.fillStyle = '#75685a';
+    b.fillRect(px - 5, py - h1 + 1, 1, 3);
+    b.fillRect(px, py - h1 + 4, 1, 4);
+    b.fillRect(px + 6, py - h2 + 1, 1, 2);
+    b.fillStyle = art.accent;
+    b.fillRect(px - 1, py - h1 + 6, 1, 1);
+  } else if (prop.type === 'bones') {
+    // 骨堆图腾
+    b.fillStyle = '#0a090d';
+    b.fillRect(px - 1, py - 15, 3, 17);
+    b.fillRect(px - 5, py - 14, 10, 5);
+    b.fillStyle = art.feather;
+    b.fillRect(px, py - 13, 1, 14);
+    b.fillStyle = PAL.boneDim;
+    b.fillRect(px - 3, py - 13, 6, 3);
+    b.fillRect(px - 2, py - 11, 4, 1);
+    b.fillStyle = '#171319';
+    b.fillRect(px - 2, py - 12, 1, 1);
+    b.fillRect(px + 1, py - 12, 1, 1);
+    b.fillStyle = PAL.ember;
+    b.fillRect(px - 2, py - 12, 1, 1);
+    b.fillRect(px + 1, py - 12, 1, 1);
+    b.fillStyle = PAL.boneDim;
+    b.fillRect(px - 5, py - 8, 3, 1);
+    b.fillRect(px + 3, py - 6, 3, 1);
+  } else if (prop.type === 'crystal') {
+    const h = 13 + Math.floor(prop.seed * 8);
+    b.fillStyle = '#0a090d';
+    b.fillRect(px - 6, py - h, 5, h + 3);
+    b.fillRect(px + 1, py - h + 4, 5, h - 1);
+    b.fillRect(px - 8, py - 7, 4, 9);
+    b.fillStyle = '#2e5b63';
+    b.fillRect(px - 5, py - h + 1, 3, h + 1);
+    b.fillRect(px + 2, py - h + 5, 3, h - 2);
+    b.fillRect(px - 7, py - 6, 2, 7);
+    b.fillStyle = '#5b9a9e';
+    b.fillRect(px - 5, py - h + 1, 1, h);
+    b.fillRect(px + 2, py - h + 5, 1, h - 3);
+    b.fillStyle = PAL.frost;
+    b.fillRect(px - 4, py - h + 2, 1, 4);
+    b.fillRect(px + 3, py - h + 6, 1, 5);
+    b.fillStyle = PAL.frostHi;
+    b.fillRect(px - 4, py - h + 2, 1, 1);
+    b.fillRect(px + 3, py - h + 6, 1, 1);
+    b.fillRect(px - 6, py - 5, 1, 2);
+    b.globalAlpha = 0.45;
+    b.fillStyle = PAL.frost;
+    b.fillRect(px - 10, py - 2, 1, 1);
+    b.fillRect(px + 8, py - 4, 1, 1);
+    b.fillRect(px + 1, py - h - 1, 1, 1);
+    b.globalAlpha = 1;
+  }
+  b.restore();
+}
+const MAPS = {};
+for (const id of Object.keys(MAP_DEFS)) MAPS[id] = prepareMap(MAP_DEFS[id]);
+
+// ---------- 背景烘焙 ----------
+const bgCache = {};
+
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+function makeDitherPattern(color, step = 4) {
+  const c = document.createElement('canvas');
+  c.width = step; c.height = step;
+  const g = c.getContext('2d');
+  g.fillStyle = color;
+  g.fillRect(0, 0, 1, 1);
+  g.fillRect(2, 2, 1, 1);
+  if (step > 4) g.fillRect(4, 0, 1, 1);
+  return c;
+}
+let RANGE_PATTERN_GOOD = null;
+let RANGE_PATTERN_BAD = null;
+let RANGE_PATTERN_ICE = null;
+
+function drawPath(bg, map) {
+  const art = map.art;
+  const pts = map.points;
+  const stroke = (width, color, dash = null) => {
+    bg.save();
+    bg.strokeStyle = color;
+    bg.lineWidth = width;
+    bg.lineCap = 'round';
+    bg.lineJoin = 'round';
+    if (dash) bg.setLineDash(dash);
+    bg.beginPath();
+    bg.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) bg.lineTo(pts[i].x, pts[i].y);
+    bg.stroke();
+    bg.restore();
+  };
+  stroke(18, art.pathEdge);
+  stroke(13, art.pathBase);
+  stroke(8, art.pathMid);
+
+  // 碎石与枕木纹理
+  const rng = mulberry32(map.decorSeed ^ 0x51ab);
+  for (const seg of map.segments) {
+    const dx = seg.b.x - seg.a.x, dy = seg.b.y - seg.a.y;
+    const nx = -dy / seg.len, ny = dx / seg.len;
+    for (let d = 3; d < seg.len; d += 6) {
+      const t = d / seg.len;
+      const px = lerp(seg.a.x, seg.b.x, t);
+      const py = lerp(seg.a.y, seg.b.y, t);
+      const off = (rng() * 10 - 5);
+      const r = rng();
+      bg.fillStyle = r < 0.35 ? art.pathLit : r < 0.7 ? art.pathMid : art.pathBase;
+      bg.fillRect(Math.round(px + nx * off), Math.round(py + ny * off), rng() < 0.35 ? 2 : 1, 1);
+      if (rng() < 0.18) {
+        bg.fillStyle = art.pathEdge;
+        bg.fillRect(Math.round(px + nx * (off - 4)), Math.round(py + ny * (off - 4)), 2, 1);
+      }
+    }
+    // 路边小石
+    for (let d = 8; d < seg.len; d += 18) {
+      const t = d / seg.len;
+      const px = lerp(seg.a.x, seg.b.x, t);
+      const py = lerp(seg.a.y, seg.b.y, t);
+      for (const side of [-1, 1]) {
+        if (rng() < 0.55) {
+          bg.fillStyle = rng() < 0.5 ? art.feather : art.pathLit;
+          bg.fillRect(Math.round(px + nx * side * 9), Math.round(py + ny * side * 9), 1, 1);
+        }
+      }
+    }
+    // 行进方向的小箭头
+    for (let d = 26; d < seg.len; d += 56) {
+      const t = d / seg.len;
+      const px = Math.round(lerp(seg.a.x, seg.b.x, t));
+      const py = Math.round(lerp(seg.a.y, seg.b.y, t));
+      const ux = Math.round(dx / seg.len), uy = Math.round(dy / seg.len);
+      bg.fillStyle = hexA(art.feather, 0.95);
+      bg.fillRect(px - ux * 2 + nx * 0, py - uy * 2, 1, 1);
+      bg.fillRect(px + nx * 2, py + ny * 2, 1, 1);
+      bg.fillRect(px + ux * 2, py + uy * 2, 1, 1);
+    }
+    // 路缘苔痕 / 裂纹 / 磨损
+    const mossCol = map.id === 'frost' ? '#3e5a5c' : '#3d4d2e';
+    for (let d = 2; d < seg.len; d += 4) {
+      const t = d / seg.len;
+      const px = Math.round(lerp(seg.a.x, seg.b.x, t));
+      const py = Math.round(lerp(seg.a.y, seg.b.y, t));
+      for (const side of [-1, 1]) {
+        const rr = rng();
+        if (rr < 0.33) {
+          bg.fillStyle = mossCol;
+          bg.fillRect(Math.round(px + nx * side * (9 + rng() * 2)),
+            Math.round(py + ny * side * (9 + rng() * 2)), 1, 1);
+        }
+        if (rr > 0.9) {
+          bg.fillStyle = art.pathEdge;
+          bg.fillRect(Math.round(px + nx * side * 7), Math.round(py + ny * side * 7), 1, 1);
+        }
+      }
+      if (rng() < 0.17) {
+        bg.fillStyle = art.pathEdge;
+        bg.fillRect(px + Math.round((rng() - 0.5) * 6), py + Math.round((rng() - 0.5) * 4), 2, 1);
+      }
+    }
+  }
+}
+
+function drawTerrain(map) {
+  const bg = document.createElement('canvas');
+  bg.width = VW; bg.height = VH;
+  const b = bg.getContext('2d');
+  b.imageSmoothingEnabled = false;
+  const art = map.art;
+  const n1 = makeNoise(map.seed);
+  const n2 = makeNoise(map.seed + 91);
+  const rng = mulberry32(map.decorSeed);
+
+  // 大块色阶 + 有序抖动
+  for (let y = 0; y < VH; y += 4) {
+    for (let x = 0; x < VW; x += 4) {
+      const n = n1(x / VW, y / VH) * 0.66 + n2(x / 170, y / 150) * 0.34;
+      const th = bayer4(x >> 2, y >> 2);
+      const v = n * 3.6 + (th - 0.5) * 0.95;
+      const idx = clamp(Math.floor(v), 0, art.ground.length - 1);
+      b.fillStyle = art.ground[idx];
+      b.fillRect(x, y, 4, 4);
+    }
+  }
+  // 细碎噪点
+  for (let i = 0; i < 2600; i++) {
+    const x = (rng() * VW) | 0, y = (rng() * VH) | 0;
+    const n = n1(x / VW, y / VH);
+    if (n < 0.28) continue;
+    b.fillStyle = art.speck[(rng() * art.speck.length) | 0];
+    b.fillRect(x, y, 1, 1);
+    if (rng() < 0.18) b.fillRect(x + 1, y, 1, 1);
+  }
+
+  drawPath(b, map);
+
+  // 路径周围少量湿土/苔边
+  const drng = mulberry32(map.decorSeed ^ 0x9e37);
+  for (let i = 0; i < 160; i++) {
+    const x = (drng() * FIELD_W) | 0;
+    const y = GY + (drng() * FIELD_H) | 0;
+    const d = map.distanceToPath(x, y);
+    if (d < 11 || d > 28) continue;
+    b.fillStyle = drng() < 0.5 ? art.feather : art.speck[(drng() * art.speck.length) | 0];
+    b.fillRect(x, y, drng() < 0.3 ? 2 : 1, 1);
+  }
+
+  // 地表小物：草丛 / 石头 / 蘑菇 / 冰晶
+  const isFrost = map.id === 'frost';
+  for (let i = 0; i < 190; i++) {
+    const x = (rng() * VW) | 0;
+    const y = (rng() * VH) | 0;
+    if (y < 26) continue;
+    if (map.distanceToPath(x, y) < 18) continue;
+    const roll = rng();
+    if (roll < 0.42) {
+      // 草丛
+      b.fillStyle = isFrost ? '#3e5a5b' : '#425033';
+      b.fillRect(x, y, 1, 3);
+      b.fillRect(x - 2, y + 1, 1, 2);
+      b.fillRect(x + 2, y + 1, 1, 2);
+      b.fillStyle = isFrost ? '#5d7d7b' : '#5d6b40';
+      b.fillRect(x, y, 1, 1);
+    } else if (roll < 0.66) {
+      // 碎石
+      b.fillStyle = art.feather;
+      b.fillRect(x, y, 2, 1);
+      b.fillStyle = art.speck[3];
+      b.fillRect(x + 1, y - 1, 1, 1);
+    } else if (roll < 0.8) {
+      // 骨屑
+      b.fillStyle = '#a99a7a';
+      b.fillRect(x, y, 2, 1);
+      b.fillRect(x + 2, y - 1, 1, 1);
+    } else if (!isFrost && roll < 0.9) {
+      // 荧光菌
+      b.fillStyle = '#5a4a32';
+      b.fillRect(x, y + 1, 1, 2);
+      b.fillStyle = art.accent;
+      b.fillRect(x - 1, y, 3, 1);
+      b.fillStyle = art.accent2;
+      b.fillRect(x, y - 1, 1, 1);
+    } else if (isFrost && roll < 0.96) {
+      // 冰晶
+      b.fillStyle = '#5b8f94';
+      b.fillRect(x, y - 2, 1, 3);
+      b.fillStyle = '#b3e1dd';
+      b.fillRect(x, y - 2, 1, 1);
+    }
+  }
+  // 水洼 / 冻土斑块
+  const puddles = isFrost ? 7 : 3;
+  for (let i = 0; i < puddles; i++) {
+    let x = 30 + rng() * (FIELD_W - 60);
+    let y = GY + 30 + rng() * (FIELD_H - 70);
+    if (map.distanceToPath(x, y) < 30) continue;
+    const rx = 8 + rng() * 16, ry = 3 + rng() * 6;
+    for (let py = -ry; py <= ry; py += 1) {
+      for (let px = -rx; px <= rx; px += 2) {
+        if ((px * px) / (rx * rx) + (py * py) / (ry * ry) > 1) continue;
+        if (bayer4(Math.round(px + x), Math.round(py + y)) < 0.66) continue;
+        b.fillStyle = isFrost ? '#1e3943' : '#2b3127';
+        b.fillRect(Math.round(x + px), Math.round(y + py), 1, 1);
+        if (isFrost && bayer4(px + x, py + y) > 0.82) {
+          b.fillStyle = '#6fa7a8';
+          b.fillRect(Math.round(x + px), Math.round(y + py), 1, 1);
+        }
+      }
+    }
+  }
+
+  // 入口石门
+  const portal = map.portal;
+  b.fillStyle = '#0b090f';
+  b.fillRect(portal.x - 3, portal.y - 8, 6, 16);
+  b.fillStyle = art.pathEdge;
+  b.fillRect(portal.x - 9, portal.y - 10, 5, 20);
+  b.fillRect(portal.x + 4, portal.y - 10, 5, 20);
+  b.fillStyle = '#4e4640';
+  b.fillRect(portal.x - 9, portal.y - 10, 1, 20);
+  b.fillRect(portal.x + 8, portal.y - 10, 1, 20);
+  b.fillRect(portal.x - 10, portal.y - 12, 20, 3);
+  b.fillStyle = art.accent;
+  b.fillRect(portal.x - 1, portal.y - 7, 2, 1);
+  b.fillRect(portal.x - 3, portal.y - 5, 1, 1);
+  b.fillRect(portal.x + 2, portal.y - 4, 1, 1);
+
+  // 苔痕、根系、碎石与发光生物：增加可读的地貌层次
+  for (let i = 0; i < 34; i++) {
+    const x = 12 + (rng() * (FIELD_W - 24)) | 0;
+    const y = GY + 14 + (rng() * (FIELD_H - 28)) | 0;
+    if (map.distanceToPath(x, y) < 20) continue;
+    if (rng() < 0.5) {
+      // 苔痕
+      b.fillStyle = isFrost ? '#3d5b5c' : '#3b4b2c';
+      const w = 2 + (rng() * 5) | 0;
+      for (let k = 0; k < w; k++) {
+        if (bayer4(x + k, y) < 0.66) b.fillRect(x + k, y + ((k * 3) % 2), 1, 1);
+      }
+    } else {
+      // 裂纹 / 小根
+      b.fillStyle = art.groundDark;
+      b.fillRect(x, y, 3, 1);
+      b.fillRect(x + 2, y + 1, 2, 1);
+      b.fillRect(x + 1, y - 1, 1, 1);
+    }
+  }
+  // 残砖
+  for (let i = 0; i < 7; i++) {
+    const x = 24 + (rng() * (FIELD_W - 48)) | 0;
+    const y = GY + 30 + (rng() * (FIELD_H - 60)) | 0;
+    if (map.distanceToPath(x, y) < 24) continue;
+    b.fillStyle = art.groundDark;
+    b.fillRect(x - 1, y - 1, 9, 6);
+    b.fillStyle = art.feather;
+    b.fillRect(x, y, 7, 4);
+    b.fillStyle = art.speck[3];
+    b.fillRect(x, y, 4, 1);
+    b.fillRect(x + 2, y + 2, 2, 1);
+  }
+  // 发光菌 / 冰晶簇
+  for (let i = 0; i < 12; i++) {
+    const x = 16 + (rng() * (FIELD_W - 32)) | 0;
+    const y = GY + 20 + (rng() * (FIELD_H - 42)) | 0;
+    if (map.distanceToPath(x, y) < 22) continue;
+    if (isFrost) {
+      b.fillStyle = '#1a343c';
+      b.fillRect(x, y - 2, 1, 4);
+      b.fillStyle = '#5b9a9e';
+      b.fillRect(x, y - 3, 1, 2);
+      b.fillStyle = '#c9efea';
+      b.fillRect(x, y - 3, 1, 1);
+      if (rng() < 0.6) { b.fillStyle = '#4f7f83'; b.fillRect(x + 2, y - 1, 1, 3); }
+    } else {
+      b.fillStyle = '#33291e';
+      b.fillRect(x, y, 1, 2);
+      b.fillStyle = art.accent;
+      b.fillRect(x - 1, y - 1, 3, 1);
+      b.fillStyle = art.accent2;
+      b.fillRect(x, y - 2, 1, 1);
+      if (rng() < 0.5) { b.fillStyle = art.accent; b.fillRect(x + 3, y + 1, 2, 1); }
+    }
+  }
+
+  // 大型场景道具（不可建造格）
+  for (const prop of map.props) drawProp(b, map, prop);
+
+  // 终点灯塔基座
+  const bp = map.beacon;
+  b.fillStyle = '#0a090e';
+  b.fillRect(bp.x - 13, bp.y + 9, 26, 5);
+  b.fillStyle = '#4b403c';
+  b.fillRect(bp.x - 10, bp.y - 1, 20, 13);
+  b.fillStyle = '#372e2d';
+  b.fillRect(bp.x - 8, bp.y + 2, 16, 8);
+  b.fillStyle = '#675850';
+  b.fillRect(bp.x - 10, bp.y - 1, 20, 2);
+  b.fillRect(bp.x - 5, bp.y - 15, 10, 15);
+  b.fillStyle = '#231d20';
+  b.fillRect(bp.x - 3, bp.y - 12, 6, 6);
+  b.fillStyle = art.accent;
+  b.fillRect(bp.x - 2, bp.y - 10, 1, 2);
+  b.fillRect(bp.x + 1, bp.y - 8, 1, 1);
+  b.fillStyle = '#77655a';
+  b.fillRect(bp.x - 8, bp.y - 17, 16, 3);
+  b.fillStyle = '#201a1c';
+  b.fillRect(bp.x - 5, bp.y - 16, 10, 1);
+
+  // 场外遗迹（菜单时可见）
+  const ruinRng = mulberry32(map.decorSeed ^ 0xa11c);
+  for (let i = 0; i < 9; i++) {
+    const x = 486 + ruinRng() * 138;
+    const y = 46 + ruinRng() * 280;
+    const h = 12 + (ruinRng() * 24) | 0;
+    b.fillStyle = '#0c0b10';
+    b.fillRect(x + 1, y - h, 4, h);
+    b.fillStyle = art.feather;
+    b.fillRect(x, y - h + 2, 3, h - 2);
+    b.fillStyle = art.speck[3];
+    b.fillRect(x, y - h + 2, 1, 3);
+    if (ruinRng() < 0.4) {
+      b.fillStyle = art.accent;
+      b.fillRect(x + 1, y - h + 5, 1, 1);
+    }
+  }
+
+  // 抖动暗角
+  for (let y = 0; y < VH; y += 2) {
+    for (let x = 0; x < VW; x += 2) {
+      const dx = (x - VW / 2) / (VW / 2);
+      const dy = (y - VH / 2) / (VH / 2);
+      const d = Math.sqrt(dx * dx * 0.72 + dy * dy * 0.95);
+      const dark = clamp((d - 0.58) * 0.9, 0, 0.46);
+      if (dark <= 0) continue;
+      if (bayer4(x >> 1, y >> 1) < dark) {
+        b.fillStyle = 'rgba(5,4,9,0.55)';
+        b.fillRect(x, y, 2, 2);
+      }
+    }
+  }
+  // 顶边压暗，给 HUD 留出层次
+  b.fillStyle = 'rgba(5,4,9,0.42)';
+  b.fillRect(0, 0, VW, GY);
+  return bg;
+}
+
+function ensureBg(mapId) {
+  if (!bgCache[mapId]) bgCache[mapId] = drawTerrain(MAPS[mapId]);
+  return bgCache[mapId];
+}
+
+// ---------- 画布与全局状态 ----------
+const canvas = document.getElementById('view');
+const ctx = canvas.getContext('2d', { alpha: false });
+ctx.imageSmoothingEnabled = false;
+
+RANGE_PATTERN_GOOD = ctx.createPattern(makeDitherPattern('rgba(255,210,122,0.30)'), 'repeat');
+RANGE_PATTERN_BAD = ctx.createPattern(makeDitherPattern('rgba(214,96,88,0.30)'), 'repeat');
+RANGE_PATTERN_ICE = ctx.createPattern(makeDitherPattern('rgba(124,215,208,0.28)'), 'repeat');
+
+const ui = { hits: [], cursor: 'crosshair' };
+const pointer = { x: -99, y: -99, inside: false };
+let scene = 'menu';
+let selectedMap = 'ashen';
+let game = null;
+let aiOn = false;
+let gameSpeed = 1;
+let buildType = null;
+let selectedTower = null;
+let toast = { text: '', sub: '', t: 0 };
+let lifeFlash = 0;
+let skillFlash = 0;
+let realTime = 0;
+let lastFrameMs = performance.now();
+let fpsValue = 60;
+let fpsSamples = [];
+let loopAccum = 0;
+let resultAt = 0;
+let transition = { active: false, t: 0, dur: 0.88, old: null };
+let transitionHeld = false;
+let autotestActive = false;
+let autotest = null;
+let captureFreeze = false;
+
+const LOG_STYLE = {
+  build: { label: '建', color: '#9ccf74' },
+  upgrade: { label: '升', color: '#f2c46b' },
+  skill: { label: '技', color: '#ff9a54' },
+  save: { label: '存', color: '#7cd7d0' },
+  sell: { label: '售', color: '#d66058' },
+  info: { label: '息', color: '#93877b' },
+};
+
+// ---------- 尺寸自适应（整数倍最近邻） ----------
+function fitCanvas() {
+  const raw = Math.min(window.innerWidth / VW, window.innerHeight / VH);
+  const scale = raw >= 1 ? Math.floor(raw) : Math.max(0.35, raw);
+  canvas.style.width = Math.round(VW * scale) + 'px';
+  canvas.style.height = Math.round(VH * scale) + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
+
+// ---------- 小工具 ----------
+function setToast(text, sub = '') {
+  toast = { text, sub, t: 2.2 };
+}
+function cellName(cx, cy) {
+  let n = cx + 1, s = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s + (cy + 1);
+}
+function cellCenter(cx, cy) {
+  return { x: cx * TILE + TILE / 2, y: GY + cy * TILE + TILE / 2 };
+}
+function cellFromPoint(x, y) {
+  if (x < 0 || x >= FIELD_W || y < GY || y >= VH) return null;
+  return { cx: Math.floor(x / TILE), cy: Math.floor((y - GY) / TILE) };
+}
+function towerRange(t) {
+  if (t.type === 'mint') return 0;
+  return TOWERS[t.type].levels[t.level].range;
+}
+function towerAtCell(cx, cy) {
+  return game ? game.towerGrid.get(cx + ',' + cy) || null : null;
+}
+function isBuildableCell(cx, cy) {
+  if (!game || cx < 0 || cx >= GW || cy < 0 || cy >= GH) return false;
+  return game.map.buildableSet.has(cx + ',' + cy);
+}
+function waveComposition(waveIdx) {
+  const w = WAVES[waveIdx];
+  if (!w) return '';
+  const out = [];
+  for (const grp of w.groups) {
+    const nm = ENEMIES[grp.type].name;
+    out.push(`${nm}×${grp.n}`);
+  }
+  return out.join(' · ');
+}
+function countWaveTypes(waveIdx) {
+  const res = { walker: 0, moth: 0, brute: 0, spore: 0, boss: 0, total: 0 };
+  const w = WAVES[waveIdx];
+  if (!w) return res;
+  for (const g of w.groups) { res[g.type] += g.n; res.total += g.n; }
+  return res;
+}
+function aiLog(kind, text, source = 'ai') {
+  if (!game) return;
+  if (kind === 'save') game.aiLogs = game.aiLogs.filter(l => l.kind !== 'save');
+  game.aiLogs.push({ kind, text, source, stamp: fmtTime(game.t) });
+  if (game.aiLogs.length > 48) game.aiLogs.shift();
+  if (source === 'ai') game.aiActions++;
+}
+function playerActed() {
+  if (!aiOn) return;
+  aiOn = false;
+  if (game) {
+    game.ai = false;
+    aiLog('info', '玩家接管 · AI 转入观察', 'user');
+    setToast('玩家接管', 'AI 已转入观察 · 按 A 可交还');
+  }
+}
+
+// ---------- 游戏对象 ----------
+function newGame(mapId, aiStart) {
+  const map = MAPS[mapId];
+  ensureBg(mapId);
+  const g = {
+    map, mapId,
+    t: 0,
+    phase: 'prep',
+    wave: 1,
+    prep: 5.6,
+    waveT: 0,
+    waveKills: 0,
+    waveTotal: 0,
+    spawnQueue: [],
+    enemies: [],
+    towers: [],
+    projectiles: [],
+    effects: [],
+    towerGrid: new Map(),
+    nextId: 1,
+    gold: START_GOLD,
+    earned: START_GOLD,
+    lives: START_LIVES,
+    kills: 0,
+    leaks: 0,
+    skillCd: 0,
+    boss: null,
+    ai: !!aiStart,
+    aiTimer: 0.35,
+    aiLogs: [],
+    aiActions: 0,
+    aiSaveAt: -99,
+    aiSaveTarget: '',
+    shake: 0,
+    over: null,
+    speed: 1,
+  };
+  if (aiStart) {
+    aiLog('info', 'AI 指挥官上线 · 自动建造 / 升级 / 技能', 'system');
+    aiLog('info', '共用金币与冷却 · 不作弊', 'system');
+  }
+  return g;
+}
+
+function startGameInternal(mapId, aiStart, speed = 1) {
+  selectedMap = mapId;
+  aiOn = !!aiStart;
+  gameSpeed = speed;
+  game = newGame(mapId, aiStart);
+  game.speed = gameSpeed;
+  selectedTower = null;
+  buildType = null;
+  resultAt = 0;
+  scene = 'playing';
+  setToast(`${MAPS[mapId].name} · 第 1 波`, aiStart ? 'AI 托管中 · 可随时按 A 接管' : '准备布防');
+}
+
+// ---------- 换场抖动过渡 ----------
+function beginTransition(midFn) {
+  if (transition.active) return;
+  const snap = document.createElement('canvas');
+  snap.width = VW; snap.height = VH;
+  const sctx = snap.getContext('2d');
+  sctx.drawImage(canvas, 0, 0);
+  sctx.fillStyle = 'rgba(6,5,10,0.38)';
+  sctx.fillRect(0, 0, VW, VH);
+  transition = { active: true, t: 0, dur: 0.88, old: snap };
+  transitionHeld = false;
+  midFn();
+}
+function updateTransition(dt) {
+  if (!transition.active || transitionHeld) return;
+  transition.t += dt;
+  if (transition.t >= transition.dur) {
+    transition.active = false;
+    transition.old = null;
+  }
+}
+
+// ============================================================
+//  模拟层：塔防循环 / 敌人 / 塔 / 技能
+// ============================================================
+
+// ---------- 特效（模拟时间驱动，暂停即冻结） ----------
+function burst(x, y, n, colors, speed = 45, life = 0.5, size = 1.4, grav = 70) {
+  if (!game) return;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const v = speed * (0.25 + Math.random() * 0.9);
+    const lf = life * (0.55 + Math.random() * 0.8);
+    game.effects.push({
+      kind: 'p', x, y,
+      vx: Math.cos(a) * v, vy: Math.sin(a) * v - speed * 0.25,
+      life: lf, max: lf, grav,
+      color: colors[(Math.random() * colors.length) | 0],
+      size: size * (0.6 + Math.random() * 0.8),
+    });
+  }
+  if (game.effects.length > 420) game.effects.splice(0, game.effects.length - 420);
+}
+function ring(x, y, maxR, color, life = 0.42, width = 1) {
+  if (!game) return;
+  game.effects.push({ kind: 'ring', x, y, r: 2, maxR, life, max: life, color, width });
+}
+function floatText(x, y, str, color, size = 7) {
+  if (!game) return;
+  game.effects.push({ kind: 'text', x, y, str, color, size, life: 0.95, max: 0.95 });
+}
+function updateEffects(dt) {
+  if (!game) return;
+  for (const e of game.effects) {
+    e.life -= dt;
+    if (e.kind === 'p') {
+      e.vy += e.grav * dt;
+      e.x += e.vx * dt;
+      e.y += e.vy * dt;
+    } else if (e.kind === 'ring') {
+      const k = 1 - Math.max(0, e.life) / e.max;
+      e.r = 2 + (e.maxR - 2) * k;
+    } else if (e.kind === 'text') {
+      e.y -= 14 * dt;
+    }
+  }
+  game.effects = game.effects.filter(e => e.life > 0);
+}
+
+// ---------- 敌人 ----------
+function spawnEnemy(typeKey) {
+  const g = game, base = ENEMIES[typeKey];
+  const hp = Math.round(base.hp * hpScale(g.wave));
+  const e = {
+    id: g.nextId++, type: typeKey,
+    hp, maxHp: hp,
+    armor: base.armor,
+    speed: base.speed,
+    reward: base.reward,
+    leak: base.leak,
+    radius: base.radius,
+    slowResist: base.slowResist,
+    slowAmt: 0, slowT: 0,
+    heal: base.heal || 0, healRadius: base.healRadius || 0,
+    healT: 0.7,
+    dist: 0, x: 0, y: 0, angle: 0,
+    flash: 0, alive: true,
+    seed: (g.nextId * 37.17) % 100,
+    trailT: 0,
+  };
+  const p = g.map.pointAt(0);
+  e.x = p.x; e.y = p.y;
+  g.enemies.push(e);
+  if (base.boss) {
+    g.boss = e;
+    g.shake = 7;
+    setToast('无光巨像苏醒', '击退它，守住最后一波');
+    ring(e.x, e.y, 40, PAL.ember, 0.9, 2);
+  }
+}
+
+function positionEnemy(e) {
+  const p = game.map.pointAt(e.dist);
+  e.x = p.x; e.y = p.y;
+  const seg = p.seg;
+  e.angle = Math.atan2(seg.b.y - seg.a.y, seg.b.x - seg.a.x);
+}
+
+function applySlow(e, amount, time) {
+  if (!e.alive) return;
+  const eff = amount * (1 - (e.slowResist || 0));
+  if (eff <= 0) return;
+  if (eff >= (e.slowAmt || 0)) e.slowAmt = eff;
+  e.slowT = Math.max(e.slowT || 0, time);
+}
+
+function damageEnemy(e, dmg, ignoreArmor = false) {
+  if (!e.alive) return 0;
+  const armor = ignoreArmor ? 0 : e.armor;
+  const dealt = Math.max(1, Math.round(dmg - armor));
+  e.hp -= dealt;
+  e.flash = 0.09;
+  if (e.hp <= 0) killEnemy(e);
+  return dealt;
+}
+
+function killEnemy(e) {
+  if (!e.alive) return;
+  const g = game;
+  e.alive = false;
+  g.kills++;
+  g.waveKills++;
+  g.gold += e.reward;
+  g.earned += e.reward;
+  const cols = e.type === 'moth' ? [PAL.frost, PAL.frostHi, '#5b8f94']
+    : e.type === 'spore' ? [PAL.violet, '#d8c5ff', '#6a538f']
+    : e.type === 'boss' ? [PAL.ember, PAL.emberHi, PAL.bone, PAL.emberRed]
+    : [e.type === 'brute' ? '#c78969' : '#c8b78e', PAL.boneDim, '#6b5d49'];
+  burst(e.x, e.y, e.type === 'boss' ? 34 : 9, cols,
+    e.type === 'boss' ? 90 : 45, e.type === 'boss' ? 1.2 : 0.5, e.type === 'boss' ? 2 : 1.3);
+  floatText(e.x, e.y - 9, `+${e.reward}`, PAL.goldHi, 7);
+  if (e.type === 'boss') {
+    g.shake = 8;
+    setToast('无光巨像倒下', '清扫残余，守住灯塔');
+    ring(e.x, e.y, 48, PAL.emberHi, 1.1, 2);
+  }
+}
+
+function leakEnemy(e) {
+  const g = game;
+  if (!e.alive) return;
+  e.alive = false;
+  g.leaks++;
+  g.lives -= e.leak;
+  g.shake = Math.min(8, 3 + e.leak);
+  lifeFlash = 0.8;
+  const bp = g.map.beacon;
+  burst(bp.x, bp.y, 14, [PAL.life, PAL.emberRed, PAL.boneDim], 55, 0.8, 1.6);
+  ring(bp.x, bp.y, 26, PAL.life, 0.6, 2);
+  floatText(bp.x, bp.y - 14, `−${e.leak} 生命`, PAL.life, 8);
+  if (g.lives <= 0) {
+    g.lives = 0;
+    finishGame(false);
+  }
+}
+
+function updateEnemies(dt) {
+  const g = game;
+  for (const e of g.enemies) {
+    if (!e.alive) continue;
+    e.flash = Math.max(0, e.flash - dt);
+    if (e.slowT > 0) {
+      e.slowT -= dt;
+      if (e.slowT <= 0) { e.slowAmt = 0; e.slowT = 0; }
+    }
+    e.dist += e.speed * (1 - (e.slowAmt || 0)) * dt;
+    if (e.dist >= g.map.totalLen) {
+      leakEnemy(e);
+      if (g.over) return;
+      continue;
+    }
+    positionEnemy(e);
+
+    if (e.heal > 0) {
+      e.healT -= dt;
+      if (e.healT <= 0) {
+        e.healT = 1.35;
+        let healed = false;
+        for (const other of g.enemies) {
+          if (other === e || !other.alive || other.hp >= other.maxHp) continue;
+          if (dist(e.x, e.y, other.x, other.y) <= e.healRadius) {
+            other.hp = Math.min(other.maxHp, other.hp + e.heal);
+            healed = true;
+          }
+        }
+        if (healed) {
+          ring(e.x, e.y, e.healRadius, PAL.violet, 0.55, 1);
+          burst(e.x, e.y, 4, [PAL.violet, '#d8c5ff'], 18, 0.5, 1);
+        }
+      }
+    }
+    if (e.type === 'boss') {
+      e.trailT -= dt;
+      if (e.trailT <= 0) {
+        e.trailT = 0.14;
+        burst(e.x + (Math.random() * 8 - 4), e.y + 4, 1, [PAL.emberRed, PAL.ember], 10, 0.45, 1, -10);
+      }
+    }
+  }
+}
+
+// ---------- 塔 ----------
+function tryBuild(typeKey, cx, cy, byAI = false, reason = '') {
+  if (!game || (scene !== 'playing' && scene !== 'paused') || game.over) {
+    return { ok: false, why: 'not_playing' };
+  }
+  const def = TOWERS[typeKey];
+  if (!def) return { ok: false, why: 'type' };
+  if (!isBuildableCell(cx, cy)) return { ok: false, why: 'terrain' };
+  if (game.towerGrid.has(towerKey(cx, cy))) return { ok: false, why: 'occupied' };
+  if (game.gold < def.cost) {
+    if (!byAI) setToast('金币不足', `还差 ${Math.ceil(def.cost - game.gold)} 金`);
+    return { ok: false, why: 'gold' };
+  }
+  if (!byAI) playerActed();
+  game.gold -= def.cost;
+  const p = cellCenter(cx, cy);
+  const t = {
+    id: game.nextId++, type: typeKey, cx, cy, x: p.x, y: p.y,
+    level: 0, cooldown: 0.15, invested: def.cost,
+    angle: -Math.PI / 2, flash: 0, pulse: Math.random() * 6.28,
+  };
+  game.towers.push(t);
+  game.towerGrid.set(towerKey(cx, cy), t);
+  burst(p.x, p.y + 3, 8, [PAL.boneDim, def.color], 30, 0.45, 1.2, 40);
+  ring(p.x, p.y + 2, 12, def.color, 0.35, 1);
+  if (!byAI) {
+    selectedTower = t;
+    buildType = null;
+    setToast(`${def.name}建成`, reason || def.desc);
+  }
+  aiLog('build', `建 ${def.short} @${cellName(cx, cy)} · ${reason || '布局'}`, byAI ? 'ai' : 'user');
+  return { ok: true, tower: t };
+}
+
+function tryUpgrade(tower, byAI = false, reason = '') {
+  if (!game || !tower || (scene !== 'playing' && scene !== 'paused') || game.over) return false;
+  const def = TOWERS[tower.type];
+  if (tower.level >= 2) {
+    if (!byAI) setToast('已满级', '该塔已达到 Lv3');
+    return false;
+  }
+  const cost = def.upgrades[tower.level];
+  if (game.gold < cost) {
+    if (!byAI) setToast('金币不足', `升级需要 ${cost} 金`);
+    return false;
+  }
+  if (!byAI) playerActed();
+  game.gold -= cost;
+  tower.level++;
+  tower.invested += cost;
+  tower.flash = 1;
+  burst(tower.x, tower.y - 4, 12, [def.color, PAL.goldHi, PAL.bone], 40, 0.6, 1.3, -20);
+  ring(tower.x, tower.y, 20, def.color, 0.5, 1);
+  if (!byAI) setToast(`${def.name} → Lv${tower.level + 1}`, reason || '火力与范围提升');
+  aiLog('upgrade', `升 ${def.short} Lv${tower.level + 1} · ${reason || '提升主路火力'}`, byAI ? 'ai' : 'user');
+  return true;
+}
+
+function trySell(tower, byAI = false) {
+  if (!game || !tower || (scene !== 'playing' && scene !== 'paused')) return false;
+  if (!byAI) playerActed();
+  const refund = Math.floor(tower.invested * 0.65);
+  game.gold += refund;
+  game.earned += refund;
+  game.towers = game.towers.filter(t => t !== tower);
+  game.towerGrid.delete(towerKey(tower.cx, tower.cy));
+  burst(tower.x, tower.y, 10, [PAL.boneDim, PAL.gold], 35, 0.5, 1.2, 50);
+  floatText(tower.x, tower.y - 8, `+${refund}`, PAL.goldHi);
+  if (selectedTower === tower) selectedTower = null;
+  setToast('已出售', `返还 ${refund} 金`);
+  aiLog('sell', `售 ${TOWERS[tower.type].short} +${refund} 金`, byAI ? 'ai' : 'user');
+  return true;
+}
+
+function findTarget(t, range) {
+  let best = null, bestDist = -1;
+  for (const e of game.enemies) {
+    if (!e.alive) continue;
+    const d = dist(t.x, t.y, e.x, e.y);
+    if (d <= range && e.dist > bestDist) {
+      best = e;
+      bestDist = e.dist;
+    }
+  }
+  return best;
+}
+
+function fireTower(t, target, def, lv) {
+  t.angle = Math.atan2(target.y - (t.y - 6), target.x - t.x);
+  t.flash = 1;
+  t.cooldown = 1 / lv.rate;
+  const sx = t.x, sy = t.y - 7;
+  const total = dist(sx, sy, target.x, target.y) || 1;
+  if (t.type === 'bolt') {
+    game.projectiles.push({
+      kind: 'bolt', x: sx, y: sy, lx: target.x, ly: target.y,
+      targetId: target.id, speed: 320, dmg: lv.dmg, alive: true,
+      total, travel: 0, color: PAL.emberHi,
+    });
+    burst(sx, sy, 2, [PAL.emberHi, PAL.ember], 18, 0.2, 1, 0);
+  } else if (t.type === 'flame') {
+    game.projectiles.push({
+      kind: 'flame', x: sx, y: sy, lx: target.x, ly: target.y,
+      targetId: target.id, speed: 175, dmg: lv.dmg, splash: lv.splash,
+      alive: true, total, travel: 0, color: PAL.ember,
+    });
+    burst(sx, sy, 3, [PAL.ember, PAL.emberRed], 20, 0.25, 1.2, 0);
+  } else if (t.type === 'frost') {
+    game.projectiles.push({
+      kind: 'frost', x: sx, y: sy, lx: target.x, ly: target.y,
+      targetId: target.id, speed: 270, dmg: lv.dmg, slow: lv.slow, slowTime: lv.slowTime,
+      alive: true, total, travel: 0, color: PAL.frost,
+    });
+    burst(sx, sy, 2, [PAL.frostHi, PAL.frost], 16, 0.25, 1, 0);
+  }
+}
+
+function updateTowers(dt) {
+  for (const t of game.towers) {
+    t.flash = Math.max(0, t.flash - dt * 4);
+    if (t.type === 'mint') continue;
+    if (t.cooldown > 0) t.cooldown -= dt;
+    if (t.cooldown > 0) continue;
+    const lv = TOWERS[t.type].levels[t.level];
+    const target = findTarget(t, lv.range);
+    if (!target) continue;
+    fireTower(t, target, TOWERS[t.type], lv);
+  }
+}
+
+function impactProjectile(p) {
+  if (p.kind === 'flame') {
+    for (const e of game.enemies) {
+      if (e.alive && dist(p.x, p.y, e.x, e.y) <= p.splash) damageEnemy(e, p.dmg);
+    }
+    ring(p.x, p.y, p.splash, PAL.emberHi, 0.38, 1);
+    burst(p.x, p.y, 13, [PAL.ember, PAL.emberHi, PAL.emberRed], 55, 0.45, 1.5, 40);
+    game.shake = Math.max(game.shake, 1.2);
+  } else {
+    const target = game.enemies.find(e => e.id === p.targetId && e.alive);
+    if (target) {
+      damageEnemy(target, p.dmg);
+      if (p.kind === 'frost') {
+        applySlow(target, p.slow, p.slowTime);
+        burst(target.x, target.y, 6, [PAL.frost, PAL.frostHi], 28, 0.4, 1.1, 18);
+        ring(target.x, target.y, 10, PAL.frost, 0.3, 1);
+      } else {
+        burst(target.x, target.y, 4, [PAL.emberHi, PAL.bone], 30, 0.3, 1.1, 30);
+      }
+    }
+  }
+}
+
+function updateProjectiles(dt) {
+  for (const p of game.projectiles) {
+    if (!p.alive) continue;
+    const target = game.enemies.find(e => e.id === p.targetId && e.alive);
+    if (target) { p.lx = target.x; p.ly = target.y; }
+    const dx = p.lx - p.x, dy = p.ly - p.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const step = p.speed * dt;
+    p.travel += step;
+    if (d <= step + 2.5) {
+      p.x = p.lx; p.y = p.ly;
+      impactProjectile(p);
+      p.alive = false;
+    } else {
+      p.x += dx / d * step;
+      p.y += dy / d * step;
+    }
+  }
+  game.projectiles = game.projectiles.filter(p => p.alive);
+}
+
+// ---------- 技能 ----------
+function castSkill(byAI = false) {
+  if (!game || scene !== 'playing' || game.over) {
+    if (!byAI) setToast('现在无法施放', '战斗进行中才能施放');
+    return 0;
+  }
+  if (game.skillCd > 0) {
+    if (!byAI) setToast('烬雨冷却中', `还需 ${Math.ceil(game.skillCd)} 秒`);
+    return 0;
+  }
+  const targets = game.enemies.filter(e => e.alive);
+  if (!targets.length) {
+    if (!byAI) setToast('没有目标', '等敌群进入场内再施放');
+    return 0;
+  }
+  if (!byAI) playerActed();
+  game.skillCd = SKILL_CD;
+  skillFlash = 1;
+  game.shake = Math.max(game.shake, 3.5);
+  for (const e of targets) {
+    applySlow(e, 0.30, 1.5);
+    damageEnemy(e, SKILL_DMG, true);
+  }
+  for (let i = 0; i < 64; i++) {
+    const lf = 0.35 + Math.random() * 0.7;
+    game.effects.push({
+      kind: 'p', x: Math.random() * FIELD_W, y: GY + 20 + Math.random() * 40,
+      vx: (Math.random() - 0.5) * 20, vy: 40 + Math.random() * 90,
+      life: lf, max: lf, grav: 130,
+      color: [PAL.ember, PAL.emberHi, PAL.bone][(Math.random() * 3) | 0],
+      size: 1 + Math.random() * 1.6,
+    });
+  }
+  floatText(FIELD_W / 2, GY + 76, `烬雨 ×${targets.length}`, PAL.emberHi, 9);
+  aiLog('skill', `烬雨命中 ${targets.length} 只 · 全场真伤`, byAI ? 'ai' : 'user');
+  setToast('烬雨落下', `命中 ${targets.length} 个敌人 · 无视护甲`);
+  return targets.length;
+}
+
+// ---------- 波次 ----------
+function startWave() {
+  const g = game;
+  const wave = WAVES[g.wave - 1];
+  g.phase = 'wave';
+  g.waveT = 0;
+  g.waveKills = 0;
+  g.spawnQueue = [];
+  g.boss = null;
+  for (const grp of wave.groups) {
+    for (let i = 0; i < grp.n; i++) {
+      g.spawnQueue.push({ type: grp.type, t: 0.15 + (grp.delay || 0) + i * grp.gap });
+    }
+  }
+  g.spawnQueue.sort((a, b) => a.t - b.t);
+  g.waveTotal = g.spawnQueue.length;
+  setToast(`第 ${g.wave} 波 · ${wave.name}`, waveComposition(g.wave - 1));
+}
+
+function endWave() {
+  const g = game;
+  const completed = g.wave;
+  const bonus = 18 + completed * 6;
+  g.gold += bonus;
+  g.earned += bonus;
+  let mintTotal = 0;
+  for (const t of g.towers) {
+    if (t.type !== 'mint') continue;
+    const inc = TOWERS.mint.levels[t.level].income;
+    g.gold += inc;
+    g.earned += inc;
+    mintTotal += inc;
+    floatText(t.x, t.y - 10, `+${inc}`, PAL.goldHi, 7);
+    burst(t.x, t.y - 4, 5, [PAL.gold, PAL.goldHi], 22, 0.55, 1.1, -18);
+  }
+  if (completed >= MAX_WAVE) {
+    finishGame(true);
+    return;
+  }
+  g.wave = completed + 1;
+  g.phase = 'prep';
+  g.prep = 5.6;
+  g.waveT = 0;
+  g.boss = null;
+  g.projectiles = [];
+  g.aiSaveAt = -99;
+  g.aiSaveTarget = '';
+  setToast(`第 ${completed} 波守住  +${bonus} 金`,
+    mintTotal ? `铸币圣坛另产出 ${mintTotal} 金` : `下一波：${WAVES[g.wave - 1].name}`);
+  burst(g.map.beacon.x, g.map.beacon.y, 8, [PAL.emberHi, PAL.gold], 25, 0.6, 1.2, -20);
+}
+
+// ---------- 结算 ----------
+function finishGame(win) {
+  if (!game || game.over) return;
+  const g = game;
+  g.over = {
+    win,
+    wave: win ? MAX_WAVE : g.wave,
+    kills: g.kills,
+    lives: g.lives,
+    gold: Math.floor(g.gold),
+    earned: Math.floor(g.earned),
+    towers: g.towers.length,
+    aiActions: g.aiActions,
+    time: g.t,
+  };
+  g.phase = 'done';
+  scene = 'over';
+  resultAt = realTime;
+  toast.t = 0;
+  if (win) {
+    for (let i = 0; i < 4; i++) {
+      ring(g.map.beacon.x, g.map.beacon.y, 24 + i * 14, PAL.ember, 0.8 + i * 0.15, 1);
+    }
+    burst(g.map.beacon.x, g.map.beacon.y, 46, [PAL.ember, PAL.emberHi, PAL.gold], 80, 1.4, 2, -30);
+  } else {
+    burst(g.map.beacon.x, g.map.beacon.y, 30, [PAL.red, PAL.ink, PAL.emberRed], 60, 1.1, 2, 20);
+  }
+  if (autotestActive) finalizeAutotest(win);
+}
+
+// ============================================================
+//  AI 指挥官：与玩家共用金币 / 冷却 / 建造与升级接口
+// ============================================================
+const towerKey = (cx, cy) => cx + ',' + cy;
+
+function towerCoverage(t) {
+  if (t.type === 'mint') return 0;
+  const range = towerRange(t);
+  let n = 0;
+  for (const s of game.map.samples) {
+    if (dist(t.x, t.y, s.x, s.y) <= range) n++;
+  }
+  return n;
+}
+
+function findBuildSpot(typeKey) {
+  const g = game, map = g.map;
+  const isMint = typeKey === 'mint';
+  const range = isMint ? 0 : TOWERS[typeKey].levels[0].range;
+  const mask = new Uint8Array(map.samples.length);
+  if (!isMint) {
+    for (const t of g.towers) {
+      if (t.type === 'mint') continue;
+      const r = towerRange(t);
+      for (let i = 0; i < map.samples.length; i++) {
+        const s = map.samples[i];
+        if (dist(t.x, t.y, s.x, s.y) <= r) mask[i]++;
+      }
+    }
+  }
+  let best = null, bestScore = -1e9;
+  for (const c of map.buildCells) {
+    if (g.towerGrid.has(towerKey(c.cx, c.cy))) continue;
+    const p = cellCenter(c.cx, c.cy);
+    let score = 0;
+    if (isMint) {
+      // 圣坛不占高覆盖火力位，优先放在擦边角落
+      let cov = 0;
+      for (const s of map.samples) if (dist(p.x, p.y, s.x, s.y) <= 64) cov++;
+      score = -cov + hash2(c.cx, c.cy, 41) * 0.8;
+    } else {
+      let hits = 0;
+      for (let i = 0; i < map.samples.length; i++) {
+        const s = map.samples[i];
+        if (dist(p.x, p.y, s.x, s.y) <= range) {
+          score += 1 / (1 + mask[i] * 0.8);
+          hits++;
+        }
+      }
+      if (hits < 3) continue;
+      for (const t of g.towers) {
+        if (dist(p.x, p.y, t.x, t.y) < 26) score -= 0.55;
+      }
+      if (map.distanceToPath(p.x, p.y) < 23) score += 0.22;
+      score += hash2(c.cx, c.cy, 73) * 0.02;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = { cx: c.cx, cy: c.cy };
+    }
+  }
+  return best;
+}
+
+function aiExtraType(inc, countType, attacks) {
+  const frostN = countType('frost');
+  const flameN = countType('flame');
+  if (inc.moth >= 8 && frostN < 2) return 'frost';
+  if (inc.brute >= 4 && flameN < 2) return 'flame';
+  if (game.wave >= 5 && frostN < 2 && attacks.length >= 4) return 'frost';
+  if (flameN < 2 && attacks.length >= 3) return 'flame';
+  if (game.wave >= 8 && frostN < 3) return 'frost';
+  return game.wave % 2 === 0 ? 'bolt' : 'flame';
+}
+
+function aiPickUpgrade() {
+  const g = game;
+  let best = null;
+  for (const t of g.towers) {
+    if (t.level >= 2) continue;
+    const def = TOWERS[t.type];
+    const cost = def.upgrades[t.level];
+    if (g.gold < cost) continue;
+    let score;
+    if (t.type === 'mint') {
+      if (g.wave > 6) continue;
+      score = 18 + (6 - g.wave) * 4;
+    } else {
+      score = towerCoverage(t) * (1 + t.level * 0.12);
+      if (t.type === 'flame') score *= 1.22;
+      if (t.type === 'frost') score *= 1.08;
+    }
+    if (!best || score > best.score) {
+      best = {
+        tower: t, cost, score,
+        reason: t.type === 'flame' ? '范围收益高'
+          : t.type === 'frost' ? '控场时长提升'
+          : t.type === 'mint' ? '早期返金' : '主路火力提升',
+      };
+    }
+  }
+  return best;
+}
+
+function aiMaybeLogSave(target) {
+  const g = game;
+  if (!target) return;
+  const now = g.t;
+  const name = target.upgrade ? target.name : (TOWERS[target.type] ? TOWERS[target.type].short : '升级');
+  if (now - g.aiSaveAt < 9 && name === g.aiSaveTarget) return;
+  if (g.gold >= target.cost) return;
+  if (g.gold < target.cost * 0.35) return;
+  g.aiSaveAt = now;
+  g.aiSaveTarget = name;
+  aiLog('save', `存 ${Math.floor(g.gold)}/${target.cost} · 攒${target.upgrade ? '升级·' : ''}${name}`, 'ai');
+}
+
+function aiExecuteBuild(type, reason) {
+  const spot = findBuildSpot(type);
+  if (!spot) {
+    aiLog('info', '暂无合适落点 · 等待空位', 'ai');
+    return false;
+  }
+  const res = tryBuild(type, spot.cx, spot.cy, true, reason);
+  return !!res.ok;
+}
+
+function aiThink() {
+  const g = game;
+  if (!g || !g.ai || g.over || scene !== 'playing') return;
+
+  // 技能：全局烬雨，敌群过密或 Boss 出现时使用（与玩家同一冷却）
+  if (g.phase === 'wave' && g.skillCd <= 0) {
+    const alive = g.enemies.filter(e => e.alive);
+    const bossAlive = alive.some(e => e.type === 'boss');
+    if (bossAlive || (g.wave >= 3 && alive.length >= 5)) castSkill(true);
+  }
+
+  const attacks = g.towers.filter(t => t.type !== 'mint');
+  const countType = k => g.towers.filter(t => t.type === k).length;
+  const inc = countWaveTypes(g.wave - 1);
+  const desired = Math.min(11, 2 + Math.ceil(g.wave * 0.7));
+
+  // 早期核心：火力 → 减速 → 溅射
+  let essential = null;
+  if (attacks.length < 2) essential = { type: 'bolt', reason: '起手火力' };
+  else if (g.wave >= 3 && countType('frost') === 0) essential = { type: 'frost', reason: '高速敌需减速' };
+  else if (g.wave >= 3 && countType('flame') === 0) essential = { type: 'flame', reason: '敌群密集·补溅射' };
+  if (essential) {
+    const cost = TOWERS[essential.type].cost;
+    if (g.gold >= cost) {
+      if (aiExecuteBuild(essential.type, essential.reason)) return;
+    }
+    aiMaybeLogSave({ type: essential.type, cost });
+    return;
+  }
+
+  // 经济：最多一座；前期建、留足火力预算
+  if (countType('mint') === 0 && g.wave >= 2 && g.wave <= 7 && g.gold >= TOWERS.mint.cost + 28) {
+    if (aiExecuteBuild('mint', '前期投资·每波返金')) return;
+  }
+
+  // 数量目标：按波次补足攻击塔
+  if (attacks.length < desired) {
+    const type = aiExtraType(inc, countType, attacks);
+    const cost = TOWERS[type].cost;
+    if (g.gold >= cost + 16) {
+      if (aiExecuteBuild(type, type === 'frost' ? '补控场' : type === 'flame' ? '扩溅射' : '补单体火力')) return;
+    }
+    const up = aiPickUpgrade();
+    if (up && g.gold >= up.cost + 16) {
+      if (tryUpgrade(up.tower, true, up.reason)) return;
+    }
+    aiMaybeLogSave({ type, cost });
+    return;
+  }
+
+  // 升级优先于无意义铺塔
+  const up = aiPickUpgrade();
+  if (up && g.gold >= up.cost + (g.wave >= 10 ? 0 : 18)) {
+    if (tryUpgrade(up.tower, true, up.reason)) return;
+  }
+
+  // 额外覆盖，最多 12 座
+  if (g.towers.length < 12) {
+    const type = aiExtraType(inc, countType, attacks);
+    const cost = TOWERS[type].cost;
+    if (g.gold >= cost + 18) {
+      if (aiExecuteBuild(type, '扩覆盖')) return;
+    }
+    if (type !== 'bolt' && g.gold >= TOWERS.bolt.cost + 18) {
+      if (aiExecuteBuild('bolt', '补火力')) return;
+    }
+    if (up) aiMaybeLogSave({ upgrade: true, name: TOWERS[up.tower.type].short, cost: up.cost });
+    else aiMaybeLogSave({ type, cost });
+    return;
+  }
+
+  if (up) aiMaybeLogSave({ upgrade: true, name: TOWERS[up.tower.type].short, cost: up.cost });
+}
+
+function aiUpdate(dt) {
+  const g = game;
+  if (!g || !g.ai || g.over || scene !== 'playing') return;
+  g.aiTimer -= dt;
+  if (g.aiTimer > 0) return;
+  g.aiTimer = 0.55;
+  aiThink();
+}
+
+// ---------- 主模拟步 ----------
+function simulate(dt) {
+  const g = game;
+  if (!g || g.over) return;
+  g.t += dt;
+  if (g.skillCd > 0) g.skillCd = Math.max(0, g.skillCd - dt);
+  if (g.shake > 0) g.shake = Math.max(0, g.shake - dt * 18);
+
+  if (g.phase === 'prep') {
+    g.prep -= dt;
+    if (g.prep <= 0) startWave();
+  }
+
+  if (g.phase === 'wave') {
+    g.waveT += dt;
+    while (g.spawnQueue.length && g.spawnQueue[0].t <= g.waveT) {
+      spawnEnemy(g.spawnQueue.shift().type);
+    }
+    updateEnemies(dt);
+    if (g.over) return;
+  }
+
+  updateTowers(dt);
+  updateProjectiles(dt);
+  updateEffects(dt);
+
+  if (g.phase === 'wave' && !g.spawnQueue.length) {
+    const alive = g.enemies.some(e => e.alive);
+    if (!alive) endWave();
+  }
+
+  if (!g.over) {
+    g.enemies = g.enemies.filter(e => e.alive);
+    if (g.boss && !g.boss.alive) g.boss = null;
+    aiUpdate(dt);
+  }
+}
+// ============================================================
+//  渲染层：程序化像素 / 抖动 / HUD / 菜单 / 过渡
+// ============================================================
+const DIM_PATTERN = ctx.createPattern(makeDitherPattern('rgba(5,4,9,0.55)', 4), 'repeat');
+const DIM_SOFT = ctx.createPattern(makeDitherPattern('rgba(5,4,9,0.30)', 4), 'repeat');
+const EMBER_PATTERN = ctx.createPattern(makeDitherPattern('rgba(255,138,61,0.16)', 4), 'repeat');
+
+function drawText(str, x, y, size, color, align = 'left', weight = 'normal', mono = false, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.font = font(size, weight, mono);
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(str, Math.round(x), Math.round(y));
+  ctx.restore();
+}
+function measureText(str, size, weight = 'normal', mono = false) {
+  ctx.font = font(size, weight, mono);
+  return ctx.measureText(str).width;
+}
+function clipText(str, x, y, maxW, size, color, align = 'left', weight = 'normal', mono = false) {
+  ctx.font = font(size, weight, mono);
+  let s = str;
+  if (ctx.measureText(s).width > maxW) {
+    while (s.length > 1 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+    s += '…';
+  }
+  drawText(s, x, y, size, color, align, weight, mono);
+}
+function frameRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x + 2, y, w - 4, 1);
+  ctx.fillRect(x + 2, y + h - 1, w - 4, 1);
+  ctx.fillRect(x, y + 2, 1, h - 4);
+  ctx.fillRect(x + w - 1, y + 2, 1, h - 4);
+  ctx.fillRect(x + 1, y + 1, 1, 1);
+  ctx.fillRect(x + w - 2, y + 1, 1, 1);
+  ctx.fillRect(x + 1, y + h - 2, 1, 1);
+  ctx.fillRect(x + w - 2, y + h - 2, 1, 1);
+}
+function fillPanel(x, y, w, h, fill, border) {
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, w, h);
+  frameRect(x, y, w, h, border);
+}
+function on(x, y, w, h) {
+  return pointer.inside && pointer.x >= x && pointer.x < x + w && pointer.y >= y && pointer.y < y + h;
+}
+function addHit(id, x, y, w, h, fn, disabled = false) {
+  ui.hits.push({ id, x, y, w, h, fn, disabled });
+}
+function button(id, x, y, w, h, label, fn, opts = {}) {
+  const hover = on(x, y, w, h);
+  if (hover) ui.cursor = 'pointer';
+  const disabled = !!opts.disabled;
+  const primary = !!opts.primary;
+  const active = !!opts.active;
+  const fill = disabled ? '#17141d'
+    : primary ? (hover ? '#a64f2e' : '#7c3b25')
+    : (hover ? '#2a2334' : (active ? '#25202e' : '#1b1725'));
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, w, h);
+  if (primary && !disabled) {
+    ctx.fillStyle = hover ? PAL.emberHi : PAL.ember;
+    ctx.fillRect(x + 2, y + h - 2, w - 4, 1);
+  }
+  if (active) {
+    ctx.fillStyle = PAL.ember;
+    ctx.fillRect(x + 2, y + 1, w - 4, 1);
+  }
+  frameRect(x, y, w, h, disabled ? PAL.dim : (primary || active || hover) ? PAL.ember : PAL.lineHot);
+  drawText(label, x + w / 2, y + h / 2 + 0.5, opts.size || 9,
+    disabled ? PAL.dim : primary ? PAL.white : (active ? PAL.emberHi : PAL.boneDim),
+    'center', opts.weight || 'normal');
+  addHit(id, x, y, w, h, disabled ? null : fn, disabled);
+  return hover;
+}
+function drawSpaced(str, x, y, spacing, size, color, weight = 'bold') {
+  ctx.save();
+  ctx.font = font(size, weight);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = color;
+  const chars = [...str];
+  let total = -spacing;
+  for (const ch of chars) total += ctx.measureText(ch).width + spacing;
+  let px = x - total / 2;
+  for (const ch of chars) {
+    ctx.fillText(ch, Math.round(px), Math.round(y));
+    px += ctx.measureText(ch).width + spacing;
+  }
+  ctx.restore();
+}
+
+function drawAmbientEmbers(alpha = 1) {
+  const cols = [PAL.ember, PAL.emberHi, PAL.gold];
+  for (let i = 0; i < 40; i++) {
+    const speed = 7 + (i % 7) * 2.2;
+    const x = (i * 97.3 + Math.sin(realTime * 0.35 + i) * 26 + VW * 2) % VW;
+    const y = VH + 20 - ((realTime * speed + i * 37) % (VH + 36));
+    const tw = 0.25 + 0.75 * Math.abs(Math.sin(realTime * 1.7 + i * 1.3));
+    ctx.globalAlpha = tw * 0.5 * alpha;
+    ctx.fillStyle = cols[i % 3];
+    const s = i % 7 === 0 ? 2 : 1;
+    ctx.fillRect(Math.round(x), Math.round(y), s, s);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawWorldMotes() {
+  if (!game) return;
+  const frost = game.mapId === 'frost';
+  ctx.globalAlpha = 0.28;
+  for (let i = 0; i < 16; i++) {
+    const x = (i * 71.7 + Math.sin(realTime * 0.5 + i) * 18 + FIELD_W) % FIELD_W;
+    const y = GY + ((realTime * (3 + i % 4) + i * 29) % FIELD_H);
+    ctx.fillStyle = frost ? PAL.frostHi : (i % 3 ? PAL.ember : PAL.gold);
+    ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- 塔的像素造型 ----------
+function drawTowerSprite(type, level, x, y, opts = {}) {
+  const tm = opts.t || 0;
+  const angle = opts.angle == null ? -Math.PI / 2 : opts.angle;
+  const flash = opts.flash || 0;
+  const alpha = opts.alpha == null ? 1 : opts.alpha;
+  const scale = opts.scale == null ? 1 : opts.scale;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.translate(Math.round(x), Math.round(y));
+  if (scale !== 1) ctx.scale(scale, scale);
+
+  const ink = '#0a090f';
+  const stoneD = '#3f3738';
+  const stone = '#5d514b';
+  const stoneL = '#8a7665';
+
+  ctx.fillStyle = 'rgba(3,3,6,0.48)';
+  ctx.fillRect(-7, 4, 14, 3);
+
+  if (type === 'bolt') {
+    ctx.fillStyle = ink; ctx.fillRect(-7, 0, 14, 7);
+    ctx.fillStyle = stoneD; ctx.fillRect(-6, 1, 12, 5);
+    ctx.fillStyle = stone; ctx.fillRect(-6, 1, 12, 1);
+    ctx.fillStyle = ink; ctx.fillRect(-4, -8, 8, 10);
+    ctx.fillStyle = stone; ctx.fillRect(-3, -7, 5, 8);
+    ctx.fillStyle = stoneL; ctx.fillRect(-3, -7, 1, 7);
+    ctx.fillStyle = flash > 0.2 ? PAL.emberHi : PAL.ember;
+    ctx.fillRect(-1, -4, 2, 2);
+    ctx.save();
+    ctx.translate(0, -6);
+    ctx.rotate(angle);
+    ctx.fillStyle = ink; ctx.fillRect(0, -2, 9, 4);
+    ctx.fillStyle = '#775843'; ctx.fillRect(1, -1, 7, 2);
+    ctx.fillStyle = flash > 0.2 ? PAL.emberHi : PAL.ember;
+    ctx.fillRect(7, -1, 2, 2);
+    ctx.restore();
+    const f = Math.sin(tm * 7) * 0.6;
+    ctx.fillStyle = PAL.emberRed; ctx.fillRect(-1, -11, 2, 3);
+    ctx.fillStyle = PAL.ember; ctx.fillRect(-1, -12 - f, 2, 3);
+    ctx.fillStyle = PAL.emberHi; ctx.fillRect(-1, -13 - f, 1, 1);
+    if (level >= 1) {
+      ctx.fillStyle = stoneL; ctx.fillRect(-7, -1, 2, 2); ctx.fillRect(5, -1, 2, 2);
+    }
+    if (level >= 2) {
+      ctx.fillStyle = PAL.gold; ctx.fillRect(4, -10, 2, 4);
+      ctx.fillStyle = PAL.goldHi; ctx.fillRect(4, -10, 1, 1);
+    }
+  } else if (type === 'flame') {
+    ctx.fillStyle = ink; ctx.fillRect(-7, 0, 14, 7);
+    ctx.fillStyle = stoneD; ctx.fillRect(-6, 1, 12, 5);
+    ctx.fillStyle = '#54403b'; ctx.fillRect(-6, -2, 12, 4);
+    ctx.fillStyle = ink; ctx.fillRect(-6, -4, 12, 3);
+    ctx.fillStyle = '#7a4d3e'; ctx.fillRect(-5, -3, 10, 2);
+    ctx.fillStyle = '#2a1b1c'; ctx.fillRect(-4, -3, 8, 1);
+    const f = Math.sin(tm * 6.5) * 0.8;
+    ctx.fillStyle = PAL.emberRed; ctx.fillRect(-3, -7, 6, 4);
+    ctx.fillStyle = PAL.ember; ctx.fillRect(-2, -9 - f, 4, 4);
+    ctx.fillStyle = PAL.emberHi; ctx.fillRect(-1, -11 - f, 2, 3);
+    ctx.fillStyle = PAL.emberHi; ctx.fillRect(0, -12 - f, 1, 1);
+    if (level >= 1) { ctx.fillStyle = stoneL; ctx.fillRect(-8, 1, 2, 5); ctx.fillRect(6, 1, 2, 5); }
+    if (level >= 2) {
+      ctx.fillStyle = PAL.emberHi; ctx.fillRect(-4, -1, 1, 1); ctx.fillRect(3, -1, 1, 1);
+      ctx.fillStyle = PAL.ember; ctx.fillRect(-5, -12, 1, 2); ctx.fillRect(4, -11, 1, 2);
+    }
+  } else if (type === 'frost') {
+    const pulse = 0.7 + Math.sin(tm * 3.2 + (opts.pulse || 0)) * 0.3;
+    ctx.fillStyle = ink; ctx.fillRect(-7, 0, 14, 7);
+    ctx.fillStyle = '#1c3b43'; ctx.fillRect(-6, 1, 12, 4);
+    ctx.fillStyle = '#35636b'; ctx.fillRect(-6, 1, 12, 1);
+    ctx.fillStyle = '#16363d'; ctx.fillRect(-5, 3, 10, 1);
+    ctx.globalAlpha *= 0.4 + pulse * 0.6;
+    ctx.fillStyle = PAL.frostDim; ctx.fillRect(-4, -6, 3, 7); ctx.fillRect(2, -7, 3, 8);
+    ctx.fillStyle = PAL.frost; ctx.fillRect(-4, -6, 1, 5); ctx.fillRect(2, -7, 1, 6);
+    ctx.fillStyle = PAL.frostHi; ctx.fillRect(-4, -8, 1, 3); ctx.fillRect(3, -9, 1, 3);
+    ctx.fillStyle = PAL.frostDim; ctx.fillRect(-1, -10, 2, 11);
+    ctx.fillStyle = PAL.frost; ctx.fillRect(-1, -10, 1, 8);
+    ctx.fillStyle = PAL.frostHi; ctx.fillRect(-1, -12, 1, 2);
+    ctx.globalAlpha = Math.max(alpha * 0.5, alpha * pulse);
+    ctx.fillStyle = PAL.frostHi; ctx.fillRect(0, -14, 1, 2);
+    if (level >= 1) { ctx.fillStyle = PAL.frostDim; ctx.fillRect(-6, -3, 2, 4); ctx.fillRect(4, -4, 2, 5); }
+    if (level >= 2) { ctx.fillStyle = PAL.frostHi; ctx.fillRect(-6, -4, 1, 1); ctx.fillRect(5, -5, 1, 1); }
+  } else if (type === 'mint') {
+    ctx.fillStyle = ink; ctx.fillRect(-7, 0, 14, 7);
+    ctx.fillStyle = stoneD; ctx.fillRect(-6, 1, 12, 5);
+    ctx.fillStyle = '#5e4b2e'; ctx.fillRect(-4, -6, 8, 7);
+    ctx.fillStyle = ink; ctx.fillRect(-5, -8, 10, 3);
+    ctx.fillStyle = '#8a6a3a'; ctx.fillRect(-4, -7, 8, 1);
+    const bob = Math.round(Math.sin(tm * 2.4 + (opts.pulse || 0)) * 1.2);
+    ctx.fillStyle = ink; ctx.fillRect(-3, -14 + bob, 6, 6);
+    ctx.fillStyle = PAL.gold; ctx.fillRect(-2, -13 + bob, 4, 4);
+    ctx.fillStyle = PAL.goldHi; ctx.fillRect(-2, -13 + bob, 1, 1);
+    ctx.fillStyle = '#7a5528'; ctx.fillRect(-1, -12 + bob, 2, 1);
+    if (level >= 1) {
+      ctx.fillStyle = PAL.goldHi; ctx.fillRect(-5, -13 + bob, 1, 1);
+      ctx.fillRect(4, -11 + bob, 1, 1);
+    }
+    if (level >= 2) {
+      ctx.fillStyle = PAL.gold; ctx.fillRect(-6, -4, 1, 3); ctx.fillRect(5, -4, 1, 3);
+      ctx.fillStyle = PAL.emberHi; ctx.fillRect(-6, -5, 1, 1); ctx.fillRect(5, -5, 1, 1);
+    }
+  }
+  // 等级刻度
+  for (let i = 0; i <= level; i++) {
+    ctx.fillStyle = i === level ? PAL.emberHi : PAL.boneDim;
+    ctx.fillRect(-5 + i * 4, 7, 2, 1);
+  }
+  ctx.restore();
+}
+
+function drawHealthBar(x, y, w, ratio) {
+  ctx.fillStyle = PAL.ink;
+  ctx.fillRect(Math.round(x - w / 2) - 1, Math.round(y) - 1, w + 2, 3);
+  ctx.fillStyle = ratio > 0.5 ? PAL.green : ratio > 0.25 ? PAL.gold : PAL.red;
+  ctx.fillRect(Math.round(x - w / 2), Math.round(y), Math.max(1, Math.round(w * clamp(ratio, 0, 1))), 1);
+}
+
+// ---------- 敌人的像素造型 ----------
+function drawEnemy(e) {
+  if (!e.alive) return;
+  const tm = game.t;
+  let bob = 0;
+  if (e.type === 'moth') bob = Math.sin(tm * 16 + e.seed) * 1.2;
+  else if (e.type === 'spore') bob = Math.sin(tm * 3 + e.seed) * 0.6;
+  else if (e.type === 'boss') bob = Math.sin(tm * 2.4) * 0.7;
+  else bob = Math.sin(tm * 8 + e.seed) * 0.7;
+  const x = Math.round(e.x), y = Math.round(e.y + bob);
+  const flash = e.flash > 0;
+  const base = ENEMIES[e.type];
+  const c = flash ? '#ffe3b0' : base.color;
+  const d = flash ? '#d8b07a' : base.dim;
+  const ink = PAL.ink;
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (e.type === 'walker') {
+    ctx.fillStyle = 'rgba(3,3,6,0.52)';
+    ctx.fillRect(-5, 5, 10, 2);
+    // 长矛
+    ctx.fillStyle = ink; ctx.fillRect(6, -10, 1, 15); ctx.fillRect(5, -10, 3, 1);
+    ctx.fillStyle = flash ? PAL.white : PAL.ember;
+    ctx.fillRect(6, -11, 1, 1);
+    // 脚
+    ctx.fillStyle = ink; ctx.fillRect(-5, 3, 3, 2); ctx.fillRect(2, 3, 3, 2);
+    // 斗篷
+    ctx.fillStyle = ink; ctx.fillRect(-5, -7, 10, 12);
+    ctx.fillStyle = c; ctx.fillRect(-4, -6, 8, 9);
+    ctx.fillStyle = d; ctx.fillRect(-4, 1, 8, 4);
+    ctx.fillRect(-6, -2, 2, 5); ctx.fillRect(4, -2, 2, 5);
+    // 兜帽与骨面
+    ctx.fillStyle = ink; ctx.fillRect(-4, -9, 8, 4);
+    ctx.fillStyle = c; ctx.fillRect(-4, -8, 8, 2);
+    ctx.fillStyle = PAL.boneDim; ctx.fillRect(-2, -5, 4, 3);
+    ctx.fillStyle = ink; ctx.fillRect(-2, -4, 1, 1); ctx.fillRect(1, -4, 1, 1);
+    ctx.fillStyle = flash ? PAL.ink : PAL.ember;
+    ctx.fillRect(-2, -4, 1, 1); ctx.fillRect(1, -4, 1, 1);
+    ctx.fillStyle = d; ctx.fillRect(-1, 4, 1, 1); ctx.fillRect(1, 4, 1, 1);
+  } else if (e.type === 'moth') {
+    const flap = Math.sin(tm * 18 + e.seed) > 0 ? 2 : -1;
+    ctx.fillStyle = 'rgba(3,3,6,0.4)';
+    ctx.fillRect(-5, 4, 10, 2);
+    ctx.fillStyle = ink;
+    ctx.fillRect(-8, -4 + flap, 6, 6);
+    ctx.fillRect(2, -4 - flap, 6, 6);
+    ctx.fillStyle = c;
+    ctx.fillRect(-7, -3 + flap, 4, 4);
+    ctx.fillRect(3, -3 - flap, 4, 4);
+    ctx.fillStyle = d;
+    ctx.fillRect(-7, -3 + flap, 1, 3);
+    ctx.fillRect(3, -3 - flap, 1, 3);
+    ctx.fillStyle = ink; ctx.fillRect(-2, -4, 4, 9);
+    ctx.fillStyle = c; ctx.fillRect(-1, -3, 2, 7);
+    ctx.fillStyle = flash ? PAL.ink : PAL.frostHi;
+    ctx.fillRect(-1, -5, 1, 1); ctx.fillRect(1, -5, 1, 1);
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = PAL.frost;
+    ctx.fillRect(-9, 1 + flap, 1, 1); ctx.fillRect(8, 2 - flap, 1, 1);
+    ctx.globalAlpha = 1;
+  } else if (e.type === 'brute') {
+    ctx.fillStyle = 'rgba(3,3,6,0.55)';
+    ctx.fillRect(-8, 6, 16, 3);
+    // 腿
+    ctx.fillStyle = ink; ctx.fillRect(-6, 4, 4, 3); ctx.fillRect(2, 4, 4, 3);
+    // 盾
+    ctx.fillStyle = ink; ctx.fillRect(-11, -3, 5, 11);
+    ctx.fillStyle = flash ? PAL.bone : '#75594a'; ctx.fillRect(-10, -2, 3, 9);
+    ctx.fillStyle = '#9b7860'; ctx.fillRect(-10, -2, 1, 5);
+    // 躯干
+    ctx.fillStyle = ink; ctx.fillRect(-8, -8, 16, 13);
+    ctx.fillStyle = c; ctx.fillRect(-7, -7, 14, 11);
+    ctx.fillStyle = d; ctx.fillRect(-7, 2, 14, 3);
+    ctx.fillStyle = flash ? PAL.bone : '#6d5145';
+    ctx.fillRect(-6, -6, 5, 3); ctx.fillRect(0, -4, 5, 2); ctx.fillRect(-4, 0, 4, 2);
+    ctx.fillStyle = '#3a2b27';
+    ctx.fillRect(-7, -1, 2, 4); ctx.fillRect(5, -2, 2, 4);
+    // 角与眼
+    ctx.fillStyle = ink; ctx.fillRect(-6, -11, 4, 5); ctx.fillRect(2, -11, 4, 5);
+    ctx.fillStyle = '#a48870'; ctx.fillRect(-5, -11, 2, 3); ctx.fillRect(3, -11, 2, 3);
+    ctx.fillStyle = flash ? PAL.ink : PAL.red;
+    ctx.fillRect(-4, -5, 2, 1); ctx.fillRect(2, -5, 2, 1);
+    ctx.fillStyle = ink; ctx.fillRect(-6, 3, 1, 2); ctx.fillRect(5, 3, 1, 2);
+  } else if (e.type === 'spore') {
+    const pulse = 0.6 + Math.abs(Math.sin(tm * 2.4 + e.seed)) * 0.4;
+    ctx.fillStyle = 'rgba(3,3,6,0.45)';
+    ctx.fillRect(-6, 6, 12, 2);
+    ctx.fillStyle = ink; ctx.fillRect(-3, -1, 6, 8);
+    ctx.fillStyle = c; ctx.fillRect(-2, 0, 4, 6);
+    ctx.fillStyle = d; ctx.fillRect(-2, 4, 4, 2);
+    ctx.fillStyle = ink; ctx.fillRect(-8, -9, 16, 7);
+    ctx.fillStyle = c; ctx.fillRect(-7, -9, 14, 5);
+    ctx.fillStyle = d; ctx.fillRect(-7, -5, 14, 1);
+    ctx.fillStyle = flash ? PAL.ink : PAL.frostHi;
+    ctx.fillRect(-5, -8, 1, 1); ctx.fillRect(-2, -6, 1, 1); ctx.fillRect(2, -8, 1, 1); ctx.fillRect(4, -6, 1, 1);
+    ctx.fillStyle = flash ? PAL.ink : PAL.violet;
+    ctx.fillRect(-3, -5, 6, 1);
+    ctx.globalAlpha = 0.5 * pulse;
+    ctx.fillStyle = PAL.violet;
+    ctx.fillRect(-10, -5, 1, 1); ctx.fillRect(9, -3, 1, 1); ctx.fillRect(-4, -12, 1, 1); ctx.fillRect(5, -11, 1, 1);
+    ctx.globalAlpha = 1;
+  } else if (e.type === 'boss') {
+    const pulse = 0.5 + Math.abs(Math.sin(tm * 1.8)) * 0.5;
+    // 无光巨像：暗色巨躯 + 熔火裂纹 + 角冠
+    ctx.globalAlpha = 0.10 + pulse * 0.08;
+    ctx.fillStyle = PAL.ember;
+    ctx.beginPath(); ctx.arc(0, 0, 21 + pulse * 4, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(-15, -13, 1, 1); ctx.fillRect(14, 6, 1, 1);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(3,3,6,0.62)';
+    ctx.fillRect(-12, 8, 24, 3);
+    // 四肢
+    ctx.fillStyle = ink;
+    ctx.fillRect(-12, 5, 5, 5); ctx.fillRect(7, 5, 5, 5);
+    ctx.fillRect(-14, -4, 3, 10); ctx.fillRect(11, -4, 3, 10);
+    ctx.fillStyle = '#3a2b31';
+    ctx.fillRect(-11, 6, 3, 3); ctx.fillRect(8, 6, 3, 3);
+    ctx.fillRect(-13, -3, 1, 7); ctx.fillRect(12, -3, 1, 7);
+    // 躯干
+    ctx.fillStyle = ink; ctx.fillRect(-10, -11, 20, 19);
+    ctx.fillStyle = flash ? '#ffe3b0' : '#3a2b31'; ctx.fillRect(-9, -10, 18, 17);
+    ctx.fillStyle = '#291e23'; ctx.fillRect(-9, 3, 18, 4);
+    ctx.fillStyle = flash ? PAL.bone : '#5d423d';
+    ctx.fillRect(-9, -9, 6, 3);
+    ctx.fillRect(3, -7, 6, 3);
+    ctx.fillRect(-4, 1, 8, 2);
+    ctx.fillRect(-10, -1, 2, 5);
+    // 熔火裂纹
+    ctx.fillStyle = flash ? PAL.ink : PAL.ember;
+    ctx.fillRect(-6, -6, 1, 5);
+    ctx.fillRect(-5, -2, 2, 1);
+    ctx.fillRect(2, -8, 1, 4);
+    ctx.fillRect(3, -5, 2, 1);
+    ctx.fillRect(-1, 2, 1, 2);
+    ctx.fillRect(6, 0, 1, 3);
+    // 胸口核心
+    ctx.fillStyle = PAL.emberRed; ctx.fillRect(-3, -3, 6, 5);
+    ctx.fillStyle = PAL.ember; ctx.fillRect(-2, -2, 4, 3);
+    ctx.fillStyle = PAL.emberHi; ctx.fillRect(-1, -1, 2, 1);
+    // 双眼与角冠
+    ctx.fillStyle = PAL.ink; ctx.fillRect(-7, -16, 5, 8); ctx.fillRect(2, -16, 5, 8);
+    ctx.fillStyle = flash ? PAL.bone : '#8b6752';
+    ctx.fillRect(-6, -18, 3, 5); ctx.fillRect(3, -18, 3, 5);
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(-6, -7, 2, 2); ctx.fillRect(3, -7, 2, 2);
+    ctx.fillStyle = PAL.ink;
+    ctx.fillRect(-4, -4, 1, 1); ctx.fillRect(3, -3, 1, 1);
+    // 尖爪
+    ctx.fillStyle = PAL.boneDim;
+    ctx.fillRect(-14, 6, 1, 2); ctx.fillRect(-15, 7, 1, 1);
+    ctx.fillRect(13, 6, 1, 2); ctx.fillRect(14, 7, 1, 1);
+  }
+  if (e.slowT > 0) {
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = PAL.frostHi;
+    ctx.fillRect(-e.radius - 4, -1, 1, 1);
+    ctx.fillRect(e.radius + 3, 1, 1, 1);
+    ctx.fillRect(0, -e.radius - 4, 1, 1);
+    ctx.fillRect(-2, e.radius + 3, 1, 1);
+    ctx.globalAlpha = 1;
+  }
+  if (e.type !== 'boss' && e.hp < e.maxHp) {
+    const bar = { walker: [-13, 10], moth: [-11, 10], brute: [-16, 14], spore: [-17, 12] }[e.type] || [-12, 8];
+    drawHealthBar(0, bar[0], bar[1], e.hp / e.maxHp);
+  }
+  ctx.restore();
+}
+// ---------- 世界 ----------
+function drawRange(x, y, r, pattern, color) {
+  ctx.save();
+  ctx.globalAlpha = 0.65;
+  ctx.fillStyle = pattern;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.55;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.arc(x, y, r + 0.5, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawPortal(map) {
+  const p = map.portal;
+  const k = 0.6 + Math.sin(game ? game.t * 2.1 : realTime * 2.1) * 0.4;
+  ctx.save();
+  ctx.globalAlpha = 0.18 + 0.18 * k;
+  ctx.fillStyle = map.art.accent;
+  ctx.beginPath();
+  ctx.arc(p.x - 1, p.y, 9 + k * 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = map.art.accent2;
+  ctx.fillRect(p.x - 2, p.y - 3 - Math.round(k * 2), 1, 2);
+  ctx.fillRect(p.x + 1, p.y + 2, 1, 1);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawBeacon() {
+  const g = game;
+  if (!g) return;
+  const bp = g.map.beacon;
+  const fx = bp.x, fy = bp.y - 18;
+  const alive = !g.over || g.over.win;
+  const low = g.lives <= 6;
+  const t = g.t;
+  const k = 0.7 + Math.sin(t * 7) * 0.3;
+  ctx.save();
+  if (alive) {
+    // 抖动光晕（保持像素颗粒感）
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = low ? RANGE_PATTERN_BAD : (g.mapId === 'frost' ? RANGE_PATTERN_ICE : RANGE_PATTERN_GOOD);
+    ctx.beginPath();
+    ctx.arc(fx, fy, 19 + k * 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = low ? PAL.life : g.map.art.accent;
+    ctx.beginPath();
+    ctx.arc(fx, fy, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = low ? PAL.life : PAL.emberRed;
+    ctx.fillRect(fx - 2, fy - 2, 5, 4);
+    ctx.fillStyle = low ? PAL.emberHi : PAL.ember;
+    ctx.fillRect(fx - 1, fy - 5 - Math.round(k * 2), 3, 5);
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(fx, fy - 7 - Math.round(k * 2), 1, 2);
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(fx - 4, fy - 8 + Math.floor(Math.sin(t * 5) * 2), 1, 1);
+    ctx.fillRect(fx + 3, fy - 10 + Math.floor(Math.cos(t * 4) * 2), 1, 1);
+  } else {
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = '#41363a';
+    ctx.fillRect(fx - 2, fy - 4, 4, 3);
+    ctx.fillRect(fx - 1, fy - 8, 2, 3);
+    ctx.fillRect(fx, fy - 11, 1, 2);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawTowerField(t) {
+  const glowCol = t.type === 'frost' ? PAL.frost : t.type === 'mint' ? PAL.gold : PAL.ember;
+  ctx.save();
+  ctx.globalAlpha = 0.10;
+  ctx.fillStyle = glowCol;
+  ctx.beginPath();
+  ctx.arc(t.x, t.y + 1, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.6;
+  const tphase = game.t * 3 + t.pulse;
+  for (let i = 0; i < 2; i++) {
+    const px = Math.round(t.x - 3 + i * 5 + Math.sin(tphase + i * 2) * 2);
+    const py = Math.round(t.y - 12 - ((game.t * (8 + i * 3) + t.pulse * 4 + i * 7) % 10));
+    if (bayer4(px, py) < 0.5) {
+      ctx.fillStyle = i === 0 ? glowCol : PAL.emberHi;
+      ctx.fillRect(px, py, 1, 1);
+    }
+  }
+  ctx.restore();
+  drawTowerSprite(t.type, t.level, t.x, t.y, {
+    angle: t.angle, t: game.t, flash: t.flash, pulse: t.pulse,
+  });
+  if (selectedTower === t) {
+    const c = PAL.emberHi;
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 1;
+    const r = 10;
+    for (const [sx, sy, dx, dy] of [[-1,-1,1,1],[1,-1,-1,1],[-1,1,1,-1],[1,1,-1,-1]]) {
+      const xx = Math.round(t.x + sx * r), yy = Math.round(t.y + sy * r);
+      ctx.beginPath();
+      ctx.moveTo(xx, yy + sy * -3);
+      ctx.lineTo(xx, yy);
+      ctx.lineTo(xx + dx * -3, yy);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawProjectile(p) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  if (p.kind === 'flame') {
+    const k = clamp(p.travel / (p.total || 1), 0, 1);
+    const lift = Math.sin(k * Math.PI) * 8;
+    ctx.fillStyle = 'rgba(3,2,5,0.35)';
+    ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) + 2, 3, 1);
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = PAL.emberRed;
+    ctx.fillRect(Math.round(p.x) - 2, Math.round(p.y - lift) - 1, 2, 2);
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(Math.round(p.x), Math.round(p.y - lift) - 2, 3, 3);
+    ctx.fillStyle = PAL.white;
+    ctx.fillRect(Math.round(p.x) + 1, Math.round(p.y - lift) - 1, 1, 1);
+  } else if (p.kind === 'frost') {
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = PAL.frostDim;
+    ctx.fillRect(Math.round(p.x) - 3, Math.round(p.y), 2, 1);
+    ctx.fillStyle = PAL.frost;
+    ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 3, 3);
+    ctx.fillStyle = PAL.frostHi;
+    ctx.fillRect(Math.round(p.x), Math.round(p.y) - 1, 1, 1);
+  } else {
+    ctx.globalAlpha = 0.8;
+    ctx.strokeStyle = PAL.emberRed;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(Math.round(p.x - (p.lx - p.x) * 0.06), Math.round(p.y - (p.ly - p.y) * 0.06));
+    ctx.lineTo(Math.round(p.x), Math.round(p.y));
+    ctx.stroke();
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 2, 2);
+    ctx.fillStyle = PAL.white;
+    ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawEffects() {
+  if (!game) return;
+  for (const e of game.effects) {
+    if (e.life <= 0) continue;
+    const a = clamp(e.life / e.max, 0, 1);
+    if (e.kind === 'p') {
+      ctx.globalAlpha = a;
+      ctx.fillStyle = e.color;
+      ctx.fillRect(Math.round(e.x), Math.round(e.y), Math.ceil(e.size), Math.ceil(e.size));
+    } else if (e.kind === 'ring') {
+      ctx.globalAlpha = a * 0.8;
+      ctx.strokeStyle = e.color;
+      ctx.lineWidth = e.width || 1;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (e.kind === 'text') {
+      ctx.globalAlpha = Math.min(1, a * 1.6);
+      ctx.font = font(e.size, 'bold', true);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = PAL.ink;
+      ctx.fillText(e.str, Math.round(e.x) + 1, Math.round(e.y) + 1);
+      ctx.fillStyle = e.color;
+      ctx.fillText(e.str, Math.round(e.x), Math.round(e.y));
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawPlacementOverlay() {
+  if (!game || scene === 'over') return;
+  const g = game;
+  const hc = cellFromPoint(pointer.x, pointer.y);
+  const hoverTower = hc ? towerAtCell(hc.cx, hc.cy) : null;
+
+  if (buildType && hc) {
+    const def = TOWERS[buildType];
+    const buildable = isBuildableCell(hc.cx, hc.cy) && !hoverTower;
+    const affordable = g.gold >= def.cost;
+    const p = cellCenter(hc.cx, hc.cy);
+    const ok = buildable && affordable;
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    const pat = ok ? RANGE_PATTERN_GOOD : RANGE_PATTERN_BAD;
+    drawRange(p.x, p.y, def.levels[0].range, pat, ok ? PAL.emberHi : PAL.red);
+    ctx.fillStyle = ok ? 'rgba(143,191,106,0.2)' : 'rgba(214,96,88,0.22)';
+    ctx.fillRect(hc.cx * TILE, GY + hc.cy * TILE, TILE, TILE);
+    frameRect(hc.cx * TILE, GY + hc.cy * TILE, TILE, TILE, ok ? PAL.green : PAL.red);
+    drawTowerSprite(buildType, 0, p.x, p.y, { alpha: ok ? 0.65 : 0.35, t: realTime, pulse: 0 });
+    ctx.restore();
+    // 价格提示
+    const label = `${def.name} ${def.cost}金`;
+    const w = measureText(label, 7, 'normal', false) + 8;
+    const tx = clamp(pointer.x + 10, 4, FIELD_W - w - 4);
+    const ty = clamp(pointer.y + 12, GY + 4, VH - 16);
+    fillPanel(tx, ty, w, 13, 'rgba(10,9,15,0.92)', ok ? PAL.lineHot : PAL.red);
+    drawText(label, tx + 4, ty + 6.5, 7, affordable ? PAL.gold : PAL.red);
+  } else if (buildType) {
+    // 可建造点提示
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = PAL.gold;
+    for (const c of g.map.buildCells) {
+      if (g.towerGrid.has(cellKeyOf(c.cx, c.cy))) continue;
+      const p = cellCenter(c.cx, c.cy);
+      ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+  } else if (hc && hoverTower) {
+    drawRange(hoverTower.x, hoverTower.y, towerRange(hoverTower), RANGE_PATTERN_GOOD, hoverTower.type === 'frost' ? PAL.frost : PAL.emberHi);
+    ctx.fillStyle = 'rgba(255,210,122,0.08)';
+    ctx.fillRect(hc.cx * TILE, GY + hc.cy * TILE, TILE, TILE);
+  }
+
+  if (selectedTower) {
+    drawRange(selectedTower.x, selectedTower.y, towerRange(selectedTower),
+      selectedTower.type === 'frost' ? RANGE_PATTERN_ICE : RANGE_PATTERN_GOOD,
+      selectedTower.type === 'frost' ? PAL.frost : PAL.emberHi);
+  }
+  if (hc && !buildType) {
+    ctx.strokeStyle = 'rgba(255,210,122,0.22)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(hc.cx * TILE + 0.5, GY + hc.cy * TILE + 0.5, TILE - 1, TILE - 1);
+  }
+}
+function cellKeyOf(cx, cy) { return cx + ',' + cy; }
+
+function drawWorld() {
+  const g = game;
+  if (!g) return;
+  ctx.fillStyle = PAL.ink;
+  ctx.fillRect(0, 0, VW, VH);
+  const shake = g.shake > 0 ? g.shake : 0;
+  ctx.save();
+  if (shake > 0) {
+    ctx.translate(Math.round((Math.random() - 0.5) * shake), Math.round((Math.random() - 0.5) * shake));
+  }
+  ctx.drawImage(ensureBg(g.mapId), 0, 0);
+  drawPortal(g.map);
+  drawBeacon();
+  drawPlacementOverlay();
+
+  for (const t of g.towers) drawTowerField(t);
+
+  const sorted = g.enemies.filter(e => e.alive).sort((a, b) => a.y - b.y);
+  for (const e of sorted) drawEnemy(e);
+  for (const p of g.projectiles) drawProjectile(p);
+  drawEffects();
+  drawWorldMotes();
+  ctx.restore();
+}
+
+// ---------- 菜单 ----------
+function drawMenuCard(id, x, y, w, h) {
+  const map = MAPS[id];
+  const sel = selectedMap === id;
+  const hover = on(x, y, w, h);
+  if (hover) ui.cursor = 'pointer';
+  ctx.fillStyle = sel ? '#221b20' : '#141119';
+  ctx.fillRect(x, y, w, h);
+  frameRect(x, y, w, h, sel ? PAL.ember : hover ? PAL.boneDim : PAL.lineHot);
+  if (sel) {
+    ctx.strokeStyle = 'rgba(255,138,61,0.35)';
+    ctx.strokeRect(x + 2.5, y + 2.5, w - 5, h - 5);
+  }
+  const bg = ensureBg(id);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x + 4, y + 4, w - 8, h - 28);
+  ctx.clip();
+  ctx.globalAlpha = sel ? 1 : 0.72;
+  ctx.drawImage(bg, 0, 0, VW, VH, x + 4, y + 4, w - 8, h - 28);
+  ctx.globalAlpha = 1;
+  // 预览暗角
+  ctx.fillStyle = 'rgba(5,4,9,0.22)';
+  ctx.fillRect(x + 4, y + 4, w - 8, h - 28);
+  ctx.restore();
+  drawText(map.name, x + 8, y + h - 11, 10, sel ? PAL.emberHi : PAL.bone, 'left', 'bold');
+  drawText(map.diff, x + w - 8, y + h - 11, 8,
+    map.id === 'frost' ? PAL.life : PAL.green, 'right');
+  // 预览内的地貌标签
+  const tagW = measureText(map.desc.split(' · ')[0], 6.5) + 8;
+  ctx.fillStyle = 'rgba(8,7,12,0.78)';
+  ctx.fillRect(x + 8, y + 9, tagW, 11);
+  drawText(map.desc.split(' · ')[0], x + 12, y + 15, 6.5, PAL.boneDim);
+  if (sel) {
+    const bw = 26;
+    ctx.fillStyle = 'rgba(10,9,15,0.86)';
+    ctx.fillRect(x + w - bw - 6, y + 7, bw, 12);
+    frameRect(x + w - bw - 6, y + 7, bw, 12, PAL.ember);
+    drawText('已选', x + w - bw / 2 - 6, y + 13, 7, PAL.emberHi, 'center', 'bold');
+  }
+  addHit('map_' + id, x, y, w, h, () => chooseMap(id));
+}
+
+function renderMenu() {
+  const bg = ensureBg(selectedMap);
+  ctx.drawImage(bg, 0, 0);
+  ctx.fillStyle = 'rgba(5,4,9,0.52)';
+  ctx.fillRect(0, 0, VW, VH);
+  ctx.fillStyle = DIM_PATTERN;
+  ctx.fillRect(0, 0, VW, VH);
+  drawAmbientEmbers(1);
+
+  // 标题
+  const cx = VW / 2;
+  drawText('✦', cx, 30, 12, PAL.ember, 'center');
+  for (let i = 0; i < 5; i++) {
+    const a = 0.22 - i * 0.03;
+    drawSpaced('余烬堡', cx + (i % 2) * 2 - 1, 52 + (i % 2) * 2 - 1, 9, 38,
+      `rgba(201,74,52,${a})`, 'bold');
+  }
+  drawSpaced('余烬堡', cx, 52, 9, 38, PAL.emberHi, 'bold');
+  drawSpaced('E M B E R H O L D', cx, 76, 3, 8, PAL.boneDim);
+  drawText('单文件 · 零外部资源 · 一位不会疲倦的 AI 指挥官', cx, 96, 9, PAL.muted, 'center');
+
+  // 地图选择
+  const cardY = 112, cardW = 206, cardH = 132;
+  // 选择区背板，收住背景路径的干扰
+  ctx.fillStyle = 'rgba(7,6,11,0.52)';
+  ctx.fillRect(cx - cardW - 18, 100, cardW * 2 + 36, 202);
+  ctx.fillStyle = DIM_SOFT;
+  ctx.fillRect(cx - cardW - 18, 100, cardW * 2 + 36, 202);
+  frameRect(cx - cardW - 18, 100, cardW * 2 + 36, 202, PAL.lineHot);
+  drawMenuCard('ashen', cx - cardW - 8, cardY, cardW, cardH);
+  drawMenuCard('frost', cx + 8, cardY, cardW, cardH);
+  // 开始按钮
+  button('menu_manual', cx - cardW - 8, 260, cardW, 32,
+    '开始守塔 · 手动', () => startManual(), { size: 10 });
+  button('menu_ai', cx + 8, 260, cardW, 32,
+    '▶ 看 AI 打一局', () => startWatchAI(), { primary: true, size: 10, weight: 'bold' });
+
+  // 底部信息带，保证低对比背景上的可读性
+  ctx.fillStyle = 'rgba(6,5,10,0.66)';
+  ctx.fillRect(0, 298, VW, VH - 298);
+  ctx.fillStyle = DIM_SOFT;
+  ctx.fillRect(0, 298, VW, VH - 298);
+  ctx.fillStyle = PAL.lineHot;
+  ctx.fillRect(84, 298, VW - 168, 1);
+  drawText('AI 与玩家共用金币与冷却，不作弊 · 按 A 可随时接管', cx, 308, 8, PAL.boneDim, 'center');
+  drawText('1–4 建塔 · U 升级 · S 出售 · Space 暂停 · F 倍速 · M 换图 · R 重开', cx, 321, 8, PAL.muted, 'center');
+  drawText('v1.0 · EMBERHOLD', VW - 8, VH - 7, 6, PAL.dim, 'right', 'normal', true);
+}
+
+// ---------- HUD ----------
+function drawCoinIcon(x, y) {
+  ctx.fillStyle = PAL.ink;
+  ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = PAL.gold;
+  ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = PAL.goldHi;
+  ctx.fillRect(x - 2, y - 2, 1, 1);
+  ctx.fillStyle = '#8a5f2d';
+  ctx.fillRect(x - 1, y - 1, 2, 2);
+}
+function drawLifeIcon(x, y) {
+  ctx.fillStyle = PAL.ink;
+  ctx.fillRect(x - 3, y - 4, 7, 8);
+  ctx.fillStyle = PAL.life;
+  ctx.fillRect(x - 2, y - 3, 4, 2);
+  ctx.fillRect(x - 2, y - 1, 5, 3);
+  ctx.fillStyle = PAL.emberHi;
+  ctx.fillRect(x - 1, y - 2, 1, 2);
+}
+function drawWaveIcon(x, y) {
+  ctx.fillStyle = PAL.ink;
+  ctx.fillRect(x - 3, y - 5, 7, 10);
+  ctx.fillStyle = PAL.boneDim;
+  ctx.fillRect(x - 2, y - 4, 4, 7);
+  ctx.fillStyle = PAL.emberRed;
+  ctx.fillRect(x - 2, y + 3, 5, 2);
+}
+function drawTopSkillButton() {
+  const g = game;
+  const x = 214, y = 3, w = 88, h = 18;
+  const hover = on(x, y, w, h);
+  if (hover) ui.cursor = 'pointer';
+  const ready = g.skillCd <= 0;
+  ctx.fillStyle = ready ? (hover ? '#4b2a1a' : '#352017') : '#19151d';
+  ctx.fillRect(x, y, w, h);
+  if (ready) {
+    ctx.fillStyle = 'rgba(255,138,61,0.18)';
+    ctx.fillRect(x + 2, y + h - 3, w - 4, 1);
+  } else {
+    const ratio = 1 - g.skillCd / SKILL_CD;
+    ctx.fillStyle = 'rgba(255,138,61,0.22)';
+    ctx.fillRect(x + 2, y + h - 3, Math.round((w - 4) * ratio), 1);
+  }
+  frameRect(x, y, w, h, ready ? (hover ? PAL.emberHi : PAL.ember) : PAL.lineHot);
+  drawText('烬雨 Q', x + 6, y + 9, 8, ready ? PAL.emberHi : PAL.boneDim, 'left', 'bold');
+  drawText(ready ? '就绪' : `${Math.ceil(g.skillCd)}s`, x + w - 5, y + 9, 8,
+    ready ? PAL.ember : PAL.muted, 'right', 'normal', true);
+  addHit('skill', x, y, w, h, () => castSkill(false));
+}
+function drawTopBar() {
+  const g = game;
+  ctx.fillStyle = '#0e0c14';
+  ctx.fillRect(0, 0, VW, GY);
+  ctx.fillStyle = 'rgba(255,255,255,0.025)';
+  ctx.fillRect(0, 0, VW, 1);
+  ctx.fillStyle = PAL.lineHot;
+  ctx.fillRect(0, GY - 1, VW, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(0, GY - 2, VW, 1);
+
+  // 徽记
+  ctx.fillStyle = PAL.emberRed;
+  ctx.fillRect(8, 7, 9, 11);
+  ctx.fillStyle = PAL.ember;
+  ctx.fillRect(9, 9, 7, 8);
+  ctx.fillStyle = PAL.emberHi;
+  ctx.fillRect(11, 8, 3, 5);
+  ctx.fillStyle = PAL.ink;
+  ctx.fillRect(11, 13, 3, 3);
+  drawText('余烬堡', 22, 10, 11, PAL.bone, 'left', 'bold');
+
+  drawText(`第 ${g.wave}/${MAX_WAVE} 波`, 64, 8, 9, PAL.emberHi, 'left', 'bold');
+  if (g.phase === 'prep') {
+    drawText(`备战 ${Math.max(0, Math.ceil(g.prep))}s`, 64, 17, 7, PAL.boneDim);
+  } else if (g.phase === 'wave') {
+    const remaining = g.enemies.filter(e => e.alive).length + g.spawnQueue.length;
+    drawText(`交战 · 剩余 ${remaining}`, 64, 17, 7, PAL.boneDim);
+  } else {
+    drawText('战斗结束', 64, 17, 7, PAL.boneDim);
+  }
+
+  drawCoinIcon(134, 12);
+  drawText(`${Math.floor(g.gold)}`, 142, 12, 9, PAL.gold, 'left', 'bold', true);
+  drawLifeIcon(184, 12);
+  drawText(`${g.lives}`, 193, 12, 9, g.lives <= 6 ? PAL.life : PAL.bone, 'left', 'bold', true);
+
+  drawTopSkillButton();
+  button('speedBtn', 310, 3, 48, 18, `x${gameSpeed} F`, () => cycleSpeed(), { size: 8 });
+  const aiHover = on(366, 3, 76, 18);
+  if (aiHover) ui.cursor = 'pointer';
+  ctx.fillStyle = aiOn ? (aiHover ? '#2f3e26' : '#25331f') : (aiHover ? '#292334' : '#1b1725');
+  ctx.fillRect(366, 3, 76, 18);
+  frameRect(366, 3, 76, 18, aiOn ? PAL.green : PAL.lineHot);
+  ctx.fillStyle = aiOn ? PAL.green : PAL.dim;
+  ctx.fillRect(371, 10, 3, 3);
+  drawText(aiOn ? 'AI 托管' : 'AI 手动', 410, 12, 8, aiOn ? '#c6e39c' : PAL.boneDim, 'center', 'bold');
+  addHit('aiBtn', 366, 3, 76, 18, () => toggleAI());
+
+  // 地图名与波次进度
+  drawText(MAPS[g.mapId].name, 452, 8, 8, PAL.boneDim);
+  for (let i = 0; i < MAX_WAVE; i++) {
+    const wx = 452 + i * 5, wy = 16;
+    if (i + 1 < g.wave) ctx.fillStyle = PAL.greenDim;
+    else if (i + 1 === g.wave) ctx.fillStyle = PAL.ember;
+    else ctx.fillStyle = '#2e2733';
+    ctx.fillRect(wx, wy, 4, 2);
+  }
+  drawText(`${Math.round(fpsValue)} FPS`, 635, 12, 7, PAL.dim, 'right', 'normal', true);
+}
+
+const SHOP_X = PANEL_X + 6, SHOP_Y = 38, SHOP_W = 164, SHOP_H = 32;
+
+function drawShopCard(typeKey, idx) {
+  const def = TOWERS[typeKey];
+  const x = SHOP_X, y = SHOP_Y + idx * (SHOP_H + 2), w = SHOP_W, h = SHOP_H;
+  const hover = on(x, y, w, h);
+  if (hover) ui.cursor = 'pointer';
+  if (hover) ui.hoverShop = typeKey;
+  const active = buildType === typeKey;
+  ctx.fillStyle = active ? '#2a2020' : hover ? '#221d29' : '#191521';
+  ctx.fillRect(x, y, w, h);
+  frameRect(x, y, w, h, active ? PAL.ember : hover ? PAL.boneDim : PAL.line);
+  if (active) {
+    ctx.fillStyle = PAL.ember;
+    ctx.fillRect(x + 1, y + 2, 1, h - 4);
+  }
+  drawTowerSprite(typeKey, 0, x + 15, y + 26, { scale: 0.8, t: realTime, alpha: 0.95 });
+  drawText(def.name, x + 31, y + 9, 9, active ? PAL.emberHi : PAL.bone, 'left', 'bold');
+  drawText(`${def.tag} · ${def.hotkey}`, x + 31, y + 21, 7, PAL.muted);
+  drawCoinIcon(x + w - 43, y + 9);
+  drawText(`${def.cost}`, x + w - 7, y + 9, 9,
+    game.gold >= def.cost ? PAL.gold : PAL.red, 'right', 'bold', true);
+  addHit('shop_' + typeKey, x, y, w, h, () => pickTower(typeKey));
+}
+
+function towerStatLines(type, level) {
+  const lv = TOWERS[type].levels[level];
+  if (type === 'bolt') {
+    const next = level < 2 ? TOWERS[type].upgrades[level] : null;
+    return [
+      `伤害 ${lv.dmg} · 射速 ${lv.rate.toFixed(2)}/s`,
+      `射程 ${lv.range}${next ? ` · 升级 ${next}金` : ' · 已满级'}`,
+    ];
+  }
+  if (type === 'flame') {
+    const next = level < 2 ? TOWERS[type].upgrades[level] : null;
+    return [
+      `伤害 ${lv.dmg} · 溅射 ${lv.splash}`,
+      `射速 ${lv.rate.toFixed(2)}/s · 射程 ${lv.range}${next ? ` · 升 ${next}金` : ''}`,
+    ];
+  }
+  if (type === 'frost') {
+    const next = level < 2 ? TOWERS[type].upgrades[level] : null;
+    return [
+      `减速 ${Math.round(lv.slow * 100)}% · ${lv.slowTime.toFixed(1)}s`,
+      `伤害 ${lv.dmg} · 射程 ${lv.range}${next ? ` · 升 ${next}金` : ''}`,
+    ];
+  }
+  const next = level < 2 ? TOWERS[type].levels[level + 1].income : null;
+  return [`每波 +${lv.income} 金`, next ? `升级后 +${next} 金/波` : '已满级'];
+}
+
+function drawSelectionPanel() {
+  const y0 = 176;
+  ctx.fillStyle = PAL.line;
+  ctx.fillRect(PANEL_X, y0 - 4, PANEL_W, 1);
+  const selected = selectedTower;
+  const infoType = selected ? selected.type : (buildType || ui.hoverShop);
+  if (!infoType) {
+    drawText('选中 / 建造', SHOP_X, y0 + 10, 9, PAL.bone, 'left', 'bold');
+    drawText('点击空地建造 · 点击塔查看', SHOP_X, y0 + 26, 7.5, PAL.muted);
+    drawText('1–4 选塔 · U 升级 · S 出售', SHOP_X, y0 + 38, 7.5, PAL.muted);
+    drawText('Esc / 右键取消当前选择', SHOP_X, y0 + 50, 7, PAL.dim);
+    return;
+  }
+  const def = TOWERS[infoType];
+  const level = selected ? selected.level : 0;
+  drawText(selected ? `${def.name} · Lv${level + 1}` : def.name, SHOP_X, y0 + 10, 10,
+    selected ? PAL.emberHi : PAL.bone, 'left', 'bold');
+  drawText(def.tag, SHOP_X + SHOP_W, y0 + 10, 7, PAL.muted, 'right');
+  const lines = towerStatLines(infoType, level);
+  drawText(lines[0], SHOP_X, y0 + 24, 7.5, PAL.boneDim);
+  drawText(lines[1], SHOP_X, y0 + 35, 7.5, PAL.boneDim);
+
+  if (selected) {
+    const upCost = level < 2 ? def.upgrades[level] : null;
+    button('upgradeBtn', SHOP_X, y0 + 42, 104, 17,
+      upCost == null ? '已满级' : `升级 ${upCost}金 [U]`,
+      () => tryUpgrade(selectedTower, false, '手动强化'),
+      { disabled: upCost == null || game.gold < upCost, size: 7.5 });
+    button('sellBtn', SHOP_X + 110, y0 + 42, 54, 17,
+      `出售 +${Math.floor(selected.invested * 0.65)}`,
+      () => trySell(selectedTower), { size: 7 });
+    clipText(def.desc, SHOP_X, y0 + 64, SHOP_W, 7, PAL.dim);
+  } else if (buildType) {
+    drawText(`造价 ${def.cost} 金 · 点击空地放置`, SHOP_X, y0 + 49, 7.5,
+      game.gold >= def.cost ? PAL.gold : PAL.red);
+    button('cancelBuild', SHOP_X, y0 + 56, 64, 14, '取消 [Esc]', () => clearBuild(), { size: 7 });
+    clipText(def.desc, SHOP_X + 70, y0 + 63, SHOP_W - 70, 6.5, PAL.dim);
+  } else {
+    clipText(def.desc, SHOP_X, y0 + 49, SHOP_W, 7, PAL.dim);
+    drawText('点击卡片选择建造', SHOP_X, y0 + 63, 7, PAL.muted);
+  }
+}
+
+function drawAIPanel() {
+  const y0 = 250;
+  ctx.fillStyle = PAL.line;
+  ctx.fillRect(PANEL_X, y0 - 4, PANEL_W, 1);
+  drawText('AI 指挥官', SHOP_X, y0 + 7, 9, PAL.bone, 'left', 'bold');
+  const chipX = PANEL_X + 106, chipY = y0 + 1, chipW = 64, chipH = 14;
+  const hover = on(chipX, chipY, chipW, chipH);
+  if (hover) ui.cursor = 'pointer';
+  ctx.fillStyle = aiOn ? '#24351f' : '#1e1a27';
+  ctx.fillRect(chipX, chipY, chipW, chipH);
+  frameRect(chipX, chipY, chipW, chipH, aiOn ? PAL.green : PAL.lineHot);
+  drawText(aiOn ? '托管中' : '手动', chipX + chipW / 2, chipY + 7, 7,
+    aiOn ? '#c6e39c' : PAL.boneDim, 'center', 'bold');
+  addHit('aiPanelToggle', chipX, chipY, chipW, chipH, () => toggleAI());
+
+  drawText(aiOn ? '共用金币/冷却 · 不作弊' : '手动指挥 · 按 A 交还 AI',
+    SHOP_X, y0 + 19, 6.5, aiOn ? PAL.greenDim : PAL.dim);
+
+  const logs = game.aiLogs.slice(-3).reverse();
+  if (!logs.length) {
+    drawText(aiOn ? '等待 AI 决策…' : '尚无指挥记录', SHOP_X, y0 + 32, 7, PAL.dim);
+  } else {
+    for (let i = 0; i < logs.length; i++) {
+      const log = logs[i];
+      const ly = y0 + 31 + i * 12;
+      const st = LOG_STYLE[log.kind] || LOG_STYLE.info;
+      ctx.fillStyle = st.color;
+      ctx.globalAlpha = i === 0 ? 1 : 0.6;
+      ctx.fillRect(SHOP_X, ly - 4, 2, 8);
+      clipText(log.text, SHOP_X + 7, ly, SHOP_W - 7, 7.4,
+        i === 0 ? PAL.bone : PAL.boneDim);
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawControls() {
+  const y = 328;
+  ctx.fillStyle = PAL.line;
+  ctx.fillRect(PANEL_X, y - 4, PANEL_W, 1);
+  const bw = 31, gap = 2;
+  button('pauseBtn', SHOP_X, y, bw, 22, scene === 'paused' ? '继续' : '暂停',
+    () => togglePause(), { size: 7, active: scene === 'paused' });
+  button('speedCycle', SHOP_X + (bw + gap), y, bw, 22, `x${gameSpeed}`,
+    () => cycleSpeed(), { size: 7 });
+  button('restartBtn', SHOP_X + (bw + gap) * 2, y, bw, 22, '重开',
+    () => restartRun(), { size: 7 });
+  button('switchMapBtn', SHOP_X + (bw + gap) * 3, y, bw, 22, '换图',
+    () => switchMapInGame(), { size: 7 });
+  button('menuBtn', SHOP_X + (bw + gap) * 4, y, bw, 22, '菜单',
+    () => backToMenu(), { size: 7 });
+}
+
+function renderSidePanel() {
+  const g = game;
+  ctx.fillStyle = '#14101a';
+  ctx.fillRect(PANEL_X, GY, PANEL_W, VH - GY);
+  ctx.fillStyle = PAL.line;
+  ctx.fillRect(PANEL_X, GY, 1, VH - GY);
+  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  for (let y = GY + 2; y < VH; y += 4) ctx.fillRect(PANEL_X + 1, y, 1, 1);
+
+  drawText('建造', SHOP_X, 30, 9, PAL.bone, 'left', 'bold');
+  drawText('点击空地放置', PANEL_X + PANEL_W - 7, 30, 6.5, PAL.dim, 'right');
+  ui.hoverShop = null;
+  for (let i = 0; i < TOWER_ORDER.length; i++) drawShopCard(TOWER_ORDER[i], i);
+  drawSelectionPanel();
+  drawAIPanel();
+  drawControls();
+}
+
+function drawFieldHud() {
+  const g = game;
+  // 技能闪白与受击红光
+  if (skillFlash > 0) {
+    ctx.globalAlpha = skillFlash * 0.16;
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(0, GY, FIELD_W, VH - GY);
+    ctx.globalAlpha = 1;
+  }
+  if (lifeFlash > 0) {
+    ctx.globalAlpha = Math.min(0.5, lifeFlash * 0.55);
+    ctx.fillStyle = PAL.life;
+    ctx.fillRect(0, GY, FIELD_W, 2);
+    ctx.fillRect(0, VH - 2, FIELD_W, 2);
+    ctx.fillRect(0, GY, 2, VH - GY);
+    ctx.fillRect(FIELD_W - 2, GY, 2, VH - GY);
+    ctx.globalAlpha = 1;
+  }
+  if (g.lives <= 6 && !g.over) {
+    const pulse = 0.25 + Math.abs(Math.sin(realTime * 4)) * 0.35;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = PAL.life;
+    ctx.fillRect(0, GY, 1, VH - GY);
+    ctx.globalAlpha = 1;
+  }
+
+  // 波次条
+  const sy = VH - 23;
+  ctx.fillStyle = 'rgba(8,7,12,0.86)';
+  ctx.fillRect(6, sy, FIELD_W - 12, 18);
+  frameRect(6, sy, FIELD_W - 12, 18, PAL.lineHot);
+  drawWaveIcon(15, sy + 8);
+  drawText(aiOn ? 'AI' : '手动', FIELD_W - 14, sy + 9, 7,
+    aiOn ? PAL.green : PAL.muted, 'right', 'bold');
+  if (g.phase === 'prep') {
+    drawText(`第 ${g.wave} 波 · ${Math.max(0, Math.ceil(g.prep))}s`, 25, sy + 9, 7.5, PAL.emberHi, 'left', 'bold');
+    clipText(waveComposition(g.wave - 1), 110, sy + 9, FIELD_W - 176, 7, PAL.boneDim);
+  } else if (g.phase === 'wave') {
+    const remaining = g.enemies.filter(e => e.alive).length + g.spawnQueue.length;
+    drawText(`第 ${g.wave} 波 · 剩余 ${remaining}`, 25, sy + 9, 7.5, PAL.emberHi, 'left', 'bold');
+    clipText(`击杀 ${g.waveKills}/${g.waveTotal} · ${WAVES[g.wave - 1].name}`,
+      128, sy + 9, FIELD_W - 194, 7, PAL.boneDim);
+  } else {
+    drawText('战斗结束', 25, sy + 9, 7.5, PAL.boneDim);
+  }
+
+  // Boss 血条
+  if (g.boss && g.boss.alive && g.phase === 'wave') {
+    const bw = 176, bx = Math.round(FIELD_W / 2 - bw / 2), by = GY + 52;
+    ctx.fillStyle = 'rgba(8,7,12,0.85)';
+    ctx.fillRect(bx - 8, by - 12, bw + 16, 24);
+    frameRect(bx - 8, by - 12, bw + 16, 24, PAL.emberRed);
+    drawText('无光巨像', bx, by - 5, 7, PAL.emberHi, 'left', 'bold');
+    drawText(`${Math.max(0, Math.ceil(g.boss.hp))}`, bx + bw, by - 5, 6.5, PAL.boneDim, 'right', 'normal', true);
+    ctx.fillStyle = PAL.ink;
+    ctx.fillRect(bx, by + 3, bw, 4);
+    ctx.fillStyle = PAL.emberRed;
+    ctx.fillRect(bx, by + 3, Math.max(0, Math.round(bw * clamp(g.boss.hp / g.boss.maxHp, 0, 1))), 4);
+    ctx.fillStyle = PAL.emberHi;
+    ctx.fillRect(bx, by + 3, Math.max(0, Math.round(bw * clamp(g.boss.hp / g.boss.maxHp, 0, 1))), 1);
+  }
+
+  // Toast
+  if (toast.t > 0) {
+    const alpha = Math.min(1, toast.t / 0.3);
+    const w = Math.min(FIELD_W - 24, Math.max(
+      measureText(toast.text, 9, 'bold') + 24,
+      toast.sub ? measureText(toast.sub, 7) + 24 : 0
+    ));
+    const x = Math.round(FIELD_W / 2 - w / 2), y = GY + 8;
+    ctx.globalAlpha = alpha;
+    fillPanel(x, y, w, 26, 'rgba(10,9,15,0.9)', PAL.lineHot);
+    ctx.fillStyle = PAL.ember;
+    ctx.fillRect(x + 2, y, 3, 1);
+    drawText(toast.text, FIELD_W / 2, y + 9, 9, PAL.emberHi, 'center', 'bold');
+    if (toast.sub) clipText(toast.sub, FIELD_W / 2, y + 19, w - 16, 7, PAL.boneDim, 'center');
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ---------- 暂停 / 结算 ----------
+function drawPauseOverlay() {
+  ctx.fillStyle = 'rgba(5,4,9,0.50)';
+  ctx.fillRect(0, GY, FIELD_W, VH - GY);
+  ctx.fillStyle = DIM_SOFT;
+  ctx.fillRect(0, GY, FIELD_W, VH - GY);
+  const x = 92, y = 144, w = 280, h = 112;
+  fillPanel(x, y, w, h, 'rgba(17,14,23,0.96)', PAL.ember);
+  ctx.fillStyle = 'rgba(255,138,61,0.05)';
+  ctx.fillRect(x + 2, y + 2, w - 4, 1);
+  drawText('已暂停', x + w / 2, y + 24, 18, PAL.emberHi, 'center', 'bold');
+  drawText('Space 继续 · 暂停时仍可建造与升级', x + w / 2, y + 45, 7.5, PAL.boneDim, 'center');
+  drawText(aiOn ? 'AI 托管暂停 · 玩家操作将自动接管' : '手动指挥 · 点击侧栏按钮可交还 AI',
+    x + w / 2, y + 58, 7, aiOn ? PAL.greenDim : PAL.dim, 'center');
+  addHit('pauseBlock', x, y, w, h, null);
+  button('pauseResume', x + 14, y + 76, 118, 24, '继续 [Space]', () => togglePause(), { size: 8, primary: true });
+  button('pauseRestart', x + 140, y + 76, 62, 24, '重开', () => restartRun(), { size: 8 });
+  button('pauseMenu', x + 210, y + 76, 56, 24, '菜单', () => backToMenu(), { size: 8 });
+}
+
+function drawGameOverOverlay() {
+  const g = game;
+  const over = g.over;
+  if (!over) return;
+  const fade = clamp((realTime - resultAt) * 4, 0, 1);
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = 'rgba(5,4,9,0.64)';
+  ctx.fillRect(0, 0, VW, VH);
+  ctx.fillStyle = DIM_PATTERN;
+  ctx.fillRect(0, 0, VW, VH);
+  drawAmbientEmbers(0.8);
+  const x = 104, y = 56, w = 432, h = 240;
+  fillPanel(x, y, w, h, 'rgba(15,12,20,0.97)', over.win ? PAL.ember : PAL.red);
+  ctx.fillStyle = over.win ? 'rgba(255,138,61,0.06)' : 'rgba(214,96,88,0.05)';
+  ctx.fillRect(x + 2, y + 2, w - 4, 2);
+  drawText(over.win ? '余烬未熄' : '灯塔熄灭', VW / 2, y + 34, 26,
+    over.win ? PAL.emberHi : PAL.life, 'center', 'bold');
+  drawText(over.win ? '十二波暗潮尽数退去，灯塔仍在燃烧' : `暗潮漫过防线 · 止步于第 ${over.wave} 波`,
+    VW / 2, y + 62, 8.5, PAL.boneDim, 'center');
+
+  // 数据
+  const rows = [
+    [['击杀', `${over.kills}`], ['剩余生命', `${over.lives}`], ['建成塔', `${over.towers}`]],
+    [['AI 决策', `${over.aiActions}`], ['用时', fmtTime(over.time)], ['总收入', `${over.earned}`]],
+  ];
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < 3; c++) {
+      const cellX = x + 34 + c * 124;
+      const cellY = y + 92 + r * 38;
+      drawText(rows[r][c][0], cellX, cellY, 7, PAL.muted);
+      drawText(rows[r][c][1], cellX, cellY + 14, 13, r === 0 && c === 1 && over.win ? PAL.emberHi : PAL.bone, 'left', 'bold', true);
+    }
+  }
+  drawText(g.ai ? 'AI 全程托管 · 未使用额外金币或冷却' : (over.aiActions > 0 ? '玩家接管 · AI 曾参与指挥' : '手动指挥完成'),
+    VW / 2, y + 172, 7.5, g.ai ? PAL.green : PAL.muted, 'center');
+
+  // 按钮
+  button('overRestart', x + 20, y + 190, 124, 28, '再来一局', () => restartRun(), { primary: true, size: 9 });
+  button('overSwitch', x + 154, y + 190, 124, 28, '换张地图', () => switchMapInGame(), { size: 9 });
+  button('overMenu', x + 288, y + 190, 124, 28, '返回菜单', () => backToMenu(), { size: 9 });
+  drawText('R 重开 · M 换图 · 全部规则对 AI 与玩家一致', VW / 2, y + 228, 6.5, PAL.dim, 'center');
+  ctx.globalAlpha = 1;
+  // 结算覆盖 HUD，吞掉底层点击
+  ui.hits = [];
+  addHit('overBlock', 0, 0, VW, VH, null);
+  // 重新登记结算按钮的点击区（上面 button 已写入旧数组，故手动补登记）
+  const btnDefs = [
+    ['overRestart', x + 20, y + 190, 124, 28, () => restartRun()],
+    ['overSwitch', x + 154, y + 190, 124, 28, () => switchMapInGame()],
+    ['overMenu', x + 288, y + 190, 124, 28, () => backToMenu()],
+  ];
+  for (const b of btnDefs) addHit(b[0], b[1], b[2], b[3], b[4], b[5]);
+}
+
+// ---------- 过渡 ----------
+function drawTransition() {
+  if (!transition.active || !transition.old) return;
+  const p = clamp(transition.t / transition.dur, 0, 1);
+  const block = 4;
+  for (let by = 0; by < VH; by += block) {
+    for (let bx = 0; bx < VW; bx += block) {
+      const th = bayer8((bx / block) & 7, (by / block) & 7);
+      if (th > p) {
+        ctx.drawImage(transition.old, bx, by, block, block, bx, by, block, block);
+      }
+    }
+  }
+  // 前沿微光
+  ctx.globalAlpha = Math.sin(p * Math.PI) * 0.08;
+  ctx.fillStyle = PAL.emberHi;
+  ctx.fillRect(0, 0, VW, VH);
+  ctx.globalAlpha = 1;
+}
+
+// ---------- 渲染入口 ----------
+function render() {
+  ui.hits.length = 0;
+  ui.cursor = 'default';
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  if (scene === 'menu') {
+    renderMenu();
+  } else if (game) {
+    drawWorld();
+    drawFieldHud();
+    drawTopBar();
+    renderSidePanel();
+    if (scene === 'paused') drawPauseOverlay();
+    if (scene === 'over') drawGameOverOverlay();
+  }
+  drawTransition();
+  ctx.restore();
+
+  if ((scene === 'playing' || scene === 'paused') && pointer.inside &&
+      pointer.x < FIELD_W && pointer.y >= GY && ui.cursor === 'default') {
+    ui.cursor = 'crosshair';
+  }
+  if (canvas.style.cursor !== ui.cursor) canvas.style.cursor = ui.cursor;
+}
+// ============================================================
+//  交互：鼠标 / 键盘 / UI 动作
+// ============================================================
+function updatePointer(e) {
+  const r = canvas.getBoundingClientRect();
+  pointer.x = (e.clientX - r.left) * VW / r.width;
+  pointer.y = (e.clientY - r.top) * VH / r.height;
+  pointer.inside = pointer.x >= 0 && pointer.x <= VW && pointer.y >= 0 && pointer.y <= VH;
+}
+canvas.addEventListener('pointermove', updatePointer);
+canvas.addEventListener('pointerdown', e => {
+  if (e.button === 2) return;
+  e.preventDefault();
+  updatePointer(e);
+  handleClick();
+});
+canvas.addEventListener('pointerleave', () => { pointer.inside = false; });
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  if (transition.active) return;
+  if (buildType || selectedTower) {
+    buildType = null;
+    selectedTower = null;
+  }
+});
+window.addEventListener('blur', () => { pointer.inside = false; });
+
+function handleClick() {
+  if (transition.active) return;
+  for (let i = ui.hits.length - 1; i >= 0; i--) {
+    const h = ui.hits[i];
+    if (!h.disabled && pointer.x >= h.x && pointer.x < h.x + h.w &&
+        pointer.y >= h.y && pointer.y < h.y + h.h) {
+      if (h.fn) h.fn();
+      return;
+    }
+  }
+  if (scene !== 'playing' && scene !== 'paused') return;
+  if (!game) return;
+  if (pointer.x < 0 || pointer.x >= FIELD_W || pointer.y < GY) return;
+  const cell = cellFromPoint(pointer.x, pointer.y);
+  if (!cell) return;
+  const tower = towerAtCell(cell.cx, cell.cy);
+  if (tower) {
+    selectedTower = tower;
+    buildType = null;
+    return;
+  }
+  if (buildType) {
+    if (!isBuildableCell(cell.cx, cell.cy)) {
+      setToast('这里不能建造', '请选择路径旁的草地');
+      return;
+    }
+    if (game.gold < TOWERS[buildType].cost) {
+      setToast('金币不足', `还差 ${Math.ceil(TOWERS[buildType].cost - game.gold)} 金`);
+      return;
+    }
+    tryBuild(buildType, cell.cx, cell.cy, false, '手动布防');
+    return;
+  }
+  selectedTower = null;
+}
+
+function chooseMap(id) {
+  if (transition.active || !MAPS[id]) return;
+  if (selectedMap === id) return;
+  beginTransition(() => {
+    selectedMap = id;
+  });
+}
+function startManual() {
+  if (transition.active) return;
+  const mapId = selectedMap;
+  beginTransition(() => {
+    startGameInternal(mapId, false, 1);
+  });
+}
+function startWatchAI() {
+  if (transition.active) return;
+  const mapId = selectedMap;
+  beginTransition(() => {
+    startGameInternal(mapId, true, 2);
+  });
+}
+function pickTower(type) {
+  if (scene !== 'playing' && scene !== 'paused') return;
+  if (buildType === type) {
+    buildType = null;
+  } else {
+    buildType = type;
+    selectedTower = null;
+  }
+}
+function clearBuild() {
+  buildType = null;
+}
+function togglePause(force) {
+  if (!game || transition.active || scene === 'menu' || scene === 'over') return;
+  const shouldPause = force == null ? scene === 'playing' : !!force;
+  if (shouldPause) {
+    scene = 'paused';
+  } else if (scene === 'paused') {
+    scene = 'playing';
+    loopAccum = 0;
+  }
+}
+function cycleSpeed() {
+  if (!game || scene === 'menu' || scene === 'over') return;
+  gameSpeed = gameSpeed % 3 + 1;
+  game.speed = gameSpeed;
+}
+function setSpeed(n) {
+  if (!game) return;
+  gameSpeed = clamp(Math.round(n), 1, 3);
+  game.speed = gameSpeed;
+}
+function toggleAI(force) {
+  if (!game || scene === 'menu' || scene === 'over') return;
+  const next = force == null ? !aiOn : !!force;
+  if (next === aiOn) return;
+  aiOn = next;
+  game.ai = next;
+  game.aiTimer = 0.15;
+  aiLog('info', next ? 'AI 接管 · 自动决策开启' : 'AI 退居观察 · 玩家指挥', next ? 'system' : 'user');
+  setToast(next ? 'AI 接管' : '已切换手动',
+    next ? 'AI 将自动建造 / 升级 / 技能' : '按 A 可随时交还 AI');
+}
+function restartRun() {
+  if (transition.active) return;
+  const mapId = game ? game.mapId : selectedMap;
+  const ai = game ? aiOn : false;
+  beginTransition(() => {
+    startGameInternal(mapId, ai, gameSpeed);
+  });
+}
+function switchMapInGame() {
+  if (transition.active) return;
+  const cur = game ? game.mapId : selectedMap;
+  const next = cur === 'ashen' ? 'frost' : 'ashen';
+  const ai = game ? aiOn : false;
+  beginTransition(() => {
+    startGameInternal(next, ai, gameSpeed);
+  });
+}
+function backToMenu() {
+  if (transition.active) return;
+  const lastMap = game ? game.mapId : selectedMap;
+  beginTransition(() => {
+    selectedMap = lastMap;
+    game = null;
+    scene = 'menu';
+    aiOn = false;
+    gameSpeed = 1;
+    buildType = null;
+    selectedTower = null;
+    ui.hoverShop = null;
+  });
+}
+
+window.addEventListener('keydown', e => {
+  if (transition.active) return;
+  const key = e.key.toLowerCase();
+  if ([' ', 'tab', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown'].includes(key)) e.preventDefault();
+
+  if (scene === 'menu') {
+    if (key === 'enter') { startManual(); return; }
+    if (key === 'w') { startWatchAI(); return; }
+    if (key === 'arrowleft' || key === 'a') { chooseMap('ashen'); return; }
+    if (key === 'arrowright' || key === 'd') { chooseMap('frost'); return; }
+    return;
+  }
+  if (scene === 'over') {
+    if (key === 'r' || key === 'enter') { restartRun(); return; }
+    if (key === 'm') { switchMapInGame(); return; }
+    if (key === 'escape') { backToMenu(); return; }
+    return;
+  }
+  if (!game) return;
+  if (key === ' ') { togglePause(); return; }
+  if (key === 'p') { togglePause(); return; }
+  if (key === 'escape') {
+    if (buildType || selectedTower) {
+      buildType = null;
+      selectedTower = null;
+    } else {
+      togglePause();
+    }
+    return;
+  }
+  if (key === '1') { pickTower('bolt'); return; }
+  if (key === '2') { pickTower('flame'); return; }
+  if (key === '3') { pickTower('frost'); return; }
+  if (key === '4') { pickTower('mint'); return; }
+  if (key === 'u' || key === 'e') {
+    if (selectedTower) tryUpgrade(selectedTower, false, '手动强化');
+    return;
+  }
+  if (key === 's' || key === 'x') {
+    if (selectedTower) trySell(selectedTower);
+    return;
+  }
+  if (key === 'a') { toggleAI(); return; }
+  if (key === 'f' || key === 'tab') { cycleSpeed(); return; }
+  if (key === 'q') { castSkill(false); return; }
+  if (key === 'r') { restartRun(); return; }
+  if (key === 'm') { switchMapInGame(); return; }
+});
+
+// ============================================================
+//  自动测试 / 公共 API / 主循环
+// ============================================================
+function finalizeAutotest(win, timeout = false) {
+  if (!autotest || autotest.done) return;
+  const g = game;
+  autotest.done = true;
+  autotest.win = !!win;
+  autotest.timeout = !!timeout;
+  autotest.simTime = g ? +g.t.toFixed(2) : 0;
+  autotest.wallMs = Math.round(performance.now() - autotest.startedAt);
+  autotest.fps = Math.round(fpsValue);
+  autotest.map = g ? g.mapId : autotest.map;
+  autotest.wave = g ? g.wave : 0;
+  autotest.lives = g ? g.lives : 0;
+  autotest.kills = g ? g.kills : 0;
+  autotest.gold = g ? Math.floor(g.gold) : 0;
+  autotest.aiActions = g ? g.aiActions : 0;
+  autotest.aiOn = aiOn;
+  autotest.cheats = false;
+  autotest.towers = g ? g.towers.map(t => ({ type: t.type, level: t.level, cx: t.cx, cy: t.cy })) : [];
+  autotest.logs = g ? g.aiLogs.slice(-12) : [];
+  autotest.result = g && g.over ? { ...g.over } : null;
+  window.__AUTOTEST__ = autotest;
+  console.log('[autotest]', JSON.stringify({
+    map: autotest.map, win: autotest.win, wave: autotest.wave, lives: autotest.lives,
+    kills: autotest.kills, simTime: autotest.simTime, aiActions: autotest.aiActions,
+    towers: autotest.towers.length, cheats: false,
+  }));
+}
+
+function startAutotest(mapId) {
+  if (autotestActive) return;
+  autotestActive = true;
+  autotest = {
+    done: false, win: false, map: mapId, startedAt: performance.now(),
+    simTime: 0, wallMs: 0, fps: 0, lives: 0, kills: 0, gold: 0,
+    aiActions: 0, aiOn: true, cheats: false, towers: [], logs: [],
+  };
+  window.__AUTOTEST__ = autotest;
+  startGameInternal(mapId, true, 1);
+  if (game) game.prep = 2.5;
+  const started = performance.now();
+  function stepBatch() {
+    if (!autotest || autotest.done) return;
+    if (!game) {
+      finalizeAutotest(false, true);
+      return;
+    }
+    if (game.over) {
+      finalizeAutotest(!!game.over.win);
+      return;
+    }
+    for (let i = 0; i < 70 && !autotest.done; i++) {
+      simulate(STEP);
+      if (!game || game.over) break;
+    }
+    if (game && game.over) {
+      finalizeAutotest(!!game.over.win);
+      return;
+    }
+    if (game && game.t > 900) {
+      finalizeAutotest(false, true);
+      return;
+    }
+    if (performance.now() - started > 90000) {
+      finalizeAutotest(false, true);
+      return;
+    }
+    setTimeout(stepBatch, 0);
+  }
+  setTimeout(stepBatch, 30);
+}
+
+const perf = {
+  frames: 0, renders: 0, simAvg: 0, renderAvg: 0, rafAvg: 0, lastRaf: 0,
+};
+
+window.Emberhold = {
+  version: '1.0.0',
+  get scene() { return scene; },
+  maps: MAPS,
+  towers: TOWERS,
+  enemies: ENEMIES,
+  waves: WAVES,
+  state() {
+    return {
+      scene,
+      mapId: game ? game.mapId : selectedMap,
+      wave: game ? game.wave : 0,
+      phase: game ? game.phase : '',
+      prep: game ? +game.prep.toFixed(2) : 0,
+      waveT: game ? +game.waveT.toFixed(1) : 0,
+      gold: game ? Math.floor(game.gold) : 0,
+      lives: game ? game.lives : 0,
+      kills: game ? game.kills : 0,
+      leaks: game ? game.leaks : 0,
+      enemies: game ? game.enemies.filter(e => e.alive).length : 0,
+      queued: game ? game.spawnQueue.length : 0,
+      projectiles: game ? game.projectiles.length : 0,
+      inRange: game ? game.enemies.filter(e => e.alive && game.towers.some(t =>
+        t.type !== 'mint' && dist(t.x, t.y, e.x, e.y) <= towerRange(t))).length : 0,
+      towers: game ? game.towers.map(t => ({ type: t.type, level: t.level, cx: t.cx, cy: t.cy })) : [],
+      aiOn,
+      speed: gameSpeed,
+      skillCd: game ? +game.skillCd.toFixed(2) : 0,
+      aiActions: game ? game.aiActions : 0,
+      logs: game ? game.aiLogs.slice(-6) : [],
+      fps: Math.round(fpsValue),
+      over: game ? game.over : null,
+      boss: game && game.boss && game.boss.alive
+        ? { hp: Math.ceil(game.boss.hp), maxHp: game.boss.maxHp, x: Math.round(game.boss.x), y: Math.round(game.boss.y) }
+        : null,
+      transition: transition.active,
+      frozen: captureFreeze,
+      canvas: { width: canvas.style.width, height: canvas.style.height },
+      perf: {
+        frames: perf.frames, renders: perf.renders,
+        simMs: +perf.simAvg.toFixed(3), renderMs: +perf.renderAvg.toFixed(3),
+        rafMs: +perf.rafAvg.toFixed(2),
+      },
+    };
+  },
+  startGame(opts = {}) {
+    const mapId = opts.mapId || selectedMap;
+    const ai = opts.ai !== false;
+    const speed = clamp(opts.speed || 1, 1, 3);
+    if (opts.instant) {
+      startGameInternal(mapId, ai, speed);
+      return true;
+    }
+    beginTransition(() => startGameInternal(mapId, ai, speed));
+    return true;
+  },
+  selectMap(id) { chooseMap(id); },
+  startAutotest(mapId = 'ashen') { startAutotest(mapId); },
+  toggleAI(force) { toggleAI(force); },
+  setSpeed(n) { setSpeed(n); },
+  pause(force) { togglePause(force); },
+  restart() { restartRun(); },
+  switchMap() { switchMapInGame(); },
+  menu() { backToMenu(); },
+  fastForward(seconds = 10) {
+    if (!game || autotestActive || transition.active || scene === 'over') return false;
+    const steps = clamp(Math.round(seconds * 60), 0, 1800);
+    for (let i = 0; i < steps && !game.over; i++) simulate(STEP);
+    render();
+    return true;
+  },
+  freeze(on = true) { captureFreeze = !!on; return captureFreeze; },
+  renderOnce() { render(); },
+  holdTransition(progress = 0.5) {
+    if (!transition.active) return false;
+    transitionHeld = true;
+    transition.t = clamp(progress, 0, 0.99) * transition.dur;
+    render();
+    return true;
+  },
+  finishTransition() {
+    if (!transition.active) return false;
+    transitionHeld = false;
+    transition.active = false;
+    transition.old = null;
+    render();
+    return true;
+  },
+  build(type, cx, cy) { return tryBuild(type, cx, cy, false, 'API 建造'); },
+  upgrade() { return selectedTower ? tryUpgrade(selectedTower, false, 'API 升级') : false; },
+  sell() { return selectedTower ? trySell(selectedTower) : false; },
+  castSkill() { return castSkill(false); },
+  getAutotest() { return window.__AUTOTEST__; },
+  benchmark(frames = 90) {
+    const n = clamp(Math.round(frames), 1, 300);
+    const t0 = performance.now();
+    for (let i = 0; i < n; i++) render();
+    const ms = (performance.now() - t0) / n;
+    return { frames: n, msPerFrame: +ms.toFixed(2), fps: +(1000 / ms).toFixed(1) };
+  },
+  _bgDataURL(mapId = 'ashen') { return ensureBg(mapId).toDataURL(); },
+  _canvasDataURL() { return canvas.toDataURL(); },
+};
+
+// 预烘焙两张地图，避免换图卡顿
+ensureBg('ashen');
+ensureBg('frost');
+
+const params = new URLSearchParams(location.search);
+if (params.get('autotest') === '1') {
+  const mapId = params.get('map') === 'frost' ? 'frost' : 'ashen';
+  startAutotest(mapId);
+}
+
+let lastFrameTime = performance.now();
+let renderAccumulator = 0;
+
+function frame(now) {
+  const frameStart = performance.now();
+  perf.frames++;
+  if (perf.lastRaf) perf.rafAvg = perf.rafAvg * 0.92 + (now - perf.lastRaf) * 0.08;
+  perf.lastRaf = now;
+  const dt = Math.min(0.12, Math.max(0, (now - lastFrameTime) / 1000));
+  lastFrameTime = now;
+  realTime += dt;
+
+  updateTransition(dt);
+  if (toast.t > 0) toast.t -= dt;
+  if (skillFlash > 0) skillFlash = Math.max(0, skillFlash - dt * 2.2);
+  if (lifeFlash > 0) lifeFlash = Math.max(0, lifeFlash - dt * 1.8);
+
+  if (game && game.speed !== gameSpeed) game.speed = gameSpeed;
+
+  if (!autotestActive && !captureFreeze && scene === 'playing' && !transition.active) {
+    loopAccum += dt * gameSpeed;
+    let steps = 0;
+    while (loopAccum >= STEP && steps < 40) {
+      simulate(STEP);
+      loopAccum -= STEP;
+      steps++;
+      if (!game || game.over) { loopAccum = 0; break; }
+    }
+    if (steps >= 40) loopAccum = Math.min(loopAccum, STEP);
+  } else if (scene !== 'playing' || transition.active) {
+    loopAccum = 0;
+  }
+
+  const simEnd = performance.now();
+  perf.simAvg = perf.simAvg * 0.92 + (simEnd - frameStart) * 0.08;
+  // 目标 60 FPS：用时间积分稳定节流，不依赖高刷/无头环境的无限帧
+  renderAccumulator = Math.min(renderAccumulator + dt, 0.12);
+  if (renderAccumulator >= 1 / 60 || fpsSamples.length === 0) {
+    renderAccumulator = Math.max(0, renderAccumulator - 1 / 60);
+    const renderStart = performance.now();
+    render();
+    perf.renders++;
+    perf.renderAvg = perf.renderAvg * 0.92 + (performance.now() - renderStart) * 0.08;
+    fpsSamples.push(now);
+    if (fpsSamples.length > 40) fpsSamples.shift();
+    if (fpsSamples.length > 4) {
+      const span = (fpsSamples[fpsSamples.length - 1] - fpsSamples[0]) / 1000;
+      if (span > 0.05) fpsValue = (fpsSamples.length - 1) / span;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    lastFrameTime = performance.now();
+    loopAccum = 0;
+  }
+});
+
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

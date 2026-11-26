@@ -58,7 +58,8 @@
 - 交付: `web-html-tower-defense/index.html`（HTML+CSS+原生 JS 全内联，无外部依赖/素材）；AI 托管/手动切换；2–3 地图过渡；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；Playwright 验证
 - 约束: 单文件、零后端、零外部美术/字体/音频/CDN；原创程序化抖动像素；不复制 Cinderwatch 代码/素材/名称（MIT 仅作参考，若复用必须署名）；浏览器 1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 产出: `web-html-tower-defense/`（单文件 124,212B；README/TECH/迭代记录/CREDITS；captures/10×1920 截图 + 10s MP4/GIF + verification.json）；Playwright 48 项检查通过，AI 双图无人值守胜利（204 击杀 / 20 生命 / 0 漏）
+- 状态: done
 
 ## T-20261126-021 · 优化风格化海洋海岛-水交接（T-010 follow-up）
 - 线程: T-20261126-010（风格化海洋）

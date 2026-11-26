@@ -1,0 +1,1165 @@
+{
+  "task": "T-20261126-022",
+  "game": "余烬堡 / Emberhold",
+  "generated_at": "2026-11-26T12:51:14.392194+00:00",
+  "environment": {
+    "platform": "macOS-10.16-x86_64-i386-64bit",
+    "python": "3.12.7",
+    "cpu_count": 4,
+    "loadavg": [
+      9.74169921875,
+      5.36083984375,
+      4.41162109375
+    ]
+  },
+  "source": {
+    "file": "index.html",
+    "bytes": 124212,
+    "lines": 3497,
+    "sha256": "fb038d3391cf74d69d54b146e2d18bb848e0d7a792e28df67d306249b7bdf7b1",
+    "resource_tokens_found": [],
+    "external_urls": [],
+    "svg_namespace_only": true,
+    "note": "所有 JS/CSS/精灵均在 index.html 内；无外部图片/字体/音频/CDN。"
+  },
+  "checks": [
+    {
+      "name": "single self-contained index.html",
+      "ok": true,
+      "detail": "124212 bytes"
+    },
+    {
+      "name": "no external asset/script tags",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "no external URLs in index.html",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "initial scene is menu",
+      "ok": true,
+      "detail": "menu"
+    },
+    {
+      "name": "1920x1080 canvas",
+      "ok": true,
+      "detail": {
+        "width": "1920px",
+        "height": "1080px"
+      }
+    },
+    {
+      "name": "menu card selects frost",
+      "ok": true,
+      "detail": "frost"
+    },
+    {
+      "name": "AI watch starts an AI game",
+      "ok": true,
+      "detail": {
+        "scene": "playing",
+        "mapId": "frost",
+        "wave": 1,
+        "phase": "prep",
+        "prep": 4.57,
+        "waveT": 0,
+        "gold": 60,
+        "lives": 20,
+        "kills": 0,
+        "leaks": 0,
+        "enemies": 0,
+        "queued": 0,
+        "projectiles": 0,
+        "inRange": 0,
+        "towers": [
+          {
+            "type": "bolt",
+            "level": 0,
+            "cx": 3,
+            "cy": 14
+          },
+          {
+            "type": "bolt",
+            "level": 0,
+            "cx": 21,
+            "cy": 6
+          }
+        ],
+        "aiOn": true,
+        "speed": 2,
+        "skillCd": 0,
+        "aiActions": 2,
+        "logs": [
+          {
+            "kind": "build",
+            "text": "建 燧石 @D15 · 起手火力",
+            "source": "ai",
+            "stamp": "00:00"
+          },
+          {
+            "kind": "build",
+            "text": "建 燧石 @V7 · 起手火力",
+            "source": "ai",
+            "stamp": "00:00"
+          }
+        ],
+        "fps": 49,
+        "over": null,
+        "boss": null,
+        "transition": false,
+        "frozen": false,
+        "canvas": {
+          "width": "1920px",
+          "height": "1080px"
+        },
+        "perf": {
+          "frames": 98,
+          "renders": 84,
+          "simMs": 0.814,
+          "renderMs": 2.251,
+          "rafMs": 13.79
+        }
+      }
+    },
+    {
+      "name": "pause button pauses",
+      "ok": true,
+      "detail": "paused"
+    },
+    {
+      "name": "resume button resumes",
+      "ok": true,
+      "detail": "playing"
+    },
+    {
+      "name": "speed button cycles",
+      "ok": true,
+      "detail": "2->3"
+    },
+    {
+      "name": "top AI chip toggles to manual",
+      "ok": true
+    },
+    {
+      "name": "HUD switch map button works",
+      "ok": true,
+      "detail": {
+        "scene": "playing",
+        "mapId": "ashen",
+        "wave": 1,
+        "phase": "prep",
+        "prep": 4.53,
+        "waveT": 0,
+        "gold": 140,
+        "lives": 20,
+        "kills": 0,
+        "leaks": 0,
+        "enemies": 0,
+        "queued": 0,
+        "projectiles": 0,
+        "inRange": 0,
+        "towers": [],
+        "aiOn": false,
+        "speed": 3,
+        "skillCd": 0,
+        "aiActions": 0,
+        "logs": [],
+        "fps": 55,
+        "over": null,
+        "boss": null,
+        "transition": false,
+        "frozen": false,
+        "canvas": {
+          "width": "1920px",
+          "height": "1080px"
+        },
+        "perf": {
+          "frames": 189,
+          "renders": 160,
+          "simMs": 0.031,
+          "renderMs": 2.93,
+          "rafMs": 11.46
+        }
+      }
+    },
+    {
+      "name": "click build spends gold",
+      "ok": true,
+      "detail": {
+        "scene": "playing",
+        "mapId": "ashen",
+        "wave": 1,
+        "phase": "prep",
+        "prep": 4.87,
+        "waveT": 0,
+        "gold": 100,
+        "lives": 20,
+        "kills": 0,
+        "leaks": 0,
+        "enemies": 0,
+        "queued": 0,
+        "projectiles": 0,
+        "inRange": 0,
+        "towers": [
+          {
+            "type": "bolt",
+            "level": 0,
+            "cx": 3,
+            "cy": 4
+          }
+        ],
+        "aiOn": false,
+        "speed": 1,
+        "skillCd": 0,
+        "aiActions": 0,
+        "logs": [
+          {
+            "kind": "build",
+            "text": "建 燧石 @D5 · 手动布防",
+            "source": "user",
+            "stamp": "00:00"
+          }
+        ],
+        "fps": 53,
+        "over": null,
+        "boss": null,
+        "transition": false,
+        "frozen": false,
+        "canvas": {
+          "width": "1920px",
+          "height": "1080px"
+        },
+        "perf": {
+          "frames": 88,
+          "renders": 76,
+          "simMs": 0.033,
+          "renderMs": 0.978,
+          "rafMs": 12.03
+        }
+      }
+    },
+    {
+      "name": "U upgrades tower",
+      "ok": true,
+      "detail": {
+        "scene": "playing",
+        "mapId": "ashen",
+        "wave": 1,
+        "phase": "prep",
+        "prep": 4.65,
+        "waveT": 0,
+        "gold": 55,
+        "lives": 20,
+        "kills": 0,
+        "leaks": 0,
+        "enemies": 0,
+        "queued": 0,
+        "projectiles": 0,
+        "inRange": 0,
+        "towers": [
+          {
+            "type": "bolt",
+            "level": 1,
+            "cx": 3,
+            "cy": 4
+          }
+        ],
+        "aiOn": false,
+        "speed": 1,
+        "skillCd": 0,
+        "aiActions": 0,
+        "logs": [
+          {
+            "kind": "build",
+            "text": "建 燧石 @D5 · 手动布防",
+            "source": "user",
+            "stamp": "00:00"
+          },
+          {
+            "kind": "upgrade",
+            "text": "升 燧石 Lv2 · 手动强化",
+            "source": "user",
+            "stamp": "00:00"
+          }
+        ],
+        "fps": 61,
+        "over": null,
+        "boss": null,
+        "transition": false,
+        "frozen": false,
+        "canvas": {
+          "width": "1920px",
+          "height": "1080px"
+        },
+        "perf": {
+          "frames": 105,
+          "renders": 90,
+          "simMs": 0.018,
+          "renderMs": 0.882,
+          "rafMs": 11.03
+        }
+      }
+    },
+    {
+      "name": "S sells tower",
+      "ok": true,
+      "detail": {
+        "scene": "playing",
+        "mapId": "ashen",
+        "wave": 1,
+        "phase": "prep",
+        "prep": 4.43,
+        "waveT": 0,
+        "gold": 110,
+        "lives": 20,
+        "kills": 0,
+        "leaks": 0,
+        "enemies": 0,
+        "queued": 0,
+        "projectiles": 0,
+        "inRange": 0,
+        "towers": [],
+        "aiOn": false,
+        "speed": 1,
+        "skillCd": 0,
+        "aiActions": 0,
+        "logs": [
+          {
+            "kind": "build",
+            "text": "建 燧石 @D5 · 手动布防",
+            "source": "user",
+            "stamp": "00:00"
+          },
+          {
+            "kind": "upgrade",
+            "text": "升 燧石 Lv2 · 手动强化",
+            "source": "user",
+            "stamp": "00:00"
+          },
+          {
+            "kind": "sell",
+            "text": "售 燧石 +55 金",
+            "source": "user",
+            "stamp": "00:00"
+          }
+        ],
+        "fps": 65,
+        "over": null,
+        "boss": null,
+        "transition": false,
+        "frozen": false,
+        "canvas": {
+          "width": "1920px",
+          "height": "1080px"
+        },
+        "perf": {
+          "frames": 119,
+          "renders": 102,
+          "simMs": 0.026,
+          "renderMs": 1.024,
+          "rafMs": 12.23
+        }
+      }
+    },
+    {
+      "name": "Space pauses",
+      "ok": true
+    },
+    {
+      "name": "Space resumes",
+      "ok": true
+    },
+    {
+      "name": "A hands control to AI",
+      "ok": true
+    },
+    {
+      "name": "A returns to manual",
+      "ok": true
+    },
+    {
+      "name": "F cycles speed",
+      "ok": true,
+      "detail": 2
+    },
+    {
+      "name": "autotest ashen wins unattended",
+      "ok": true,
+      "detail": {
+        "win": true,
+        "lives": 20,
+        "wave": 12,
+        "kills": 204,
+        "simTime": 559.67,
+        "wallMs": 7518,
+        "aiActions": 72
+      }
+    },
+    {
+      "name": "autotest ashen no cheat flag",
+      "ok": true
+    },
+    {
+      "name": "screenshot 09-victory.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 116305 bytes"
+    },
+    {
+      "name": "autotest frost wins unattended",
+      "ok": true,
+      "detail": {
+        "win": true,
+        "lives": 20,
+        "wave": 12,
+        "kills": 204,
+        "simTime": 444.75,
+        "wallMs": 5590,
+        "aiActions": 61
+      }
+    },
+    {
+      "name": "autotest frost no cheat flag",
+      "ok": true
+    },
+    {
+      "name": "screenshot 01-menu-ashen.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 155801 bytes"
+    },
+    {
+      "name": "transition can be staged",
+      "ok": true
+    },
+    {
+      "name": "screenshot 03-map-transition.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 201515 bytes"
+    },
+    {
+      "name": "screenshot 02-menu-frost.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 164396 bytes"
+    },
+    {
+      "name": "menu map switch applied",
+      "ok": true
+    },
+    {
+      "name": "screenshot 04-build-preview.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 113633 bytes"
+    },
+    {
+      "name": "screenshot 10-pause.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 140775 bytes"
+    },
+    {
+      "name": "screenshot 05-wave-combat.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 116244 bytes"
+    },
+    {
+      "name": "screenshot 06-ai-command.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 118646 bytes"
+    },
+    {
+      "name": "boss on screen for screenshot",
+      "ok": true,
+      "detail": {
+        "hp": 2631,
+        "maxHp": 3030,
+        "x": 90,
+        "y": 112
+      }
+    },
+    {
+      "name": "screenshot 07-boss-wave.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 120172 bytes"
+    },
+    {
+      "name": "screenshot 08-frost-assault.png 1920x1080",
+      "ok": true,
+      "detail": "1920x1080, 120881 bytes"
+    },
+    {
+      "name": "at least six 1920x1080 screenshots",
+      "ok": true,
+      "detail": 10
+    },
+    {
+      "name": "MP4 demo >= 10s",
+      "ok": true,
+      "detail": {
+        "duration": 10.0,
+        "width": 1280,
+        "height": 720,
+        "fps": "30/1",
+        "frames": "300",
+        "bytes": 539641
+      }
+    },
+    {
+      "name": "GIF demo >= 9s",
+      "ok": true,
+      "detail": {
+        "duration": 10.0,
+        "width": 960,
+        "height": 540,
+        "fps": "50/3",
+        "frames": "150",
+        "bytes": 985032
+      }
+    },
+    {
+      "name": "HTTP load works",
+      "ok": true,
+      "detail": "menu"
+    },
+    {
+      "name": "1280x720 canvas",
+      "ok": true,
+      "detail": {
+        "width": "1280px",
+        "height": "720px"
+      }
+    },
+    {
+      "name": "HTTP only same-origin requests",
+      "ok": true,
+      "detail": [
+        "http://127.0.0.1:54867/index.html"
+      ]
+    },
+    {
+      "name": "render benchmark >= 30 fps",
+      "ok": true,
+      "detail": 492.9
+    },
+    {
+      "name": "no console errors",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "no external network requests",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "screenshots >= 6 @1920x1080",
+      "ok": true,
+      "detail": 10
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "requests": [
+    "file:///Users/ks_128/Documents/modelfw_demo/web-html-tower-defense/index.html",
+    "file:///Users/ks_128/Documents/modelfw_demo/web-html-tower-defense/index.html?autotest=1&map=ashen",
+    "file:///Users/ks_128/Documents/modelfw_demo/web-html-tower-defense/index.html?autotest=1&map=frost",
+    "http://127.0.0.1:54867/index.html"
+  ],
+  "external_requests": [],
+  "interactions": {
+    "ai_watch_start": {
+      "scene": "playing",
+      "mapId": "frost",
+      "aiOn": true,
+      "speed": 2
+    },
+    "speed_button": [
+      2,
+      3
+    ],
+    "switch_map": {
+      "mapId": "ashen",
+      "scene": "playing"
+    },
+    "build_cell": {
+      "cx": 3,
+      "cy": 4
+    },
+    "manual": {
+      "build_cell": {
+        "cx": 3,
+        "cy": 4
+      },
+      "gold_after_build": 100,
+      "gold_after_upgrade": 55,
+      "gold_after_sell": 110,
+      "keys": [
+        "U",
+        "S",
+        "Space",
+        "A",
+        "F"
+      ]
+    },
+    "boss_stage": {
+      "found": true,
+      "wave": 12,
+      "over": null
+    },
+    "boss_visible": true
+  },
+  "autotests": {
+    "ashen": {
+      "done": true,
+      "win": true,
+      "map": "ashen",
+      "startedAt": 209.10000038146973,
+      "simTime": 559.67,
+      "wallMs": 7518,
+      "fps": 58,
+      "lives": 20,
+      "kills": 204,
+      "gold": 1003,
+      "aiActions": 72,
+      "aiOn": true,
+      "cheats": false,
+      "towers": [
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 9,
+          "cy": 15
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 18,
+          "cy": 15
+        },
+        {
+          "type": "mint",
+          "level": 0,
+          "cx": 28,
+          "cy": 4
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 17,
+          "cy": 7
+        },
+        {
+          "type": "frost",
+          "level": 2,
+          "cx": 14,
+          "cy": 15
+        },
+        {
+          "type": "flame",
+          "level": 2,
+          "cx": 8,
+          "cy": 14
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 5,
+          "cy": 4
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 24,
+          "cy": 16
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 11,
+          "cy": 6
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 19,
+          "cy": 8
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 8,
+          "cy": 15
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 17,
+          "cy": 11
+        }
+      ],
+      "logs": [
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv2 · 主路火力提升",
+          "source": "ai",
+          "stamp": "05:57"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 6 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "06:08"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "06:12"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "06:14"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "06:15"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "06:30"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "06:40"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 7 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "06:43"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 15 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "07:18"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 1 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "07:59"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 3 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "08:34"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 1 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "09:10"
+        }
+      ],
+      "timeout": false,
+      "wave": 12,
+      "result": {
+        "win": true,
+        "wave": 12,
+        "kills": 204,
+        "lives": 20,
+        "gold": 1003,
+        "earned": 2828,
+        "towers": 12,
+        "aiActions": 72,
+        "time": 559.6666666664863
+      }
+    },
+    "frost": {
+      "done": true,
+      "win": true,
+      "map": "frost",
+      "startedAt": 118.5,
+      "simTime": 444.75,
+      "wallMs": 5590,
+      "fps": 59,
+      "lives": 20,
+      "kills": 204,
+      "gold": 1003,
+      "aiActions": 61,
+      "aiOn": true,
+      "cheats": false,
+      "towers": [
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 3,
+          "cy": 14
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 21,
+          "cy": 6
+        },
+        {
+          "type": "mint",
+          "level": 0,
+          "cx": 0,
+          "cy": 9
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 10,
+          "cy": 9
+        },
+        {
+          "type": "frost",
+          "level": 2,
+          "cx": 16,
+          "cy": 13
+        },
+        {
+          "type": "flame",
+          "level": 2,
+          "cx": 7,
+          "cy": 8
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 14,
+          "cy": 13
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 22,
+          "cy": 5
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 2,
+          "cy": 14
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 18,
+          "cy": 12
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 10,
+          "cy": 7
+        },
+        {
+          "type": "bolt",
+          "level": 2,
+          "cx": 26,
+          "cy": 3
+        }
+      ],
+      "logs": [
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv2 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:02"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:10"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:22"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:28"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv2 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:28"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 5 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "04:35"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:40"
+        },
+        {
+          "kind": "upgrade",
+          "text": "升 燧石 Lv3 · 主路火力提升",
+          "source": "ai",
+          "stamp": "04:49"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 5 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "05:21"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 6 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "05:56"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 10 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "06:31"
+        },
+        {
+          "kind": "skill",
+          "text": "烬雨命中 1 只 · 全场真伤",
+          "source": "ai",
+          "stamp": "07:06"
+        }
+      ],
+      "timeout": false,
+      "wave": 12,
+      "result": {
+        "win": true,
+        "wave": 12,
+        "kills": 204,
+        "lives": 20,
+        "gold": 1003,
+        "earned": 2828,
+        "towers": 12,
+        "aiActions": 61,
+        "time": 444.74999999992417
+      }
+    }
+  },
+  "layout": {
+    "1920x1080": {
+      "canvas": {
+        "width": "1920px",
+        "height": "1080px"
+      },
+      "viewport": [
+        1920,
+        1080
+      ]
+    },
+    "1280x720": {
+      "canvas": {
+        "width": "1280px",
+        "height": "720px"
+      },
+      "viewport": [
+        1280,
+        720
+      ]
+    }
+  },
+  "http": {
+    "url": "http://127.0.0.1:54867/index.html",
+    "scene": "menu",
+    "canvas": {
+      "width": "1280px",
+      "height": "720px"
+    },
+    "requests": [
+      "http://127.0.0.1:54867/index.html"
+    ],
+    "errors": []
+  },
+  "performance": {
+    "autotest_ashen_post_idle": {
+      "fps": 53,
+      "perf": {
+        "frames": 552,
+        "renders": 481,
+        "simMs": 0.005,
+        "renderMs": 0.927,
+        "rafMs": 13.19
+      },
+      "benchmark": {
+        "frames": 80,
+        "msPerFrame": 2.03,
+        "fps": 492.9
+      }
+    },
+    "autotest_frost_post_idle": {
+      "fps": 47,
+      "perf": {
+        "frames": 449,
+        "renders": 387,
+        "simMs": 0.004,
+        "renderMs": 1.088,
+        "rafMs": 21.25
+      },
+      "benchmark": {
+        "frames": 80,
+        "msPerFrame": 1.85,
+        "fps": 542
+      }
+    }
+  },
+  "screenshots": [
+    {
+      "file": "captures/09-victory.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 116305,
+      "sha256": "d0563e715b433de3"
+    },
+    {
+      "file": "captures/01-menu-ashen.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 155801,
+      "sha256": "8b0fcfe202b7f5d5"
+    },
+    {
+      "file": "captures/03-map-transition.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 201515,
+      "sha256": "123233822bd2c8a8"
+    },
+    {
+      "file": "captures/02-menu-frost.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 164396,
+      "sha256": "d6fc7cdbe633d7f1"
+    },
+    {
+      "file": "captures/04-build-preview.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 113633,
+      "sha256": "55a8b59c33c6baf0"
+    },
+    {
+      "file": "captures/10-pause.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 140775,
+      "sha256": "63bdd2133a567c5d"
+    },
+    {
+      "file": "captures/05-wave-combat.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 116244,
+      "sha256": "bc7e1a8d673bbb48"
+    },
+    {
+      "file": "captures/06-ai-command.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 118646,
+      "sha256": "e432ce7959dd75b4"
+    },
+    {
+      "file": "captures/07-boss-wave.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 120172,
+      "sha256": "d9f145009ff00d67"
+    },
+    {
+      "file": "captures/08-frost-assault.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 120881,
+      "sha256": "cead46a5e647bbb3"
+    }
+  ],
+  "video": {
+    "file": "captures/emberhold-demo.mp4",
+    "bytes": 539641,
+    "duration": 10.0,
+    "width": 1280,
+    "height": 720,
+    "fps": "30/1",
+    "frames": "300"
+  },
+  "gif": {
+    "file": "captures/emberhold-demo.gif",
+    "bytes": 985032,
+    "duration": 10.0,
+    "width": 960,
+    "height": 540,
+    "fps": "50/3",
+    "frames": "150"
+  },
+  "staged_combat": {
+    "wave": 6,
+    "inRange": 10,
+    "enemies": 15,
+    "towers": 9
+  },
+  "staged_frost": {
+    "wave": 6,
+    "waveT": 14.3,
+    "inRange": 8,
+    "enemies": 8,
+    "towers": 10,
+    "over": null
+  },
+  "video_stage": {
+    "wave": 6,
+    "enemies": 15,
+    "inRange": 10,
+    "towers": 9
+  },
+  "summary": {
+    "checks": 48,
+    "failed": 0,
+    "screenshots": 10,
+    "autotests": {
+      "ashen": {
+        "win": true,
+        "lives": 20,
+        "kills": 204,
+        "wallMs": 7518
+      },
+      "frost": {
+        "win": true,
+        "lives": 20,
+        "kills": 204,
+        "wallMs": 5590
+      }
+    }
+  }
+}
