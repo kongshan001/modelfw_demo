@@ -1,0 +1,59 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SPROUTBOUND_SMOKE start
+  ok   world built
+  ok   player model built
+  ok   camera active
+  ok   HUD + CJK font
+  ok   boots into title
+  ok   title has no enemies
+  ok   portal asleep at title
+  ok   title -> playing
+  ok   player active
+  ok   10 enemies spawned (10)
+  ok   total enemies 10
+  ok   11 pickups (8 seeds + 3 hearts)
+  ok   player full HP
+  ok   player grounded
+  ok   idle on ground (idle)
+  ok   Move: demo input moves player (2.22m)
+  ok   Move: locomotion state=move
+  ok   Idle: stops back (idle)
+  ok   Jump: accepted
+  ok   Jump: airborne (dy=1.12)
+  ok   Jump: lands back on ground
+  ok   Dodge: accepted
+  ok   Dodge: i-frames active
+  ok   Dodge: ends
+  ok   Dodge: i-frames expired
+  ok   Attack: state entered
+  ok   Attack: registers damage (42 -> 33)
+  ok   Combo: hit increments (1)
+  ok   Enemy: hurt/aggro state=hurt
+  ok   Attack: chain step 2 (step=1 count=2)
+  ok   AI: far player idle/patrol (patrol)
+  ok   AI: detects nearby player (alert)
+  ok   AI: windup -> strike damages player (hp=88, state=strike)
+  ok   Ranged: spitter spawns spore bolt
+  ok   Player: damage applied (88 -> 78)
+  ok   Defeat: state=defeat
+  ok   Restart: playing
+  ok   Restart: full HP
+  ok   Restart: counters reset
+  ok   Restart: enemies + portal reset
+  ok   Pickup: seed collected (1)
+  ok   Pickup: heart exists
+  ok   Pickup: heart heals +25 (75)
+  ok   Goal: kill counted (1)
+  ok   Goal: all enemies counted (10)
+  ok   Goal: portal opens
+  ok   Victory: entering portal ends run
+  ok   Victory: stats consistent
+  ok   Restart: after victory
+  ok   Pause: frozen
+  ok   Pause: resumed
+  ok   Debug: toggled
+  ok   Debug: enemy labels follow toggle
+  ok   Debug: toggled back
+SPROUTBOUND_SMOKE checks=54 failures=0
+SPROUTBOUND_SMOKE_OK

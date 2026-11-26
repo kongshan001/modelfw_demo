@@ -1,0 +1,10 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PERF[idle] 1280x720 fps=37.8 frame_ms=26.5 min_ms=16.3 draw=345 prims=205654
+PERF[combat] 1280x720 fps=33.7 frame_ms=29.7 min_ms=13.5 draw=214 prims=152174
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+PERF[idle] 1280x720 fps=35.0 frame_ms=28.6 min_ms=14.8 draw=345 prims=205654
+PERF[combat] 1280x720 fps=29.9 frame_ms=33.5 min_ms=15.4 draw=213 prims=151896

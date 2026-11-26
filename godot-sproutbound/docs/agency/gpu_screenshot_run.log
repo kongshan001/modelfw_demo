@@ -1,0 +1,15 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+OpenGL API 4.1 INTEL-18.8.16 - Compatibility - Using Device: Intel Inc. - Intel(R) HD Graphics 6000
+
+SHOT 01_title 1920x1080 fps=43
+CAPTURE held_fps=42 (benchmark 1280x720)
+SHOT 02_meadow_panorama 1920x1080 fps=26
+SHOT 03_mushroom_group 1920x1080 fps=53
+SHOT 04_combat 1920x1080 fps=36
+  combat hp c1=33 c2=33 combo=2 state=attack
+  hit check=true hp=33/33 combo=2
+SHOT 05_hit_moment 1920x1080 fps=34
+SHOT 06_debug 1920x1080 fps=33
+SHOT 07_portal_open 1920x1080 fps=35
+SHOT 08_victory 1920x1080 fps=22
+SCREENSHOT_SPROUTBOUND_OK viewport=1920x1080 fps=22

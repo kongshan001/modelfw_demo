@@ -90,7 +90,8 @@
 - 交付: `godot-sproutbound/` 可玩项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 复刻游戏不复制视频流程/素材/角色设计/品牌；原创低模/程序化资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；视频不明确处写假设
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: `godot-sproutbound/`；smoke 54 checks PASS；1280×720 42/44 FPS；8×1920×1080 截图；10s MP4/GIF；README/TECH/迭代记录/CREDITS；`docs/agency/T-20261126-024-sproutbound.md`
 
 ## T-20261126-022 · 复刻单文件 HTML 塔防 + AI 指挥官
 - 来源: 飞书消息（B 站《Fable 5.2 把一个完整塔防塞进单个 HTML：零后端零美术资源，AI 指挥官能自己守塔（带试玩地址）》，https://b23.tv/ech1X6H，2026-11-26，27s，UP eddieliugd；原 Demo Cinderwatch，MIT）
