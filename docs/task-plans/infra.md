@@ -2,7 +2,14 @@
 
 ## 进行中
 
-（空）
+## T-20261126-003 · 新建 game_task 仓库归档游戏代码与资产
+- 来源: 飞书消息（2026-11-26，“代码产物、游戏资产都要进 git repo，弄一个新 repo，例如叫 game_task”）
+- 类型: infra（Git 归档 / 资产快照）
+- 目标: 新建公开仓库 `kongshan001/game_task`，把 modelfw_demo 中已跟踪的游戏代码/资产/文档做一次快照归档，并生成 README/MANIFEST 与增量同步说明
+- 交付: `https://github.com/kongshan001/game_task`；快照 commit；README、MANIFEST（任务→目录/commit）、.gitignore；文件数/大小/最大文件/密钥扫描报告
+- 约束: 只导出 `git archive HEAD` 的已跟踪文件；不复制未跟踪/忽略内容（`tripo-out/`、`.tripo/`、`.godot/`、`*.blend1`、缓存）；排除 benchmark/harness/cpp/product-scout 等非游戏工程与 T-20261123-002 的第三方 IP；不改 modelfw_demo；公开（内容均已公开）
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
 
 ## 队列
 
