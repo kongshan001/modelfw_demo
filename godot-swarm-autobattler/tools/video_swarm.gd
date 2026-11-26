@@ -2,10 +2,10 @@ extends SceneTree
 
 ## 10 秒演示帧采集（15fps，1280×720，手动步进，确保录像节奏与实时帧率无关）。
 ## 运行：godot --path godot-swarm-autobattler -s tools/video_swarm.gd
-## 帧输出：/tmp/swarmforge_frames_720/frame_0000.png ...
+## 帧输出：/tmp/swarmforge_frames_1080/frame_0000.png ...
 ## 之后用 ffmpeg 编码为 1920×1080 MP4 / 960×540 GIF。
 
-const FRAME_DIR := "/tmp/swarmforge_frames_720"
+const FRAME_DIR := "/tmp/swarmforge_frames_1080"
 const FPS := 15.0
 const TOTAL := 150
 const SHOP_FRAMES := 18
@@ -28,13 +28,13 @@ func _run() -> void:
 	Engine.max_fps = 0
 	DirAccess.make_dir_recursive_absolute(FRAME_DIR)
 	sv = SubViewport.new()
-	sv.size = Vector2i(1280, 720)
+	sv.size = Vector2i(1920, 1080)
 	sv.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	sv.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
 	root.add_child(sv)
 	holder = Control.new()
 	holder.size = Vector2(1280, 720)
-	holder.scale = Vector2.ONE
+	holder.scale = Vector2(1.5, 1.5)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sv.add_child(holder)
 	game = load("res://scenes/main.tscn").instantiate()

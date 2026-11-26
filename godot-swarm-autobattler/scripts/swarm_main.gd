@@ -12,6 +12,7 @@ const CardButton = preload("res://scripts/swarm_card_button.gd")
 const HeroChip = preload("res://scripts/swarm_hero_chip.gd")
 const ThemeKit = preload("res://scripts/swarm_theme.gd")
 const Chrome = preload("res://scripts/swarm_chrome.gd")
+const SwarmArt = preload("res://scripts/swarm_art.gd")
 
 var state = State.new()
 var battle_view = null
@@ -49,6 +50,7 @@ var level_label: Label = null
 var units_label: Label = null
 var greed_label: Label = null
 var greed_help: Label = null
+var gold_icon: TextureRect = null
 var refresh_button: Button = null
 var level_button: Button = null
 var greed_button: Button = null
@@ -135,9 +137,9 @@ func _build_arena() -> void:
 	battle_view = View.new()
 	battle_view.position = Vector2(40, 78)
 	add_child(battle_view)
-	ally_count_label = _mk_label(self, "蔚蓝铸群 · 0 单位", Rect2(52, 84, 430, 20), 11, ThemeKit.CYAN)
-	enemy_count_label = _mk_label(self, "赤锈铸群 · 0 单位", Rect2(798, 84, 430, 20), 11, ThemeKit.RED, HORIZONTAL_ALIGNMENT_RIGHT)
-	arena_center_label = _mk_label(self, "布阵预览", Rect2(440, 84, 400, 20), 10, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	ally_count_label = _mk_label(self, "蔚蓝铸群 · 0 单位", Rect2(52, 82, 430, 20), 12, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, true)
+	enemy_count_label = _mk_label(self, "赤锈铸群 · 0 单位", Rect2(798, 82, 430, 20), 12, ThemeKit.RED, HORIZONTAL_ALIGNMENT_RIGHT, true)
+	arena_center_label = _mk_label(self, "布阵预览", Rect2(440, 82, 400, 20), 11, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _build_top_bar() -> void:
@@ -148,16 +150,16 @@ func _build_top_bar() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(panel)
 	_mk_label(self, "群铸", Rect2(28, 16, 64, 32), 23, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_mk_label(self, "SWARMFORGE", Rect2(94, 19, 160, 16), 10, ThemeKit.MUTED)
-	_mk_label(self, "MICRO-FOUNDRY · 潮铸协议", Rect2(94, 34, 200, 12), 8, ThemeKit.DIM)
+	_mk_label(self, "SWARMFORGE", Rect2(94, 18, 160, 16), 11, ThemeKit.MUTED)
+	_mk_label(self, "MICRO-FOUNDRY · 潮铸协议", Rect2(94, 34, 210, 14), 10, ThemeKit.DIM)
 	var sep := ColorRect.new()
 	sep.color = ThemeKit.LINE
 	sep.position = Vector2(1088, 20)
 	sep.size = Vector2(1, 44)
 	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(sep)
-	round_label = _mk_label(self, "回合 1", Rect2(1102, 16, 150, 22), 16, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
-	phase_label = _mk_label(self, "铸巢阶段", Rect2(1102, 38, 150, 18), 9.5, ThemeKit.MUTED)
+	round_label = _mk_label(self, "回合 1", Rect2(1102, 14, 150, 24), 18, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
+	phase_label = _mk_label(self, "铸巢阶段", Rect2(1102, 38, 150, 18), 11, ThemeKit.MUTED)
 	for i in 4:
 		var chip = HeroChip.new()
 		chip.size = Vector2(190, 44)
@@ -170,41 +172,43 @@ func _build_top_bar() -> void:
 func _build_bottom_panels() -> void:
 	# 左面板：编队 + 商店
 	var left := Panel.new()
-	left.position = Vector2(12, 478)
-	left.size = Vector2(896, 232)
+	left.position = Vector2(12, 470)
+	left.size = Vector2(896, 242)
 	left.add_theme_stylebox_override("panel", ThemeKit.panel_style(ThemeKit.PANEL, ThemeKit.LINE, 6))
 	left.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(left)
-	board_header_label = _mk_label(self, "你的编队", Rect2(26, 486, 110, 20), 13, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
-	board_count_label = _mk_label(self, "0/7 格 · 0 单位", Rect2(126, 486, 360, 20), 10, ThemeKit.MUTED)
-	sell_button = _mk_button(self, "出售选中 · 0◆ [Del]", Rect2(698, 484, 190, 24), ThemeKit.GOLD, 10, Callable(self, "_on_sell_pressed"))
+	board_header_label = _mk_label(self, "你的编队", Rect2(26, 472, 130, 22), 14, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
+	board_count_label = _mk_label(self, "0/7 格 · 0 单位", Rect2(146, 472, 420, 22), 11, ThemeKit.MUTED)
+	sell_button = _mk_button(self, "出售选中 · 0◆ [Del]", Rect2(698, 470, 190, 24), ThemeKit.GOLD, 11, Callable(self, "_on_sell_pressed"))
 	for i in 7:
 		var b = CardButton.new()
-		b.position = Vector2(26 + i * 122, 508)
-		b.size = Vector2(116, 74)
+		b.position = Vector2(26 + i * 122, 494)
+		b.size = Vector2(116, 92)
 		b.focus_mode = Control.FOCUS_NONE
-		ThemeKit.style_button(b, ThemeKit.CYAN, 12)
 		b.disabled = true
 		b.pressed.connect(_on_board_pressed.bind(i))
 		b.gui_input.connect(_on_board_gui_input.bind(i))
 		add_child(b)
 		board_buttons.append(b)
-	shop_header_label = _mk_label(self, "铸巢商店", Rect2(26, 590, 120, 18), 13, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
-	shop_odds_label = _mk_label(self, "", Rect2(300, 592, 574, 16), 9, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
-	battle_lineup_label = _mk_label(self, "", Rect2(26, 514, 860, 32), 11, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, false, true)
-	battle_score_ally = _mk_label(self, "0", Rect2(26, 544, 370, 48), 30, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_RIGHT, true)
+	shop_header_label = _mk_label(self, "铸巢商店", Rect2(26, 588, 140, 20), 14, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_LEFT, true)
+	shop_header_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	shop_header_label.tooltip_text = "商店权重随熔炉等级变化：T1–T5。完整表在 docs/TECH.md §2.1。卡面数字均为每单位数值。"
+	shop_odds_label = _mk_label(self, "", Rect2(300, 590, 574, 16), 10, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
+	battle_lineup_label = _mk_label(self, "", Rect2(26, 508, 860, 34), 12, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, false, true)
+	battle_score_ally = _mk_label(self, "0", Rect2(26, 540, 370, 52), 32, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_RIGHT, true)
+	battle_score_ally.add_theme_font_override("font", ThemeKit.make_num_font())
 	battle_vs_label = _mk_label(self, "VS", Rect2(396, 552, 60, 30), 14, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER, true)
-	battle_score_enemy = _mk_label(self, "0", Rect2(456, 544, 408, 48), 30, ThemeKit.RED, HORIZONTAL_ALIGNMENT_LEFT, true)
-	battle_score_caption = _mk_label(self, "存活单位 · 实时", Rect2(26, 594, 500, 16), 8.5, ThemeKit.MUTED)
-	battle_hint_label = _mk_label(self, "战斗期间商店与编队操作暂停；右栏可暂停 / 倍速 / 查看战报。", Rect2(26, 646, 860, 40), 9.5, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_LEFT, false, true)
+	battle_score_enemy = _mk_label(self, "0", Rect2(456, 540, 408, 52), 32, ThemeKit.RED, HORIZONTAL_ALIGNMENT_LEFT, true)
+	battle_score_enemy.add_theme_font_override("font", ThemeKit.make_num_font())
+	battle_score_caption = _mk_label(self, "存活单位 · 实时", Rect2(26, 592, 500, 18), 11, ThemeKit.MUTED)
+	battle_hint_label = _mk_label(self, "战斗期间商店与编队操作暂停；右栏可暂停 / 倍速 / 查看战报。", Rect2(26, 650, 860, 40), 11, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_LEFT, false, true)
 	for l in [battle_lineup_label, battle_score_ally, battle_score_enemy, battle_vs_label, battle_score_caption, battle_hint_label]:
 		l.visible = false
 	for i in 5:
 		var b = CardButton.new()
-		b.position = Vector2(26 + i * 172, 614)
-		b.size = Vector2(164, 88)
+		b.position = Vector2(26 + i * 172, 608)
+		b.size = Vector2(164, 104)
 		b.focus_mode = Control.FOCUS_NONE
-		ThemeKit.style_button(b, ThemeKit.CYAN, 13)
 		b.disabled = true
 		b.pressed.connect(_on_shop_pressed.bind(i))
 		add_child(b)
@@ -212,44 +216,54 @@ func _build_bottom_panels() -> void:
 
 	# 右面板：动作 / 战斗侧栏
 	var right := Panel.new()
-	right.position = Vector2(916, 478)
-	right.size = Vector2(352, 232)
+	right.position = Vector2(916, 470)
+	right.size = Vector2(352, 242)
 	right.add_theme_stylebox_override("panel", ThemeKit.panel_style(ThemeKit.PANEL, ThemeKit.LINE, 6))
 	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(right)
 	shop_group = Control.new()
-	shop_group.position = Vector2(930, 488)
-	shop_group.size = Vector2(324, 214)
+	shop_group.position = Vector2(930, 480)
+	shop_group.size = Vector2(324, 222)
 	shop_group.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(shop_group)
-	gold_label = _mk_label(shop_group, "◆ 10", Rect2(0, 0, 124, 24), 19, ThemeKit.GOLD, HORIZONTAL_ALIGNMENT_LEFT, true)
-	income_label = _mk_label(shop_group, "", Rect2(120, 5, 204, 16), 9, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
-	level_label = _mk_label(shop_group, "", Rect2(0, 26, 160, 16), 10.5, ThemeKit.TEXT)
-	units_label = _mk_label(shop_group, "", Rect2(150, 26, 174, 16), 10.5, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_RIGHT)
-	greed_label = _mk_label(shop_group, "", Rect2(0, 46, 324, 16), 11, ThemeKit.GOLD)
-	greed_help = _mk_label(shop_group, "每层：友军 +15% · 敌军 +30% · 立即 +2◆ · 本局持续", Rect2(0, 62, 324, 12), 8, ThemeKit.MUTED)
-	refresh_button = _mk_button(shop_group, "刷新 ◆1 [R]", Rect2(0, 80, 100, 30), ThemeKit.CYAN, 11, Callable(self, "_on_refresh_pressed"))
-	level_button = _mk_button(shop_group, "升本 [L]", Rect2(104, 80, 100, 30), ThemeKit.CYAN, 11, Callable(self, "_on_level_pressed"))
-	greed_button = _mk_button(shop_group, "追潮 +2◆ [G]", Rect2(208, 80, 116, 30), ThemeKit.GOLD, 11, Callable(self, "_on_greed_pressed"))
-	code_button = _mk_button(shop_group, "阵容码 [C]", Rect2(0, 114, 158, 30), ThemeKit.CYAN, 11, Callable(self, "_on_code_pressed"))
-	mirror_button = _mk_button(shop_group, "镜像试炼 [M]", Rect2(166, 114, 158, 30), ThemeKit.VIOLET, 11, Callable(self, "_on_mirror_pressed"))
-	flood_button = _mk_button(shop_group, "洪流协议 ×100 [F2]", Rect2(0, 148, 324, 28), ThemeKit.CYAN, 11, Callable(self, "_on_flood_pressed"))
-	start_button = _mk_button(shop_group, "开战 [Enter]", Rect2(0, 180, 324, 34), ThemeKit.CYAN, 13, Callable(self, "_on_start_pressed"), true)
+	gold_label = _mk_label(shop_group, "10", Rect2(24, 0, 100, 26), 22, ThemeKit.GOLD, HORIZONTAL_ALIGNMENT_LEFT, true)
+	gold_label.add_theme_font_override("font", ThemeKit.make_num_font())
+	income_label = _mk_label(shop_group, "", Rect2(120, 5, 204, 18), 10, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_RIGHT)
+	level_label = _mk_label(shop_group, "", Rect2(0, 28, 170, 18), 11, ThemeKit.TEXT)
+	units_label = _mk_label(shop_group, "", Rect2(150, 28, 174, 18), 11, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_RIGHT)
+	greed_label = _mk_label(shop_group, "", Rect2(0, 48, 324, 18), 12, ThemeKit.GOLD)
+	greed_help = _mk_label(shop_group, "每层：友军 +15% · 敌军 +30% · 立即 +2◆", Rect2(0, 66, 324, 14), 11, ThemeKit.MUTED)
+	refresh_button = _mk_button(shop_group, "刷新 ◆1 [R]", Rect2(0, 84, 100, 32), ThemeKit.CYAN, 12, Callable(self, "_on_refresh_pressed"))
+	level_button = _mk_button(shop_group, "升本 [L]", Rect2(104, 84, 100, 32), ThemeKit.CYAN, 12, Callable(self, "_on_level_pressed"))
+	greed_button = _mk_button(shop_group, "追潮 +2◆ [G]", Rect2(208, 84, 116, 32), ThemeKit.GOLD, 12, Callable(self, "_on_greed_pressed"))
+	greed_button.tooltip_text = "贪婪潮：每层友军 +15%、敌军 +30% 编队，立即 +2◆，本局持续。\n洪流 ×100 封顶后，数量溢出转为敌方每层 +6% HP/ATK。"
+	code_button = _mk_button(shop_group, "阵容码 [C]", Rect2(0, 120, 158, 32), ThemeKit.CYAN, 12, Callable(self, "_on_code_pressed"))
+	mirror_button = _mk_button(shop_group, "镜像试炼 [M]", Rect2(166, 120, 158, 32), ThemeKit.VIOLET, 12, Callable(self, "_on_mirror_pressed"))
+	flood_button = _mk_button(shop_group, "洪流协议 ×100 [F2]", Rect2(0, 156, 324, 30), ThemeKit.CYAN, 12, Callable(self, "_on_flood_pressed"))
+	start_button = _mk_button(shop_group, "开战 [Enter]", Rect2(0, 190, 324, 32), ThemeKit.CYAN, 14, Callable(self, "_on_start_pressed"), true)
+	gold_icon = TextureRect.new()
+	gold_icon.texture = SwarmArt.icon_texture("coin")
+	gold_icon.position = Vector2(0, 3)
+	gold_icon.size = Vector2(20, 20)
+	gold_icon.modulate = ThemeKit.GOLD
+	gold_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shop_group.add_child(gold_icon)
+	_decorate_action_icons()
 
 	battle_group = Control.new()
-	battle_group.position = Vector2(930, 488)
-	battle_group.size = Vector2(324, 214)
+	battle_group.position = Vector2(930, 480)
+	battle_group.size = Vector2(324, 222)
 	battle_group.mouse_filter = Control.MOUSE_FILTER_PASS
 	battle_group.visible = false
 	add_child(battle_group)
-	battle_title_label = _mk_label(battle_group, "潮汐交战", Rect2(0, 0, 324, 20), 13, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, true)
-	battle_status_label = _mk_label(battle_group, "", Rect2(0, 20, 324, 16), 9.5, ThemeKit.MUTED)
-	battle_ally_label = _mk_label(battle_group, "", Rect2(0, 38, 324, 16), 10, ThemeKit.CYAN)
-	battle_enemy_label = _mk_label(battle_group, "", Rect2(0, 54, 324, 16), 10, ThemeKit.RED)
-	pause_button = _mk_button(battle_group, "暂停 [Space]", Rect2(0, 74, 100, 30), ThemeKit.CYAN, 10, Callable(self, "_on_pause_pressed"))
-	speed_button = _mk_button(battle_group, "速度 1× [F]", Rect2(106, 74, 100, 30), ThemeKit.CYAN, 10, Callable(self, "_on_speed_pressed"))
-	battle_log_label = _mk_label(battle_group, "", Rect2(0, 112, 324, 88), 8.5, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_LEFT, false, true)
-	battle_seed_label = _mk_label(battle_group, "", Rect2(0, 202, 324, 12), 8, ThemeKit.DIM)
+	battle_title_label = _mk_label(battle_group, "潮汐交战", Rect2(0, 0, 324, 22), 14, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_LEFT, true)
+	battle_status_label = _mk_label(battle_group, "", Rect2(0, 22, 324, 18), 11, ThemeKit.MUTED)
+	battle_ally_label = _mk_label(battle_group, "", Rect2(0, 42, 324, 18), 11, ThemeKit.CYAN)
+	battle_enemy_label = _mk_label(battle_group, "", Rect2(0, 60, 324, 18), 11, ThemeKit.RED)
+	pause_button = _mk_button(battle_group, "暂停 [Space]", Rect2(0, 82, 100, 32), ThemeKit.CYAN, 11, Callable(self, "_on_pause_pressed"))
+	speed_button = _mk_button(battle_group, "速度 1× [F]", Rect2(106, 82, 100, 32), ThemeKit.CYAN, 11, Callable(self, "_on_speed_pressed"))
+	battle_log_label = _mk_label(battle_group, "", Rect2(0, 120, 324, 90), 11, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_LEFT, false, true)
+	battle_seed_label = _mk_label(battle_group, "", Rect2(0, 210, 324, 12), 9, ThemeKit.DIM)
 
 
 func _build_overlays() -> void:
@@ -261,7 +275,7 @@ func _build_overlays() -> void:
 	toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	toast_panel.visible = false
 	add_child(toast_panel)
-	toast_label = _mk_label(toast_panel, "", Rect2(12, 4, 576, 34), 9.5, ThemeKit.CYAN_SOFT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
+	toast_label = _mk_label(toast_panel, "", Rect2(12, 4, 576, 34), 12, ThemeKit.CYAN_SOFT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 
 	# 性能叠层
 	perf_panel = Panel.new()
@@ -271,7 +285,7 @@ func _build_overlays() -> void:
 	perf_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	perf_panel.visible = false
 	add_child(perf_panel)
-	perf_label = _mk_label(perf_panel, "", Rect2(12, 8, 230, 94), 9.5, ThemeKit.CYAN_SOFT)
+	perf_label = _mk_label(perf_panel, "", Rect2(12, 8, 230, 94), 11, ThemeKit.CYAN_SOFT)
 
 	# 战斗结算
 	result_overlay = Control.new()
@@ -289,32 +303,42 @@ func _build_overlays() -> void:
 	rpanel.size = Vector2(660, 330)
 	rpanel.add_theme_stylebox_override("panel", ThemeKit.panel_style(ThemeKit.PANEL2, ThemeKit.CYAN_DIM, 8))
 	result_overlay.add_child(rpanel)
-	result_title = _mk_label(result_overlay, "", Rect2(330, 228, 620, 48), 30, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_CENTER, true)
-	result_body = _mk_label(result_overlay, "", Rect2(350, 288, 580, 160), 11.5, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
+	result_title = _mk_label(result_overlay, "", Rect2(330, 224, 620, 52), 34, ThemeKit.CYAN, HORIZONTAL_ALIGNMENT_CENTER, true)
+	result_body = _mk_label(result_overlay, "", Rect2(350, 286, 580, 166), 13, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
 	result_body.add_theme_constant_override("line_spacing", 6)
 	result_button = _mk_button(result_overlay, "继续 [Enter]", Rect2(510, 466, 260, 44), ThemeKit.CYAN, 14, Callable(self, "_on_result_continue"), true)
 
-	# 终局
+	# 终局：原创 key art 全屏 + 顶部标题 + 底部战报
 	end_overlay = Control.new()
 	end_overlay.size = Vector2(1280, 720)
 	end_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	end_overlay.visible = false
 	add_child(end_overlay)
+	var keyart := TextureRect.new()
+	keyart.texture = SwarmArt.KEYART
+	keyart.position = Vector2.ZERO
+	keyart.size = Vector2(1280, 720)
+	keyart.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	keyart.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	keyart.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	end_overlay.add_child(keyart)
 	var edim := ColorRect.new()
-	edim.color = Color(0.01, 0.02, 0.03, 0.62)
+	edim.color = Color(0.01, 0.02, 0.03, 0.28)
 	edim.size = Vector2(1280, 720)
 	edim.mouse_filter = Control.MOUSE_FILTER_STOP
 	end_overlay.add_child(edim)
-	var epanel := Panel.new()
-	epanel.position = Vector2(240, 140)
-	epanel.size = Vector2(800, 440)
-	epanel.add_theme_stylebox_override("panel", ThemeKit.panel_style(ThemeKit.PANEL2, ThemeKit.GOLD, 10))
-	end_overlay.add_child(epanel)
-	end_title = _mk_label(end_overlay, "", Rect2(260, 168, 760, 52), 34, ThemeKit.GOLD, HORIZONTAL_ALIGNMENT_CENTER, true)
-	end_sub = _mk_label(end_overlay, "", Rect2(260, 224, 760, 20), 11, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
-	end_body = _mk_label(end_overlay, "", Rect2(300, 262, 680, 220), 12, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
-	end_body.add_theme_constant_override("line_spacing", 8)
-	end_button = _mk_button(end_overlay, "再来一局 [R]", Rect2(520, 510, 240, 44), ThemeKit.CYAN, 14, Callable(self, "_on_restart_pressed"), true)
+	_mk_label(end_overlay, "RUN COMPLETE · 潮汐记录", Rect2(0, 36, 1280, 18), 11, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	end_title = _mk_label(end_overlay, "", Rect2(0, 64, 1280, 56), 36, ThemeKit.GOLD, HORIZONTAL_ALIGNMENT_CENTER, true)
+	end_sub = _mk_label(end_overlay, "", Rect2(0, 124, 1280, 20), 13, ThemeKit.MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	var estats := Panel.new()
+	estats.position = Vector2(170, 534)
+	estats.size = Vector2(940, 126)
+	estats.add_theme_stylebox_override("panel", ThemeKit.panel_style(Color(0.02, 0.05, 0.07, 0.82), ThemeKit.LINE_HI, 6))
+	estats.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	end_overlay.add_child(estats)
+	end_body = _mk_label(end_overlay, "", Rect2(190, 544, 900, 104), 13, ThemeKit.TEXT, HORIZONTAL_ALIGNMENT_CENTER, false, true)
+	end_body.add_theme_constant_override("line_spacing", 5)
+	end_button = _mk_button(end_overlay, "再来一局 [R]", Rect2(520, 668, 240, 44), ThemeKit.CYAN, 14, Callable(self, "_on_restart_pressed"), true)
 
 	# 阵容码
 	code_overlay = Control.new()
@@ -355,6 +379,30 @@ func _build_overlays() -> void:
 	_mk_button(code_overlay, "关闭 [Esc]", Rect2(792, 416, 230, 38), ThemeKit.MUTED, 11, Callable(self, "_on_code_close"))
 	code_status = _mk_label(code_overlay, "", Rect2(258, 464, 764, 18), 10, ThemeKit.MUTED)
 	_mk_label(code_overlay, "镜像试炼会用最近一次保存的编队作为对手；没有保存码时使用内置 AI 编队。", Rect2(258, 492, 764, 40), 9, ThemeKit.DIM, HORIZONTAL_ALIGNMENT_LEFT, false, true)
+
+
+func _decorate_action_icons() -> void:
+	var pairs := [
+		[refresh_button, "refresh", ThemeKit.CYAN],
+		[level_button, "level", ThemeKit.CYAN],
+		[greed_button, "greed", ThemeKit.GOLD],
+		[code_button, "code", ThemeKit.CYAN],
+		[mirror_button, "support", ThemeKit.VIOLET],
+		[flood_button, "flood", ThemeKit.CYAN],
+		[start_button, "melee", ThemeKit.CYAN_SOFT],
+		[pause_button, "refresh", ThemeKit.CYAN],
+		[speed_button, "aspd", ThemeKit.CYAN],
+	]
+	for pair in pairs:
+		var b: Button = pair[0]
+		if b == null:
+			continue
+		b.icon = SwarmArt.icon_texture(String(pair[1]))
+		b.add_theme_constant_override("icon_max_width", 16)
+		b.expand_icon = false
+		b.add_theme_color_override("icon_normal_color", pair[2])
+		b.add_theme_color_override("icon_hover_color", ThemeKit.CYAN_SOFT)
+		b.add_theme_color_override("icon_disabled_color", ThemeKit.DIM)
 
 
 func _mk_label(parent: Node, text: String, rect: Rect2, fs: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, bold: bool = false, wrap: bool = false) -> Label:
@@ -631,16 +679,14 @@ func _show_end_overlay() -> void:
 	end_title.add_theme_color_override("font_color", ThemeKit.GOLD if win else ThemeKit.RED)
 	end_sub.text = "ORIGINAL SWARM AUTOBATTLER · RUN SEED %d" % state.run_seed
 	var lines: Array[String] = []
-	lines.append("回合 %d · 交手 %d 场 · 胜利 %d 场" % [state.round_no, state.stats_battles, state.stats_wins])
-	lines.append("峰值上场编队：%s 单位" % Cards.format_units(state.stats_peak_units))
+	lines.append("回合 %d · 交手 %d 场 · 胜利 %d 场 · 峰值 %s 单位" % [
+		state.round_no, state.stats_battles, state.stats_wins, Cards.format_units(state.stats_peak_units)])
 	lines.append("贪婪潮 Lv.%d · 洪流协议 %s" % [state.greed, "开" if state.flood else "关"])
-	lines.append("")
 	if win:
-		lines.append("三座敌对铸巢全部熄灭。你的编队已经涨成一场会移动的潮汐。")
+		lines.append("三座敌对铸巢全部熄灭，你的编队已经涨成一场会移动的潮汐。")
 	else:
-		lines.append("蔚蓝铸巢的最后一炉冷掉了。潮汐吞掉了你的编队。")
-	lines.append("")
-	var short_code := Roster.short(state.saved_code if not state.saved_code.is_empty() else state.export_code(), 46)
+		lines.append("蔚蓝铸巢的最后一炉冷掉了，潮汐吞掉了你的编队。")
+	var short_code := Roster.short(state.saved_code if not state.saved_code.is_empty() else state.export_code(), 52)
 	lines.append("最后阵容码：%s" % short_code)
 	end_body.text = "\n".join(lines)
 	end_overlay.visible = true
@@ -747,8 +793,9 @@ func _refresh_shop() -> void:
 	var odds := Cards.shop_odds(state.level)
 	var parts: Array[String] = []
 	for t in 5:
-		parts.append("T%d %d" % [t + 1, int(odds[t])])
-	shop_odds_label.text = "Lv.%d 商店权重 · %s" % [state.level, " · ".join(parts)]
+		parts.append("T%d %d%%" % [t + 1, int(odds[t])])
+	shop_odds_label.text = ""
+	shop_header_label.tooltip_text = "Lv.%d 商店权重：%s\n卡面数字均为每单位数值；更多数值见悬停 tooltip。" % [state.level, " · ".join(parts)]
 
 
 func _preview_shop_units(id: String) -> int:
@@ -775,7 +822,7 @@ func _preview_shop_units(id: String) -> int:
 
 
 func _refresh_actions() -> void:
-	gold_label.text = "◆ %d" % state.gold
+	gold_label.text = "%d" % state.gold
 	var inc: Dictionary = state.income_preview()
 	income_label.text = "下回合基础 +%d◆ · 利息 +%d◆" % [int(inc["base"]), int(inc["interest"])]
 	level_label.text = "熔炉 Lv.%d · 上场 %d/%d" % [state.level, state.board.size(), Cards.BOARD_MAX]
@@ -788,9 +835,9 @@ func _refresh_actions() -> void:
 		pips += "◇"
 	greed_label.text = "贪婪潮 Lv.%d  %s" % [state.greed, pips]
 	if state.flood and state.greed > 0:
-		greed_help.text = "每层 +2◆ · 洪流封顶后敌方额外 +6%/层 HP/ATK（数量溢出转攻防）"
+		greed_help.text = "封顶后敌方额外 +6%%/层 HP/ATK（数量溢出转攻防）"
 	else:
-		greed_help.text = "每层：友军 +%d%% · 敌军 +%d%% 编队 · 立即 +2◆ · 本局持续" % [
+		greed_help.text = "每层：友军 +%d%% · 敌军 +%d%% · 立即 +2◆" % [
 			int(state.get_ally_greed_mult() * 100 - 100), int(state.get_enemy_greed_mult() * 100 - 100)]
 	var lc := Cards.level_cost(state.level)
 	level_button.text = ("熔炉满级 [L]" if lc < 0 else "升本 ◆%d [L]" % lc)
@@ -841,7 +888,7 @@ func _refresh_phase_visibility() -> void:
 	for b in shop_buttons:
 		b.visible = not battle_ui
 	shop_header_label.visible = not battle_ui
-	shop_odds_label.visible = not battle_ui
+	shop_odds_label.visible = false
 	sell_button.visible = state.phase == "shop"
 	battle_lineup_label.visible = battle_ui
 	battle_hint_label.visible = battle_ui

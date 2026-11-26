@@ -11,34 +11,76 @@ const PANEL2 := Color("#0d1b2a")
 const PANEL3 := Color("#112336")
 const PANEL_HI := Color("#163247")
 const LINE := Color("#1d374b")
-const LINE_HI := Color("#2b5570")
+const LINE_HI := Color("#3f7288")
 const CYAN := Color("#37e0c7")
-const CYAN_SOFT := Color("#8bf4e6")
-const CYAN_DIM := Color("#1c8378")
+const CYAN_SOFT := Color("#b9fff4")
+const CYAN_DIM := Color("#4cd8c4")
 const GOLD := Color("#f0b45a")
-const GOLD_DIM := Color("#8a6634")
+const GOLD_DIM := Color("#f0b45a")
 const RED := Color("#ff6248")
-const RED_SOFT := Color("#ff9a86")
+const RED_SOFT := Color("#ffd6c9")
 const VIOLET := Color("#b8a6ff")
-const TEXT := Color("#d8e8f2")
-const MUTED := Color("#7590a4")
-const DIM := Color("#3d5669")
+const GREEN := Color("#8bffb0")
+const TEXT := Color("#e6f2fa")
+const MUTED := Color("#8fa6b8")
+const DIM := Color("#7590a4")
 const BLACK := Color("#02050a")
+const PANEL_EDGE := Color("#3f7288")
 
 const Cards = preload("res://scripts/swarm_cards.gd")
 
 const FONT_NAMES := [
 	"PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", "Arial", "sans-serif",
 ]
+const FONT_CJK_REG := "res://assets/fonts/NotoSansSC-Regular-subset.otf"
+const FONT_CJK_BOLD := "res://assets/fonts/NotoSansSC-Bold-subset.otf"
+const FONT_NUM := "res://assets/fonts/Oxanium-SemiBold.ttf"
+
+static var _font_cache: Dictionary = {}
 
 
-static func make_font(bold: bool = false) -> SystemFont:
-	var f := SystemFont.new()
-	f.font_names = PackedStringArray(FONT_NAMES)
-	f.font_weight = 700 if bold else 400
-	f.allow_system_fallback = true
-	f.multichannel_signed_distance_field = true
-	return f
+static func _load_font(path: String) -> FontFile:
+	if ResourceLoader.exists(path):
+		var res = load(path)
+		if res is FontFile:
+			return res
+	return null
+
+
+static func make_font(bold: bool = false) -> Font:
+	var key := "bold" if bold else "reg"
+	if _font_cache.has(key):
+		return _font_cache[key]
+	var loaded := _load_font(FONT_CJK_BOLD if bold else FONT_CJK_REG)
+	if loaded == null:
+		var f := SystemFont.new()
+		f.font_names = PackedStringArray(FONT_NAMES)
+		f.font_weight = 700 if bold else 400
+		f.allow_system_fallback = true
+		f.multichannel_signed_distance_field = true
+		_font_cache[key] = f
+		return f
+	loaded.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+	loaded.allow_system_fallback = true
+	_font_cache[key] = loaded
+	return loaded
+
+
+static func make_num_font() -> Font:
+	if _font_cache.has("num"):
+		return _font_cache["num"]
+	var loaded := _load_font(FONT_NUM)
+	if loaded == null:
+		var f := SystemFont.new()
+		f.font_names = PackedStringArray(["Oxanium", "Arial", "sans-serif"])
+		f.font_weight = 600
+		f.allow_system_fallback = true
+		_font_cache["num"] = f
+		return f
+	loaded.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+	loaded.allow_system_fallback = true
+	_font_cache["num"] = loaded
+	return loaded
 
 
 static func build_theme() -> Theme:
@@ -58,6 +100,7 @@ static func build_theme() -> Theme:
 	theme.set_color("font_color", "TooltipLabel", TEXT)
 	theme.set_font("font", "TooltipLabel", make_font(false))
 	theme.set_font_size("font_size", "TooltipLabel", 12)
+	theme.set_constant("line_spacing", "TooltipLabel", 5)
 	return theme
 
 

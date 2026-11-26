@@ -49,13 +49,17 @@ func _run() -> void:
 	await _settle(5)
 	await _shot("03_greed_tide.png")
 
-	game.debug_mount_battle(3000, 7.0, true, false, false)
-	await _settle(6)
+	# live combat window so the capture contains real in-flight VFX, not a
+	# fast-forward still; then pause so the shot is deterministic.
+	game.debug_mount_battle(3000, 2.5, false, false, false)
+	await _settle(45)
+	game.debug_get_view().set_paused(true)
+	await _settle(8)
 	await _shot("04_battle_3000.png")
 
 	game.debug_perf_overlay(true)
-	game.debug_mount_battle(3000, 4.0, true, true, false)
-	await _settle(12)
+	game.debug_mount_battle(3000, 4.0, false, true, false)
+	await _settle(40)
 	await _shot("05_perf_debug.png")
 
 	game.debug_victory_scene()

@@ -1,21 +1,25 @@
 class_name SwarmBattleView
 extends Node2D
 
-## 战斗渲染层：
-## - 每个单位只更新 MultiMesh 的 2D transform，一 draw call 画完全场。
-## - 逻辑 5–10Hz 自适应；渲染用 prev→pos 插值到 60fps。
-## - 弹道/火花用第二个固定容量 MultiMesh，仅视觉。
-## - 商店阶段显示同一套编队的静态预览。
+## Battle render layer (T-20261126-026 art pass):
+## - units: ONE MultiMesh + INSTANCE_CUSTOM atlas (10 cards x 12 frames), no per-unit Node
+## - faction base shape + per-instance hit flash + gold elite outline are in the shader
+## - state machine: idle/move/attack/death/spawn frames driven by battle events
+## - VFX: ONE additive MultiMesh with 6 families (spark / shot / splash / death / spawn / victory)
+## - environment: baked arena stage + 4 waving flags + 2 fog layers
+## - shop preview uses the same pipeline with idle animation.
 
 signal battle_finished(result)
 
 const Battle = preload("res://scripts/swarm_battle.gd")
 const Cards = preload("res://scripts/swarm_cards.gd")
 const ThemeKit = preload("res://scripts/swarm_theme.gd")
+const Art = preload("res://scripts/swarm_art.gd")
 
-const UNIT_QUAD := 6.0
-const FX_QUAD := 15.0
-const FX_MAX := 480
+const UNIT_QUAD := 9.0
+const FX_QUAD := 32.0
+const FX_MAX := 1000
+const FX_GOLD := Color("#ffd88a")
 
 var battle = null
 var is_preview := true
@@ -33,11 +37,33 @@ var _fx_mmi: MultiMeshInstance2D
 var _fx: Array = []
 var _fx_cursor := 0
 var _fx_active := 0
+var _fx_buffer := PackedFloat32Array()
+var _fx_dirty := false
 var _applied_count := 0
-var _base_scale := 6.0
+var _base_scale := 1.0
 var _unit_buffer := PackedFloat32Array()
-var _dead_applied := PackedByteArray()
 var _sim_step := 0.1
+
+var _n := 0
+var _card_rows := PackedByteArray()
+var _team := PackedByteArray()
+var _gold := PackedByteArray()
+var _tints := PackedColorArray()
+var _base_alpha := PackedFloat32Array()
+var _display_scale := PackedFloat32Array()
+var _frames := PackedByteArray()
+var _flash := PackedFloat32Array()
+var _atk_t := PackedFloat32Array()
+var _death_t := PackedFloat32Array()
+var _spawn_t := PackedFloat32Array()
+var _prev_cd := PackedFloat32Array()
+var _prev_hp := PackedFloat32Array()
+var _hidden := PackedByteArray()
+var _anim_clock := 0.0
+var _anim_accum := 0.0
+var _victory_fired := false
+var _flags: Array[Sprite2D] = []
+var _fogs: Array[Sprite2D] = []
 
 var _sim_ms_sum := 0.0
 var _sim_frames := 0
@@ -50,40 +76,90 @@ var _dirty := true
 
 func _ready() -> void:
 	z_index = 0
-	var unit_tex := _make_unit_texture()
-	var fx_tex := _make_fx_texture()
+	_build_environment()
+	_build_units()
+	_build_fx()
+	queue_redraw()
+
+
+func _build_environment() -> void:
+	var bg := Sprite2D.new()
+	bg.texture = Art.ARENA
+	bg.centered = false
+	bg.scale = Vector2(2.0 / 3.0, 2.0 / 3.0)
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	add_child(bg)
+	var flag_positions := [
+		Vector2(24, 42), Vector2(24, 238), Vector2(1128, 42), Vector2(1128, 238),
+	]
+	var flag_mats: Array[ShaderMaterial] = [Art.flag_material(), Art.flag_material(),
+		Art.flag_material(), Art.flag_material()]
+	for i in 4:
+		var fl := Sprite2D.new()
+		fl.texture = Art.FLAG_ALLY if i < 2 else Art.FLAG_ENEMY
+		fl.centered = false
+		fl.position = flag_positions[i]
+		fl.scale = Vector2(0.5, 0.5)
+		fl.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		fl.material = flag_mats[i]
+		fl.modulate = Color(0.92, 0.96, 0.96, 0.82)
+		add_child(fl)
+		_flags.append(fl)
+	for i in 2:
+		var fog := Sprite2D.new()
+		fog.texture = Art.FOG_A if i == 0 else Art.FOG_B
+		fog.centered = false
+		fog.position = Vector2(-70, -16) if i == 0 else Vector2(-20, 8)
+		fog.scale = Vector2(2.6, 1.65)
+		fog.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		fog.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		fog.modulate = Color(1, 1, 1, 0.55)
+		fog.material = Art.fog_material(
+			Vector2(0.0045, 0.0012) if i == 0 else Vector2(-0.003, 0.0018),
+			Color(0.05, 0.14, 0.17, 0.18 if i == 0 else 0.12))
+		add_child(fog)
+		_fogs.append(fog)
+
+
+func _build_units() -> void:
 	_unit_mm = MultiMesh.new()
 	_unit_mm.transform_format = MultiMesh.TRANSFORM_2D
 	_unit_mm.use_colors = true
+	_unit_mm.use_custom_data = true
 	var uq := QuadMesh.new()
 	uq.size = Vector2(UNIT_QUAD, UNIT_QUAD)
 	_unit_mm.mesh = uq
 	_unit_mm.instance_count = 0
 	_unit_mmi = MultiMeshInstance2D.new()
 	_unit_mmi.multimesh = _unit_mm
-	_unit_mmi.texture = unit_tex
+	_unit_mmi.texture = Art.UNIT_ATLAS
 	_unit_mmi.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_unit_mmi.material = Art.unit_material()
 	_unit_mmi.show_behind_parent = false
 	add_child(_unit_mmi)
 
+
+func _build_fx() -> void:
 	_fx_mm = MultiMesh.new()
 	_fx_mm.transform_format = MultiMesh.TRANSFORM_2D
 	_fx_mm.use_colors = true
+	_fx_mm.use_custom_data = true
 	var fq := QuadMesh.new()
-	fq.size = Vector2(FX_QUAD, 3.0)
+	fq.size = Vector2(FX_QUAD, FX_QUAD)
 	_fx_mm.mesh = fq
 	_fx_mm.instance_count = FX_MAX
 	_fx_mmi = MultiMeshInstance2D.new()
 	_fx_mmi.multimesh = _fx_mm
-	_fx_mmi.texture = fx_tex
+	_fx_mmi.texture = Art.VFX_ATLAS
 	_fx_mmi.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	_fx_mmi.z_index = 3
+	_fx_mmi.material = Art.fx_material()
 	add_child(_fx_mmi)
+	_fx_buffer.resize(FX_MAX * 16)
 	for i in FX_MAX:
 		_fx.append({"on": false})
-		_fx_mm.set_instance_transform_2d(i, Transform2D(0, Vector2(-100, -100)))
-		_fx_mm.set_instance_color(i, Color(1, 1, 1, 1))
-	queue_redraw()
+		_hide_fx(i)
+	_fx_mm.buffer = _fx_buffer
+	_fx_dirty = false
 
 
 func set_battle(b, preview: bool) -> void:
@@ -105,85 +181,190 @@ func set_battle(b, preview: bool) -> void:
 	_last_sim_ms = 0.0
 	_fx_active = 0
 	_fx_cursor = 0
+	_victory_fired = false
+	_anim_clock = 0.0
+	_anim_accum = 0.0
 	for i in FX_MAX:
 		_fx[i] = {"on": false}
-		_fx_mm.set_instance_transform_2d(i, Transform2D(0, Vector2(-100, -100)))
+		_hide_fx(i)
+	_fx_mm.buffer = _fx_buffer
 	_fx_mmi.visible = false
 	if battle == null:
 		_unit_mm.instance_count = 0
 		_unit_mmi.visible = false
 		_applied_count = 0
-		queue_redraw()
+		_n = 0
 		return
-	var count: int = battle.pos.size()
-	_base_scale = clampf(1.75 - float(count) / 5000.0, 0.95, 1.75)
+	_n = battle.pos.size()
+	var count := _n
+	_base_scale = clampf(1.45 - float(count) / 6500.0, 0.92, 1.45)
 	_sim_step = Battle.recommended_step(int(battle.side_count[0]) + int(battle.side_count[1]))
 	_unit_mm.instance_count = count
 	_unit_mmi.visible = count > 0
 	_applied_count = count
-	# 一次性写入 MultiMesh buffer（8 transform + 4 color），之后每帧只改 origin.x/y。
-	_unit_buffer.resize(count * 12)
-	_dead_applied.resize(count)
-	_dead_applied.fill(0)
+	_unit_buffer.resize(count * 16)
+	_card_rows.resize(count)
+	_team.resize(count)
+	_gold.resize(count)
+	_tints.resize(count)
+	_base_alpha.resize(count)
+	_display_scale.resize(count)
+	_frames.resize(count)
+	_flash.resize(count)
+	_atk_t.resize(count)
+	_death_t.resize(count)
+	_spawn_t.resize(count)
+	_prev_cd.resize(count)
+	_prev_hp.resize(count)
+	_hidden.resize(count)
+	_hidden.fill(0)
+	var density := 0.94 if count < 400 else (0.86 if count < 1600 else 0.80)
 	for i in count:
-		var col := _unit_color(i)
-		var s := _base_scale * float(battle.size_mul[i])
-		var idx := i * 12
-		_unit_buffer[idx] = s
-		_unit_buffer[idx + 1] = 0.0
-		_unit_buffer[idx + 2] = 0.0
-		_unit_buffer[idx + 3] = -1000.0
-		_unit_buffer[idx + 4] = 0.0
-		_unit_buffer[idx + 5] = s
-		_unit_buffer[idx + 6] = 0.0
-		_unit_buffer[idx + 7] = -1000.0
-		_unit_buffer[idx + 8] = col.r
-		_unit_buffer[idx + 9] = col.g
-		_unit_buffer[idx + 10] = col.b
-		_unit_buffer[idx + 11] = col.a
+		var s := int(battle.team[i])
+		var ci := int(battle.card_idx[i])
+		var card_list: Array = battle.side_cards[s]
+		var id := ""
+		if ci < card_list.size():
+			id = String(card_list[ci].get("id", ""))
+		var row := Art.card_index(id)
+		var card := Cards.get_card(id)
+		var tier := int(card.get("tier", 1)) if not card.is_empty() else 1
+		var base := ThemeKit.CYAN if s == 0 else ThemeKit.RED
+		var tint := base.lerp(Color.WHITE, 0.20 + 0.035 * float(tier - 1))
+		if int(battle.role[i]) == 2:
+			tint = tint.lerp(Color.WHITE, 0.10)
+		var gold := int(battle.star[i]) >= 2
+		if gold:
+			tint = tint.lerp(ThemeKit.GOLD, 0.30)
+			tint = tint.lerp(Color.WHITE, 0.10)
+		_card_rows[i] = row
+		_team[i] = s
+		_gold[i] = 1 if gold else 0
+		_tints[i] = tint
+		_base_alpha[i] = density
+		_display_scale[i] = _base_scale * clampf(float(battle.size_mul[i]), 0.84, 1.30) * (1.04 if gold else 1.0)
+		_frames[i] = 10
+		_flash[i] = 0.0
+		_atk_t[i] = -1.0
+		_death_t[i] = -1.0
+		_spawn_t[i] = 0.0
+		_prev_cd[i] = battle.cooldown[i]
+		_prev_hp[i] = battle.hp[i]
+		var idx := i * 16
+		var sign_x := -1.0 if s == 1 else 1.0
+		_unit_buffer[idx] = _display_scale[i] * sign_x
+		_unit_buffer[idx + 5] = _display_scale[i]
+		_unit_buffer[idx + 3] = -2000.0
+		_unit_buffer[idx + 7] = -2000.0
+		_unit_buffer[idx + 8] = tint.r
+		_unit_buffer[idx + 9] = tint.g
+		_unit_buffer[idx + 10] = tint.b
+		_unit_buffer[idx + 11] = density
+		_unit_buffer[idx + 12] = float(row)
+		_unit_buffer[idx + 13] = 10.0
+		_unit_buffer[idx + 14] = 0.0
+		_unit_buffer[idx + 15] = float((1 if gold else 0) + s * 2)
 	_unit_mm.buffer = _unit_buffer
-	queue_redraw()
-	_update_units_visual(1.0 if preview else 0.0)
-	_dirty = false
+	# spawn gates: 4 rings + sparks, read as "units pour out of the gates"
+	for s in 2:
+		var gx := 46.0 if s == 0 else Battle.ARENA.x - 46.0
+		for gy in [70.0, 240.0]:
+			_spawn_fx(4, Vector2(gx, gy), Vector2.ZERO, s, 1.4, 0.34)
+			for k in 6:
+				var ang := TAU * float(k) / 6.0 + float(s)
+				_spawn_fx(0, Vector2(gx, gy) + Vector2(cos(ang), sin(ang)) * 12.0,
+					Vector2(cos(ang), sin(ang)) * 22.0, s, 0.55, 0.28)
+	_tick_anim(0.0)
+	_update_units_visual(1.0)
+	_drain_fx(0.0)
 
 
 func _unit_color(i: int) -> Color:
-	var s: int = battle.team[i]
-	var base := ThemeKit.CYAN if s == 0 else ThemeKit.RED
-	var ci: int = battle.card_idx[i]
-	var card_list: Array = battle.side_cards[s]
-	var tier := 1
-	if ci < card_list.size():
-		var def := Cards.get_card(String(card_list[ci].get("id", "")))
-		tier = int(def.get("tier", 1))
-	base = base.lerp(Color.WHITE, 0.055 * float(tier - 1))
-	if int(battle.star[i]) >= 2:
-		base = base.lerp(ThemeKit.GOLD if s == 0 else ThemeKit.VIOLET, 0.32)
-	if int(battle.role[i]) == 2:
-		base = base.lerp(Color.WHITE, 0.2)
-	var n: int = _applied_count
-	var alpha := 0.92 if n < 400 else (0.82 if n < 1600 else 0.74)
-	return Color(base.r, base.g, base.b, alpha)
+	return _tints[i]
+
+
+func _tick_anim(dt: float) -> void:
+	if battle == null or _n == 0:
+		return
+	_anim_clock += dt
+	for i in _n:
+		if int(battle.alive[i]) == 0:
+			if _death_t[i] < 0.0:
+				_death_t[i] = 0.0
+				var p: Vector2 = battle.pos[i]
+				_spawn_fx(3, p, Vector2(0, -10), int(_team[i]), 0.85, 0.18)
+			else:
+				_death_t[i] += dt
+			var idx := i * 16
+			var fade := clampf(1.0 - _death_t[i] / 0.18, 0.0, 1.0)
+			_unit_buffer[idx + 11] = _base_alpha[i] * fade
+			_unit_buffer[idx + 13] = float(7 + mini(2, int(_death_t[i] / 0.06)))
+			if _death_t[i] >= 0.18 and _hidden[i] == 0:
+				_hidden[i] = 1
+				_unit_buffer[idx + 3] = -2000.0
+				_unit_buffer[idx + 7] = -2000.0
+			continue
+		if _spawn_t[i] < 1.0:
+			_spawn_t[i] += dt
+		if _flash[i] > 0.0:
+			_flash[i] = maxf(0.0, _flash[i] - dt / 0.06)
+		if _atk_t[i] >= 0.0:
+			_atk_t[i] += dt
+			if _atk_t[i] >= 0.24:
+				_atk_t[i] = -1.0
+		# attack started? cooldown resets upward after _do_attack()
+		var cd := float(battle.cooldown[i])
+		if cd > _prev_cd[i] + 0.003:
+			_atk_t[i] = 0.0
+			if int(battle.role[i]) == 3:
+				var tgt := int(battle.target[i])
+				if tgt >= 0:
+					_spawn_fx(2, battle.pos[tgt], Vector2.ZERO, int(_team[i]), 1.15, 0.20)
+		_prev_cd[i] = cd
+		if float(battle.hp[i]) < _prev_hp[i] - 0.001:
+			_flash[i] = 1.0
+		_prev_hp[i] = float(battle.hp[i])
+		var frame := _frame_for(i)
+		_frames[i] = frame
+		var idx := i * 16
+		_unit_buffer[idx + 11] = _base_alpha[i]
+		_unit_buffer[idx + 13] = float(frame)
+		_unit_buffer[idx + 14] = _flash[i]
+
+
+func _frame_for(i: int) -> int:
+	if _spawn_t[i] < 0.30:
+		return 10
+	if _atk_t[i] >= 0.0:
+		return 4 + mini(2, int(_atk_t[i] / 0.08))
+	var moving: bool = battle.pos[i].distance_squared_to(battle.prev[i]) > 0.12
+	var phase := fmod(_anim_clock + float(i % 17) * 0.037, 1.0)
+	if moving:
+		return 2 + (int(phase / 0.125) % 2)
+	if _gold[i] == 1:
+		return 11
+	return int(phase / 0.25) % 2
 
 
 func _update_units_visual(interp: float) -> void:
 	if battle == null:
 		return
 	var n: int = mini(_applied_count, battle.pos.size())
-	if _unit_buffer.size() != n * 12:
+	if _unit_buffer.size() != n * 16:
 		return
 	var t0 := Time.get_ticks_usec()
 	if battle.finished:
 		interp = 1.0
 	for i in n:
-		var idx := i * 12
-		if battle.alive[i] == 0:
-			if _dead_applied[i] == 0:
-				_unit_buffer[idx + 3] = -1000.0
-				_unit_buffer[idx + 7] = -1000.0
-				_dead_applied[i] = 1
+		if int(battle.alive[i]) == 0:
+			if _death_t[i] >= 0.18 and _hidden[i] == 0:
+				_hidden[i] = 1
+				var idx0 := i * 16
+				_unit_buffer[idx0 + 3] = -2000.0
+				_unit_buffer[idx0 + 7] = -2000.0
 			continue
 		var p: Vector2 = battle.prev[i].lerp(battle.pos[i], interp)
+		var idx := i * 16
 		_unit_buffer[idx + 3] = p.x
 		_unit_buffer[idx + 7] = p.y
 	_unit_mm.buffer = _unit_buffer
@@ -192,59 +373,163 @@ func _update_units_visual(interp: float) -> void:
 	_render_frames += 1
 
 
-func _spawn_fx(ev: Dictionary) -> void:
-	var kind := 0 if String(ev.get("k", "shot")) == "shot" else 1
+func _hide_fx(i: int) -> void:
+	var o := i * 16
+	for k in 16:
+		_fx_buffer[o + k] = 0.0
+	_fx_buffer[o + 3] = -2000.0
+	_fx_buffer[o + 7] = -2000.0
+	_fx_dirty = true
+
+
+func _write_fx(i: int, pos: Vector2, rot: float, sx: float, sy: float, col: Color,
+		kind: int, frame: int) -> void:
+	var o := i * 16
+	var c := cos(rot)
+	var sn := sin(rot)
+	_fx_buffer[o] = sx * c
+	_fx_buffer[o + 1] = -sy * sn
+	_fx_buffer[o + 2] = 0.0
+	_fx_buffer[o + 3] = pos.x
+	_fx_buffer[o + 4] = sx * sn
+	_fx_buffer[o + 5] = sy * c
+	_fx_buffer[o + 6] = 0.0
+	_fx_buffer[o + 7] = pos.y
+	_fx_buffer[o + 8] = col.r
+	_fx_buffer[o + 9] = col.g
+	_fx_buffer[o + 10] = col.b
+	_fx_buffer[o + 11] = col.a
+	_fx_buffer[o + 12] = float(kind)
+	_fx_buffer[o + 13] = float(frame)
+	_fx_buffer[o + 14] = 0.0
+	_fx_buffer[o + 15] = 0.0
+	_fx_dirty = true
+
+
+func _spawn_fx(kind: int, a: Vector2, b: Vector2, team: int, scale: float, life: float,
+		color: Color = Color(0, 0, 0, 0)) -> void:
 	var slot := _fx_cursor
 	_fx_cursor = (_fx_cursor + 1) % FX_MAX
-	var life := 0.16 if kind == 0 else 0.13
+	if color.a <= 0.0:
+		if kind == 5:
+			color = FX_GOLD
+		elif team == 0:
+			color = ThemeKit.CYAN_SOFT
+		else:
+			color = ThemeKit.RED_SOFT
+	var seed_val := float((slot * 37 + int(a.x) * 7 + int(a.y) * 13) % 97) / 97.0
+	var vel := Vector2.ZERO
+	if kind == 3:
+		vel = Vector2(0, -18)
+	elif kind == 5:
+		var ang := seed_val * TAU + float(slot % 11) * 0.7
+		vel = Vector2(cos(ang), sin(ang)) * (40.0 + 90.0 * seed_val)
+	elif kind == 0:
+		var ang2 := seed_val * TAU
+		vel = Vector2(cos(ang2), sin(ang2)) * 6.0
 	_fx[slot] = {
-		"on": true, "kind": kind,
-		"a": ev.get("a", Vector2.ZERO), "b": ev.get("b", Vector2.ZERO),
-		"age": 0.0, "life": life, "team": int(ev.get("team", 0)),
-		"seed": float((_fx_cursor * 37) % 19) / 19.0,
+		"on": true, "kind": kind, "a": a, "b": b, "vel": vel,
+		"age": 0.0, "life": maxf(0.05, life), "scale": scale,
+		"color": color, "seed": seed_val,
 	}
+	var rot0 := 0.0
+	if kind == 1:
+		var d0 := b - a
+		rot0 = d0.angle() if d0.length_squared() > 0.01 else 0.0
+	_write_fx(slot, a, rot0, scale, scale, Color(color.r, color.g, color.b, 0.9), kind, 0)
 
 
 func _drain_fx(delta: float) -> void:
 	if battle != null and not is_preview:
 		var events: Array = battle.drain_fx(110)
 		for ev in events:
-			_spawn_fx(ev)
-	_fx_active = 0
+			var k := String(ev.get("k", "hit"))
+			var a: Vector2 = ev.get("a", Vector2.ZERO)
+			var b: Vector2 = ev.get("b", Vector2.ZERO)
+			var team := int(ev.get("team", 0))
+			if k == "shot":
+				_spawn_fx(1, a, b, team, 1.0, 0.16)
+			else:
+				_spawn_fx(0, a, Vector2.ZERO, team, 1.0, 0.12)
+	# Paused combat is a still frame: no need to rewrite 1000 FX every frame.
+	if paused and not (battle != null and battle.finished):
+		_fx_mmi.visible = _fx_active > 0
+		return
 	var dt := delta * clampf(speed, 1.0, 4.0)
-	if paused:
-		dt = 0.0
+	_fx_active = 0
 	for i in FX_MAX:
 		var slot: Dictionary = _fx[i]
 		if not bool(slot.get("on", false)):
-			_fx_mm.set_instance_transform_2d(i, Transform2D(0, Vector2(-100, -100)))
 			continue
 		var age := float(slot["age"]) + dt
 		slot["age"] = age
 		var life := float(slot["life"])
 		if age >= life:
 			slot["on"] = false
-			_fx_mm.set_instance_transform_2d(i, Transform2D(0, Vector2(-100, -100)))
+			_hide_fx(i)
 			continue
 		_fx_active += 1
 		var t := clampf(age / life, 0.0, 1.0)
-		var a: Vector2 = slot["a"]
-		var b: Vector2 = slot["b"]
-		var col: Color = ThemeKit.CYAN if int(slot["team"]) == 0 else ThemeKit.RED
-		col.a = (1.0 - t) * (0.9 if int(slot["kind"]) == 0 else 0.75)
-		if int(slot["kind"]) == 0:
-			var p := a.lerp(b, t)
-			var d := b - a
-			var ang := d.angle() if d.length_squared() > 0.01 else 0.0
-			var sc := 0.55 + 0.75 * (1.0 - t)
-			_fx_mm.set_instance_transform_2d(i, Transform2D(ang, Vector2(sc, 1.0), 0.0, p))
-			_fx_mm.set_instance_color(i, col)
-		else:
-			var jitter := Vector2(cos(float(slot["seed"]) * TAU), sin(float(slot["seed"]) * TAU)) * (4.0 * t)
-			var sc := 0.25 + 0.65 * (1.0 - t)
-			_fx_mm.set_instance_transform_2d(i, Transform2D(float(slot["seed"]) * TAU, Vector2(sc, sc), 0.0, a + jitter))
-			_fx_mm.set_instance_color(i, col)
+		var kind := int(slot["kind"])
+		var col: Color = slot["color"]
+		col.a = pow(1.0 - t, 1.15)
+		var pos: Vector2 = slot["a"]
+		var scale := float(slot["scale"])
+		var rot := 0.0
+		var sx := scale
+		var sy := scale
+		var frame := mini(2, int(t * 3.0))
+		match kind:
+			1:
+				var p1: Vector2 = slot["b"]
+				pos = Vector2(slot["a"]).lerp(p1, t)
+				var d: Vector2 = p1 - Vector2(slot["a"])
+				rot = d.angle() if d.length_squared() > 0.01 else 0.0
+				sx = 0.85 + 0.15 * (1.0 - t)
+				sy = 0.38
+			2:
+				scale *= 1.0 + 0.7 * t
+				sx = scale
+				sy = scale
+			3:
+				pos += Vector2(slot["vel"]) * age
+				rot = 0.2
+			4:
+				scale *= 1.0 + 0.9 * t
+				sx = scale
+				sy = scale
+			5:
+				pos += Vector2(slot["vel"]) * dt
+				slot["vel"] = Vector2(slot["vel"]) * 0.985
+				scale *= 1.0 + 0.35 * t
+				sx = scale
+				sy = scale
+				rot = float(slot["seed"]) * TAU
+			_:
+				pos += Vector2(slot["vel"]) * age * 0.5
+				scale *= 1.0 + 0.7 * t
+				sx = scale
+				sy = scale
+		_write_fx(i, pos, rot, sx, sy, col, kind, frame)
+	if _fx_dirty:
+		_fx_mm.buffer = _fx_buffer
+		_fx_dirty = false
 	_fx_mmi.visible = _fx_active > 0
+
+
+func _spawn_victory() -> void:
+	if _victory_fired:
+		return
+	_victory_fired = true
+	var center := Vector2(Battle.ARENA.x * 0.5, Battle.ARENA.y * 0.5)
+	for i in 220:
+		var ang := float(i) * 2.399963 + 0.4
+		var spd := 30.0 + 150.0 * fmod(float(i) * 0.618, 1.0)
+		var col := FX_GOLD
+		if i % 3 != 0:
+			col = ThemeKit.CYAN_SOFT if i % 2 == 0 else ThemeKit.RED_SOFT
+		_spawn_fx(5, center + Vector2(cos(ang), sin(ang)) * 6.0,
+			Vector2.ZERO, 0, 0.55 + 0.9 * fmod(float(i) * 0.37, 1.0), 1.0, col)
 
 
 func _process(delta: float) -> void:
@@ -269,12 +554,18 @@ func _process(delta: float) -> void:
 			running = false
 			paused = true
 			_dirty = true
+			_spawn_victory()
 			emit_signal("battle_finished", battle.result)
-	var interp := 1.0 if (paused or battle.finished or is_preview) else clampf(accumulator / _sim_step, 0.0, 1.0)
-	if not manual and (running and not paused or _dirty):
+	if not manual:
+		_anim_accum += delta
+		if _anim_accum >= 0.05:
+			var adt := minf(_anim_accum, 0.15)
+			_anim_accum = 0.0
+			if not paused:
+				_tick_anim(adt)
+		var interp := 1.0 if (paused or battle.finished or is_preview) else clampf(accumulator / _sim_step, 0.0, 1.0)
 		_update_units_visual(interp)
 		_dirty = false
-	if not manual:
 		_drain_fx(delta)
 
 
@@ -296,11 +587,13 @@ func advance_manual(real_dt: float) -> void:
 		_sim_ms_sum += total_ms
 		_sim_frames += steps
 	alpha = 1.0 if (paused or battle.finished) else clampf(accumulator / _sim_step, 0.0, 1.0)
+	_tick_anim(real_dt)
 	_update_units_visual(alpha)
 	_drain_fx(real_dt)
 	if battle.finished and running:
 		running = false
 		paused = true
+		_spawn_victory()
 		emit_signal("battle_finished", battle.result)
 
 
@@ -319,6 +612,21 @@ func debug_advance(seconds: float) -> void:
 		_sim_frames += steps
 	accumulator = 0.0
 	alpha = 1.0
+	# A fast-forward is not a live frame: reset per-unit damage/attack deltas so
+	# the capture shows charged attackers instead of a full-screen white flash.
+	for i in _n:
+		_flash[i] = 0.0
+		_prev_hp[i] = battle.hp[i] if i < battle.hp.size() else 0.0
+		_prev_cd[i] = battle.cooldown[i] if i < battle.cooldown.size() else 0.0
+		_atk_t[i] = -1.0
+	var charged := 0
+	for i in _n:
+		if charged >= 700:
+			break
+		if int(battle.alive[i]) == 1 and float(battle.cooldown[i]) < 0.12 and int(battle.target[i]) >= 0:
+			_atk_t[i] = 0.09
+			charged += 1
+	_tick_anim(0.0)
 	_update_units_visual(1.0)
 	_drain_fx(0.0)
 	_drain_fx(0.04)
@@ -326,6 +634,7 @@ func debug_advance(seconds: float) -> void:
 	if battle.finished and running:
 		running = false
 		paused = true
+		_spawn_victory()
 		emit_signal("battle_finished", battle.result)
 
 
@@ -361,93 +670,5 @@ func avg_render_ms() -> float:
 
 
 func _draw() -> void:
-	var arena := Battle.ARENA
-	draw_rect(Rect2(0, 0, arena.x, arena.y), Color(0.028, 0.052, 0.083, 1.0), true)
-	draw_rect(Rect2(0, 0, arena.x * 0.5, arena.y), Color(0.06, 0.20, 0.19, 0.08), true)
-	draw_rect(Rect2(arena.x * 0.5, 0, arena.x * 0.5, arena.y), Color(0.24, 0.07, 0.06, 0.07), true)
-	# 细网格：全部线合并为一次 multiline。
-	var lines := PackedVector2Array()
-	var x := 45.0
-	while x < arena.x:
-		lines.append(Vector2(x, 10)); lines.append(Vector2(x, arena.y - 10))
-		x += 45.0
-	var y := 38.0
-	while y < arena.y:
-		lines.append(Vector2(10, y)); lines.append(Vector2(arena.x - 10, y))
-		y += 38.0
-	draw_multiline(lines, Color(0.12, 0.26, 0.33, 0.18), 0.7, true)
-	# 潮汐中线刻度
-	var dash := PackedVector2Array()
-	var mid := arena.x * 0.5
-	var yy := 18.0
-	while yy < arena.y - 18.0:
-		dash.append(Vector2(mid, yy)); dash.append(Vector2(mid, yy + 7.0))
-		yy += 14.0
-	draw_multiline(dash, Color(0.35, 0.65, 0.68, 0.3), 1.0, true)
-	# 上下六角装饰
-	var hex_lines := PackedVector2Array()
-	for hx in [90.0, 300.0, 510.0, 690.0, 900.0, 1110.0]:
-		for cy in [26.0, arena.y - 26.0]:
-			var pts := ThemeKit.hex_points(Vector2(hx, cy), 9.0)
-			for k in 6:
-				hex_lines.append(pts[k]); hex_lines.append(pts[(k + 1) % 6])
-	draw_multiline(hex_lines, Color(0.24, 0.42, 0.45, 0.18), 0.8, true)
-	# 中线菱形
-	var diamond := PackedVector2Array([
-		Vector2(mid, arena.y * 0.5 - 18), Vector2(mid + 12, arena.y * 0.5),
-		Vector2(mid, arena.y * 0.5 + 18), Vector2(mid - 12, arena.y * 0.5),
-	])
-	draw_colored_polygon(diamond, Color(0.05, 0.12, 0.16, 0.95))
-	var dout := PackedVector2Array(diamond)
-	dout.append(diamond[0])
-	draw_polyline(dout, Color(0.3, 0.65, 0.65, 0.5), 1.0, true)
-	# 阵营角标：两种颜色各一次 multiline。
-	var blue := PackedVector2Array([
-		Vector2(20, 20), Vector2(20, 42), Vector2(20, 20), Vector2(42, 20),
-		Vector2(20, arena.y - 20), Vector2(20, arena.y - 42),
-		Vector2(20, arena.y - 20), Vector2(42, arena.y - 20),
-	])
-	var red := PackedVector2Array([
-		Vector2(arena.x - 20, 20), Vector2(arena.x - 20, 42),
-		Vector2(arena.x - 20, 20), Vector2(arena.x - 42, 20),
-		Vector2(arena.x - 20, arena.y - 20), Vector2(arena.x - 20, arena.y - 42),
-		Vector2(arena.x - 20, arena.y - 20), Vector2(arena.x - 42, arena.y - 20),
-	])
-	draw_multiline(blue, ThemeKit.CYAN_DIM, 2.0, true)
-	draw_multiline(red, ThemeKit.RED.darkened(0.2), 2.0, true)
-	draw_rect(Rect2(0.5, 0.5, arena.x - 1, arena.y - 1), Color(0.18, 0.36, 0.45, 0.85), false, 1.0)
-
-
-func _make_unit_texture() -> ImageTexture:
-	var n := 24
-	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
-	var c := (Vector2(n, n) - Vector2.ONE) * 0.5
-	for py in n:
-		for px in n:
-			var d := Vector2(px, py) - c
-			var q := absf(d.x) * 0.866 + absf(d.y) * 0.5
-			var a := 0.0
-			var lum := 1.0
-			if q < 9.4:
-				a = 1.0
-			if q < 6.4:
-				lum = 1.0
-			elif q < 8.0:
-				lum = 0.55
-			if q >= 9.4 and q < 11.0:
-				a = 0.28
-				lum = 0.5
-			img.set_pixel(px, py, Color(lum, lum, lum, a))
-	return ImageTexture.create_from_image(img)
-
-
-func _make_fx_texture() -> ImageTexture:
-	var n := 32
-	var img := Image.create(n, 8, false, Image.FORMAT_RGBA8)
-	for py in 8:
-		for px in n:
-			var ax := float(px) / float(n - 1)
-			var ay := 1.0 - absf(float(py) - 3.5) / 4.0
-			var a := ax * ax * ay
-			img.set_pixel(px, py, Color(1, 1, 1, a))
-	return ImageTexture.create_from_image(img)
+	# The stage is a baked texture + animated flags/fog; nothing dynamic here.
+	pass

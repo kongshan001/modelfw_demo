@@ -77,34 +77,36 @@ SWF1:eyJjYXJkcyI6W3siaWQiOiJzcGFya19mbGVhIiwic3RhciI6Mn1dLCJmbG9vZCI6ZmFsc2UsImd
 
 面板内可保存/导出、复制、导入；镜像试炼使用最近一次保存的编队。
 
-## 性能（Intel HD 6000，真实 GPU）
+## 性能（Intel HD 6000，真实 GPU，vsync off）
 
-最终版战斗 UI 实测（Godot 4.6 GL Compatibility，vsync off，SubViewport 原生渲染）：
+T-20261126-026 美术接入后的最终测量（`tools/perf_swarm.gd`，无性能叠层，1.8s 采样；2932 是 3000 目标在每边 1500 上限下的实际总数）：
 
-| 单位总数 | 分辨率 | 平均 FPS | 最低 FPS | Draw calls | sim ms/tick | 渲染更新 ms |
-| --- | --- | --- | --- | --- | --- | --- |
-| 100 | 1280×720 | 92.0 | 11.9 | 684 | 0.63 | 0.15 |
-| 1000 | 1280×720 | 98.2 | 59.3 | 687 | 2.74 | 0.85 |
-| 3000 | 1280×720 | 77.3 | 13.1 | 739 | 10.85 | 2.25 |
-| 100 | 1920×1080 | 83.1 | 24.0 | 673 | 0.53 | 0.12 |
-| 1000 | 1920×1080 | 56.9 | 25.1 | 687 | 4.50 | 1.12 |
-| 3000 | 1920×1080 | 46.9 | 21.2 | 739 | 16.57 | 3.48 |
+| 单位总数 | 分辨率 | 平均 FPS | Draw calls | SIM ms/tick | 渲染更新 ms |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 98 | 1280×720 | 190.0 | 123 | 0.70 | 0.16 |
+| 977 | 1280×720 | 166.2 | 123 | 3.37 | 1.08 |
+| 2932 | 1280×720 | 126.5 | 125 | 11.01 | 2.41 |
+| 99 | 1920×1080 | 120.2 | 123 | 1.43 | 0.27 |
+| 977 | 1920×1080 | 115.0 | 123 | 4.42 | 1.24 |
+| 2932 | 1920×1080 | **94.0** | **125** | 11.09 | 3.12 |
 
-- 目标 **1,000+ 单位 30fps+ 已明显达成**；最终版 3,000 单位（每边 1,500）在 1080p 仍有 46.9fps、720p 77.3fps。
-- 同一构建在机器被其他 worker/浏览器并行占用时，曾测到 1000 单位 37.1fps（1080p）与 3000 单位 21.4fps；性能数字随共享负载有 2–3× 波动，低帧率最小值主要来自场景切换 hitch。完整原始数据见 `docs/perf_measurements.json`。
-- Draw calls 约 670–740（单位 MultiMesh 只有 1 次、弹道 1 次，其余为 UI 文本/程序化线条）；单位为批渲染，不是每单位一个 Node。
-- 极端负载下的降级方案：战斗阶段已收起卡牌详情；还可把每边上限降到 750–1000、使用 720p、或避免 4× 倍速。
+- 3000 单位（每边 1500）1080p **94.0fps**、720p 126.5fps；硬门槛 30fps 有大幅余量。完整 JSON：`docs/perf_measurements.json`。
+- Draw calls 从原型版的 739 降到 **125**：主要来自 UI 文本改用打包字体（Noto Sans SC 子集）后的批处理；战斗层单位 1 + FX 1 + 环境 7，总 9 个节点，不随单位数增长。
+- 逻辑 SIM 11.09ms/tick（3000 单位、5Hz）、渲染 buffer 更新 3.12ms/帧；HUD 性能叠层实拍见 `docs/shots/05_perf_debug.png`（叠层本身会增加 draw calls）。
+- 共享主机仍有波动：早前同一构建的一次测量为 61.5fps/1080p；任何单次结果都不当作硬件保证。极端负载下的降级仍是：720p、每边 750–1000、避免 4×。
 
-> 说明：macOS 会把这个窗口限制在约 1440×762；1920×1080 截图与性能测量在 `SubViewport(1920×1080)` 中真实渲染（1280×720 设计稿 1.5×），不是拉伸 PNG。
+## 美术状态（2026-11-26 · T-20261126-026 生产级美术实现）
 
-## 美术状态（2026-11-26 · T-20261126-025 评审）
+按 `docs/art-review-T-20261126-025.md` 的 brief 完成第一轮生产级美术实现（5 个 P0 + P1-2 胜利 key art）；玩法/数值/阵容码未改。项目计划中的 2D QA/独立复评（T-027/T-028）已取消，后续改为 T-033 3D 性能压测；因此本状态是 **美术实现完成，不代表 QA/AD 放行**。
 
-当前 build 的美术仍是 vertical slice 原型级：**3.0/10，REJECT（未达生产环境）**。玩法/性能基线保留；单位、棋盘环境、卡牌、VFX、UI 微文案 5 个 P0 待按 brief 落地。
-
-- 评审与生产标准：`docs/art-review-T-20261126-025.md`
-- 标注图：`docs/shots/art-review/annotated_01_shop.png`、`annotated_04_battle.png`
-- 8 族剪影 / atlas / 实例化预算：`docs/shots/art-review/unit_silhouette_brief.png`
-- 生产门槛：100% 截图可读 8 族单位；25% 稀有度可辨；3000 单位 1080p ≥30fps；battle ≤800 draw calls；console 0 error。
+- **单位**：8 族 / 10 卡 / 768×640 ×12 帧 atlas；1 个 MultiMesh + `INSTANCE_CUSTOM`（卡/帧/闪白/精英码）；idle/move/攻击三拍/死亡三帧/生成/精英；阵营底座形（友环/敌 chevron）+ 逐实例命中闪白；金卡=暖调 + 金冠标 + 金环 + 4% 尺寸。3000 单位 10–16px；纯黑剪影与 8px/12px/16px 证据见 `docs/shots/art-impl/unit_silhouette_8px_after.png`。
+- **卡牌**：10 张原创插画（1024×768 atlas + 512 源）；1★/2★ 框 + 四角饰、3px 阵营边、费用宝石、职责 icon、2×2 属性 chips、大号 ×N、tooltip；商店 164×104 / 上场 116×92。50% 缩略可读，25% 保留稀有度/费用/×N 形状。见 `docs/shots/art-impl/cards_50pct.png`。
+- **棋盘**：1800×570 微工厂六角甲板 + 96px 航道 + 每侧 2 座出生门 + 4 面 shader 波动阵营旗 + 2 层雾 + 潮汐井 + 暗角；环境 7 draw calls（≤15），地面 L* 压暗、单位高对比。见 `docs/shots/01_shop.png`、`04_battle_3000.png`。
+- **VFX**：1 个 additive MultiMesh 覆盖 6 类（近战火花/远程弹道/溅射环/死亡消散/生成环/胜利碎片）+ 逐实例闪白；FX_MAX 1000；无 per-effect Node；10s 视频与 contact sheet 见 `docs/shots/art-impl/video_contact_sheet.png`。
+- **UI / 字体 / 图标**：色板重做（DIM `#7590a4` 5.20:1、MUTED 6.89:1、GOLD 9.43:1、CYAN 10.48:1）；Noto Sans SC 子集（OFL）+ Oxanium（OFL）；17 个 20px icon；卡面去表格化，商店权重收进 tooltip。对比度报告：`docs/shots/art-impl/contrast_report.json`。
+- **性能**：3000 单位/1080p **94.0fps**、draw calls **125**、无每单位 Node（battle view 9 子节点）；`docs/shots/art-impl/tech_stats.json`。
+- **证据包**：`docs/shots/art-impl/`（before/after、25%/50%、剪影、对比度、deuteranopia、视频 contact sheet、provenance）。10s 视频：`docs/swarmforge_demo_10s.mp4`（1920×1080/15fps）/ `.gif`（960×540）。
+- **已知未完成**：P1-1 冠军标记/伤害数字、3 人剪影盲测、125% UI/减少动态效果、正式 deuteranopia 认证；金卡 1px 外描边在 8–12px 会退化为金框而改用冠标（见 `assets/art/PROVENANCE.md` 的偏差说明）；卡插画为程序化 stylized，仍可再接一轮手绘/AI painterly pass。
 
 ## 文件
 
@@ -120,7 +122,10 @@ SWF1:eyJjYXJkcyI6W3siaWQiOiJzcGFya19mbGVhIiwic3RhciI6Mn1dLCJmbG9vZCI6ZmFsc2UsImd
 - `tools/perf_swarm.gd`：720p/1080p 性能测量
 - `tools/video_swarm.gd`：10 秒 720p/15fps 真实 gameplay 帧采集（`SWARM_VIDEO_OK`，150 帧）
 - `docs/TECH.md`、`docs/迭代记录.md`、`docs/perf_measurements.json`
-- `docs/shots/01_shop.png` … `07_roster_code.png`
+- `assets/art/**`：单位/卡牌/环境/VFX/图标/key art 与 `PROVENANCE.md`
+- `tools/art_gen/`：可复现的程序化资产生成器（gen_units/cards/env/vfx/ui/keyart + artlib）
+- `assets/shaders/`：unit_atlas / fx_atlas / fog / flag
+- `docs/shots/01_shop.png` … `07_roster_code.png`；`docs/shots/art-impl/` 证据包；`docs/shots/before-art-impl/` before 快照
 - `docs/swarmforge_demo_10s.mp4` / `.gif`（10s 实际 gameplay；MP4 1920×1080/15fps，由 720p/15fps 采集上采；GIF 960×540/10fps）
 
 ## 原创边界

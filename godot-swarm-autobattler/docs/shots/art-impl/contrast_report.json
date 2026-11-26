@@ -1,0 +1,24 @@
+{
+  "background": "#0d1b2a",
+  "wcag": {
+    "TEXT #e6f2fa": 15.28,
+    "MUTED #8fa6b8": 6.89,
+    "DIM #7590a4": 5.2,
+    "CYAN #37e0c7": 10.48,
+    "CYAN_DIM #4cd8c4": 9.88,
+    "CYAN_SOFT #b9fff4": 15.47,
+    "GOLD #f0b45a": 9.43,
+    "RED #ff6248": 5.87,
+    "RED_SOFT #ffd6c9": 13.02,
+    "VIOLET #b8a6ff": 8.23,
+    "GREEN #8bffb0": 14.1,
+    "LINE_HI #3f7288": 3.29,
+    "WHITE #ffffff": 17.39
+  },
+  "rules": {
+    "body_text_min": 4.5,
+    "large_text_min": 3.0,
+    "ui_border_min": 3.0
+  },
+  "source": "scripts/swarm_theme.gd"
+}

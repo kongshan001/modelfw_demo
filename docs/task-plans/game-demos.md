@@ -82,7 +82,9 @@
 - 交付: 更新 `godot-swarm-autobattler/`；before/after 截图/GIF/MP4；docs；性能数据；smoke
 - 约束: 原创资产；不复制 TFT/Hearthstone/全军出鸡 IP；不改玩法/数值；Godot 4.6 GL Compatibility，Intel 30fps+
 - 指派: game-artist worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-026/result.md
+- 备注: 5 个 P0 + P1-2 已落地；P1-1 冠军/伤害数字与 3 人盲测、125%/reduced-motion 未做；2D QA/复评按项目计划取消，后续 T-033 3D 压测
 
 ## T-20261126-025 · Swarmforge 生产级美术 brief（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
@@ -166,7 +168,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-017/result.md
-- 后续: T-20261126-025 美术 brief → T-20261126-026 美术资产（running，作为 3D 素材基础）→ T-20261126-033 Swarmforge 3D 性能压测；2D QA/复评 T-027/T-028 取消
+- 后续: T-20261126-025 美术 brief（done）→ T-20261126-026 美术资产（done，2D 生产级实现 + 证据）→ T-20261126-033 Swarmforge 3D 性能压测；2D QA/复评 T-027/T-028 取消
 
 ## T-20261126-016 · 复刻 Monument Valley 式等轴不可能几何解谜
 - 来源: 飞书消息（B 站《这是解谜游戏史上最富有想象力的关卡之一》，https://b23.tv/dM7vHb6，2026-11-26，4:47，UP A宝OVO_；游戏 Monument Valley）

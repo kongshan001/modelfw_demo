@@ -46,16 +46,18 @@ func _draw() -> void:
 	draw_polyline(hex_out, col.darkened(0.2) if not dead else ThemeKit.DIM, 1.1, true)
 	if font != null:
 		var glyph := "巢" if is_you else String(hero.get("short", "?")).substr(0, 1)
-		draw_string(font, Vector2(c.x - 10, c.y + 5), glyph, HORIZONTAL_ALIGNMENT_CENTER, 20, 12,
+		draw_string(font, Vector2(c.x - 10, c.y + 6), glyph, HORIZONTAL_ALIGNMENT_CENTER, 20, 14,
 			col if not dead else ThemeKit.DIM)
 		var name := String(hero.get("name", ""))
-		draw_string(font, Vector2(40, 18), name, HORIZONTAL_ALIGNMENT_LEFT, w - 50, 12,
+		draw_string(font, Vector2(40, 19), name, HORIZONTAL_ALIGNMENT_LEFT, w - 54, 13,
 			ThemeKit.TEXT if not dead else ThemeKit.DIM)
 		var hp_text := ("熄灭" if dead else "HP %d/%d" % [hp, max_hp])
-		draw_string(font, Vector2(w - 94, 18), hp_text, HORIZONTAL_ALIGNMENT_RIGHT, 84, 9,
+		draw_string(font, Vector2(w - 96, 19), hp_text, HORIZONTAL_ALIGNMENT_RIGHT, 86, 11,
 			ThemeKit.MUTED if not dead else ThemeKit.DIM)
 		if is_active and not dead:
-			draw_string(font, Vector2(40, 33), "本回合对手", HORIZONTAL_ALIGNMENT_LEFT, 80, 8.5, col)
+			var cx := w * 0.5
+			draw_colored_polygon(PackedVector2Array([
+				Vector2(cx - 6, 0.5), Vector2(cx + 6, 0.5), Vector2(cx, 7.0)]), ThemeKit.GOLD)
 	# 血条
 	var bar_x := 40.0
 	var bar_w := w - 52.0

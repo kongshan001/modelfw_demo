@@ -16,7 +16,11 @@
 | `tools/smoke_swarm_battler.gd` | headless 自测（123 项断言 + UI boot） |
 | `tools/screenshot_swarm.gd` | 1920×1080 真实 GPU 截图 |
 | `tools/perf_swarm.gd` | 720p/1080p，100/1000/3000 单位性能 |
-| `tools/video_swarm.gd` | 10 秒 1080p 演示帧采集 |
+| `tools/video_swarm.gd` | 10 秒 1920×1080 演示帧采集（15fps） |
+| `tools/art_stats.gd` | 100/1000/3000 节点数/draw calls 证据 → `docs/shots/art-impl/tech_stats.json` |
+| `assets/art/**` | 原创单位/卡牌/环境/VFX/图标/key art（程序化生成，见 PROVENANCE） |
+| `assets/shaders/*.gdshader` | 单位 atlas / FX atlas / 雾 / 旗 |
+| `tools/art_gen/*.py` | 可复现资产生成器（Pillow + numpy） |
 
 逻辑与 UI 分离：smoke 直接实例化 `SwarmGameState` / `SwarmBattle`，不需要渲染；主场景只负责把状态画出来。
 
@@ -160,69 +164,64 @@ JSON = {
 - 镜像试炼用保存码作为敌方；没有保存码则用当前回合内置 AI 编队。
 - 无服务器、无外部依赖；阵容码可复制给朋友。
 
-## 7. 渲染与实例化
+## 7. 渲染、美术资产与实例化（T-20261126-026）
 
-### 7.1 单位
+### 7.1 单位：1 MultiMesh + 逐实例 atlas/帧/闪白
 
-- 全场单位用 **一个 `MultiMeshInstance2D`**：`TRANSFORM_2D` + `use_colors`，一张程序化 24×24 六角纹理，per-instance color 区分为青蓝/赤锈/金卡/支援。
-- 每个实例写 `MultiMesh.buffer`：2D Transform 8 floats + Color 4 floats = 12 floats/实例。布局按官方文档：
-  `(x.x, y.x, pad, origin.x, x.y, y.y, pad, origin.y, r,g,b,a)`。
-- 每帧只改 `origin.x/origin.y` 两个 float；死单位第一次隐藏后不再写。上传一个连续 `PackedFloat32Array`，避免每单位 `set_instance_transform_2d` 的方法调用开销。
-- 插值：`prev.lerp(pos, alpha)`；逻辑 5–10Hz，显示 60fps。
-- 预置 480 个弹道光点（第二个 MultiMesh），远程为拉长条纹、近战/溅射为短火花；每帧最多吸收 110 个事件，超出丢弃。
-- 没有每单位 Node；draw call 单位部分 **1**，弹道 **1**。
+- **Atlas**：`assets/art/units/unit_atlas_10x12_768x640.png`，768×640，10 行（卡）× 12 列（帧），64 px/单元。帧表：0–1 待机、2–3 移动、4–6 攻击（0.08/0.06/0.10 s）、7–9 死亡（0.06 s/帧）、10 生成、11 精英。右向绘制；敌方用 transform X 取负镜像。
+- **数据布局**：一个 `MultiMeshInstance2D`，`TRANSFORM_2D` + `use_colors` + `use_custom_data`。每个实例 **16 floats**：8 transform + 4 color + 4 custom；3000 实例约 192 KB。custom = `(卡 0–9, 帧 0–11, 闪白 0–1, 编码 0–3)`；编码 bit0=金卡、bit1=阵营。
+- **Shader**：`unit_atlas.gdshader` 读取 `INSTANCE_CUSTOM` 生成 atlas UV；`COLOR`（逐实例颜色）做阵营 tint；片元里画阵营底座形（友军圆环 / 敌军 chevron）、命中闪白；金卡用金色冠标 + 金环 + 暖调（见 §7.4 偏差）。
+- **动画状态**：20 Hz 状态机；攻击由 `cooldown` 上升沿（`_do_attack` 后重置）触发，命中原画三拍；死亡由 `alive` 1→0 触发 3 帧 + 消散；生成帧 10 + 门侧环；移动/待机用 `pos` vs `prev` 与相位错开。3000 单位时只更新存活单位；死亡 0.18 s 后隐藏，不新增 Node。
+- **尺寸**：`UNIT_QUAD=9` design px；`scale = base_scale(1.45−n/6500, clamp 0.92–1.45) × clamp(size_mul, 0.84–1.30) × (1.04 金卡)`。3000 单位约 10–16 px，27 单位约 18–25 px；纹理线性过滤、**不启用 mipmap**（atlas 逐格 UV 在低 mip 会跨格渗色）。
+- **接触影**：烘焙进每帧底部（不额外开 shadow MultiMesh）。偏差原因：省 1 draw call + 3000 实例上传；视觉上仍提供接地。
+- **验证**：`docs/shots/art-impl/unit_silhouette_8px_after.png` 的 8/12/16 px 纯黑剪影；`tech_stats.json` 显示 battle 视图 9 个子节点、100/1000/3000 不变；单位+FX 2 draw calls。
 
-### 7.2 UI 与 1080p
+### 7.2 环境：烘焙舞台 + 4 旗 + 2 雾
 
-- 设计分辨率 1280×720，`canvas_items` 拉伸。截图/性能用 `SubViewport(1920×1080)` + 1280×720 内容 `scale=1.5`，是真实 1080p 渲染（不是把 720p PNG 放大）。原因：macOS 会把窗口压到约 1440×762。
-- 系统字体（PingFang SC / Noto Sans CJK 等）保证中文；不打包字体。
-- 所有面板、卡牌、徽记、背景网格均为代码绘制，无外部贴图。
-- 战斗阶段隐藏卡牌/商店详细文字，改用一条编队摘要 + 大号存活计数，显著减少 UI draw calls。
+- `arena_1800x570.png`（1200×380 design ×1.5）烘焙：六角甲板、96 px 航道、每侧 2 座出生门（青色/赤色 trim + 门口亮线）、中心潮汐井、管线、左右冷暖光池、暗角。地面 L* 8–20，缝 <29。
+- 4 面 `Sprite2D` 旗（`flag_ally_96x192.png` / `flag_enemy_96x192.png`），`flag.gdshader` 对旗面做 UV 波动；2 层 `Sprite2D` 雾（`fog_0/1.png`）用 `fog.gdshader` 滚动 UV + 低 alpha。环境层合计 **7 draw calls**（≤15），过度绘制只有旗/雾小面积与单位。
+- 出生门/旗帜/潮汐井在 25% 缩略仍可读；单位与地面明度分离。见 `docs/shots/01_shop.png`、`04_battle_3000.png`。
 
-### 7.3 绘制调用构成
+### 7.3 VFX：1 个 additive MultiMesh，6 类
 
-- 单位 MultiMesh 1 次；弹道 1 次。
-- 其余 draw calls 来自 UI 文本/程序化线条。首轮实测约 650–700 次（100–3000 单位几乎不变），说明单位批渲染不是瓶颈；瓶颈是 Intel HD 上的 UI/填充/逻辑。
-- 已将 chrome/竞技场背景的线合并为 `draw_multiline`，并在战斗阶段收起卡牌。
+- `assets/art/vfx/vfx_atlas_96x192.png`，3 帧 × 6 类：近战火花、远程弹道、溅射环、死亡消散、生成环、胜利碎片；`fx_atlas.gdshader` 用 `INSTANCE_CUSTOM(y=帧, x=类)`；`FX_MAX=1000`，1 draw call。
+- 事件：战斗事件 `shot`→弹道，`hit`→火花；溅射环由 `role==3` 的冷却上升沿在目标位置生成；死亡在动画状态机检测；胜利在 `battle.finished` 触发 220 碎片；门/生成在 `set_battle` 触发 4 环 + 24 火星。所有 FX 均为 pool slot，无 per-effect Node；暂停时冻结，不重写 FX buffer。
+- 命中闪白在单位 shader 内（逐实例 `INSTANCE_CUSTOM.z`，0.06 s），不占 FX 池。FX 更新走**连续 16-float buffer**，避免每效果 3 次 API 调用；10 s 视频里可见弹道/火花/死亡/生成/胜利。
+
+### 7.4 卡牌 / UI / 字体
+
+- 卡牌插画：`card_atlas_1024x768.png`（10 张 512 源 → 4×3 256 格）；卡面 164×104（商店）/ 116×92（上场）；插画 52 / 40 px 窗；1★ 灰框 + 单角饰、2★ 金双线 + 4 角饰；3 px 阵营边；费用宝石；职责 icon + 属性 chips；大号 ×N；tooltip 4 段（定位/每单位数值/编队/风味）。
+- 主题色：TEXT `#e6f2fa` 15.28:1、MUTED `#8fa6b8` 6.89:1、DIM `#7590a4` 5.20:1、GOLD 9.43:1、CYAN 10.48:1、RED 5.87:1、VIOLET 8.23:1、LINE_HI 3.29:1（仅边界）。对比度脚本输出 `docs/shots/art-impl/contrast_report.json`。
+- 字体：**Noto Sans SC** 子集（OFL，244 KB，740 字形）+ **Oxanium SemiBold** 数字（OFL，28 KB）。字体从 `SystemFont` 换为打包 FontFile 后，UI 文本批处理令 draw calls 从 739 降到 123–125，是本次 FPS 提升的主因之一；新文案需重新子集化（`tools/art_gen/README.md`）。
+- 图标：17 个 20 px 线性图标，卡面 chips / 按钮 / tooltip 使用；商店权重收进 tooltip，右侧不再常驻表格。
+- **金卡偏差**：brief 的 +1 px 金色外描边在 8–12 px 显示会退化成围绕 quad/接触影的金框；改为暖调 tint + 金冠标 + 金环 + 4% 尺寸。详见 `assets/art/PROVENANCE.md`。
+
+### 7.5 绘制调用与节点
+
+- Battle 视图 9 个子节点：舞台 1、旗 4、雾 2、单位 MultiMesh 1、FX MultiMesh 1；**100/1000/3000 都是 9**，不随单位数增长。总量 108 节点（含 UI）。
+- 3000 单位/1080p 无叠层：**draw calls 125**（其中单位 1 + FX 1 + 环境 7；其余为 UI/chrome），battle ≤800；叠层约 +13。单位+FX ≤4（没有 shadow MultiMesh）。
+- 商店卡面多出的 `draw_*` 只在商店阶段显示，战斗阶段隐藏。
 
 ## 8. 性能实测
 
-环境：
+环境：Apple MacBook（Intel HD Graphics 6000，1536MB 动态显存），Godot 4.6 GL Compatibility / OpenGL 4.1；vsync off，`Engine.max_fps=0`；SubViewport 原生渲染；同一台机器上并行 worker/浏览器会带来 2–3× 波动。
 
-- Apple MacBook（Intel HD Graphics 6000，1536MB 动态显存），Metal 支持但项目使用 Godot **GL Compatibility / OpenGL 4.1 INTEL-18.8.16**。
-- Vsync off，`Engine.max_fps=0`；窗口 1280×720；测量在 SubViewport 内以 1280×720 或 1920×1080 渲染。
-- 同一台机器上还有并行 worker / 浏览器任务，FPS 的最小值受系统调度影响；平均值更能代表趋势。
-- 方法：加载真实主场景 → 生成指定总数编队 → 预热 6 帧 → 连续采集约 1.8s 的帧间隔；`sim_ms/tick` 为逻辑 tick 平均，`render` 为 MultiMesh buffer 更新耗时；draw calls 为 `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` 的采样最大值。
+**最终版（T-026 美术接入后，无性能叠层，单次 1.8s 采样）：**
 
-**最终版（战斗阶段精简 UI；机器相对空闲）：**
+| 单位总数 | 分辨率 | 平均 FPS | Draw calls | SIM ms/tick | 渲染更新 ms |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 98 | 1280×720 | 190.0 | 123 | 0.70 | 0.16 |
+| 977 | 1280×720 | 166.2 | 123 | 3.37 | 1.08 |
+| 2932 | 1280×720 | 126.5 | 125 | 11.01 | 2.41 |
+| 99 | 1920×1080 | 120.2 | 123 | 1.43 | 0.27 |
+| 977 | 1920×1080 | 115.0 | 123 | 4.42 | 1.24 |
+| 2932 | 1920×1080 | **94.0** | **125** | 11.09 | 3.12 |
 
-| 单位总数 | 分辨率 | 平均 FPS | 最低 FPS | Draw calls | sim ms/tick | render ms |
-| --- | --- | --- | --- | --- | --- | --- |
-| 100 | 1280×720 | 92.0 | 11.9 | 684 | 0.63 | 0.15 |
-| 1000 | 1280×720 | 98.2 | 59.3 | 687 | 2.74 | 0.85 |
-| 3000 | 1280×720 | 77.3 | 13.1 | 739 | 10.85 | 2.25 |
-| 100 | 1920×1080 | 83.1 | 24.0 | 673 | 0.53 | 0.12 |
-| 1000 | 1920×1080 | 56.9 | 25.1 | 687 | 4.50 | 1.12 |
-| 3000 | 1920×1080 | 46.9 | 21.2 | 739 | 16.57 | 3.48 |
-
-**保守下限（同一构建，机器被并行 worker/浏览器占用较重时）：**
-
-| 单位总数 | 分辨率 | 平均 FPS | 最低 FPS | Draw calls | sim ms/tick |
-| --- | --- | --- | --- | --- | --- |
-| 1000 | 1280×720 | 48.3 | 25.5 | 663 | 6.59 |
-| 3000 | 1280×720 | 21.4 | 8.4 | 702 | 45.49 |
-| 1000 | 1920×1080 | 37.1 | 14.0 | 663 | 7.26 |
-| 3000 | 1920×1080 | 21.4 | 7.8 | 702 | 43.73 |
-
-**结论**：
-
-- 目标 **1000+ 单位 30fps+ 达成**：最终版 1080p 56.9fps、720p 98.2fps；即使并行负载较重也有 37.1/48.3fps。
-- 最终版 **3000 单位在 1080p 46.9fps、720p 77.3fps**；同一构建在并行负载下曾降到约 21fps。性能是共享机器上的波动量，不能把单次结果当作硬件保证。
-- 单位渲染：1 次 unit MultiMesh + 1 次 FX MultiMesh；draw calls 约 670–740 主要为 UI 文本与程序化线条。单位数从 100 到 3000 时 draw calls 几乎不变，说明批处理本身工作。
-- 最低 FPS 采样包含场景切换/纹理初始化 hitch（4.7–25fps）；平均 FPS 更能代表稳态。
-- 3000 单位、1080p 的 CPU 预算中，逻辑约 16.6ms/tick × 5Hz ≈ 83ms/s，buffer 更新 3.5ms/帧；剩余为 UI/GPU 填充。降级路径：隐藏战斗卡牌（已实现）、每边上限 750–1000、720p、避免 4× 倍速。
-
-**最终精简 UI 复测**：数据写入 `docs/perf_measurements.json`；截图 `docs/shots/05_perf_debug.png` 是 1080p/3000 单位实测时的性能叠层实拍（含叠层自身带来的额外 draw calls）。
+- 3000 目标实际为 2932 单位（每边 1500 上限的取整分配）；3000 单位 1080p **94.0fps**、720p 126.5fps；1000 单位 1080p 115fps。
+- Draw calls 从原型版 739 降到 **125**：UI 文本从 `SystemFont`（MSDF/逐字回退）换成打包 FontFile 后批处理；单位/FX/环境只用 9 个绘制项，不随单位数增长。
+- SIM 3000 单位 5 Hz 下 11.09ms/tick（≈5.5% CPU/秒）；单位 buffer 上传 3.12ms/帧。留出大量 FPS 余量，但逻辑仍是 CPU 大头。
+- 保守口径：同一构建在**换字体前**的 1080p/3000 测量为 61.5fps；共享主机负载升高时仍可能接近 30fps 门槛。任何单次数字不当作硬件保证；降级路径保留：720p、每边 750–1000、避免 4×。
+- 完整原始数据与时间戳：`docs/perf_measurements.json`；节点/draw call 证据：`docs/shots/art-impl/tech_stats.json`；叠层实拍：`docs/shots/05_perf_debug.png`（FPS 92 / DRAW 136 含叠层）。
 
 ### 8.1 优化记录（按贡献排序）
 
@@ -232,6 +231,10 @@ JSON = {
 4. **自适应逻辑步**：3000 单位 10Hz→5Hz，sim CPU/秒减半；1000 单位 10Hz→7.1Hz。
 5. **战斗阶段收起卡牌详情**：减少 UI draw calls（避免 1000 单位以上时商店/卡牌与战斗抢 CPU）。
 6. **背景线合并为 draw_multiline**、预分配 FX 池、颜色只在编队时写一次。
+7. **打包字体替代 SystemFont**（T-026）：Noto Sans SC 子集 + Oxanium；UI 文本批处理，draw calls 739→125，3000/1080p FPS 61.5→94.0。
+8. **FX 连续 buffer**（T-026）：1000 个 FX 实例从每效果 3 次 `set_instance_*` 改为一次 16-float buffer 上传；暂停时冻结，不再每帧重写。
+9. **单位动画 20Hz 状态机**（T-026）：只写存活单位；custom 只在帧/闪白变化时更新；battle 视图 9 节点，无每单位 Node。
+10. **烘焙接触影 / 环境纹理**（T-026）：不额外开 shadow MultiMesh；环境 7 calls。
 
 ### 8.2 已知限制/降级
 
@@ -241,6 +244,8 @@ JSON = {
 - 单位间没有刚体碰撞；高密度时靠洪流重叠表达，避免 O(N²)。
 - macOS 1080p 窗口无法直接创建，使用 SubViewport；实际游戏默认 1280×720。
 - AI 平衡是垂直切片的近似值：连续胜利/失败节奏依赖回合与商店随机，但镜像/种子可复现。
+- T-026 金卡没有 1px 外描边（8–12px 会退化为金框），用暖调 + 冠标 + 金环；P1-1 冠军标记/伤害数字、3 人剪影盲测、125% UI/减少动态效果、正式 deuteranopia 认证未完成。
+- 25% 缩略下卡名/费用数值仍不可读（164 design px 卡在 25% 仅 61 actual px）；25% 只保证稀有度框、费用宝石、×N 形状与面板层级，50% 是文字可读档。
 
 ## 9. 测试与验证
 
@@ -270,7 +275,7 @@ godot --headless --path godot-swarm-autobattler -s tools/smoke_swarm_battler.gd
 - `godot --headless --path godot-swarm-autobattler --quit-after 5` 无 SCRIPT ERROR；
 - 真实 GPU 运行 `tools/screenshot_swarm.gd`，7 张 1920×1080 PNG，末行 `SWARM_SHOTS_OK`；
 - `tools/perf_swarm.gd`，末行 `SWARM_PERF_OK`，JSON 写入 `docs/perf_measurements.json`；
-- `tools/video_swarm.gd`，输出 150 帧 720p/15fps，末行 `SWARM_VIDEO_OK`，再用 ffmpeg 编码 MP4/GIF。第一次尝试在共享主机 load average ~19 时无法稳定出帧；负载回落后重试成功，交付的 10s MP4 是真实 gameplay 采集（720p 源上采到 1080p，GIF 960×540/10fps）。
+- `tools/video_swarm.gd`，输出 150 帧 **1920×1080/15fps**，末行 `SWARM_VIDEO_OK`，再用 ffmpeg 编码 MP4（1080p）与 GIF（960×540/10fps）。交付的 10s MP4/GIF 是真实 gameplay 采集；早期 720p 源的上采版本已被 T-026 原生 1080p 版本替换。
 
 ## 10. 原创边界
 
@@ -278,3 +283,4 @@ godot --headless --path godot-swarm-autobattler -s tools/smoke_swarm_battler.gd
 - 不复制任何 Hearthstone / Blizzard / 全军出鸡 / 鸡械绿洲 的素材、角色、卡牌、文案、UI、关卡、音效、品牌。
 - 单位名、卡牌数值、配色、UI 造型、背景装饰、阵容码格式、贪婪潮规则、AI 名称均为本任务原创。
 - 参考视频素材不进入项目；参考帧仅保存在 `/tmp`，未分发。
+- T-026 全部单位/卡牌/环境/VFX/图标/key art 由 `tools/art_gen/` 的程序化脚本生成（Pillow/numpy），无 AI 图像模型、无外部图片/CC0 模型；字体为 OFL（Noto Sans SC 子集、Oxanium），许可证随包。来源与生成参数见 `assets/art/PROVENANCE.md`。

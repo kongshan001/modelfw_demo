@@ -1,0 +1,71 @@
+{
+  "results": [
+    {
+      "adapter": "Intel(R) HD Graphics 6000",
+      "draw_calls": 120,
+      "multimesh_nodes": 2,
+      "nodes_total": 108,
+      "objects": 2993,
+      "unit_instances": 100,
+      "units_target": 100,
+      "view_child_types": [
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "MultiMeshInstance2D",
+        "MultiMeshInstance2D"
+      ],
+      "view_children": 9,
+      "viewport": "1920x1080"
+    },
+    {
+      "adapter": "Intel(R) HD Graphics 6000",
+      "draw_calls": 121,
+      "multimesh_nodes": 2,
+      "nodes_total": 108,
+      "objects": 3009,
+      "unit_instances": 1000,
+      "units_target": 1000,
+      "view_child_types": [
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "MultiMeshInstance2D",
+        "MultiMeshInstance2D"
+      ],
+      "view_children": 9,
+      "viewport": "1920x1080"
+    },
+    {
+      "adapter": "Intel(R) HD Graphics 6000",
+      "draw_calls": 123,
+      "multimesh_nodes": 2,
+      "nodes_total": 108,
+      "objects": 3087,
+      "unit_instances": 3000,
+      "units_target": 3000,
+      "view_child_types": [
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "Sprite2D",
+        "MultiMeshInstance2D",
+        "MultiMeshInstance2D"
+      ],
+      "view_children": 9,
+      "viewport": "1920x1080"
+    }
+  ],
+  "timestamp": "2026-11-26T23:21:19"
+}
