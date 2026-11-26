@@ -51,7 +51,7 @@
 - 约束: 不改 HTML 版；原创低模/程序化；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；保留原 AI 行为/参数
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-emberhold-3d/`；smoke 72 checks / probe 29 checks PASS；AI 双图 204 杀 / 20 命（灰烬 559.67s/72 决策，冻苔 443.73s/61 决策，塔位与 HTML 一致）；1280 全 HUD 39.9–47.6 FPS、1920 39.2 FPS、无 HUD 51.0（Intel HD 6000，loadavg≈3.0）；9×1920×1080 截图 + 10s MP4/GIF；README/TECH/迭代记录/PARITY/CREDITS
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261126-029/result.md
 - 说明: HTML 版未改动；实时方向光阴影默认关（Intel HD 30fps+），接触阴影/光照/雾保留，`-- --shadows` 可开
 
 ## T-20261126-028 · Swarmforge 美术升级独立复评（T-017 follow-up）
