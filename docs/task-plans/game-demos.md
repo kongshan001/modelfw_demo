@@ -77,7 +77,8 @@
 - 交付: `godot-hueroll-puzzle/` 可玩 Godot 4.6 vertical slice；≥6 关；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU 验证
 - 约束: 只复刻抽象机制，不复制 SideStamp/GoodHeartGames 角色/UI/关卡/品牌/素材；原创低模/关卡；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: running
+- 状态: done
+- 产出: `godot-hueroll-puzzle/`；6 关（par 5/13/17/17/17/25）；`HUEROLL_SMOKE_OK checks=525 levels=6`；1920×1080 截图 7 张 + 10s GIF/MP4；1080p 关 vsync avg 84.7/71.4 FPS（draw 119/128）；headless/真实 GPU 0 ERROR
 
 ## T-20261126-012 · 风格化海洋第二版 独立美术复评
 - 线程: T-20261126-010（风格化海洋）

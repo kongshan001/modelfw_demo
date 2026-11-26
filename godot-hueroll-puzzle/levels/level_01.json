@@ -1,0 +1,27 @@
+{
+  "id": "01",
+  "name": "初蘸",
+  "subtitle": "第一课 · 一笔红",
+  "hint": "滚进红漆池，让底面蘸上颜色；再让红色面朝下压到目标砖上。",
+  "board": [
+    ".#.R..",
+    "......",
+    "......",
+    "......",
+    "...r..",
+    "...S.."
+  ],
+  "theme": {
+    "bg_top": "bfd7ef",
+    "bg_bottom": "f8e7d6",
+    "tile_top": "f7efe3",
+    "tile_side": "6c5a70",
+    "accent": "e8796b",
+    "ambient": "d8c9d6",
+    "cloud": "f3e3d3"
+  },
+  "par": 5,
+  "solution": "nnnnn",
+  "width": 6,
+  "height": 6
+}

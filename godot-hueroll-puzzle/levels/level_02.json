@@ -1,0 +1,27 @@
+{
+  "id": "02",
+  "name": "双印",
+  "subtitle": "两枚红印",
+  "hint": "一面颜料可以盖多次，但每次滚动都会让红色面转到别的方向。",
+  "board": [
+    "#.R..#",
+    "......",
+    ".r.r..",
+    "......",
+    "..R...",
+    "..S..."
+  ],
+  "theme": {
+    "bg_top": "eec9d2",
+    "bg_bottom": "fbebd8",
+    "tile_top": "f8eadc",
+    "tile_side": "6b5064",
+    "accent": "e4718a",
+    "ambient": "e6ccd1",
+    "cloud": "f7e2d9"
+  },
+  "par": 13,
+  "solution": "ennnwwnenssss",
+  "width": 6,
+  "height": 6
+}

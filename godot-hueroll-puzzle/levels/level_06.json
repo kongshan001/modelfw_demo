@@ -1,0 +1,27 @@
+{
+  "id": "06",
+  "name": "彩虹回廊",
+  "subtitle": "三种间色",
+  "hint": "红+黄=橙 · 黄+蓝=绿 · 红+蓝=紫。让同一面先后蘸两种漆，调出最后的三种间色。",
+  "board": [
+    "O..G..P",
+    ".......",
+    ".ryy.b.",
+    ".......",
+    "..rb...",
+    "...S..."
+  ],
+  "theme": {
+    "bg_top": "453b5d",
+    "bg_bottom": "e6b49f",
+    "tile_top": "f1e5d7",
+    "tile_side": "574966",
+    "accent": "f0a35e",
+    "ambient": "a18a9e",
+    "cloud": "d9b7b0"
+  },
+  "par": 25,
+  "solution": "wnennwwwnneeeeesenswswwnn",
+  "width": 7,
+  "height": 6
+}

@@ -1,0 +1,27 @@
+{
+  "id": "03",
+  "name": "冷暖",
+  "subtitle": "红与蓝的小径",
+  "hint": "红池与蓝池各管一种颜色；先想好停下的朝向，再动。",
+  "board": [
+    "B...R#",
+    "......",
+    ".b.r..",
+    "..b.r.",
+    "......",
+    "..S..."
+  ],
+  "theme": {
+    "bg_top": "f4e2b4",
+    "bg_bottom": "fdf6e6",
+    "tile_top": "fff2d8",
+    "tile_side": "6a5a48",
+    "accent": "e9b04b",
+    "ambient": "ead9bd",
+    "cloud": "f9edd7"
+  },
+  "par": 17,
+  "solution": "nnwnwnneesseeenwn",
+  "width": 6,
+  "height": 6
+}

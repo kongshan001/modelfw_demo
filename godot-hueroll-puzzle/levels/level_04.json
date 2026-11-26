@@ -1,0 +1,27 @@
+{
+  "id": "04",
+  "name": "三色花园",
+  "subtitle": "三色三印",
+  "hint": "三色三印。绕着漆池转圈，把颜色送到正确的位置。",
+  "board": [
+    "R.Y.B.",
+    "......",
+    ".r.y..",
+    "......",
+    "..b...",
+    "..S..."
+  ],
+  "theme": {
+    "bg_top": "c7e6d9",
+    "bg_bottom": "f7f0dc",
+    "tile_top": "f1eee0",
+    "tile_side": "51695f",
+    "accent": "74c4ac",
+    "ambient": "d6ded1",
+    "cloud": "f0e9d6"
+  },
+  "par": 17,
+  "solution": "nennennwwsswnenww",
+  "width": 6,
+  "height": 6
+}

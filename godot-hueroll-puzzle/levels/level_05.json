@@ -1,0 +1,27 @@
+{
+  "id": "05",
+  "name": "混色实验",
+  "subtitle": "红 + 黄 = 橙",
+  "hint": "同一面先后接触红池与黄池，就会混出橙色。滚动四步，它才会回到下方。",
+  "board": [
+    "..O...",
+    "#.....",
+    ".r.y..",
+    "....#.",
+    "..O...",
+    "..S..."
+  ],
+  "theme": {
+    "bg_top": "d9c9ec",
+    "bg_bottom": "f9ecdf",
+    "tile_top": "f6eaf4",
+    "tile_side": "5e4d70",
+    "accent": "b58cdb",
+    "ambient": "ded0e3",
+    "cloud": "f0e2e8"
+  },
+  "par": 17,
+  "solution": "ennnswwneenwnssss",
+  "width": 6,
+  "height": 6
+}
