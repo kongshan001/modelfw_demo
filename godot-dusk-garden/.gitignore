@@ -1,0 +1,9 @@
+# Godot import cache / generated files
+.godot/
+
+# Movie Maker source (MP4/GIF are the deliverables)
+*.avi
+*.log
+
+# macOS
+.DS_Store

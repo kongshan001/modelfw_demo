@@ -1,0 +1,58 @@
+; Godot 4.6 · GL Compatibility
+; 暮色回廊 · Dusk Cloister — 原创低模像素废墟花园，黄昏到深夜，路灯与萤火渐亮。
+; 全部几何、材质、贴图、代码均为本项目原创；无外部美术资产。
+
+config_version=5
+
+[application]
+
+config/name="暮色回廊 · Dusk Cloister"
+config/description="原创 3D 低模像素废墟花园 vertical slice：低分辨率渲染、黄昏→深夜、路灯错峰点亮、萤火、水面与光束。"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="disabled"
+window/vsync/vsync_mode=1
+window/size/resizable=true
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/canvas_textures/default_texture_filter=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+anti_aliasing/quality/use_debanding=false
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=0
+environment/defaults/default_clear_color=Color(0.035, 0.045, 0.06, 1)
+environment/defaults/default_environment=""
+
+[shader_globals]
+
+g_time={"type":"float","value":0.0}
+g_cloud_x={"type":"float","value":0.0}
+g_cloud_z={"type":"float","value":0.0}
+g_cloud_shadow={"type":"float","value":0.26}
+g_fog_color={"type":"color","value":Color(0.33, 0.28, 0.3, 1)}
+g_fog_density={"type":"float","value":0.016}
+g_night={"type":"float","value":0.0}
+g_wind={"type":"float","value":1.0}
+g_sky_top={"type":"color","value":Color(0.23, 0.3, 0.48, 1)}
+g_sky_mid={"type":"color","value":Color(0.55, 0.44, 0.52, 1)}
+g_sky_horizon={"type":"color","value":Color(0.96, 0.6, 0.38, 1)}
+g_light_color={"type":"color","value":Color(1, 0.72, 0.46, 1)}
+g_lamp_warmth={"type":"color","value":Color(1, 0.66, 0.32, 1)}
+g_star={"type":"float","value":0.0}
+
+[physics]
+
+common/physics_ticks_per_second=60

@@ -2,6 +2,98 @@
 
 ## 进行中
 
+## T-20261127-011 · 废墟花园场景续跑（T-007 retry）
+- 线程: T-20261127-007（废墟花园）
+- 父任务: T-20261127-007（failed；worker 被 SIGTERM，rc=143）
+- 类型: game-demo（3D 像素场景 / 续跑）
+- 目标: 基于 `godot-dusk-garden/` 残留续跑，先可运行再效果：原创废墟花园/角色、黄昏→深夜、路灯/萤火、水/云影/光束
+- 交付: 同 T-007；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 不重写可用部分；原创；Godot 4.6 GL Compatibility；Intel 30fps+；再次失败写清最后状态/可复现命令
+- 指派: game-artist worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-011/result.md
+- 证据: `docs/shots/00_contact_sheet_1920.png`、`01..12`；`docs/media/`；`docs/迭代记录.md` §5
+- 交接: T-20261127-008 可开始——像素吸附/丁达尔/水面/MultiMesh 已有第一版，请做技术复核与加强，不要重做美术；T-009/010 随后
+
+## T-20261127-010 · 废墟花园场景独立美术复评（T-007 follow-up）
+- 线程: T-20261127-007（废墟花园）
+- 父任务: T-20261127-009（QA）
+- 类型: game-demo（美术复评）
+- 目标: 独立复评傍晚废墟花园 3D 像素场景是否达到参考的构图/光照/氛围/技术卖点；PASS/REJECT
+- 交付: `godot-dusk-garden/docs/art-review-final-T-20261127-010.md`；1280×720/1920×1080 证据
+- 约束: 不改代码/资产；对照参考视频帧
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261127-009 · 废墟花园场景 QA 验收（T-007 follow-up）
+- 线程: T-20261127-007（废墟花园）
+- 父任务: T-20261127-008（技术 pass）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收场景/角色/黄昏→夜/路灯萤火/水/云影/光束/像素稳定/性能/console/smoke；对照参考
+- 交付: `godot-dusk-garden/docs/qa-T-20261127-009.md`；PASS/REJECT + 证据
+- 约束: 不改美术/实现；1920×1080 真实 GPU
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261127-008 · 废墟花园技术渲染 pass（T-007 follow-up）
+- 线程: T-20261127-007（废墟花园）
+- 父任务: T-20261127-011（续跑）
+- 类型: game-demo（3D 像素渲染 / 技术 pass）
+- 目标: 像素偏移补偿/像素稳定、风格化草叶、体积光/丁达尔、水面/云影、萤火/路灯辉光、性能；保留 T-007 美术
+- 交付: 更新 `godot-dusk-garden/`；1920×1080 截图/GIF/MP4；TECH/迭代记录；smoke + 真实 GPU
+- 约束: 不改场景/角色/玩法；Godot 4.6 GL Compatibility，Intel 30fps+；技术近似写清
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261127-007 · 复刻傍晚废墟花园 3D 像素场景
+- 来源: 飞书消息（B 站《【Godot场景展示】傍晚的废墟花园，路灯和萤火是怎么一点点亮起来的？》，https://b23.tv/zM5iPk4，2026-11-27，346s，UP timbercyke；简介：Godot 实时像素风花园，小女孩行走，黄昏→深夜，路灯/萤火渐亮，水面/云影/光束；技术：像素偏移补偿、风格化草叶、体积光、丁达尔）
+- 类型: game-demo（3D 低模 + 像素化场景 / 光照）
+- 目标: 复刻 3D 低模+像素化废墟花园 vertical slice：小女孩行走、黄昏→深夜、路灯/萤火渐亮、水面/云影/光束；原创场景/角色/素材
+- 交付: `godot-dusk-garden/` 可运行项目；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 原创低模/像素美术/角色/关卡；不复制作者场景/角色/素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-artist worker（dispatcher）
+- 状态: failed（worker SIGTERM rc=143）
+- 后续: T-20261127-011 基于残留工程续跑
+
+## T-20261127-005 · 复刻 Godot 角色遮挡 4 种处理
+- 来源: 飞书消息（B 站《Godot里处理角色遮挡的4种方式》，https://b23.tv/z2AF0Ad，2026-11-27，245s，UP 我胡一统YiTongHu；简介：看清人物和脚下地面，还是只认出位置与动作）
+- 类型: game-demo（2D 遮挡处理 / 剪影 / 透明 / 挖洞 / 镜头）
+- 目标: 在同一 2D 像素场景复刻视频的 4 种遮挡处理并可切换对比（以抽帧为准；至少包含封面的遮挡剪影），给出适用场景/代价
+- 交付: `godot-occlusion-lab/` 可运行项目；4 方式对比截图 + GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 原创像素场景/角色；不复制视频作者素材/场景/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261127-003 · 复刻“昼夜切换”窗户灯光/乘色/控亮度（T-001 follow-up）
+- 来源: 飞书消息（B 站《独立游戏 | 昼夜切换》，https://b23.tv/mlqpONz，2026-11-27，61s，UP 零号su；简介：天黑了，窗户怎么亮，乘颜色、加灯光、控亮度）
+- 线程: T-20261127-001（2D 像素雨镇）
+- 父任务: T-20261127-001（running）
+- 类型: game-demo（2D 像素光照 / 昼夜）
+- 目标: 在同一原创像素小镇上加昼夜切换：环境乘色、窗户/路灯发光与地面光池、亮度/曝光控制；保留相机限定雨
+- 交付: 更新 `godot-camera-rain-town/`；day/dusk/night/dawn + 窗户特写 + 调试层截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 原创像素美术；不复制作者游戏/场景/UI/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261127-002 · 复刻“连锁闪电”VFX（5 步搭高压雷暴）
+- 来源: 飞书消息（B 站《游戏里的[连锁闪电]是怎么做出来的》，https://b23.tv/6m6vYhP，2026-11-27，82s，UP 一只屑瓶子；封面：VFX 从零搭建教程，5 步从直线到高压雷暴）
+- 类型: game-demo（2D/3D VFX / 连锁闪电 / 打击感）
+- 目标: 复刻“爽”的连锁闪电：直线→锯齿→分叉→辉光→连锁 5 步可视化；多目标跳跃/伤害衰减/不重复；命中闪光/屏幕震动/hitstop/粒子/伤害数字；参数可调
+- 交付: `godot-chain-lightning-vfx/` 可运行项目；5 步对比 + 连锁实战截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 原创 VFX/场景/数值；不复制视频作者的效果/素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: queued
+
+## T-20261127-001 · 复刻“雨只下在镜头里”2D 像素雨镇
+- 来源: 飞书消息（B 站《独立游戏 | 雨是怎么下的》，https://b23.tv/hwcAlDJ，2026-11-27，61s，UP 零号su；简介：雨只下在镜头里、雨跟镜头走、石板压暗积水、6 秒湿 40 秒干）
+- 类型: game-demo（2D 像素 VFX / 湿滑材质 / 相机雨）
+- 目标: 复刻相机限定雨 + 湿滑石板/积水：只渲染视口内雨、相机移动雨跟随、石板湿暗/镜面/积水、约 6s 湿透 / 40s 干燥；俯视像素小镇场景
+- 交付: `godot-camera-rain-town/` 可运行项目；normal + debug 全景（相机框内雨/框外干）；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 原创像素小镇/素材，不复制视频作者的游戏/场景/UI/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: failed
+- 后续: T-20261127-003 昼夜切换 / 窗户灯光 / 乘色控亮度（依赖 T-001）
+
 ## T-20261126-033 · Swarmforge 3D 场景/模型性能压测（T-017 follow-up）
 - 线程: T-20261126-017（百倍单位自走棋）
 - 父任务: T-20261126-026（美术资产）
@@ -10,7 +102,7 @@
 - 交付: 更新 `godot-swarm-autobattler/`（3D 模式）；3D 截图/GIF/MP4；性能表；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 保持玩法/AI/UI/2D 模式不回归；真 3D 低模（禁止 billboard 冒充）；原创资产；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+ 目标
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: failed
 
 ## T-20261126-032 · Emberhold 3D 版独立美术复评（T-022 follow-up）
 - 线程: T-20261126-022（Emberhold 单文件塔防）
