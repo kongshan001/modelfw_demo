@@ -11,7 +11,7 @@
 - 约束: 不重写可用部分；不复制 Warcraft/军团塔防 素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；再次失败写清最后状态/可复现命令
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
-- 产出: `godot-legion-td/` 可玩 vertical slice；80 项 headless smoke、6 波全流程 probe、9 张 1920×1080 截图、10s MP4/GIF；README/TECH/迭代记录/CREDITS
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-018/result.md
 - 证据: `godot-legion-td/docs/shots/`、`godot-legion-td/docs/legionfall_10s.mp4`、`godot-legion-td/docs/perf_legion_td.json`
 - 关键结果: headless 0 error；smoke 80/80；6 波核心 100 通关；Intel HD 6000 38.2fps@720p / 36.8fps@1080p；修复父任务 parse/runtime/强化链/重开等缺陷
 
