@@ -2,6 +2,15 @@
 
 ## 进行中
 
+## T-20261127-017 · 复刻《军团塔防》式塔防+RTS+肉鸽 Vertical Slice
+- 来源: 飞书消息（B 站《肉鸽版魔兽争霸？塔防+RTS让人手忙脚乱！》，https://b23.tv/Aa3PdUh，2026-11-27，2181s，UP 以子OvO；游戏《军团塔防》，塔防+RTS+roguelike，3D 俯视 Warcraft 风）
+- 类型: game-demo（3D RTS + 塔防 + 肉鸽）
+- 目标: 复刻抽象核心：3D 俯视战场、框选/指挥单位、建塔/升级、波次防守、核心血量、每波肉鸽三选一、run/重开；原创低模/UI
+- 交付: `godot-legion-td/` 可玩 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 只复刻机制；不复制 Warcraft/军团塔防 角色/UI/素材/品牌；原创低模；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；MVP 优先
+- 指派: game-engineer worker（dispatcher）
+- 状态: failed
+
 ## T-20261127-016 · 复刻“池底光斑”Voronoi F1/F2 Shader
 - 来源: 飞书消息（B 站《Shader 解析 11｜池底光斑》，https://b23.tv/hT1L003，2026-11-27，513s，2560×1440，UP Hankz__；简介：Voronoi · F1/F2 · 3×3 邻域搜索 · GLSL；池底/圆石青白光网、单格切缝、F2−F1 边界归零、指数衰减、坐标扭曲、交点鼓结、明暗聚散、宽柔光；同套距离差做熔岩裂缝）
 - 类型: game-demo（Shader / Voronoi 焦散 / 程序化纹理）
@@ -9,8 +18,8 @@
 - 交付: `godot-pool-caustics/` 可运行项目；池底/圆石/调试/熔岩截图 + GIF/MP4；README/TECH/迭代记录/CREDITS；smoke/真实 GPU
 - 约束: 原创场景/材质/代码；不复制视频作者场景/素材/代码；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
 - 指派: game-engineer worker（dispatcher）
-- 状态: done（2026-11-28）
-- 产出: `godot-pool-caustics/` 可运行；`docs/TECH.md`、`docs/迭代记录.md`、`README.md`、`CREDITS.md`；11 张 1920×1080 截图、10s MP4/GIF；smoke 93 checks + headless/GPU 600 帧清洁；1280×720 实测 105.9 fps / 9.45 ms（多次 94.6–105.9；Intel HD 6000，DC 143 含 UI），1920×1080 离屏 58.2 fps（多次 53.5–58.2）；`POOL_CAUSTICS_VERIFY_OK`
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-016/result.md
 
 ## T-20261127-011 · 废墟花园场景续跑（T-007 retry）
 - 线程: T-20261127-007（废墟花园）
@@ -53,7 +62,7 @@
 - 交付: 更新 `godot-dusk-garden/`；1920×1080 截图/GIF/MP4；TECH/迭代记录；smoke + 真实 GPU
 - 约束: 不改场景/角色/玩法；Godot 4.6 GL Compatibility，Intel 30fps+；技术近似写清
 - 指派: game-engineer worker（dispatcher）
-- 状态: queued
+- 状态: failed
 
 ## T-20261127-007 · 复刻傍晚废墟花园 3D 像素场景
 - 来源: 飞书消息（B 站《【Godot场景展示】傍晚的废墟花园，路灯和萤火是怎么一点点亮起来的？》，https://b23.tv/zM5iPk4，2026-11-27，346s，UP timbercyke；简介：Godot 实时像素风花园，小女孩行走，黄昏→深夜，路灯/萤火渐亮，水面/云影/光束；技术：像素偏移补偿、风格化草叶、体积光、丁达尔）
