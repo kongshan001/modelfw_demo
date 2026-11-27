@@ -1,0 +1,23 @@
+{
+  "description": "MediaPipe source (Mixamo names) -> KayKit Rogue",
+  "bones": {
+    "mixamorig:Hips": "hips",
+    "mixamorig:Spine": "spine",
+    "mixamorig:Chest": "chest",
+    "mixamorig:Head": "head",
+    "mixamorig:LeftArm": "upperarm.l",
+    "mixamorig:LeftForeArm": "lowerarm.l",
+    "mixamorig:LeftHand": "hand.l",
+    "mixamorig:RightArm": "upperarm.r",
+    "mixamorig:RightForeArm": "lowerarm.r",
+    "mixamorig:RightHand": "hand.r",
+    "mixamorig:LeftUpLeg": "upperleg.l",
+    "mixamorig:LeftLeg": "lowerleg.l",
+    "mixamorig:LeftFoot": "foot.l",
+    "mixamorig:LeftToeBase": "toes.l",
+    "mixamorig:RightUpLeg": "upperleg.r",
+    "mixamorig:RightLeg": "lowerleg.r",
+    "mixamorig:RightFoot": "foot.r",
+    "mixamorig:RightToeBase": "toes.r"
+  }
+}

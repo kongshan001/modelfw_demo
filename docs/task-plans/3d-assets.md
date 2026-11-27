@@ -2,6 +2,20 @@
 
 ## 进行中
 
+## T-20261127-004 · 实测自制 Blender 动捕插件（视频→动作）
+- 来源: 飞书消息（B 站《自制Blender动捕插件，免费分享》，https://b23.tv/JBFZB7h，2026-11-27，583s，UP 黑黑猴blender；简介：AI 整合开源动作识别模型，图片/视频生成动作，最快 1 秒识别，手脚预设/重定向/关键帧精简；模型自行下载，许可自理）
+- 类型: 3d-asset（Blender 插件 / 视频动捕实测）
+- 目标: 找到并安装插件，跑通“短视频/图片 → 动捕 → 重定向到原创/CC0 角色 → GLB/FBX → Godot 预览”，评估速度/质量/脚滑/抖动/许可/Blender 版本限制
+- 交付: `blender-mocap-plugin-test/`（安装/测试脚本、导出动画、截图/录屏、Godot 预览、docs）；媒体
+- 约束: 只测试，不提交插件/模型权重/源视频（许可/体积）；原创/CC0 角色；第三方 addon 先审代码；不登录/不绕过；真实可复现
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-004/result.md
+  - 插件摸底: 视频中插件为 **Pose_AI**（Blender 3.3.2，中文；安装目录 `Blender_Addons/Pose_AI`）；**无公开下载**（简介/评论区无链接，私信/群分发；评论反馈未发），不登录/不绕过。准确模式包 `RGBMocap_CN`（上游 toyxyz_RGBMocap，MIT 代码 + ExMR/SAM2/SMPL-X/MANO，11G 显存，模型需注册，SMPL-X/MANO 不可再分发）；macOS 仅 Apple Silicon，Intel Mac 被 installer 明确拒绝 → 本机无法跑插件本体，出具可复现阻塞证据。
+  - 替代验证（同款 fast-mode）: MediaPipe PoseLandmarker Heavy + HandLandmarker（与 Pose_AI 快速模式同模型）处理上游示例 148 帧/4.93s；**148/148 检测**，CPU 0.104 s/帧（p95 0.121），单图 0.166 s（init 0.83 s），手 0.079 s（10/15 帧双手）；18 骨 Mixamo 源骨架 → animation-retarget-kit → KayKit Rogue（41 骨/12 mesh/26 轨，4.9333 s，root XZ 1.7 mm，脚底 -0.84 cm，支撑滑 0.17–0.24 m（不同采样），髋起伏 4.8–5.0 cm，骨长偏差 ~1e-7）；关键帧精简 60,680→5,346（**-91.19%**，最大通道误差 0.002；导出 GLB 644→413 KB，Godot 轨 26→24）；Godot 4.6 headless 600 帧 0 SCRIPT ERROR，`MOCAP_SMOKE_OK`；Godot Movie Maker 1280×720 10 s 预览/5 s 骨骼预览/GIF/截图。
+  - 结论: fast mode 可做原型/previs，不能当生产级；准确模式未测（插件不可得 + 平台/许可阻塞）；商业使用看模型许可（ExMR/GVHMR 非商用、SMPL-X/MANO 受限；MediaPipe Apache-2.0）。
+  - 交付: `exports/Rogue_MediaPipe_walk_raw.glb`、`..._simplified.glb`、`...fbx`（Godot 导入 4.9000 s/24 轨）、`source/source_full.glb` + `map_mediapipe_rogue.json`、`godot/`（preview + smoke）、`scripts/`（setup/run/validate）、`docs/blender-mocap-plugin-test.md`、`docs/PLUGIN_AVAILABILITY.md`、`docs/迭代记录.md`、`CREDITS.md`、`recordings/`（10 s MP4/GIF/骨骼 MP4/骨架 GIF）、`screenshots/`（HUD/3/4/侧/正/相位/骨骼/骨架）。
+
 ## T-20261126-023 · 修走路朝向 + 追加原创偶像鸡舞（T-013 follow-up）
 - 线程: T-20261126-009（Action Forge）
 - 父任务: T-20261126-013（深度复测）
