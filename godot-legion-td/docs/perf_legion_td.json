@@ -1,0 +1,43 @@
+{
+  "task": "T-20261127-018",
+  "captured_at": "2026-11-28",
+  "engine": "Godot 4.6.stable.official.89cea1439",
+  "renderer": "GL Compatibility / OpenGL 4.1",
+  "device": "Intel Inc. Intel(R) HD Graphics 6000 (macOS)",
+  "settings": {
+    "vsync": false,
+    "engine_max_fps": 0,
+    "sample_seconds": 8.0,
+    "scene": "8 towers (all Lv1) + wave 4 + initial 4-unit squad, camera target (0,0,18), distance 42"
+  },
+  "runs": [
+    {
+      "view": "1280x720-window",
+      "frames": 306,
+      "elapsed_seconds": 8.01,
+      "avg_fps": 38.2,
+      "p95_frame_ms": 35.38,
+      "worst_frame_ms": 98.09,
+      "draw_calls": 714,
+      "previous_run_avg_fps": 43.5,
+      "command": "godot --path godot-legion-td --resolution 1280x720 -s tools/perf_legion_td.gd"
+    },
+    {
+      "view": "1920x1080-subviewport",
+      "frames": 295,
+      "elapsed_seconds": 8.02,
+      "avg_fps": 36.8,
+      "p95_frame_ms": 36.73,
+      "worst_frame_ms": 40.83,
+      "draw_calls": 727,
+      "previous_run_avg_fps": 35.1,
+      "command": "LEGION_PERF_1080=1 godot --path godot-legion-td -s tools/perf_legion_td.gd"
+    }
+  ],
+  "notes": [
+    "Screenshot/video readback is not part of this measurement; HUD FPS in captured media is lower by design.",
+    "1080p average clears 30fps on this Intel iGPU, but p95/worst frames still exceed 33.3ms; repeated runs vary with host load.",
+    "Single-host measurement; other Intel machines and shared GPUs may vary.",
+    "8 Lv1 towers trivialize the staged wave; this is not a balance benchmark."
+  ]
+}

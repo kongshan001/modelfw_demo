@@ -2,6 +2,19 @@
 
 ## 进行中
 
+## T-20261127-018 · 军团塔防续跑（T-017 retry）
+- 线程: T-20261127-017（军团塔防）
+- 父任务: T-20261127-017（failed：API Error: Connection closed mid-response）
+- 类型: game-demo（3D RTS + 塔防 + 肉鸽 / 续跑）
+- 目标: 基于 `godot-legion-td/` 残留续跑：先可运行，再补框选/指挥、造兵、建塔、波次、肉鸽三选一、胜负；原创低模/UI
+- 交付: 同 T-017；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
+- 约束: 不重写可用部分；不复制 Warcraft/军团塔防 素材/品牌；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；再次失败写清最后状态/可复现命令
+- 指派: game-engineer worker（dispatcher）
+- 状态: done
+- 产出: `godot-legion-td/` 可玩 vertical slice；80 项 headless smoke、6 波全流程 probe、9 张 1920×1080 截图、10s MP4/GIF；README/TECH/迭代记录/CREDITS
+- 证据: `godot-legion-td/docs/shots/`、`godot-legion-td/docs/legionfall_10s.mp4`、`godot-legion-td/docs/perf_legion_td.json`
+- 关键结果: headless 0 error；smoke 80/80；6 波核心 100 通关；Intel HD 6000 38.2fps@720p / 36.8fps@1080p；修复父任务 parse/runtime/强化链/重开等缺陷
+
 ## T-20261127-017 · 复刻《军团塔防》式塔防+RTS+肉鸽 Vertical Slice
 - 来源: 飞书消息（B 站《肉鸽版魔兽争霸？塔防+RTS让人手忙脚乱！》，https://b23.tv/Aa3PdUh，2026-11-27，2181s，UP 以子OvO；游戏《军团塔防》，塔防+RTS+roguelike，3D 俯视 Warcraft 风）
 - 类型: game-demo（3D RTS + 塔防 + 肉鸽）
@@ -9,7 +22,8 @@
 - 交付: `godot-legion-td/` 可玩 vertical slice；截图/GIF/MP4；README/TECH/迭代记录/CREDITS；smoke + 真实 GPU
 - 约束: 只复刻机制；不复制 Warcraft/军团塔防 角色/UI/素材/品牌；原创低模；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+；MVP 优先
 - 指派: game-engineer worker（dispatcher）
-- 状态: failed
+- 状态: failed（API Error: Connection closed mid-response）
+- 后续: T-20261127-018 基于残留工程续跑
 
 ## T-20261127-016 · 复刻“池底光斑”Voronoi F1/F2 Shader
 - 来源: 飞书消息（B 站《Shader 解析 11｜池底光斑》，https://b23.tv/hT1L003，2026-11-27，513s，2560×1440，UP Hankz__；简介：Voronoi · F1/F2 · 3×3 邻域搜索 · GLSL；池底/圆石青白光网、单格切缝、F2−F1 边界归零、指数衰减、坐标扭曲、交点鼓结、明暗聚散、宽柔光；同套距离差做熔岩裂缝）
