@@ -2,6 +2,18 @@
 
 ## 进行中 / 最近完成
 
+## T-20261127-014 · 补研：3渲2/RT 角色 + 骨骼绑定 3D 拖尾（T-013 follow-up）
+- 线程: T-20261127-013（2D 地图 3D 拖尾调研）
+- 父任务: T-20261127-013（done）
+- 类型: docs-research（3渲2 / RenderTexture / 骨骼拖尾 / 2D 排序）
+- 目标: 针对“3D 角色先渲到 RT，再当 2D 对象绘制”的管线，分析骨骼绑定拖尾放在哪一层：角色 RT 内 / 骨骼世界变换→地图空间 2D ribbon / 独立 3D pass+合成 / 混合；处理 RT 边界、相机投影、2D y-sort/遮挡、像素风格、移动端性能
+- 交付: 更新 `docs/2d-map-3d-trail-options.md` + 新增 `docs/2d-map-3d-trail-3to2-pipeline.md` + 交互 HTML 增加 3渲2 模式/架构图 + 截图；媒体
+- 约束: 只研究/写文档，不改代码；原创图表；引用引擎文档；区分事实/推断；给默认推荐与决策树
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-014/result.md
+- 验证: Playwright（Chromium）file:// 加载 0 console/page error、0 外部资源；三栏切换/校准/深度代理/滑杆/矩阵 3渲2 预设/RT 计算器实测；1440 与 390px 无横向溢出；截图为 2× DPR
+
 ## T-20261127-013 · 调研：2D 地图角色移动的 3D 拖尾技术方案与可行性
 - 来源: 飞书消息（2026-11-27，“类似幻唐志/梦幻西游手游的 2D 地图，角色移动时要 3D 拖尾特效，有哪些技术方案，评估可行性”）
 - 类型: docs-research（2D/2.5D 渲染 / 拖尾 VFX / 移动端性能）

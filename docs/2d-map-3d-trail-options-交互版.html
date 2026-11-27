@@ -263,6 +263,54 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
 .fab button{font-family:var(--mono);font-size:11px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:999px;padding:8px 11px;cursor:pointer;box-shadow:var(--shadow)}
 .fab button:hover{color:var(--ink);border-color:var(--teal)}
 
+/* ---------- 3渲2 ---------- */
+.arch{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:10px 10px 6px;box-shadow:var(--shadow);margin:12px 0 16px;overflow:hidden}
+.arch svg{display:block;width:100%;height:auto}
+.arch .box{fill:var(--card-2);stroke:var(--line-strong);stroke-width:1.2}
+.arch .box.rt{fill:var(--bad-dim);stroke:color-mix(in srgb,var(--bad) 55%,var(--line))}
+.arch .box.map{fill:var(--ok-dim);stroke:color-mix(in srgb,var(--ok) 55%,var(--line))}
+.arch .box.cal{fill:var(--gold-dim);stroke:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.arch .box.pass{fill:var(--teal-dim);stroke:color-mix(in srgb,var(--teal) 55%,var(--line))}
+.arch .lane{stroke:var(--line);stroke-width:1;stroke-dasharray:4 7}
+.arch .arrow{stroke:var(--ink-faint);stroke-width:1.4;fill:none}
+.arch .arrow.gold{stroke:var(--gold)}
+.arch .arrow.red{stroke:var(--bad)}
+.arch text{font-family:var(--sans)}
+.arch .t{font-size:12.5px;font-weight:600;fill:var(--ink)}
+.arch .s{font-family:var(--mono);font-size:9.6px;fill:var(--ink-soft)}
+.arch .tag{font-family:var(--mono);font-size:9.2px;fill:var(--ink-faint);letter-spacing:.04em}
+.arch .big{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;fill:var(--gold)}
+.arch .cap{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin:6px 2px 0;line-height:1.5}
+.t3-grid{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(300px,.82fr);gap:14px;align-items:start}
+.t3-side{display:grid;gap:10px}
+#t3Stage{display:block;width:100%;height:auto}
+.t3-readout{font-size:11.5px;min-width:0}
+.t3-readout th,.t3-readout td{padding:6px 7px;white-space:nowrap}
+.t3-readout td:not(:first-child){font-family:var(--mono)}
+.t3-readout .good{color:var(--ok)}
+.t3-readout .bad{color:var(--bad)}
+.t3-readout .warn{color:var(--warn)}
+.t3-calc{display:grid;gap:7px}
+.t3-calc .row{display:grid;grid-template-columns:86px 1fr 58px;gap:7px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.t3-calc input[type=range]{width:100%;accent-color:var(--teal)}
+.t3-calc select{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:6px;padding:4px 6px}
+.t3-verdict{font-family:var(--mono);font-size:11px;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:var(--card-2);color:var(--ink-soft);line-height:1.45}
+.t3-verdict.good{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));background:var(--ok-dim);color:var(--ok)}
+.t3-verdict.bad{border-color:color-mix(in srgb,var(--bad) 40%,var(--line));background:var(--bad-dim);color:var(--bad)}
+.t3-verdict.warn{border-color:color-mix(in srgb,var(--warn) 40%,var(--line));background:var(--warn-dim);color:var(--warn)}
+.t3-tree{display:grid;gap:6px;margin:10px 0 14px}
+.t3-branch{display:grid;grid-template-columns:160px 1fr;gap:9px;align-items:start;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:9px 11px;font-size:12.5px;color:var(--ink-soft)}
+.t3-branch b{font-family:var(--mono);font-size:11px;color:var(--gold);line-height:1.5}
+.t3-branch .rec{color:var(--ink)}
+.t3-branch .rec em{font-family:var(--mono);font-style:normal;color:var(--teal)}
+.t3-key{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.t3-key span{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:var(--card)}
+@media(max-width:980px){
+  .t3-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .t3-branch{grid-template-columns:1fr}
+}
 @media (max-width:980px){
   .lab{grid-template-columns:1fr}
   #weightRows{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -286,11 +334,12 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
 <div class="wrap">
 
 <header class="hero">
-  <div class="kicker"><span class="dot"></span> 2026-11 · T-20261127-013 · 2D MAP × 3D TRAIL</div>
+  <div class="kicker"><span class="dot"></span> 2026-11 · T-20261127-013 / 014 · 2D MAP × 3D TRAIL</div>
   <h1>2D 地图里的 <span class="u">3D 拖尾</span><br><span class="g">不是把 3D 塞进 2D</span></h1>
-  <p class="sub">俯视/等轴地图 + 移动端 + 多人同屏：把 <b>7 种方案 + 1 条混合路线</b>拆成数据、网格、材质、合成四层；用 <b>9 维加权评分</b>和可筛选矩阵给结论。目标不是“看起来有 3D”，而是<b>排序对、overdraw 稳、风格不割裂</b>。</p>
+  <p class="sub">俯视/等轴地图 + 移动端 + 多人同屏：把 <b>7 种方案 + 1 条混合路线</b>拆成数据、网格、材质、合成四层；用 <b>9 维加权评分</b>和可筛选矩阵给结论。追加 <b>3渲2 角色</b>专章：角色是 3D→RT→2D 精灵时，默认改为 <b>骨骼世界变换 → 地图空间 2D ribbon</b>，角色 RT 只留近手短刀光。目标不是“看起来有 3D”，而是<b>排序对、overdraw 稳、风格不割裂</b>。</p>
   <div class="stat-row">
     <span class="stat"><b>8</b> 方案</span>
+    <span class="stat"><b>+5</b> 3渲2 落层</span>
     <span class="stat"><b>9</b> 维度</span>
     <span class="stat"><b>3</b> 档推荐</span>
     <span class="stat"><b>15–17</b> PoC runs</span>
@@ -302,6 +351,7 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
 <nav class="toc" id="toc"><div class="inner">
   <a href="#s0" class="active">结论先行</a>
   <a href="#s1">拖尾观察台</a>
+  <a href="#s3to2">3渲2 管线</a>
   <a href="#s2">方案卡</a>
   <a href="#s3">评分矩阵</a>
   <a href="#s4">2D 难点</a>
@@ -318,14 +368,18 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
   <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">先给答案：3D 采样 + 2D 排序</span></div>
   <p class="lead"><b>在纯 2D y-sort 地图里，最稳的路线不是“把 3D ribbon 塞进 3D pass”，而是“3D 采样 → 屏幕空间投影 ribbon → 按 2D 规则排序/遮挡”。</b> 真 3D mesh 只给主角/技能/少量高价值单位；同屏大量单位用投影 ribbon 或 sprite 序列；低端机用单 quad/精灵；Viewport/Stencil 只在“3D 角色层已经存在 + 遮挡复杂 + 中高端”时才值得。<span class="badge infer">推断</span></p>
 
+  <p class="lead"><b>如果角色是 3渲2（3D 模型先渲染到 RT，再作为 2D 精灵放进地图），默认答案再收窄：拖尾应放在「地图空间」，而不是角色 RT 内。</b> 采样骨骼世界变换 → 地图投影 → 2D 分段 ribbon（<b>R2</b> = H + F 的 3渲2 变体）；角色 RT 只保留 ≤0.4–0.5s 的近手短刀光（<b>R1</b>）；跨层/像素级遮挡才上独立 3D pass + 深度/Stencil（<b>R3</b>）。<span class="badge infer">推断</span></p>
+
   <div class="cards">
-    <div class="card"><div class="n">HERO / SKILL</div><div class="t">主角 / 技能 → H 混合投影</div><p>3D 采样 + 2D 屏幕空间网格 + 无光照/色阶/描边；武器刀光用骨骼/挂点驱动。排序走 y-sort，不靠全屏 RT。</p><p class="mono muted">预算：32–64 段 · 1–2 层 · ≤2 draw calls</p></div>
+    <div class="card ok"><div class="n">3渲2 · DEFAULT</div><div class="t">3渲2 角色 → R2 地图空间骨骼 ribbon</div><p>骨骼/武器挂点世界变换 → 地图 x,y+高度 z → 等轴投影 → 分段 2D ribbon → 2D y-sort。逐树遮挡正确、无额外 RT；近端用 RT 锚点校准。</p><p class="mono muted">R2 = H + F 的 3渲2 版 · 长尾默认</p></div>
+    <div class="card"><div class="n">3渲2 · SHORT</div><div class="t">近手短刀光 → R1 RT 内拖尾</div><p>≤0.4–0.5s、完全在角色 RT 框内：与可见武器尖绝对贴合，还能被手臂/身体自遮挡。超过 RT 框就改 R2/R4。</p><p class="mono muted">R1 · 裁剪率 ≤5% · 单位 ≤3</p></div>
+    <div class="card"><div class="n">HERO / SKILL</div><div class="t">纯 2D 主角 / 技能 → H 混合投影</div><p>3D 采样 + 2D 屏幕空间网格 + 无光照/色阶/描边；武器刀光用骨骼/挂点驱动。排序走 y-sort，不靠全屏 RT。</p><p class="mono muted">预算：32–64 段 · 1–2 层 · ≤2 draw calls</p></div>
     <div class="card"><div class="n">CROWD</div><div class="t">同屏 10–50 单位 → C 投影 ribbon</div><p>12–24 段、0.25–0.4s、30Hz 采样；按脚底 y 排序；按 y 分桶合批。远/小/非玩家降级或关闭。</p><p class="mono muted">预算：覆盖 ≤15% · 峰值透明层 ≤3</p></div>
     <div class="card"><div class="n">LOW-END</div><div class="t">低端机 → G 单 quad / 精灵</div><p>单 quad 滚动 UV 或 2–4 帧 flipbook；无 glow、无描边、无 RT。比“缩水 3D”更稳、更贴风格。</p><p class="mono muted">预算：1 层 · ≤8 条 · 30fps 档</p></div>
     <div class="card ok"><div class="n">TRUE 3D</div><div class="t">必须真 3D 观感 → H + 深度代理</div><p>先做 H（主带 + 地面影子 + 可选 curtain）；仍不够再上 A + 深度/Stencil 代理。纯 2D Canvas 不要为“真 3D”三个字上 E。</p><p class="mono muted">Viewport 只在 4 条同时满足时考虑</p></div>
   </div>
 
-  <h3>五个硬结论</h3>
+  <h3>六个硬结论</h3>
   <div class="tablewrap"><table>
     <thead><tr><th>#</th><th>结论</th><th>为什么</th></tr></thead>
     <tbody>
@@ -334,10 +388,11 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
       <tr><td class="mono">03</td><td><b>移动端先算 overdraw，再算顶点</b></td><td>50 条 160×40px 拖尾 ≈ 720p 的 35% 覆盖；两层 ≈ 70%。顶点通常只有几千个，真正贵的是透明填充率、混合带宽、全屏 RT。<span class="badge vendor">Arm/Qualcomm</span><span class="badge infer">推断</span></td></tr>
       <tr><td class="mono">04</td><td><b>拖尾是纯本地 cosmetic</b></td><td>只同步移动/技能事件；远端用插值后的可视位置重建；传送/重生/重连清历史，否则会拉出跨地图长带。<span class="badge infer">推断</span></td></tr>
       <tr><td class="mono">05</td><td><b>风格化在网格/材质阶段做，不靠后处理补救</b></td><td>无光照/ramp、色阶量化、抖动、硬边/描边、屏幕像素宽度；soft additive glow 会把风格拉回写实特效。<span class="badge infer">推断</span></td></tr>
+      <tr><td class="mono">06</td><td><b>3渲2 的拖尾默认不进角色 RT</b></td><td>RT 是角色的“胶片”，单排序点 + 边框裁剪；拖尾要逐树穿插就必须在地图 2D 层（R2）。RT 内只留短刀光（R1），跨层像素级遮挡才上 R3。<span class="badge infer">推断</span><span class="badge test">待实测</span></td></tr>
     </tbody>
   </table></div>
 
-  <h3>先问四个问题，再选 API</h3>
+  <h3>先问五个问题，再选 API</h3>
   <div class="flow">
     <div class="step"><div class="n">Q1</div><div class="t">地图架构</div><div class="d">2D Canvas 还是 3D 场景面片？纯 2D 优先 C/H；3D 场景才考虑 A。</div></div>
     <div class="arrow">→</div>
@@ -346,8 +401,10 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
     <div class="step"><div class="n">Q3</div><div class="t">遮挡粒度</div><div class="d">整层还是逐对象（树/柱/屋檐）？逐对象才需要 y-sort 切分/Stencil/Viewport。</div></div>
     <div class="arrow">→</div>
     <div class="step"><div class="n">Q4</div><div class="t">人数与机型</div><div class="d">50 人 + 低端 + 60fps → C/G；1–3 人 + 中高端 → H/A。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Q5</div><div class="t">角色是 3渲2？</div><div class="d">是 → 默认 R2 地图空间骨骼 ribbon；短刀光 R1/R4；跨层才 R3。</div></div>
   </div>
-  <div class="warnbox"><b>一句话决策：</b>纯 2D 地图 + 多人 → 先做 C；主角/技能 → 升级 H；低端 → G；只有“已经有 3D 层且遮挡是硬需求”才上 E。不要先选引擎 API，再回头补排序。</div>
+  <div class="warnbox"><b>一句话决策：</b>纯 2D 地图 + 多人 → 先做 C；主角/技能 → 升级 H；低端 → G；只有“已经有 3D 层且遮挡是硬需求”才上 E。不要先选引擎 API，再回头补排序。<br><b>3渲2 一句话：</b>长拖尾 → R2；近手短刀光 → R1；近端贴手 → R4；跨层像素级遮挡 → R3；冲刺残影 → R5；低端/50 人 → R2 精简或 R5。</div>
 </section>
 
 <!-- ================= 1 ================= -->
@@ -421,6 +478,226 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
       </div>
     </div>
   </div>
+</section>
+
+<!-- ================= 1.5 · 3渲2 ================= -->
+<section id="s3to2">
+  <div class="sec-head"><span class="sec-num">01.5</span><h2>3渲2 角色：拖尾放在哪一层</h2><span class="sec-note">T-20261127-014 · 骨骼 / RT / 校准 / 排序</span></div>
+  <p class="lead">角色是 <b>3渲2</b>（3D 模型先渲染到 RT，再作为 2D 精灵放进地图）时，默认答案进一步收窄为：<b>骨骼世界变换 → 地图空间 2D ribbon（R2）</b>。角色 RT 只保留近手短刀光（<b>R1</b>）；独立 3D pass（<b>R3</b>）只在跨层像素级遮挡时考虑。下面的三栏同场景对比可以调拖尾长度、树位置、RT 尺寸和校准，直接看 <b>RT 边框裁剪</b>、<b>树遮挡</b> 和 <b>起点偏差</b> 怎么变。</p>
+
+  <div class="arch">
+    <svg viewBox="0 0 1120 470" role="img" aria-label="3渲2 角色 RT 与地图空间拖尾管线架构图">
+      <defs>
+        <marker id="t3ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink-faint)"/></marker>
+        <marker id="t3ahg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--gold)"/></marker>
+        <marker id="t3ahr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--bad)"/></marker>
+      </defs>
+
+      <text x="18" y="24" class="big">A · 渲染链（角色的一帧“胶片”）</text>
+      <text x="18" y="310" class="big">B · 拖尾链（R2 默认：把拖尾放回地图）</text>
+      <line x1="18" y1="274" x2="1102" y2="274" class="lane"/>
+
+      <!-- render lane -->
+      <rect class="box" x="18" y="48" width="190" height="66" rx="10"/>
+      <text x="32" y="72" class="t">3D 蒙皮 + Skeleton</text>
+      <text x="32" y="90" class="s">骨骼动画 / 武器 socket</text>
+      <text x="32" y="104" class="tag">模型空间</text>
+
+      <rect class="box rt" x="250" y="48" width="190" height="66" rx="10"/>
+      <text x="264" y="72" class="t">角色相机</text>
+      <text x="264" y="90" class="s">3/4 · 常透视 · 固定 framing</text>
+      <text x="264" y="104" class="tag">RT 相机 ≠ 地图相机</text>
+
+      <rect class="box rt" x="482" y="48" width="190" height="66" rx="10"/>
+      <text x="496" y="72" class="t">RT（透明）</text>
+      <text x="496" y="90" class="s">256–512² · 一个排序点</text>
+      <text x="496" y="104" class="tag">边框会裁长尾</text>
+
+      <rect class="box" x="714" y="48" width="170" height="66" rx="10"/>
+      <text x="728" y="72" class="t">2D 精灵</text>
+      <text x="728" y="90" class="s">脚底 pivot · 可镜像</text>
+      <text x="728" y="104" class="tag">RT 像素 → 屏幕像素</text>
+
+      <rect class="box" x="926" y="48" width="176" height="66" rx="10"/>
+      <text x="940" y="72" class="t">地图 2D 排序</text>
+      <text x="940" y="90" class="s">y-sort / 图层 / UI</text>
+      <text x="940" y="104" class="tag">整张精灵一个排序键</text>
+
+      <line x1="208" y1="81" x2="242" y2="81" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="440" y1="81" x2="474" y2="81" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="672" y1="81" x2="706" y2="81" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="884" y1="81" x2="918" y2="81" class="arrow" marker-end="url(#t3ah)"/>
+
+      <rect x="868" y="136" width="234" height="54" rx="9" fill="none" stroke="var(--bad)" stroke-dasharray="5 5" opacity=".8"/>
+      <text x="880" y="156" class="t" style="fill:var(--bad)">R1 · 短刀光</text>
+      <text x="880" y="173" class="s">贴手 + 自遮挡；但裁尾 + 单点遮挡</text>
+      <line x1="790" y1="114" x2="858" y2="145" class="arrow red" stroke-dasharray="4 4" marker-end="url(#t3ahr)"/>
+
+      <!-- trail lane -->
+      <rect class="box map" x="18" y="328" width="190" height="66" rx="10"/>
+      <text x="32" y="352" class="t">骨骼 / 挂点 世界变换</text>
+      <text x="32" y="370" class="s">get_bone_global_pose · Socket</text>
+      <text x="32" y="384" class="tag">相对 skeleton 要乘父链</text>
+
+      <rect class="box map" x="250" y="328" width="190" height="66" rx="10"/>
+      <text x="264" y="352" class="t">角色地图根变换</text>
+      <text x="264" y="370" class="s">地图 x,y + 高度 z · yaw</text>
+      <text x="264" y="384" class="tag">统一单位 / pivot</text>
+
+      <rect class="box map" x="482" y="328" width="190" height="66" rx="10"/>
+      <text x="496" y="352" class="t">地图投影</text>
+      <text x="496" y="370" class="s">等轴/俯视 · 屏幕 px</text>
+      <text x="496" y="384" class="tag">与地图相机一致</text>
+
+      <rect class="box map" x="714" y="328" width="170" height="66" rx="10"/>
+      <text x="728" y="352" class="t">2D ribbon</text>
+      <text x="728" y="370" class="s">分段/分带 · 屏幕宽度</text>
+      <text x="728" y="384" class="tag">groundY 作排序键</text>
+
+      <rect class="box map" x="926" y="328" width="176" height="66" rx="10"/>
+      <text x="940" y="352" class="t">地图 2D 排序</text>
+      <text x="940" y="370" class="s">分段 y-sort / 树冠层</text>
+      <text x="940" y="384" class="tag">逐树/逐建筑穿插</text>
+
+      <line x1="208" y1="361" x2="242" y2="361" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="440" y1="361" x2="474" y2="361" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="672" y1="361" x2="706" y2="361" class="arrow" marker-end="url(#t3ah)"/>
+      <line x1="884" y1="361" x2="918" y2="361" class="arrow" marker-end="url(#t3ah)"/>
+
+      <!-- calibration bridge -->
+      <rect class="box cal" x="360" y="188" width="300" height="64" rx="10"/>
+      <text x="374" y="211" class="t">校准桥：Δ = A_rt − A_map</text>
+      <text x="374" y="229" class="s">近端 w=1 → 0.12–0.25s 后 w=0</text>
+      <text x="374" y="244" class="tag">只修正起点，不让整条拖尾跟精灵走</text>
+      <path d="M577 114 L577 180" class="arrow gold" stroke-dasharray="4 4" marker-end="url(#t3ahg)"/>
+      <path d="M577 328 L577 260" class="arrow gold" stroke-dasharray="4 4" marker-end="url(#t3ahg)"/>
+      <path d="M660 220 C 710 220, 740 300, 760 326" class="arrow gold" stroke-dasharray="4 4" marker-end="url(#t3ahg)"/>
+      <text x="670" y="268" class="s" style="fill:var(--gold)">校准后的起点</text>
+
+      <rect class="box pass" x="868" y="410" width="234" height="48" rx="9"/>
+      <text x="880" y="429" class="t">R3 · 独立 3D pass</text>
+      <text x="880" y="446" class="s">跨层/像素级遮挡；需深度/Stencil 代理</text>
+      <line x1="1060" y1="394" x2="1010" y2="406" class="arrow" stroke="var(--teal)" stroke-dasharray="4 4" marker-end="url(#t3ah)"/>
+
+      <text x="18" y="457" class="tag">读法：R1 走 A 链；R2 走 B 链；校准桥把 B 链的起点拉回 A 链里看得见的武器尖；R3 另开 3D pass。</text>
+    </svg>
+    <p class="cap">原创示意图；RT 尺寸/颜色仅作量级示意，不是引擎实测。完整变换链、校准公式与引擎 API 见 <a href="2d-map-3d-trail-3to2-pipeline.md" style="color:var(--teal)">3渲2 深挖文档</a>。</p>
+  </div>
+
+  <div class="t3-grid">
+    <div class="lab-main">
+      <div class="canvas-shell">
+        <canvas id="t3Stage" width="960" height="430" aria-label="3渲2 拖尾三栏对比：RT 内 / 地图空间 / 独立 3D pass"></canvas>
+      </div>
+      <div class="lab-toolbar" style="margin-top:8px">
+        <span class="mono muted" style="font-size:11px">状态</span>
+        <span class="stage-badge" id="t3Badge">校准开 · RT 256²</span>
+        <span class="mono muted" style="font-size:10.5px">同一骨骼 / 同一路径；三栏同步</span>
+      </div>
+      <div class="lab-toolbar">
+        <span class="mono muted" style="font-size:11px">拖尾</span>
+        <input id="t3Len" type="range" min="0.3" max="1.8" step="0.05" value="1.5" style="width:90px">
+        <output id="t3LenO" class="mono muted" style="font-size:11px">1.50s</output>
+        <span class="mono muted" style="font-size:11px">树位</span>
+        <input id="t3Tree" type="range" min="-1.2" max="1.2" step="0.05" value="0" style="width:80px">
+        <span class="mono muted" style="font-size:11px">RT</span>
+        <select id="t3Rt" class="btn" style="padding:5px 7px">
+          <option value="128">128²</option>
+          <option value="256" selected>256²</option>
+          <option value="384">384²</option>
+          <option value="512">512²</option>
+        </select>
+      </div>
+      <div class="lab-toolbar">
+        <label class="check"><input type="checkbox" id="t3Calib" checked> RT 锚点校准</label>
+        <label class="check"><input type="checkbox" id="t3Proxy"> R3 深度代理</label>
+        <span class="mono muted" style="font-size:11px">投影偏差</span>
+        <input id="t3Offset" type="range" min="-14" max="14" step="1" value="12" style="width:90px">
+        <output id="t3OffsetO" class="mono muted" style="font-size:11px">12px</output>
+        <span class="spacer"></span>
+        <button class="btn primary" id="t3Pause">播放</button>
+      </div>
+      <p class="lab-hint" id="t3Hint">R1：拖尾被裁进角色 RT 框，树只有一个排序点；R2：同一骨骼采样在地图空间分段，树前/树后正确；R3：独立 3D pass，无深度代理时整条盖树，勾选后后段被树挡住。拖“投影偏差”看校准前后的起点差异。</p>
+    </div>
+
+    <div class="t3-side">
+      <div class="panel">
+        <h4>三栏读数（估算）</h4>
+        <div class="tablewrap" style="margin:0">
+          <table class="t3-readout">
+            <thead><tr><th>指标</th><th>R1 RT 内</th><th>R2 地图</th><th>R3 3D pass</th></tr></thead>
+            <tbody>
+              <tr><td>RT 裁剪</td><td id="t3ClipR1" class="bad">—</td><td class="good">0</td><td class="good">0</td></tr>
+              <tr><td>遮挡</td><td id="t3OccR1" class="bad">单点</td><td class="good">分段 ✓</td><td id="t3OccR3" class="warn">需代理</td></tr>
+              <tr><td>Draw</td><td>1 + RT</td><td>2–5 带</td><td>+1 pass</td></tr>
+              <tr><td>覆盖</td><td id="t3CovR1">—</td><td id="t3CovR2">—</td><td id="t3CovR3">—</td></tr>
+              <tr><td>起点偏差</td><td class="good">0</td><td id="t3OrgR2" class="warn">—</td><td class="good">≈0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="lab-hint">读数是几何/面积估算 + 交互演示，不是 GPU profiler 数字；“起点偏差”是校正前的屏幕像素差；“覆盖”是单角色占单栏面积，50 单位用右下计算器。</p>
+      </div>
+
+      <div class="panel">
+        <h4>RT 预算计算器</h4>
+        <div class="t3-calc">
+          <div class="row"><span>RT 尺寸</span><select id="t3CalcSize"><option>128</option><option selected>256</option><option>384</option><option>512</option><option>1024</option></select><span>px</span></div>
+          <div class="row"><span>同屏角色</span><input id="t3CalcUnits" type="range" min="1" max="50" step="1" value="10"><output id="t3CalcUnitsO">10</output></div>
+          <div class="t3-verdict" id="t3CalcOut">—</div>
+        </div>
+        <p class="lab-hint">按 RGBA8 + D24、每帧 1 写 1 采样粗估；MSAA/多 pass 再乘 2–7。10 个 512² 已 35MB/帧量级；50 个不建议。</p>
+      </div>
+
+      <div class="panel">
+        <h4>默认结论</h4>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 6px"><b style="color:var(--ok)">R2 地图空间</b> → 长拖尾默认；逐树遮挡、无额外 RT。</p>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 6px"><b style="color:var(--gold)">R1 RT 内</b> → ≤0.4–0.5s、完全在框内、需要自遮挡；裁剪率 >5% 就改 R2。</p>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0"><b style="color:var(--teal)">R3 独立 pass</b> → 跨层像素级遮挡 + ≤3 单位 + 中高端；否则 R2 + 图层/遮罩。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>R1–R5 落层对比</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>落层</th><th>排序/遮挡</th><th>RT 边界</th><th>校准</th><th>性能/多人</th><th>适用</th></tr></thead>
+    <tbody>
+      <tr><td><b>R1 · 角色 RT 内</b></td><td class="bad">整张精灵一个排序点；无法逐树穿插</td><td class="bad">会裁长尾；RT 面积按平方涨</td><td class="good">无需（同一张图）</td><td>短尾低；50 单位不可行</td><td>≤0.4–0.5s 近手短刀光、自遮挡</td></tr>
+      <tr><td><b>R2 · 地图空间骨骼 ribbon</b></td><td class="good">分段 y-sort；逐树/建筑</td><td class="good">无额外 RT</td><td class="warn">需 RT 锚点校准</td><td class="good">1–50 单位可；无 RT</td><td><b>长拖尾默认</b>；同屏多人</td></tr>
+      <tr><td><b>R3 · 独立 3D pass</b></td><td class="good">深度/Stencil 代理；像素级跨层</td><td class="warn">独立 RT；可做大</td><td>中（3D 世界一致）</td><td class="bad">额外 pass/代理；≤3 单位</td><td>桥下/拱门/屋檐；中高端</td></tr>
+      <tr><td><b>R4 · 混合</b></td><td class="good">长段走 R2；短段随 R1</td><td class="warn">短段在 RT 框内</td><td class="bad">最高（两套 + 接缝）</td><td class="warn">中–高；主角技能</td><td>近端贴手 + 远端入地图</td></tr>
+      <tr><td><b>R5 · 残影/精灵副本</b></td><td class="bad">单点/无逐段</td><td class="good">无</td><td class="good">无需</td><td class="good">便宜；低端</td><td>冲刺/瞬移点缀，不替代移动拖尾</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>校准：近端贴手，远端回地图</h3>
+  <pre>bone_world = 角色根 · 模型根 · skeleton · bone_global_pose(socket)
+A_rt       = 精灵映射(RT 相机投影(bone_world))   // 画面里看得见的武器尖
+A_map      = 地图投影(bone_world)                // 地图空间的理论位置
+Δ          = A_rt − A_map
+
+每个采样点（年龄 age）:
+  w        = clamp(1 − age / T_blend, 0, 1)      // T_blend = 0.12–0.25s
+  p_screen = 地图投影(bone_world) + Δ · w
+  sortY    = 地图投影(x, y, 0).y                 // 用地面 y 排序，不用抬高后的 y</pre>
+  <div class="flow">
+    <div class="step"><div class="n">STEP 1</div><div class="t">加两个 marker</div><div class="d">RT 场景武器尖 + 地图投影同点；截图量像素差，先不做拖尾。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">STEP 2</div><div class="t">覆盖姿态</div><div class="d">idle/run/attack × 4 朝向 × 2 镜像 × 2 zoom；记录 Δx/Δy。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">STEP 3</div><div class="t">运行时投影</div><div class="d">用相机矩阵算 A_rt/A_map，不做 GPU readback；Δ 低通/按姿态平滑。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">STEP 4</div><div class="t">按年龄衰减</div><div class="d">起点 w=1，0.2s 后 w=0；镜像/换手同步镜像；量接缝与跳变。</div></div>
+  </div>
+
+  <h3>决策树</h3>
+  <div class="t3-tree">
+    <div class="t3-branch"><b>拖尾 ≤0.5s 且完全在 RT 框内？</b><div class="rec"><em>是</em> → 需要被手臂/身体自遮挡：<b>R1</b>；不需要：<b>R2</b>（更便宜/更好排序）。<em>否</em> → 下一步。</div></div>
+    <div class="t3-branch"><b>需要近端绝对贴合可见刀尖？</b><div class="rec"><em>是</em> → <b>R4</b>（短 R1 + 长 R2）或 <b>R2b</b> 校准；<em>否</em> → <b>R2</b>（默认长尾）。</div></div>
+    <div class="t3-branch"><b>同一屏内跨层/像素级遮挡？</b><div class="rec"><em>是</em> + ≤3 单位 + 中高端 → <b>R3</b>（独立 3D pass + 深度/Stencil 代理）；<em>否</em> → <b>R2</b> + 分段 y-sort / 树冠 overlay / 2D 遮罩。</div></div>
+    <div class="t3-branch"><b>低端 / 同屏 50 单位？</b><div class="rec"><em>是</em> → <b>R2 精简</b>（8–12 段/30Hz/1 层）或 <b>R5/G</b>；<em>否</em> → 按上面结果。</div></div>
+  </div>
+  <div class="warnbox"><b>默认永远是 R2</b>，除非拖尾短到完全在角色 RT 框内且“自遮挡/绝对贴手”比“逐树遮挡”更重要（R1），或者跨层像素级遮挡是核心卖点且预算允许（R3）。角色有 RT/3D 相机，不代表 2D 树/建筑会自动写深度；R3 必须额外做深度/Stencil 代理。</div>
+  <p class="lab-hint">完整推导、RT 预算表、五个引擎映射与 PoC 验收见 <a href="2d-map-3d-trail-3to2-pipeline.md" style="color:var(--teal)">docs/2d-map-3d-trail-3to2-pipeline.md</a>。</p>
 </section>
 
 <!-- ================= 2 ================= -->
@@ -540,6 +817,7 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
         <button class="btn" data-profile="hero">主角/技能</button>
         <button class="btn" data-profile="crowd">同屏大量</button>
         <button class="btn" data-profile="lowend">低端机</button>
+        <button class="btn" data-profile="toon2">3渲2</button>
       </div>
       <div id="weightRows"></div>
       <div class="weight-sum"><span id="weightSum">Σ = 100</span><span>归一化计算</span></div>
@@ -582,7 +860,7 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
           <tbody id="matrixBody"></tbody>
         </table>
       </div>
-      <p class="lab-hint">复杂度 5 = 最简单；“加权分”0–5。排序/遮挡、风格、低端机是 2D 地图里最容易翻车的三项，默认权重给得较高。A 的融合分在“3D 场景 + 2D 美术面片”架构下可升到 4（默认加权约 +0.30）；纯 2D Canvas 保持 2。</p>
+      <p class="lab-hint">复杂度 5 = 最简单；“加权分”0–5。排序/遮挡、风格、低端机是 2D 地图里最容易翻车的三项，默认权重给得较高。A 的融合分在“3D 场景 + 2D 美术面片”架构下可升到 4（默认加权约 +0.30）；纯 2D Canvas 保持 2。<br><b>3渲2 预设</b>（22/18/8/18/14/8/4/6/2）：H 4.50、C 4.48、F/G 4.26；R2 = H + F 仍是第一。R1 只做短刀光、R3 只做跨层遮挡，不参与全局排序。</p>
     </div>
   </div>
 </section>
@@ -773,6 +1051,19 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
   <p class="lead">参数是起点范围，不是万能值；按相机缩放、角色尺寸、目标机型调。每档都给出“预算”和“为什么不是另一档”。</p>
 
   <div class="tier-grid">
+    <div class="tier-card" style="border-color:color-mix(in srgb,var(--teal) 35%,var(--line))">
+      <div class="who">S0′ · 3渲2 角色</div>
+      <h3>3渲2 主角 / 技能 / 长拖尾</h3>
+      <p><b>方案：</b>R2 地图空间骨骼 ribbon（H + F 的 3渲2 版）；近手短刀光 R1；近端贴手 R4；跨层遮挡才 R3。</p>
+      <ul>
+        <li>32–48 段；寿命 0.5–0.8s；60Hz 或每 4–6cm 采样</li>
+        <li>校准 T_blend 0.12–0.25s；R1 短段 0.12–0.2s</li>
+        <li>主带 + 地面影子；≤2 层</li>
+        <li>不为长尾扩角色 RT；R1 RT ≤256/384 档</li>
+      </ul>
+      <div class="pick">预算：R2 分带 2–5 DC · 覆盖 ≤5% · origin p95 ≤2px @1080p（待实测）</div>
+    </div>
+
     <div class="tier-card">
       <div class="who">S0 · 同屏 1–3 个</div>
       <h3>主角 / 技能 / 坐骑</h3>
@@ -833,29 +1124,34 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
     <div class="check-item"><span class="mark">□</span><span>需要统一后处理（bloom/描边/色彩空间）或真实深度</span></div>
     <div class="check-item"><span class="mark">□</span><span>目标机型中高端，且同屏高价值单位 ≤3</span></div>
   </div>
-  <div class="warnbox"><b>四条全部满足才考虑 E；任一不满足 → H/C；低端 → G。</b> 单个全屏 RT 只能对应一个排序层；拖尾要在多棵树之间前后穿插时，单 RT 不够，需要多 RT/Stencil/切段，成本会继续上升。〔推断〕</div>
+  <div class="warnbox"><b>四条全部满足才考虑 E；任一不满足 → H/C；低端 → G。</b> 单个全屏 RT 只能对应一个排序层；拖尾要在多棵树之间前后穿插时，单 RT 不够，需要多 RT/Stencil/切段，成本会继续上升。<br><b>3渲2 注意：</b>角色有 RT/3D 相机，不代表 2D 树/建筑会自动写深度；R3 必须额外做深度/Stencil 代理。默认仍是 R2，短刀光 R1，跨层才 R3。〔推断〕</div>
 </section>
 
 <!-- ================= 7 ================= -->
 <section id="s7">
   <div class="sec-head"><span class="sec-num">07</span><h2>PoC 与验收</h2><span class="sec-note">2–3 个小样 · 可量化口径</span></div>
-  <p class="lead">不要直接上生产；先用 2–3 个小样在目标机型上把“排序、overdraw、draw call、风格”跑成数字。下面给的是起点预算，不是行业标准。</p>
+  <p class="lead">不要直接上生产；先用 3–4 个小样在目标机型上把“排序、overdraw、draw call、风格”跑成数字。下面给的是起点预算，不是行业标准。3渲2 的 P4 额外量 RT 裁剪率、origin 偏差与遮挡正确率。</p>
 
   <div class="poc-grid">
     <div class="poc-card"><h3>P1 · Godot 4.6</h3><p><b>对比：</b>C（Line2D/MeshInstance2D）、A（ArrayMesh + SubViewport）、B（GPUParticles3D trails）。</p><p><b>场景：</b>等轴地面 + 1 棵树 + 1/10/50 个移动单位。</p><p><b>验证：</b>排序/遮挡、overdraw、draw call、GC、Compatibility 降级。</p></div>
     <div class="poc-card"><h3>P2 · Unity URP</h3><p><b>对比：</b>TrailRenderer（View/TransformZ）、ParticleSystem Trail、H（自定义 2D mesh + Shader Graph）。</p><p><b>场景：</b>2D 地图 + 树/建筑 + 1/10/50 单位。</p><p><b>验证：</b>真机 GPU/CPU、2D/3D 排序、Frame Debugger、风格 A/B。</p></div>
     <div class="poc-card"><h3>P3 · Three.js（可选）</h3><p><b>对比：</b>Line2 vs 自定义 BufferGeometry ribbon。</p><p><b>场景：</b>正交等轴相机 + 50 个单位。</p><p><b>验证：</b>Web 端 draw call/填充率、分辨率适配、Afterimage 对比。</p></div>
+    <div class="poc-card" style="border-color:color-mix(in srgb,var(--teal) 35%,var(--line))"><h3>P4 · 3渲2 骨骼拖尾</h3><p><b>对比：</b>R1（角色 RT 内短尾）、R2（地图空间骨骼 ribbon）、R2b（RT 锚点校准）；可选 R3（独立 pass + 深度代理）。</p><p><b>场景：</b>3渲2 角色 RT（256/384/512）+ 骨骼/武器挂点 + 树/墙/桥 + UI + 1/10/50 单位。</p><p><b>验证：</b>RT 裁剪率、origin 偏差 px、遮挡正确率、RT 显存/带宽、FPS/draw call/overdraw、风格一致性。</p></div>
   </div>
 
-  <h3>测试矩阵（建议 15–17 个 run）</h3>
+  <h3>测试矩阵（建议 18–22 个 run）</h3>
   <div class="tablewrap"><table>
     <thead><tr><th>变量</th><th>取值</th></tr></thead>
     <tbody>
       <tr><td>同屏单位</td><td>1 / 10 / 50</td></tr>
+      <tr><td>角色管线</td><td>纯 2D 精灵 / 3渲2 RT（P4）</td></tr>
+      <tr><td>RT 尺寸</td><td>256 / 384 / 512（仅 3渲2）</td></tr>
+      <tr><td>校准</td><td>无 / R2b RT 锚点校准</td></tr>
       <tr><td>段数</td><td>16 / 32 / 64</td></tr>
       <tr><td>分辨率</td><td>720p / 1080p</td></tr>
       <tr><td>设备档</td><td>低 / 中 / 高（实机，不用模拟器）</td></tr>
-      <tr><td>拖尾寿命</td><td>0.3 / 0.5 / 0.8s</td></tr>
+      <tr><td>拖尾寿命</td><td>0.3 / 0.5 / 0.8s（3渲2 加测 1.5s / 3m / 5m）</td></tr>
+      <tr><td>朝向</td><td>0° / 90° / 180° / 270°（+ 镜像，仅 3渲2）</td></tr>
       <tr><td>网络</td><td>本地 / 100ms 延迟 + 10Hz 更新（仅远端）</td></tr>
     </tbody>
   </table></div>
@@ -873,6 +1169,9 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
       <tr><td>风格</td><td>5 个关键色抽样 ΔE2000 ≤ 5；描边 1–2px；手绘/像素模式无 soft additive glow</td><td>像素采样 + 3 人盲评</td></tr>
       <tr><td>内存</td><td>50 单位拖尾缓冲 ≤256KB；稳态 GC ≈ 0</td><td>profiler/分配日志</td></tr>
       <tr><td>网络/回放</td><td>远端跟随插值位置；传送无长带；回放可重建</td><td>延迟模拟 + 录屏</td></tr>
+      <tr><td><b>3渲2 · RT 裁剪率</b></td><td><b>R1 在最长拖尾下 ≤5%</b>（超出 RT 的屏幕长度/总长度）</td><td>截图/像素测量</td></tr>
+      <tr><td><b>3渲2 · Origin 偏差</b></td><td><b>校准后 p95 ≤2px @1080p / ≤1.5px @720p</b>；4 朝向 × 2 镜像无 &gt;1px 跳变</td><td>RT marker vs 地图 marker 像素采样</td></tr>
+      <tr><td><b>3渲2 · 遮挡正确率</b></td><td><b>R2 ≥9/10（树前/树后/树冠/墙/桥/UI）</b>；R3 若做则 10/10</td><td>逐例截图/录屏</td></tr>
     </tbody>
   </table></div>
 
@@ -883,13 +1182,17 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
     <li>E 的 RT 成本 &gt;1.5ms 或不能解决逐对象遮挡 → 放弃 E，改 H + 切段/遮罩。</li>
     <li>任何方案在目标低端机持续 GC/每帧 mesh 重建 → 先修池化/环形缓冲，再谈观感。</li>
     <li>风格盲评 &lt;2/3 认为“和地图一致” → 先改材质/色阶/描边，不加特效层。</li>
+    <li>3渲2 R1 在最长拖尾下裁剪率 &gt;5% → 该效果不适合 RT 内，改 R2/R4。</li>
+    <li>3渲2 R2b 校准后 origin p95 &gt;4px 且换装/换向后跳变 → 先修锚点/校准，不进入美术量产。</li>
+    <li>3渲2 R2 在 50 单位低端机 p95 &gt;33.3ms → 降段/关 NPC/切 R5，不再堆 3D。</li>
+    <li>3渲2 R1 为拖尾把角色 RT 扩大 &gt;1 档 → 直接改 R2；不要用 RT 尺寸换尾长。</li>
   </ul>
 </section>
 
 <!-- ================= 8 ================= -->
 <section id="s8">
   <div class="sec-head"><span class="sec-num">08</span><h2>来源</h2><span class="sec-note">访问日期 2026-11-27 · 事实/推断已标注</span></div>
-  <p class="lead">完整 28 条来源、厂商说法/社区/推断标注见 <a href="2d-map-3d-trail-options.md" style="color:var(--teal)">Markdown 文档</a>。下表是核心 16 条。</p>
+  <p class="lead">完整 40 条来源、厂商说法/社区/推断标注见 <a href="2d-map-3d-trail-options.md" style="color:var(--teal)">Markdown 文档</a>；3渲2 专用的 28 条（骨骼/RT/投影/引擎 API）见 <a href="2d-map-3d-trail-3to2-pipeline.md" style="color:var(--teal)">深挖文档</a>。下表是核心 24 条。</p>
   <div class="tablewrap">
     <table class="source-table">
       <thead><tr><th>来源</th><th>用途</th><th>类型</th></tr></thead>
@@ -910,6 +1213,14 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
         <tr><td><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/how-to-create-a-ribbon-effect-in-niagara-for-unreal-engine" target="_blank" rel="noopener">Unreal Niagara Ribbon Effect</a></td><td>Ribbon Renderer、DefaultRibbonMaterial</td><td><span class="badge fact">官方</span></td></tr>
         <tr><td><a href="https://docs.cocos.com/creator/3.8/manual/en/particle-system/trail-module.html" target="_blank" rel="noopener">Cocos Creator 3.8 Trail Module</a></td><td>Mode 仅 Particles、Space 仅 World/Local、TextureMode 仅 Stretch</td><td><span class="badge fact">官方</span></td></tr>
         <tr><td><a href="https://threejs.org/docs/pages/Line2.html.md" target="_blank" rel="noopener">Three.js Line2</a></td><td>任意宽度、world units；LineMaterial resolution</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_skeleton3d.html" target="_blank" rel="noopener">Godot 4.6 Skeleton3D</a></td><td>get_bone_global_pose 返回相对 skeleton 的变换，不是世界变换</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_boneattachment3d.html" target="_blank" rel="noopener">Godot 4.6 BoneAttachment3D</a></td><td>复制/覆盖骨骼 3D 变换；可直接取全局变换</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_camera3d.html" target="_blank" rel="noopener">Godot 4.6 Camera3D</a></td><td>unproject_position(world_point) 返回 Viewport 2D 坐标</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Camera.WorldToScreenPoint.html" target="_blank" rel="noopener">Unity 6 WorldToScreenPoint</a></td><td>世界→屏幕像素；左下原点；z=相机距离</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Camera-targetTexture.html" target="_blank" rel="noopener">Unity 6 Camera.targetTexture</a></td><td>相机渲染到 RenderTexture（角色 RT）</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Components/USceneCaptureComponent2D?application_version=5.4" target="_blank" rel="noopener">Unreal USceneCaptureComponent2D</a></td><td>角色 RT：TextureTarget/CompositeMode/bRenderInMainRenderer</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.cocos.com/creator/3.8/manual/en/asset/render-texture.html" target="_blank" rel="noopener">Cocos Creator 3.8 RenderTexture</a></td><td>RenderTexture + Camera.targetTexture + SpriteFrame.texture</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://threejs.org/docs/pages/Vector3.html.md" target="_blank" rel="noopener">Three.js Vector3.project</a></td><td>世界→NDC；再转像素</td><td><span class="badge fact">官方</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -927,7 +1238,8 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
 
 <footer>
   <p><b>一句话带走：</b>纯 2D 多人 → C；主角/技能 → H；低端 → G；有 3D 层且遮挡硬需求 → A/E；B 只做爆发特效；D 只做残影点缀。</p>
-  <p>配套文件：<a href="2d-map-3d-trail-options.md">2d-map-3d-trail-options.md</a> · 任务 T-20261127-013 · 2026-11-27</p>
+  <p><b>3渲2 一句话：</b>长拖尾 → R2 地图空间骨骼 ribbon；近手短刀光 → R1；近端贴手 → R4；跨层像素级遮挡 → R3；冲刺残影 → R5；低端/50 人 → R2 精简或 R5。</p>
+  <p>配套文件：<a href="2d-map-3d-trail-options.md">2d-map-3d-trail-options.md</a> · <a href="2d-map-3d-trail-3to2-pipeline.md">2d-map-3d-trail-3to2-pipeline.md</a> · 任务 T-20261127-013 / 014 · 2026-11-27</p>
   <p class="muted">本页为技术调研/选型工具，不是任何游戏的官方参数表；观察台为原创示意，读数不是引擎实测。交互与图表为原创，未引入外部 CDN。</p>
 </footer>
 </div>
@@ -1614,7 +1926,8 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
     default: {visual:18, perf:20, complexity:10, merge:15, style:10, crowd:10, net:5, lowend:7, engine:5},
     hero: {visual:25, perf:15, complexity:8, merge:15, style:12, crowd:8, net:4, lowend:8, engine:5},
     crowd: {visual:12, perf:25, complexity:10, merge:15, style:8, crowd:15, net:5, lowend:7, engine:3},
-    lowend: {visual:8, perf:30, complexity:10, merge:10, style:8, crowd:12, net:2, lowend:15, engine:5}
+    lowend: {visual:8, perf:30, complexity:10, merge:10, style:8, crowd:12, net:2, lowend:15, engine:5},
+    toon2: {visual:22, perf:18, complexity:8, merge:18, style:14, crowd:8, net:4, lowend:6, engine:2}
   };
   const SCHEMES = [
     {id:'A', name:'真 3D Ribbon Mesh', family:'3d', tag:'真 3D', scores:{visual:5,perf:3,complexity:3,merge:2,style:3,crowd:3,net:5,lowend:3,engine:4},
@@ -1771,6 +2084,442 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
       }
     });
   });
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const canvas = document.getElementById('t3Stage');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const $ = s => document.querySelector(s);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  const C = {
+    bg: '#09120E', ground: '#12241C', ground2: '#0F1E17',
+    grid: 'rgba(150,200,170,.11)', path: 'rgba(242,179,92,.12)',
+    ink: '#E8F1E8', soft: '#9AAFA2', faint: '#647D70',
+    gold: '#F2B35C', teal: '#5FD8C9', leaf: '#9BD46A', bad: '#FF6B6B',
+    outline: 'rgba(4,10,7,.62)', shadow: 'rgba(0,0,0,.35)'
+  };
+  const S = 28;
+  const TREE_X = -0.2, TREE_Y = 0.6;
+  const PANELS = [
+    {key: 'rt', x: 0, title: 'R1 · RT 内拖尾', sub: '单排序点 · 边框裁剪', col: C.bad},
+    {key: 'map', x: 320, title: 'R2 · 地图空间 ribbon', sub: '分段 y-sort · 无 RT（推荐）', col: C.teal},
+    {key: 'pass', x: 640, title: 'R3 · 独立 3D pass', sub: '真 3D · 需深度代理', col: C.gold}
+  ];
+  const state = { len: 1.5, tree: 0, rt: 256, calib: true, proxy: false, offset: 12, paused: true, t: 0.5 };
+  let metrics = { clip: 0, cross: false, cov: 0 };
+  let last = 0, uiT = 0;
+
+  const px = (panel, x, y, h = 0) => ({
+    x: panel.x + 152 + (x - y) * S,
+    y: 255 + (x + y) * S * 0.56 - h * S * 0.95
+  });
+  const roundRectPath = (c, x, y, w, h, r) => {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+    c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+    c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y);
+    c.closePath();
+  };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rgba = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  };
+  const quadPath = (c, a, b, w0, w1) => {
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 0.001;
+    const nx = -dy / len, ny = dx / len;
+    c.beginPath();
+    c.moveTo(a.x + nx * w0 / 2, a.y + ny * w0 / 2);
+    c.lineTo(b.x + nx * w1 / 2, b.y + ny * w1 / 2);
+    c.lineTo(b.x - nx * w1 / 2, b.y - ny * w1 / 2);
+    c.lineTo(a.x - nx * w0 / 2, a.y - ny * w0 / 2);
+    c.closePath();
+  };
+
+  function drawBackground() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#0D1B15'); g.addColorStop(1, '#07100C');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (let i = 1; i < 3; i++) {
+      ctx.strokeStyle = 'rgba(150,200,170,.10)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(320 * i, 0); ctx.lineTo(320 * i, H); ctx.stroke();
+    }
+  }
+
+  function drawGround(panel) {
+    const corners = [px(panel, -3.4, -3.4, 0), px(panel, 3.4, -3.4, 0), px(panel, 3.4, 3.4, 0), px(panel, -3.4, 3.4, 0)];
+    ctx.beginPath();
+    corners.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.closePath();
+    ctx.fillStyle = C.ground;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(95,216,201,.22)';
+    ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = C.grid;
+    for (let i = -3; i <= 3; i++) {
+      let a = px(panel, i, -3.4, 0), b = px(panel, i, 3.4, 0);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      a = px(panel, -3.4, i, 0); b = px(panel, 3.4, i, 0);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    // loop path
+    ctx.beginPath();
+    for (let i = 0; i <= 80; i++) {
+      const ang = i / 80 * Math.PI * 2;
+      const p = px(panel, Math.cos(ang) * 2.25, Math.sin(ang) * 2.25, 0);
+      i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = C.path; ctx.lineWidth = 9; ctx.stroke();
+    ctx.strokeStyle = 'rgba(242,179,92,.30)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+
+  function drawTree(panel, tx, ty, strong) {
+    const base = px(panel, tx, ty, 0);
+    const h = 58;
+    ctx.save();
+    ctx.fillStyle = C.shadow;
+    ctx.beginPath(); ctx.ellipse(base.x, base.y, 22, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5A3D27';
+    ctx.fillRect(base.x - 4, base.y - h * 0.45, 8, h * 0.45);
+    const cy = base.y - h * 0.62;
+    const blobs = [
+      {x: base.x - 15, y: cy + 9, r: 16},
+      {x: base.x + 14, y: cy + 10, r: 17},
+      {x: base.x, y: cy - 8, r: 19},
+      {x: base.x - 2, y: cy + 3, r: 20}
+    ];
+    blobs.forEach((b, i) => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = i === 3 ? '#7FBF5A' : (i % 2 ? '#5E9B44' : '#6DAE4D');
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(4,10,7,.5)';
+      ctx.lineWidth = strong ? 2 : 1;
+      ctx.stroke();
+    });
+    ctx.fillStyle = 'rgba(232,241,232,.55)';
+    ctx.font = '9px "SF Mono", ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('树', base.x, base.y + 16);
+    ctx.restore();
+  }
+
+  function samplesFor(panel, originShift) {
+    const arr = [];
+    const n = Math.max(12, Math.round(state.len / 0.04));
+    for (let i = 0; i <= n; i++) {
+      const age = state.len * i / n;
+      const ang = state.t * Math.PI * 2 - age * 1.25;
+      const x = Math.cos(ang) * 2.25, y = Math.sin(ang) * 2.25;
+      const fx = -Math.sin(ang), fy = Math.cos(ang);
+      const tipX = x + fx * 0.34, tipY = y + fy * 0.34;
+      const gp = px(panel, x, y, 0);
+      const raw = px(panel, tipX, tipY, 0.74);
+      const w = clamp(1 - age / 0.22, 0, 1);
+      const shift = originShift * w;
+      arr.push({
+        age, x, y, tipX, tipY, gx: gp.x, gy: gp.y,
+        sx0: raw.x, sy0: raw.y, sx: raw.x + shift, sy: raw.y + shift * 0.35, w
+      });
+    }
+    return arr;
+  }
+
+  function ribbon(panel, pts, baseW, color, alpha) {
+    if (!pts || pts.length < 2) return;
+    const screen = pts.map(p => ({x: p.sx !== undefined ? p.sx : p.x, y: p.sy !== undefined ? p.sy : p.y}));
+    const n = screen.length;
+    for (let i = 0; i < n - 1; i++) {
+      const a = screen[i], b = screen[i + 1];
+      const t0 = i / n, t1 = (i + 1) / n;
+      const w0 = baseW * (1 - 0.70 * t0), w1 = baseW * (1 - 0.70 * t1);
+      quadPath(ctx, a, b, w0 + 2.4, w1 + 2.4);
+      ctx.fillStyle = 'rgba(4,10,7,.55)';
+      ctx.fill();
+      quadPath(ctx, a, b, w0, w1);
+      ctx.fillStyle = rgba(color, alpha * (0.55 + 0.45 * (1 - t0)));
+      ctx.fill();
+      quadPath(ctx, a, b, w0 * 0.38, w1 * 0.38);
+      ctx.fillStyle = rgba('#F3F8F0', 0.20 * alpha);
+      ctx.fill();
+    }
+  }
+
+  function runsWhere(samples, pred) {
+    const runs = []; let cur = [];
+    samples.forEach(s => {
+      if (pred(s)) cur.push(s);
+      else { if (cur.length > 1) runs.push(cur); cur = []; }
+    });
+    if (cur.length > 1) runs.push(cur);
+    return runs;
+  }
+
+  function drawChar(panel, p, scale, tipShift) {
+    const foot = px(panel, p.x, p.y, 0);
+    const waist = px(panel, p.x, p.y, 0.52);
+    const head = px(panel, p.x, p.y, 0.98);
+    const s = scale || 1;
+    ctx.save();
+    ctx.fillStyle = C.shadow;
+    ctx.beginPath(); ctx.ellipse(foot.x, foot.y, 12 * s, 4.5 * s, 0, 0, Math.PI * 2); ctx.fill();
+    // body
+    const bg = ctx.createLinearGradient(waist.x - 8, waist.y, waist.x + 8, foot.y);
+    bg.addColorStop(0, '#6FE3D4'); bg.addColorStop(1, '#2E8B80');
+    ctx.fillStyle = bg;
+    roundRectPath(ctx, waist.x - 6.5 * s, waist.y - 2, 13 * s, Math.max(10, foot.y - waist.y + 4), 6 * s);
+    ctx.fill();
+    ctx.strokeStyle = C.outline; ctx.lineWidth = 1.2; ctx.stroke();
+    // head
+    ctx.beginPath(); ctx.arc(head.x, head.y, 6.4 * s, 0, Math.PI * 2);
+    ctx.fillStyle = '#F3D8B8'; ctx.fill();
+    ctx.strokeStyle = C.outline; ctx.lineWidth = 1.2; ctx.stroke();
+    // scarf
+    ctx.fillStyle = C.gold;
+    ctx.beginPath(); ctx.ellipse(waist.x, waist.y - 1, 8.5 * s, 3.2 * s, -0.2, 0, Math.PI * 2); ctx.fill();
+    // weapon (tip points to the visible trail origin; RT projection may shift it)
+    const rawTip = px(panel, p.tipX, p.tipY, 0.74);
+    const tip = {x: rawTip.x + (tipShift ? tipShift.x : 0), y: rawTip.y + (tipShift ? tipShift.y : 0)};
+    ctx.strokeStyle = '#DCE8DD'; ctx.lineWidth = 2.2 * s; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(waist.x + 3, waist.y + 2); ctx.lineTo(tip.x, tip.y); ctx.stroke();
+    ctx.fillStyle = C.gold;
+    ctx.beginPath(); ctx.arc(tip.x, tip.y, 2.6 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function charNow() {
+    const ang = state.t * Math.PI * 2;
+    const x = Math.cos(ang) * 2.25, y = Math.sin(ang) * 2.25;
+    const fx = -Math.sin(ang), fy = Math.cos(ang);
+    return {x, y, tipX: x + fx * 0.34, tipY: y + fy * 0.34};
+  }
+
+  function drawFrame(panel, p, fw, fh, label) {
+    const c = px(panel, p.x, p.y, 0.55);
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(95,216,201,.85)';
+    ctx.lineWidth = 1.4;
+    roundRectPath(ctx, c.x - fw / 2, c.y - fh / 2, fw, fh, 8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(95,216,201,.9)';
+    ctx.font = '9px "SF Mono", ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, c.x, c.y - fh / 2 - 6);
+    ctx.restore();
+    return {x: c.x - fw / 2, y: c.y - fh / 2, w: fw, h: fh};
+  }
+
+  function drawMarkers(panel, s0) {
+    if (!s0) return;
+    const mx = s0.sx0, my = s0.sy0;
+    const vx = mx + state.offset, vy = my + state.offset * 0.35;
+    ctx.save();
+    // map projection marker
+    ctx.beginPath(); ctx.arc(mx, my, 4.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(232,241,232,.9)'; ctx.fill();
+    ctx.strokeStyle = C.outline; ctx.lineWidth = 1; ctx.stroke();
+    // visible weapon tip (RT anchor)
+    ctx.strokeStyle = C.bad; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(vx - 5, vy); ctx.lineTo(vx + 5, vy); ctx.moveTo(vx, vy - 5); ctx.lineTo(vx, vy + 5); ctx.stroke();
+    if (state.offset !== 0) {
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = 'rgba(255,107,107,.8)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(vx, vy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,107,107,.95)';
+      ctx.font = '9px "SF Mono", ui-monospace, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('Δ ' + Math.abs(state.offset) + 'px', Math.max(mx, vx) + 6, Math.min(my, vy) - 4);
+    }
+    ctx.restore();
+  }
+
+  function lineOfText(txt, x, y, color, align) {
+    ctx.fillStyle = color || C.soft;
+    ctx.font = '9.5px "SF Mono", ui-monospace, monospace';
+    ctx.textAlign = align || 'center';
+    ctx.fillText(txt, x, y);
+  }
+
+  function drawPanel(panel) {
+    const p = charNow();
+    const treeY = TREE_Y + state.tree;
+    const treeFoot = px(panel, TREE_X, treeY, 0);
+    const samples = samplesFor(panel, panel.key === 'rt' ? state.offset : (panel.key === 'map' && state.calib ? state.offset : 0));
+    const charFoot = px(panel, p.x, p.y, 0);
+    const cross = samples.some(s => s.gy < treeFoot.y) && samples.some(s => s.gy >= treeFoot.y);
+    metrics.cross = cross;
+    const boxW = 320;
+
+    // header
+    ctx.textAlign = 'left';
+    ctx.fillStyle = panel.col;
+    ctx.font = '700 12px "PingFang SC","Hiragino Sans GB",sans-serif';
+    ctx.fillText(panel.title, panel.x + 14, 26);
+    ctx.fillStyle = C.faint;
+    ctx.font = '9.5px "SF Mono", ui-monospace, monospace';
+    ctx.fillText(panel.sub, panel.x + 14, 42);
+
+    drawGround(panel);
+
+    if (panel.key === 'rt') {
+      const sizeMap = {128: 80, 256: 104, 384: 126, 512: 146};
+      const fw = sizeMap[state.rt] || 96, fh = fw * 1.18;
+      const c = px(panel, p.x, p.y, 0.55);
+      const frame = {x: c.x - fw / 2, y: c.y - fh / 2, w: fw, h: fh};
+      const clip = samples.filter(s => s.sx < frame.x || s.sx > frame.x + frame.w || s.sy < frame.y || s.sy > frame.y + frame.h).length;
+      metrics.clip = samples.length ? clip / samples.length * 100 : 0;
+      // ghost of the full trail (what gets cut)
+      ribbon(panel, samples, 9, C.bad, 0.14);
+      const composite = () => {
+        ctx.save();
+        roundRectPath(ctx, frame.x, frame.y, frame.w, frame.h, 8);
+        ctx.clip();
+        ribbon(panel, samples, 9, C.gold, 0.9);
+        drawChar(panel, p, 0.85, {x: state.offset, y: state.offset * 0.35});
+        ctx.restore();
+        drawFrame(panel, p, fw, fh, 'RT ' + state.rt + '²');
+      };
+      if (charFoot.y < treeFoot.y) { composite(); drawTree(panel, TREE_X, treeY, false); }
+      else { drawTree(panel, TREE_X, treeY, false); composite(); }
+      lineOfText('裁剪 ' + metrics.clip.toFixed(1) + '% · 单点遮挡', panel.x + 160, H - 16, metrics.clip > 5 ? C.bad : C.soft);
+    } else if (panel.key === 'map') {
+      const back = runsWhere(samples, s => s.gy < treeFoot.y);
+      const front = runsWhere(samples, s => s.gy >= treeFoot.y);
+      const charBehindTree = charFoot.y < treeFoot.y;
+      back.forEach(r => ribbon(panel, r, 9, C.teal, 0.9));
+      if (charBehindTree) drawChar(panel, p, 1, {x: state.offset, y: state.offset * 0.35});
+      drawTree(panel, TREE_X, treeY, false);
+      front.forEach(r => ribbon(panel, r, 9, C.teal, 0.9));
+      if (!charBehindTree) drawChar(panel, p, 1, {x: state.offset, y: state.offset * 0.35});
+      drawMarkers(panel, samples[0]);
+      lineOfText(state.calib ? '分段 ✓ · 校准后起点 ≈0px' : '分段 ✓ · 起点偏差 ' + Math.abs(state.offset) + 'px', panel.x + 160, H - 16, state.calib ? C.teal : C.bad);
+    } else {
+      const front = runsWhere(samples, s => s.gy >= treeFoot.y);
+      if (!state.proxy) {
+        drawTree(panel, TREE_X, treeY, true);
+        ribbon(panel, samples, 9, C.gold, 0.9);
+        drawChar(panel, p, 1);
+        lineOfText('无代理 · 整条盖树', panel.x + 160, H - 16, C.bad);
+      } else {
+        ribbon(panel, samples, 9, C.gold, 0.9);
+        drawTree(panel, TREE_X, treeY, true);
+        front.forEach(r => ribbon(panel, r, 9, C.gold, 0.9));
+        drawChar(panel, p, 1);
+        lineOfText('深度代理 · 后段被树挡', panel.x + 160, H - 16, C.teal);
+      }
+    }
+    // panel border / footer
+    ctx.strokeStyle = 'rgba(150,200,170,.14)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(panel.x + 8, 8, 304, H - 16);
+  }
+
+  function draw() {
+    drawBackground();
+    PANELS.forEach(drawPanel);
+    ctx.fillStyle = 'rgba(232,241,232,.32)';
+    ctx.font = '9.5px "SF Mono", ui-monospace, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('原创示意 · 非引擎实测 · 同一骨骼/同一路径', 14, 14);
+  }
+
+  function updateUI() {
+    const pct = metrics.clip;
+    $('#t3Badge').textContent = (state.calib ? '校准开' : '校准关') + ' · RT ' + state.rt + '²';
+    const clipEl = $('#t3ClipR1');
+    clipEl.textContent = pct.toFixed(1) + '%';
+    clipEl.className = pct > 5 ? 'bad' : 'warn';
+    const occ = $('#t3OccR1');
+    occ.textContent = metrics.cross ? '单点 · 错' : '单点 · 同侧';
+    occ.className = metrics.cross ? 'bad' : 'warn';
+    $('#t3OccR3').textContent = state.proxy ? '代理 ✓' : '无代理 ✗';
+    $('#t3OccR3').className = state.proxy ? 'good' : 'bad';
+    const cov = Math.max(0, (2.25 * state.len) * 12 / (320 * 430) * 100);
+    $('#t3CovR1').textContent = (cov * (1 - pct / 100)).toFixed(2) + '%';
+    $('#t3CovR2').textContent = cov.toFixed(2) + '%';
+    $('#t3CovR3').textContent = cov.toFixed(2) + '%';
+    const org = $('#t3OrgR2');
+    org.textContent = state.calib ? '≈0–1px' : Math.abs(state.offset) + 'px';
+    org.className = state.calib ? 'good' : 'bad';
+    updateCalc();
+  }
+
+  function updateCalc() {
+    const size = Number($('#t3CalcSize').value) || 256;
+    const units = Number($('#t3CalcUnits').value) || 1;
+    $('#t3CalcUnitsO').textContent = units;
+    const color = size * size * 4 / 1048576;
+    const depth = color * 0.75;
+    const msaa = color * 7;
+    const traffic = (color + depth) * 2 * units;
+    const gbs = traffic * 60 / 1024;
+    let cls = 'good', verdict = '可行：短尾/少量单位';
+    if (units > 3 && size >= 512) { cls = 'bad'; verdict = '不可行：长尾改 R2，不要逐角色大 RT'; }
+    else if (units > 10 && size >= 256) { cls = 'warn'; verdict = '偏高：50 人场景改用 R2 精简'; }
+    else if (units > 25 && size >= 384) { cls = 'bad'; verdict = '不可行：逐角色 RT 太多'; }
+    else if (units > 10) { cls = 'warn'; verdict = '注意：RT 数量/带宽接近上限'; }
+    const el = $('#t3CalcOut');
+    el.className = 't3-verdict ' + cls;
+    el.innerHTML = '颜色 ' + color.toFixed(2) + ' MB · +深度 ' + depth.toFixed(2) + ' MB · 4×MSAA≈' + msaa.toFixed(1) + ' MB<br>' +
+      '写+采样 ' + traffic.toFixed(1) + ' MB/帧 · 60fps≈' + gbs.toFixed(2) + ' GB/s<br><b>' + verdict + '</b>';
+  }
+
+  // controls
+  $('#t3Len').addEventListener('input', e => {
+    state.len = Number(e.target.value);
+    $('#t3LenO').textContent = state.len.toFixed(2) + 's';
+    draw(); updateUI();
+  });
+  $('#t3Tree').addEventListener('input', e => {
+    state.tree = Number(e.target.value);
+    draw(); updateUI();
+  });
+  $('#t3Rt').addEventListener('change', e => {
+    state.rt = Number(e.target.value);
+    draw(); updateUI();
+  });
+  $('#t3Calib').addEventListener('change', e => { state.calib = e.target.checked; draw(); updateUI(); });
+  $('#t3Proxy').addEventListener('change', e => { state.proxy = e.target.checked; draw(); updateUI(); });
+  $('#t3Offset').addEventListener('input', e => {
+    state.offset = Number(e.target.value);
+    $('#t3OffsetO').textContent = state.offset + 'px';
+    draw(); updateUI();
+  });
+  $('#t3Pause').addEventListener('click', e => {
+    state.paused = !state.paused;
+    e.currentTarget.textContent = state.paused ? '播放' : '暂停';
+    e.currentTarget.classList.toggle('primary', !state.paused);
+  });
+  $('#t3CalcSize').addEventListener('change', updateCalc);
+  $('#t3CalcUnits').addEventListener('input', updateCalc);
+
+  function loop(now) {
+    if (!state.paused) {
+      const dt = Math.min(0.05, (now - (last || now)) / 1000);
+      state.t = (state.t + dt * 0.13) % 1;
+    }
+    last = now;
+    draw();
+    if (now - uiT > 180) { updateUI(); uiT = now; }
+    requestAnimationFrame(loop);
+  }
+  draw();
+  updateUI();
+  window.__t3 = { state, draw, updateUI, samples: (i) => samplesFor(PANELS[i] || PANELS[1], (PANELS[i] || PANELS[1]).key === 'rt' ? state.offset : (state.calib ? state.offset : 0)), ribbon: (pts, w, col, a) => ribbon(PANELS[1], pts, w, col, a) };
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>

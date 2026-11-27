@@ -1,11 +1,12 @@
 # 2D 地图里的 3D 拖尾：方案、可行性与分档推荐
 
-- 任务：T-20261127-013
+- 任务：T-20261127-013；后续 T-20261127-014（同一线程）
 - 日期：2026-11-27
 - 场景：类似《幻唐志》《梦幻西游》手游的俯视/等轴 2D 地图；角色移动 / 技能拖尾；移动端；多人同屏
 - 性质：技术调研，不写游戏代码、不改现有项目；不复制参考游戏素材、UI、品牌
 - 标注约定：〔官方〕引擎/平台官方文档；〔厂商〕厂商博客或宣传口径；〔社区〕非官方实现/文章；〔推断〕本文工程判断；〔待实测〕必须用 PoC 验证
 - 交互版：`docs/2d-map-3d-trail-options-交互版.html`
+- 3渲2 深挖：`docs/2d-map-3d-trail-3to2-pipeline.md`（骨骼绑定/RT 边界/校准/排序/引擎映射/PoC）
 - 说明：本文不假设《幻唐志》《梦幻西游》的具体内部实现；只把它们当作“俯视/等轴 2D 地图 + 移动端 + 多人”的场景约束
 
 ---
@@ -14,10 +15,15 @@
 
 **在纯 2D y-sort 地图里，最稳的路线不是“把 3D ribbon 塞进 3D pass”，而是“3D 采样 → 屏幕空间投影 ribbon → 按 2D 规则排序/遮挡”。** 真 3D mesh 只给主角/技能/少量高价值单位；同屏大量单位用投影 ribbon 或 sprite 序列；低端机用单 quad/精灵；Viewport/Stencil 只在“3D 角色层已经存在 + 遮挡复杂 + 中高端机型”时才值得。
 
+> **如果角色是 3渲2（3D 模型先渲染到 RT，再作为 2D 精灵放进地图），默认答案要改：拖尾应放在「地图空间」，而不是角色 RT 内。** 采样骨骼世界变换 → 地图投影 → 2D 分段 ribbon（R2 = 本文 H + F 的 3渲2 变体）；角色 RT 只保留 ≤0.4–0.5s 的近手短刀光（R1），长拖尾不进 RT；独立 3D pass + 深度/Stencil（R3）只在“同一屏内跨层/逐像素遮挡”是硬需求时考虑。完整论证见第 2A 节和 `docs/2d-map-3d-trail-3to2-pipeline.md`。
+
 ### 0.1 推荐分档（先看这张表）
 
 | 档位 | 推荐方案 | 不建议 | 关键理由 |
 |---|---|---|---|
+| **3渲2 角色 · 主角/技能长拖尾（>0.5s 或 >1m）** | **R2 地图空间骨骼 ribbon**（H + F 的 3渲2 变体） | 把长尾塞进角色 RT（R1） | RT 边框会裁尾；角色精灵只有一个排序点，无法逐树遮挡；RT 尺寸随尾长膨胀〔推断〕 |
+| **3渲2 角色 · 近手短刀光（≤0.4–0.5s，完全在 RT 框内）** | **R1 RT 内短拖尾**；需要长尾时 **R4 混合** | 为短刀光单开全屏 3D pass | 复用角色已有 RT/pass，边际成本主要是填充与 RT 尺寸；还能被角色手臂/武器自遮挡〔推断〕 |
+| **3渲2 角色 · 跨层/逐像素遮挡（桥下、屋檐、拱门）** | **R3 独立 3D pass + 深度/Stencil 代理** | 纯 2D 分段硬扛 | 2D y-sort 表达不了“同一屏内多层”；但只有 ≤3 单位 + 中高端才值得〔推断〕 |
 | 主角 / 技能 / 坐骑 / 冲刺（同屏 1–3 个） | **H 混合投影 ribbon**（3D 采样 + 2D 屏幕空间网格 + 风格化材质）；武器/刀光用 **F 骨骼/挂点驱动**；有 3D 角色层时可用 **A 真 3D ribbon** | 裸 B GPU 粒子（软、贵、难排序）、裸 E Viewport（ROI 低） | 少量单位可以承担更高成本；投影网格能进入 y-sort，风格可完全 2D 化〔推断〕 |
 | 同屏 10–50 玩家 / NPC | **C 2D/2.5D 投影 ribbon**，合批成 1 个动态 mesh；必要时 **G sprite 序列** | A 真 3D mesh、B GPU 粒子、E Viewport | 移动端首要风险是 overdraw 与 draw call，不是顶点数；C 最便宜且排序正确〔推断〕 |
 | 低端机 / Compatibility 渲染器 | **G 单 quad + 滚动 UV / 2–4 帧 flipbook**，或 C 的 8–12 段精简版 | Godot GPUParticles3D trails（Compatibility 不支持）、全屏后处理 | 少一层透明、少一次 RT、少一次采样就是收益〔官方〕〔推断〕 |
@@ -32,7 +38,7 @@
 4. **拖尾是纯本地 cosmetic。** 只同步移动/技能事件，不同步拖尾顶点或粒子；远端用插值后的可视位置本地重建；传送、重生、重连必须清历史，否则会拉出一条跨地图的长带。〔推断〕
 5. **风格化要在网格和材质阶段做，不要靠后处理补救。** 3D ribbon 想贴合手绘/像素风，需要无光照/ramp、色阶量化、抖动、硬边/描边、屏幕像素宽度；soft additive glow 和 bloom 会把风格拉回“写实特效”。〔推断〕
 
-### 0.3 先问四个问题（决定架构，而不是先选引擎 API）
+### 0.3 先问五个问题（决定架构，而不是先选引擎 API）
 
 | 问题 | 如果答“是” | 如果答“否” |
 |---|---|---|
@@ -40,8 +46,11 @@
 | 2. 角色是 2D sprite/序列帧，还是 3D mesh/RT sprite？ | 2D 角色：C/G 最自然 | 3D 角色：H/A/F 可共享 3D 采样与骨骼 |
 | 3. 遮挡是整层（地面/建筑层）还是逐对象（树/柱/屋檐）？ | 逐对象：需要 y-sort 投影、Stencil 或 Viewport | 整层：普通 2D 层排序即可 |
 | 4. 同屏人数与目标机型？是否必须 60fps？ | 50 人 + 低端 + 60fps：C/G，严格限段限长 | 1–3 人 + 中高端：H/A 可上更高保真 |
+| 5. 角色是不是 3渲2（3D 模型渲染到 RT 再当 2D 精灵）？ | 是：默认 **R2 地图空间骨骼 ribbon**；短刀光 R1/R4；跨层遮挡才 R3 | 否：回到 Q1–Q4 的纯 2D 路线 |
 
 > 一句话决策：**纯 2D 地图 + 多人 → 先做 C；主角/技能 → 升级到 H；低端 → G；只有“已经有 3D 层且遮挡是硬需求”才上 E。**
+>
+> **3渲2 角色一句话：长拖尾 → R2；近手短刀光 → R1/R4；跨层像素级遮挡 → R3；冲刺残影 → R5；低端/50 人 → R2 精简或 R5。**
 
 ---
 
@@ -54,13 +63,14 @@
 | 真 3D 几何 | 世界空间 3D 位置历史 | 三角带/管状 mesh，参与 3D 深度/光照 | A、B、E |
 | 3D 数据、2D 呈现 | 3D 位置/骨骼采样 | 投影到屏幕，2D 网格/Line2D，进入 y-sort | C、H |
 | 3D 观感 | 2D 位置 + 高度/影子/截面 | 2D 伪 3D 条带、残影、精灵 | C、D、G |
+| 3渲2 角色 | 3D 骨骼/挂点 + 角色 RT | 3D 模型先渲染到 RT，再作为 2D 精灵 | R1（RT 内）、R2（地图空间）、R3（独立 pass） |
 
 ### 1.1 三种项目架构，可行性完全不同
 
 | 架构 | 3D 拖尾可行性 | 推荐 | 主要风险 |
 |---|---|---|---|
 | 纯 2D Canvas/2D Renderer（Sprite + Tilemap） | 3D mesh 无法直接与 Sprite 逐对象排序 | C/H；A 仅在 SubViewport/Stencil 代理下 | 排序/遮挡、RT 成本 |
-| 2.5D 混合（2D 地图 + 3D 角色/RT 角色） | 角色层已有 3D 相机/深度，A/H 可复用 | H + F；主角 A；必要时 E | 2D/3D 两套相机/排序对齐 |
+| 2.5D 混合（2D 地图 + 3D 角色/RT 角色） | 角色层已有 3D 相机/深度，但拖尾默认不应塞进角色 RT | **R2 地图空间骨骼 ribbon（H + F）**；短刀光 R1/R4；必要时 R3 | 角色 RT 相机与地图相机不同；精灵单排序点；RT 边框 |
 | 全 3D 场景 + 2D 美术面片（billboard/quad） | A 可行，配合 alpha scissor 深度预写/排序轴 | A + 风格化材质；H 作为低配 | 透明排序、alpha test 成本、相机对齐 |
 
 〔推断〕这张表比“引擎支持什么 API”更重要：同一个 TrailRenderer，在纯 2D Canvas 里和在 3D 场景里，排序成本差一个量级。
@@ -171,6 +181,105 @@
 
 ---
 
+## 2A. 3渲2 / RT 角色：拖尾放在哪一层（R1–R5）
+
+> 本节是 T-20261127-014 的补充。完整变换链、校准公式、RT 预算、引擎 API 与 PoC 见 `docs/2d-map-3d-trail-3to2-pipeline.md`。原 A–H 方案保留不变；R1–R5 是“角色已经是 3渲2”时的落层选择，不与 A–H 冲突。
+
+### 2A.0 什么是 3渲2（本文口径）
+
+3D 蒙皮模型 + 骨骼动画 → 角色相机渲染到 RT（透明背景）→ RT 作为 2D 精灵/Quad 放进 2D 地图 → 与地图一起 y-sort/图层合成。角色每帧的“外观”是一张图，但骨骼/挂点仍然存在；拖尾既可以画进这张图（R1），也可以只取骨骼数据、在地图层画（R2）。
+
+### 2A.1 五种落层
+
+| 代号 | 做法 | 对应原方案 | 最关键优点 | 最关键缺点 |
+|---|---|---|---|---|
+| **R1** | 拖尾画在角色 RT 内（同一 3D 相机/pass） | A/F 的局部版 | 与可见武器尖绝对贴合；可被手臂/身体自遮挡；不增加 2D draw call/额外 pass | RT 边框裁剪；角色精灵单排序点；RT 分辨率/尺寸绑定 |
+| **R2** | 采样骨骼世界变换 → 地图投影 → 2D 分段 ribbon | **H + F** | 逐树/建筑遮挡正确；无额外 RT；风格/性能可控；50 单位可行 | 需要校准 RT 相机与地图相机的偏差；无真实深度/自遮挡 |
+| **R3** | 独立 3D pass + Viewport/Stencil/深度代理 | E + A | 真 3D、可像素级跨层遮挡 | 成本最高；2D 精灵不写深度，需要代理；单 RT 只能一层 |
+| **R4** | 短段 RT（R1）+ 长段地图（R2） | R1 + R2 | 近端贴手 + 远端排序兼得 | 接缝/双份材质/调参成本高 |
+| **R5** | RT 残影/精灵副本 afterimage | D | 最便宜、冲刺观感强 | 不是真拖尾；无方向/宽度控制 |
+
+### 2A.2 变换链（一句话版）
+
+```text
+bone local → bone global（相对 skeleton）→ model root → character map root（x,y + 高度 z）
+  → 地图投影 → 2D ribbon（R2）
+  → 或 RT 相机投影 → RT 像素 → 精灵 → 地图屏幕（R1 / 校准锚点）
+```
+
+〔官方〕Godot 的 `Skeleton3D.get_bone_global_pose()` 返回“相对 skeleton”的变换，不是世界变换；要再乘 skeleton/model/character 变换，或直接用 `BoneAttachment3D.global_transform`。Unity 用骨骼 `Transform.position`/`Camera.WorldToScreenPoint`；Unreal 用 `GetSocketTransform(..., RTS_World)`；Cocos 用 `Camera.worldToScreen`；Three.js 用 `Bone.getWorldPosition` + `Vector3.project(camera)`。详见深挖文档 §1/§10。
+
+### 2A.3 三个决定性问题
+
+| 问题 | 结论 |
+|---|---|
+| **拖尾有多长？** | 超过角色 RT 框（通常 >0.5m / >0.4–0.5s）就不要塞 RT；RT 面积按平方涨，裁剪率也会暴露。 |
+| **要不要逐树遮挡？** | 要 → R2（分段 y-sort）；不要且短 → R1；同一屏跨层 → R3。角色精灵是一个排序点，RT 内拖尾永远无法逐树穿插。 |
+| **和可见武器尖对得齐吗？** | 只用地图投影会有偏差；用 RT 相机投影做近端锚点、按年龄衰减回地图投影（R2b）。校准后 origin 目标 ≤2px @1080p（待实测）。 |
+
+### 2A.4 校准：近端贴合，远端回地图
+
+设 `A_rt` 是骨骼过 RT 相机后映射到精灵/地图屏幕的位置，`A_map` 是同一骨骼过地图投影的位置，`Δ = A_rt - A_map`。对每个采样点按年龄 `age` 衰减：
+
+```text
+w = clamp(1 - age / T_blend, 0, 1)       // T_blend = 0.12–0.25s
+p_screen = P_map · C · p_bone + Δ · w
+```
+
+起点完全贴合可见武器尖，0.2s 后完全回到地图空间；`Δ` 要低通/按姿态平滑，镜像/换手时同步镜像。不要用 GPU readback 做校准；运行时相机矩阵投影即可。完整推导/排查清单见深挖文档 §3。
+
+### 2A.5 RT 边界与分辨率
+
+- 角色 RT 只包角色 + 10–20% padding；**不要为长拖尾扩角色 RT**。
+- 256² RGBA8 ≈ 0.25MB；512² ≈ 1MB；1024² ≈ 4MB；加深度/MSAA 再乘 1.75–7 倍。10 个 512² RT ≈ 10MB 颜色（不含深度/MSAA），50 个不可行。〔推断/估算〕
+- 动态改 RT 尺寸会重分配/清屏/断合批；需要时用固定档位（128/192/256/384），只给主角升档。
+- 像素风：RT 与 2D ribbon 都按整数倍/整数像素宽度/NEAREST；手绘/卡通：匹配 RT 的超采样倍率与描边宽度，局部放大对比。
+
+### 2A.6 排序与自遮挡
+
+- **R2 的排序键是采样点的地面 y**，不是 ribbon 抬高后的屏幕 y；在树/建筑排序线处切段/分带（通常 2–5 带），不是逐段一个节点。
+- **树冠/桥/拱门**是 y-sort 的盲区：用 canopy overlay 层、地图 layer/region、2D 遮罩；只有“同一屏多层 + 像素级正确”才上 R3 的深度/Stencil 代理。
+- **自遮挡**：R1 天然正确；R2 需要短段 R1（R4）、角色剪影遮罩，或接受刀光在身体上方。
+- UI 永远单独 CanvasLayer，不被拖尾盖住。
+
+### 2A.7 什么时候才把拖尾放进角色 RT（R1）
+
+同时满足 4 条才考虑：
+
+1. 拖尾短（≤0.4–0.5s 或 ≤0.5m），完全落在角色 RT 框内（裁剪率 ≤5%）；
+2. 需要“被角色手臂/身体/武器自遮挡”或“与可见武器尖绝对贴合”；
+3. 同屏高价值单位 ≤3（不要给 50 个 NPC 各开一份 RT）；
+4. 不需要逐树/逐建筑穿插（或这些遮挡可以用 R4 的长段解决）。
+
+任一不满足 → R2；低端/50 人 → R2 精简/R5。
+
+### 2A.8 什么时候才上独立 3D pass / Stencil（R3）
+
+同时满足 4 条：
+
+1. 遮挡无法用 y 线/图层/2D 遮罩表达（桥下、拱门、屋檐、多层地形）；
+2. 必须像素级正确，而不是“大致前后”；
+3. 同屏高价值单位 ≤3；
+4. 目标中高端，且能接受额外 RT/pass/代理资产维护。
+
+任一不满足 → R2 + 分段 y-sort/图层/遮罩。
+
+### 2A.9 默认推荐（3渲2 版）
+
+| 场景 | 默认 | 备选 |
+|---|---|---|
+| 3渲2 主角/技能长拖尾 | **R2 + F**（地图空间骨骼 ribbon，分段 y-sort） | R2b 校准；R4 混合 |
+| 近手短刀光 | **R1**（≤0.4–0.5s） | R2（更便宜/更好排序） |
+| 主角武器技能（近端要贴手、远端要入地图） | **R4** | R2b |
+| 同屏 10–50 玩家/NPC | **R2 精简**（12–24 段/30Hz/1 层） | R5/G |
+| 低端机 | **R2 8–12 段** 或 **R5/G** | 关闭 NPC 拖尾 |
+| 桥下/拱门/多层地形像素级遮挡 | **R3** | R2 + 图层/遮罩 |
+| 冲刺/瞬移 | **R5** | R2 短尾 |
+
+> 一句话记忆：**3渲2 长尾进地图（R2），短刀光进 RT（R1），近端贴手用混合（R4），跨层遮挡才上 3D pass（R3），冲刺残影用 R5。**
+
+---
+
 ## 3. 权重评分矩阵
 
 ### 3.1 维度与默认权重
@@ -223,6 +332,9 @@
 - 主角/技能：25 / 15 / 8 / 15 / 12 / 8 / 4 / 8 / 5
 - 同屏大量：12 / 25 / 10 / 15 / 8 / 15 / 5 / 7 / 3
 - 低端机：8 / 30 / 10 / 10 / 8 / 12 / 2 / 15 / 5
+- 3渲2 角色：22 / 18 / 8 / 18 / 14 / 8 / 4 / 6 / 2（视觉/融合/风格略升，引擎支持降权）
+
+> **3渲2 补充**：上表是“角色形态无关”的评分。若角色是 3渲2，R2 = H + F；在 3渲2 权重下，H 4.50、C 4.48、F/G 4.26，R2 仍是第一。R1 只用于短刀光、R3 只用于跨层遮挡，都不参与全局排序；它们应作为“R2 的局部补丁”评估，而不是替代方案。
 
 ### 3.4 怎么读这张矩阵
 
@@ -245,6 +357,7 @@
   - `screenY = (x + y) * tileH / 2 - z * heightScale`
   - 其中 `tileW:tileH = 2:1` 是常见等轴比例；`heightScale` 是“世界高度 → 屏幕像素”的换算。〔推断/通用公式〕
 - **透视相机**：z 还会改变屏幕大小/视差；拖尾在角色身后时可能和脚底错位，需要相机对齐或按深度缩放宽度。〔推断〕
+- **3渲2 角色相机 vs 地图相机**：角色 RT 常用 3/4 透视，地图常用俯视/等轴正交；同一骨骼在两条链上的屏幕方向/长度不同。R2 用地图投影做主体，用 RT 相机投影做近端锚点校准（Δ 按年龄衰减回地图空间）；否则会出现“拖尾从脚/头飘出”或与画面里可见刀尖错位。详见 `2d-map-3d-trail-3to2-pipeline.md` §3/§6。〔推断/待实测〕
 - **Ribbon 朝向**（三种，按效果选）：
   | 朝向 | 效果 | 成本/风险 |
   |---|---|---|
@@ -263,6 +376,9 @@
 | 2. 深度/Stencil 代理 | 遮挡物用 3D 代理/alpha scissor 写深度或 Stencil；3D 拖尾测试 | 3D 场景 + 2D 美术面片；遮挡物可代理 | 额外 pass；alpha test 破坏 early-Z；纯 2D Canvas 不适用 | 只有 3D 层已存在时 |
 | 3. Viewport 分层合成 | 3D 拖尾渲染到透明 RT，在某个 2D 排序层合成 | 主角/技能；需要统一 bloom/描边 | 全屏 RT + resolve；单 RT 只能对应一层 | 中高端、少量单位 |
 | 4. 按遮挡物切段 | 用 2D 遮罩/射线把拖尾切成前后段 | 少量固定遮挡物 | 实现脆、维护贵、运动时跳变 | 最后手段 |
+| 5. 角色 RT 内拖尾（R1） | 拖尾与角色同一 RT，随角色精灵一个排序点 | 3渲2 短刀光、自遮挡 | RT 边框裁剪；无法逐树遮挡；RT 尺寸/分辨率绑定 | 只做 ≤0.4–0.5s 短尾；长尾走 R2 |
+
+**3渲2 补充**：角色 RT 精灵的排序键通常是脚底 y，整张图一个排序点；拖尾在 RT 内就无法“尾段绕到树后”。R2 把拖尾挪到地图 2D 层，按每段采样点的**地面 y** 排序，并在树/建筑的排序线处分带（通常 2–5 带，不是逐段一个节点）。树冠/桥/拱门是 y-sort 盲区，用 canopy overlay/地图 layer/2D 遮罩；只有“同一屏多层 + 像素级正确”才上 R3 的深度/Stencil 代理。详见深挖文档 §5。
 
 补充规则：
 
@@ -363,6 +479,18 @@
 
 > 配置建议：`tier`（hero/crowd/low）、`segments`、`lifetime`、`minDistance`、`widthCurve`、`colorRamp`、`layers`、`maxVisible`、`samplingHz`、`occlusionMode` 全部数据驱动；不要把参数硬编码在特效脚本里。〔推断〕
 
+### 5.2 3渲2 专用映射（RT / 骨骼 / 投影 / 2D 合成）
+
+| 引擎 | 角色 RT | 骨骼/挂点世界变换 | 地图投影 | 2D ribbon 与排序 | 关键坑 |
+|---|---|---|---|---|---|
+| **Unity 6 / URP** | `RenderTexture` + `Camera.targetTexture`；`SpriteRenderer`/`RawImage`/Quad 显示 | `Animator.GetBoneTransform`/Socket `Transform.position` | `Camera.WorldToScreenPoint`（左下原点，z=相机距离）；`WorldToViewportPoint` 归一化 | 自定义 2D mesh + `MeshRenderer.sortingOrder`，或 `SpriteRenderer` 分带；`TransparencySortMode`/`SortingGroup` | 2D Renderer 与 3D 相机两套排序；`LineRenderer` 属 3D，别混进 2D y-sort |
+| **Cocos Creator 3.8** | `RenderTexture.reset({w,h})` + `Camera.targetTexture`；`SpriteFrame.texture = rt` | `SkeletalAnimation`/joint 节点；`node.worldPosition` | `Camera.worldToScreen`（左下原点、z 归一化；社区实测） | 自定义 2D assembler / `Graphics` / `Sprite` 分带；节点树/siblingIndex 排序 | GPU 粒子渲染器不支持 TrailModule；RT 采样 `SAMPLE_FROM_RT`/UV 翻转 |
+| **Godot 4.6** | `SubViewport` + `Camera3D` + `ViewportTexture` 给 `Sprite2D` | `Skeleton3D.get_bone_global_pose`（相对 skeleton）；`BoneAttachment3D.global_transform` | `Camera3D.unproject_position`（Viewport 2D）；地图 2D 用 `Camera2D`/canvas transform 或等轴公式 | `Line2D`/`MeshInstance2D` + `ArrayMesh` 分带；`CanvasItem.y_sort_enabled`/`z_index` | 4.6 无 `Trail3D`（4.8+）；粒子 trails 仅 Forward+/Mobile；`Line2D` 别逐段一个节点 |
+| **Unreal 5.x** | `SceneCaptureComponent2D` + `UTextureRenderTarget2D`（`TextureTarget`）；5.4+ `bRenderInMainRenderer` | `GetSocketTransform(..., RTS_World)` | `UGameplayStatics::ProjectWorldToScreen`（玩家相机）；自定义地图相机需 `FSceneView` 自己算 | Niagara Ribbon + Paper2D/UMG；`TranslucencySortPolicy`/`TranslucencySortPriority` | 半透明排序策略与 2D 排序不是一套；R3 需 Custom Depth/Stencil 代理 |
+| **Three.js** | `WebGLRenderTarget` + `setRenderTarget`；`rt.texture` 给 `SpriteMaterial`/Plane | `Bone.getWorldPosition`/`Object3D.getWorldPosition` | `Vector3.project(camera)` → NDC → 像素；或正交等轴公式 | `BufferGeometry`/`Line2` 分带；`renderOrder` 手动排序 | 无内置 y-sort；`Sprite` 永远面向相机；RT 的 Y 翻转/alpha |
+
+> 完整 API 引用、校准公式与验收见 `2d-map-3d-trail-3to2-pipeline.md` §1/§3/§10。
+
 ---
 
 ## 6. 分档推荐与参数
@@ -375,6 +503,13 @@
 - **参数**：32–64 段；寿命 0.5–0.8s 或长度 3–5m；头宽 0.35–0.6m，尾宽 0；采样 60Hz 或每 4–6cm；主带 + 地面影子（curtain 与影子二选一，避免 3 层）；无光照 + 4–6 色阶 + 1–2px 描边。
 - **预算**：≤2 draw calls；≤2 层透明；屏幕覆盖 ≤5%（单角色）；GPU 增量 ≤2ms（中端 60fps，待实测）。
 - **为什么不是 A**：纯 2D 地图里 A 的排序成本高；H 用同样的 3D 采样，但合成走 2D，观感差距小于维护差距。
+
+### S0′ 3渲2 角色：主角 / 技能 / 长拖尾
+
+- **方案**：**R2 地图空间骨骼 ribbon**（H + F 的 3渲2 版）；近手短刀光用 **R1**（≤0.4–0.5s，完全在 RT 框内）；近端要绝对贴手、远端要入地图时用 **R4**；**R3** 仅在跨层/像素级遮挡时评估。
+- **参数**：32–48 段；寿命 0.5–0.8s；头宽 0.35–0.6m；60Hz 或每 4–6cm 采样；校准 `T_blend` 0.12–0.25s；R1 短段 0.12–0.2s；主带 + 地面影子（curtain/影子二选一，≤2 层）。
+- **预算**：R2 分带 2–5 draw calls；屏幕覆盖 ≤5%（单角色）；**不为长尾扩角色 RT**；R1 角色 RT ≤256/384 档；origin 偏差 p95 ≤2px @1080p（待实测）；GPU 增量 ≤2ms（中端 60fps，待实测）。
+- **为什么不是 R1**：长尾超过角色 RT 框就会被裁，且角色精灵单排序点无法逐树遮挡；RT 放大按面积平方涨，50 单位不可行。R1 只保留给“短、贴手、要自遮挡”的刀光。
 
 ### S1 同屏 10–50 玩家 / NPC
 
@@ -406,29 +541,36 @@
 3. 需要统一的后处理（bloom/描边/色彩空间）或真实深度；
 4. 目标机型中高端，且同屏高价值单位 ≤3。
 
+**3渲2 注意**：角色有 RT/3D 相机，不代表地图有可用的深度/Stencil；2D 树/建筑仍然不写深度。R3 必须为遮挡物做深度/Stencil 代理，成本要单列；不要把“角色是 3D 的”误判成“遮挡可以自动解决”。〔推断〕
+
 任一不满足 → 用 H/C；低端 → G。〔推断〕
 
 ---
 
 ## 7. PoC / 验收计划
 
-### 7.1 三个小样（2–3 个方案，不写生产代码）
+### 7.1 四个小样（3–4 个方案，不写生产代码）
 
 | PoC | 引擎 | 对比方案 | 场景 | 主要验证 |
 |---|---|---|---|---|
 | P1 | Godot 4.6 | C（`Line2D`/`MeshInstance2D`）、A（`ArrayMesh` 3D + SubViewport）、B（`GPUParticles3D` trails） | 等轴地面 + 1 棵树 + 1/10/50 个移动单位 | 排序/遮挡、overdraw、draw call、GC、Compatibility 降级 |
 | P2 | Unity（URP） | TrailRenderer（View/TransformZ）、ParticleSystem Trail、H（自定义 2D mesh + Shader Graph） | 2D 地图 + 树/建筑 + 1/10/50 单位 | 真机 GPU/CPU、2D/3D 排序、Frame Debugger、风格 A/B |
 | P3 | Three.js（可选） | `Line2` vs 自定义 `BufferGeometry` ribbon | 正交等轴相机 + 50 个单位 | Web 端 draw call/填充率、分辨率适配、Afterimage 对比 |
+| **P4** | **Godot 4.6 / Unity URP** | **R1（角色 RT 内短尾）vs R2（地图空间骨骼 ribbon）vs R2b（RT 锚点校准）**；可选 R3（独立 pass + 深度代理） | **3渲2 角色 RT（256/384/512）+ 骨骼/武器挂点 + 1 棵树 + 墙/桥 + UI + 1/10/50 单位** | **RT 裁剪率、origin 偏差 px、遮挡正确率、RT 显存/带宽、1/10/50 FPS/draw call/overdraw、风格一致性** |
 
-### 7.2 测试矩阵（建议 15–17 个 run）
+### 7.2 测试矩阵（建议 18–22 个 run）
 
 | 变量 | 取值 |
 |---|---|
 | 同屏单位 | 1 / 10 / 50 |
+| 角色管线 | 纯 2D 精灵 / 3渲2 RT（P4） |
+| RT 尺寸 | 256 / 384 / 512（仅 3渲2） |
+| 校准 | 无 / R2b RT 锚点校准 |
 | 段数 | 16 / 32 / 64 |
 | 分辨率 | 720p / 1080p |
 | 设备档 | 低 / 中 / 高（实机，不用模拟器） |
-| 拖尾寿命 | 0.3 / 0.5 / 0.8s |
+| 拖尾寿命 | 0.3 / 0.5 / 0.8s（3渲2 加测 1.5s / 3m / 5m） |
+| 朝向 | 0° / 90° / 180° / 270°（+ 镜像，仅 3渲2） |
 | 网络 | 本地 / 100ms 延迟 + 10Hz 更新（仅远端） |
 
 关键组合（每方案）：
@@ -440,7 +582,13 @@
 5. 10 单位 × 32 段 × 低端/高端；
 6. 1 单位 × 64 段 × 低端/高端；
 7. 50 单位 × 32 段 × 100ms/10Hz 网络；
-8. 传送/重生/重连各 1 次。
+8. 传送/重生/重连各 1 次；
+9. P4：R1 vs R2 × 1 单位 × 0.3/0.8/1.5s × 中端；
+10. P4：R1 vs R2 × 10 单位 × 0.8s × 中端；
+11. P4：R2 × 50 单位 × 0.3/0.8s × 中端/低端；
+12. P4：R2b × 1 单位 × 4 朝向 × 2 zoom（origin 偏差）；
+13. P4：树冠/桥下/墙/UI 各 1 次；传送/重连各 1 次；
+14. P4：R3（若做）× 1 单位 × 桥下/拱门 × 高端。
 
 每个 run：预热 10s → 采样 60s；记录 p50/p95 帧时间、GPU 时间（RenderDoc/Arm Graphics Analyzer/Snapdragon Profiler/Xcode GPU Capture）、draw calls、顶点/三角形、overdraw 覆盖（Scene Overdraw/工具）、内存、GC、截图/录屏。
 
@@ -456,6 +604,10 @@
 | 风格 | 5 个关键色抽样 ΔE2000 ≤ 5；描边 1–2px；手绘/像素模式无 soft additive glow | 像素采样 + 3 人盲评 |
 | 内存 | 50 单位拖尾缓冲 ≤256KB；稳态 GC ≈ 0 | profiler/分配日志 |
 | 网络/回放 | 远端跟随插值位置；传送无长带；回放可重建 | 延迟模拟 + 录屏 |
+| **3渲2 · RT 裁剪率** | **R1 在最长拖尾下 ≤5%**（超出 RT 的屏幕长度/总长度） | 截图/像素测量 |
+| **3渲2 · Origin 偏差** | **校准后 p95 ≤2px @1080p / ≤1.5px @720p**；4 朝向 × 2 镜像无 >1px 跳变 | RT marker vs 地图 marker 像素采样 |
+| **3渲2 · 遮挡正确率** | **R2 ≥9/10（树前/树后/树冠/墙/桥/UI）**；R3 若做则 10/10 | 逐例截图/录屏 |
+| **3渲2 · RT 预算** | **角色 RT 只包角色；10 单位不因拖尾扩 RT；50 单位不用 R1** | profiler + RT 尺寸表 |
 
 > ΔE/描边/覆盖是“建议门槛”，不是行业标准；先定基线，再逐版对比。〔推断〕
 
@@ -466,6 +618,10 @@
 - E 的 RT 成本 >1.5ms 或不能解决逐对象遮挡 → 放弃 E，改 H + 切段/遮罩。
 - 任何方案在目标低端机出现持续 GC/每帧 mesh 重建 → 先修池化/环形缓冲，再谈观感。
 - 风格盲评 <2/3 认为“和地图一致” → 先改材质/色阶/描边，不加特效层。
+- 3渲2 R1 在最长拖尾下裁剪率 >5% → 该效果不适合 RT 内，改 R2/R4。
+- 3渲2 R2b 校准后 origin p95 >4px 且换装/换向后跳变 → 先修锚点/校准，不进入美术量产。
+- 3渲2 R2 在 50 单位低端机 p95 >33.3ms → 降段/关 NPC/切 R5，不再堆 3D。
+- 3渲2 R1 为拖尾把角色 RT 扩大 >1 档 → 直接改 R2；不要用 RT 尺寸换尾长。
 
 ---
 
@@ -501,14 +657,27 @@
 | 26 | [Qualcomm Adreno Mobile Best Practices](https://docs.qualcomm.com/bundle/publicresource/80-78185-2/topics/mobile_best_practices.md) | 移动端 render pass/带宽/透明合成 | 〔厂商文档〕 |
 | 27 | [Unity Learn: Material & Shader Best Practices](https://learn.unity.com/tutorial/additional-material-shader-best-practices-7339) | 透明粒子/overdraw/简化 shader；仅经搜索摘要核对 | 〔厂商教程〕 |
 | 28 | [SuperTrail（Cocos 3.8 2D 拖尾）](https://github.com/soidaken/SuperTrail) | 自定义 assembler、合批、环形缓冲、零 GC 声明；许可证未在 README 标明，使用前核实 | 〔社区〕 |
+| 29 | [Godot 4.6 Skeleton3D](https://docs.godotengine.org/en/4.6/classes/class_skeleton3d.html) | `get_bone_global_pose` 返回相对 skeleton 的变换，不是世界变换 | 〔官方〕 |
+| 30 | [Godot 4.6 BoneAttachment3D](https://docs.godotengine.org/en/4.6/classes/class_boneattachment3d.html) | 动态复制/覆盖骨骼 3D 变换；可直接取全局变换 | 〔官方〕 |
+| 31 | [Godot 4.6 Camera3D](https://docs.godotengine.org/en/4.6/classes/class_camera3d.html) | `unproject_position(world_point)` 返回 Viewport 2D 坐标 | 〔官方〕 |
+| 32 | [Godot 4.6 SubViewport](https://docs.godotengine.org/en/4.6/classes/class_subviewport.html) | 3D 渲染到 2D 的 RT；`render_target_update_mode` | 〔官方〕 |
+| 33 | [Unity 6 Camera.WorldToScreenPoint](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Camera.WorldToScreenPoint.html) | 世界→屏幕像素；左下原点；z=相机距离 | 〔官方〕 |
+| 34 | [Unity 6 Camera.targetTexture](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Camera-targetTexture.html) | 相机渲染到 RenderTexture | 〔官方〕 |
+| 35 | [Unity 6 RenderTexture](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/RenderTexture.html) | RT 资产/尺寸/格式 | 〔官方〕 |
+| 36 | [Unity 6 SortingGroup](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Rendering.SortingGroup.html) | 2D 多部件统一排序 | 〔官方〕 |
+| 37 | [Unreal USceneCaptureComponent2D](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Engine/Components/USceneCaptureComponent2D?application_version=5.4) | 角色 RT：`TextureTarget`、`CompositeMode`、`bRenderInMainRenderer` | 〔官方/搜索摘要〕 |
+| 38 | [Unreal SceneComponent GetSocketTransform](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/class/SceneComponent) | `GetSocketTransform(..., RTS_World)` 取挂点世界变换 | 〔官方/搜索摘要〕 |
+| 39 | [Cocos Creator 3.8 RenderTexture](https://docs.cocos.com/creator/3.8/manual/en/asset/render-texture.html) | RenderTexture + `Camera.targetTexture` + `SpriteFrame.texture` | 〔官方/搜索摘要〕 |
+| 40 | [Three.js Vector3.project](https://threejs.org/docs/pages/Vector3.html.md) | 世界→NDC；再转像素 | 〔官方〕 |
 
-> 说明：部分厂商页面在当前网络环境下只能通过搜索摘要核对，已在表中标注“摘要”；正式立项前建议在可访问网络/真机环境复核原文与版本号。游戏名称/商标归各自权利人；本文未复制任何游戏素材、UI 或品牌资产。
+> 说明：部分厂商页面在当前网络环境下只能通过搜索摘要核对，已在表中标注“摘要”；正式立项前建议在可访问网络/真机环境复核原文与版本号。游戏名称/商标归各自权利人；本文未复制任何游戏素材、UI 或品牌资产。3渲2 专用的 28 条来源（含 Cocos Camera、Three WebGLRenderTarget/Sprite、Unreal ProjectWorldToScreen、Arm/Qualcomm）见 `2d-map-3d-trail-3to2-pipeline.md` §13。
 
 ---
 
 ## 附录 A：一句话记忆
 
 - **纯 2D 多人 → C；主角/技能 → H；低端 → G；有 3D 层且遮挡硬需求 → A/E；B 只做爆发特效；D 只做残影点缀。**
+- **3渲2 长尾 → R2（地图空间骨骼 ribbon）；短刀光 → R1；近端贴手 → R4；跨层像素级遮挡 → R3；冲刺残影 → R5。**
 
 ## 附录 B：最小伪代码（语言无关）
 
@@ -528,6 +697,31 @@
   else if mode == TRUE_3D:
       mesh = buildRibbon3D(history, cameraAligned, width)
       drawIn3DPass(mesh, depthTest = true, depthWrite = false)
+```
+
+3渲2 的 R2b（地图空间 + RT 锚点校准）核心差异：
+
+```text
+每帧:
+  boneWorld = characterRoot * modelRoot * skeleton * boneGlobalPose(socket)
+  A_map = mapProject(boneWorld)
+  A_rt  = spriteMap(rtProject(boneWorld))   // RT 像素 → 精灵 → 地图屏幕
+  delta = A_rt - A_map
+  history.push({t, boneWorld, A_map, delta, groundY: mapProject(x, y, 0).y})
+  while history.front.t < now - lifetime: history.popFront()
+  if epochChanged: history.clear()
+
+  for s in history:
+      w = clamp(1 - (now - s.t) / T_blend, 0, 1)   // T_blend = 0.12–0.25s
+      s.screen = mapProject(s.boneWorld) + s.delta * w
+      s.sortY  = mapProject(s.boneWorld.x, s.boneWorld.y, 0).y
+
+  bands = splitByOccluderLines(history, occluderYs)  // 通常 2–5 带
+  for band in bands:
+      mesh = buildRibbon(band.samples, widthPx(zoom), colorRamp)
+      drawInYSort(mesh, sortKey = band.sortY, layer = trailLayer)
+
+  // 可选 R4：age ≤ T_short 的样本另画在角色 RT 内
 ```
 
 ## 附录 C：术语
