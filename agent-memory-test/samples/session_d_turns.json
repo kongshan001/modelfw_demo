@@ -1,0 +1,18 @@
+[
+  {
+    "user": "Update: the Atlas mobile app launch moved from 2026-12-15 to 2027-01-10. PostgreSQL 16 stays.",
+    "assistant": "Updated: Atlas launch 2027-01-10, PostgreSQL 16 unchanged."
+  },
+  {
+    "user": "Correction: please use Go for code examples from now on, not TypeScript.",
+    "assistant": "Corrected: Go for code examples from now on."
+  },
+  {
+    "user": "Change of ownership: Priya now owns the payment integration, not Leo.",
+    "assistant": "Updated: Priya owns payments now."
+  },
+  {
+    "user": "To confirm the updates: use Go for code examples from now on, and Priya owns the payment integration now — Leo no longer does.",
+    "assistant": "Confirmed: Go for code examples; Priya owns payments."
+  }
+]

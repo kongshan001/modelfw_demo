@@ -1,0 +1,15 @@
+# Captured from the official v0.3.6 gateway running against local Ollama.
+# Host: macOS Darwin 21.6.0 (Intel-era), Node 22.19.0, Ollama 0.12.3.
+# LLM: llama3.2:latest (3B), L1 system prompt ~2369 tokens.
+
+[tdai-gateway] [memory-tdai][l1-extractor] [l1-debug] ENTRY taskId=l1-extraction, newMsgs=2, bgMsgs=0, userPromptLen=599, sysPromptLen=2369, ...
+[tdai-gateway] [memory-tdai] [standalone-runner] run() start: taskId=l1-extraction, model=llama3.2, tools=false, timeout=180000ms
+[tdai-gateway] [memory-tdai] [standalone-runner] run() failed after 180227ms: The operation was aborted due to timeout
+[tdai-gateway] [memory-tdai][l1-extractor] LLM extraction failed: The operation was aborted due to timeout
+[tdai-gateway] [memory-tdai] [pipeline] [session-A-teach] L1 complete: processed 0 messages
+
+# Direct Ollama benchmark (same host):
+#   llama3.2:latest, ~2,000-token prompt, num_predict=32 -> >300s (curl timeout)
+#   deepseek-r1:1.5b, 2,759-token prompt, num_predict=32 -> 171.3s wall
+#   deepseek-r1:1.5b, short prompt, 14 output tokens -> 1.16s eval (model load dominated)
+# Conclusion: local CPU inference is not viable for the default L1 prompt on this host.

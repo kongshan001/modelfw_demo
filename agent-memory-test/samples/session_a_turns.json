@@ -1,0 +1,30 @@
+[
+  {
+    "user": "My name is Maya Chen. I am a senior product manager at Northwind Labs in Berlin.",
+    "assistant": "Noted, Maya."
+  },
+  {
+    "user": "Please keep answers concise and use bullet points. I always want code examples in TypeScript.",
+    "assistant": "Understood: concise bullets and TypeScript examples."
+  },
+  {
+    "user": "Project decision: the Atlas mobile app will launch on 2026-12-15. We will use PostgreSQL 16 for the backend.",
+    "assistant": "Logged: Atlas launch 2026-12-15, PostgreSQL 16."
+  },
+  {
+    "user": "My teammate Leo owns the payment integration. Please do not assign payment work to me.",
+    "assistant": "Noted: Leo owns payments."
+  },
+  {
+    "user": "I am allergic to peanuts, and I only drink oat milk lattes.",
+    "assistant": "Noted: peanut allergy, oat milk lattes."
+  },
+  {
+    "user": "For the Atlas project, we decided to freeze the API schema on 2026-12-01.",
+    "assistant": "Logged: Atlas API schema freeze on 2026-12-01."
+  },
+  {
+    "user": "Thanks — please continue.",
+    "assistant": "Understood."
+  }
+]

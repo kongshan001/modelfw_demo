@@ -1,0 +1,143 @@
+[tdai-gateway] [memory-tdai] [core] Initializing TDAI Core: dataDir=<TEST_ROOT>/data-timing
+[tdai-gateway] [memory-tdai][bm25-local] Initialized BM25 local encoder (language=en)
+[tdai-gateway] [memory-tdai][embedding] Using remote embedding (provider=openai, model=nomic-embed-text)
+[tdai-gateway] [memory-tdai][factory] Store created: backend=sqlite, dbPath=<TEST_ROOT>/data-timing/vectors.db, dimensions=768, embedding=enabled, bm25=enabled
+[tdai-gateway] [memory-tdai][sqlite] FTS5 tables initialized (l1_fts, l0_fts) [schema v2 — jieba segmented]
+[tdai-gateway] [memory-tdai][sqlite] Initialized (dimensions=768)
+[tdai-gateway] [memory-tdai] [pipeline] Initialized: everyNConversations=1, warmup=disabled, l1IdleTimeout=2s, l2DelayAfterL1=0s, l2MinInterval=0s, l2MaxInterval=3600s, sessionActiveWindow=24h
+[tdai-gateway] [memory-tdai] [core] TDAI Core initialized
+[tdai-gateway] [memory-tdai] [pipeline-factory] Store initialized: backend=sqlite, provider=openai
+[tdai-gateway] [memory-tdai] [pipeline-factory] Manifest created: {"type":"sqlite","sqlite":{"path":"vectors.db"}}
+[tdai-gateway] [memory-tdai] [core] Stores initialized: backend=sqlite, embedding=openai
+[tdai-gateway] [memory-tdai][sqlite] [L0-count] total=0
+[tdai-gateway] [memory-tdai][sqlite] [L1-count] total=0
+(node:39565) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[tdai-gateway] Gateway listening on http://127.0.0.1:18421
+[tdai-gateway] Security posture: auth=disabled host=127.0.0.1 cors=no-headers
+[tdai-gateway] TDAI_GATEWAY_API_KEY is NOT set — all routes except GET /health are open to anyone who can reach this port. This is the legacy default. Set TDAI_GATEWAY_API_KEY (or server.apiKey in tdai-gateway.yaml) and pass `Authorization: Bearer <key>` from clients before exposing the gateway beyond the loopback interface.
+[tdai-gateway] [memory-tdai] [core] Checkpoint recalculated: l0_conversations=0, l1_memories=0
+[tdai-gateway] [memory-tdai] [standalone-runner] Creating StandaloneLLMRunner: model=deepseek-flash, tools=false
+[tdai-gateway] [memory-tdai] [standalone-runner] Creating StandaloneLLMRunner: model=deepseek-flash, tools=true
+[tdai-gateway] [memory-tdai] [core] Pipeline runners wired
+[tdai-gateway] [memory-tdai] [pipeline] Restored 0 session state(s) from checkpoint
+[tdai-gateway] [memory-tdai] [pipeline] Pipeline started
+[tdai-gateway] [memory-tdai] [core] Scheduler started
+[tdai-gateway] [memory-tdai] [capture] L0 capture cursor (per-session, atomic): afterTimestamp=1795741133394 session=session-G-timing
+[tdai-gateway] [memory-tdai] [capture] No per-session checkpoint cursor found for session=session-G-timing — using pluginStartTimestamp as floor: 1795741133394 (2026-11-27T00:58:53.394Z)
+[tdai-gateway] [memory-tdai][l0] Raw message[0] timestamp probe: missing (type=undefined, value=undefined)
+[tdai-gateway] [memory-tdai][l0] Extracted 2 user/assistant messages from 2 total
+[tdai-gateway] [memory-tdai][l0] First captured message: role=user, ts=1795741133398, date=2026-11-27T00:58:53.398Z, content=My name is Timing Probe. I prefer very short answers.
+[tdai-gateway] [memory-tdai][l0] Incremental filter: 2 total → 2 new (cursor=1795741133394)
+[tdai-gateway] [memory-tdai][l0] Have originalUserText but cannot locate target raw message — skipping replacement, will rely on sanitizeText().
+[tdai-gateway] [memory-tdai][l0] After sanitize+filter: 2 messages (from 2)
+[tdai-gateway] [memory-tdai][l0] Recorded 2 messages to <TEST_ROOT>/data-timing/conversations/2026-11-27.jsonl
+[tdai-gateway] [memory-tdai] [capture] L0 recorded: 2 messages for session session-G-timing
+[tdai-gateway] [memory-tdai] [capture] [L0-vec-index] Check: filteredMessages=2, vectorStore=available, embeddingService=available
+[tdai-gateway] [memory-tdai] [capture] [L0-vec-index] START indexing 2 message(s) for session session-G-timing (mode=async-bg)
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] START id=l0_session-G-timing_1795741133459_0_5ca071, session=session-G-timing, role=user, text="My name is Timing Probe. I prefer very short answers...." (no embedding — metadata-only write)
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] Skipping vec write (no embedding) id=l0_session-G-timing_1795741133459_0_5ca071
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] OK id=l0_session-G-timing_1795741133459_0_5ca071 (meta-only)
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] START id=l0_session-G-timing_1795741133772_1_527d2c, session=session-G-timing, role=assistant, text="Noted: Timing Probe, short answers...." (no embedding — metadata-only write)
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] Skipping vec write (no embedding) id=l0_session-G-timing_1795741133772_1_527d2c
+[tdai-gateway] [memory-tdai][sqlite] [L0-upsert] OK id=l0_session-G-timing_1795741133772_1_527d2c (meta-only)
+[tdai-gateway] [memory-tdai] [capture] [L0-vec-index] DONE: 2/2 records written (metadata-only, embed=background)
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] Created new session state
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] notify: conversation_count=1/1, buffered_messages=0 (+0 new)
+[tdai-gateway] Persisting states: {"session-G-timing":{"conversation_count":1,"last_extraction_time":"","last_extraction_updated_time":"","last_active_time":1795741133807,"l2_pending_l1_count":0,"warmup_threshold":0,"l2_last_extraction_time":""}}
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] Conversation threshold reached (1>=1), triggering L1
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] Enqueuing L1 (queue=L1)
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L1] enqueued, pending=1, running=false
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L1] dequeued, starting execution (remaining=0)
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L1 running: messages=0, conversation_count=1
+[tdai-gateway] [memory-tdai] [capture] Scheduler notified of conversation round (sessionKey=session-G-timing)
+[tdai-gateway] [memory-tdai] [capture] ⏱ Capture timing: total=504ms, l0Record+checkpoint=63ms, l0VecIndex=347ms (metadata-only, embed=background, msgs=2), notify=93ms
+[tdai-gateway] Capture completed in 507ms: l0=2
+[tdai-gateway] [memory-tdai] [pipeline-factory] [l1] Session session-G-timing: l1_cursor=(start)
+[tdai-gateway] [memory-tdai][sqlite] [L0-query] session=session-G-timing, afterRecordedAtMs=(all), limit=50, returned 2 row(s)
+[tdai-gateway] [memory-tdai][sqlite] [L0-query-grouped] session=session-G-timing, afterRecordedAtMs=(all), 2 messages across 1 group(s)
+[tdai-gateway] [memory-tdai] [pipeline-factory] [l1] L0 data source: VectorStore DB
+[tdai-gateway] [memory-tdai] [pipeline-factory] [l1] Processing 2 L0 messages across 1 sessionId group(s) for session session-G-timing
+[tdai-gateway] [memory-tdai] [pipeline-factory] [l1] Group sessionId=(empty): 2 messages
+[tdai-gateway] [memory-tdai][l1-extractor] Extracting from 2 new messages (+ 0 background) [2 qualified from 2 input]
+[tdai-gateway] [memory-tdai][l1-extractor] [l1-debug] ENTRY taskId=l1-extraction, newMsgs=2, bgMsgs=0, userPromptLen=597, sysPromptLen=2369, model=(default), previousSceneName=(none), runnerKind=llmRunner
+[tdai-gateway] [memory-tdai] [standalone-runner] run() start: taskId=l1-extraction, model=deepseek-flash, tools=false, timeout=180000ms
+[tdai-gateway] [memory-tdai] [capture] [L0-vec-index-bg] Background embedding complete: 2/2 vectors updated (506ms)
+[tdai-gateway] [memory-tdai] [standalone-runner] run() completed: 7150ms, steps=1, output=759 chars
+[tdai-gateway] [memory-tdai][l1-extractor] LLM detected 1 scene(s)
+[tdai-gateway] [memory-tdai][l1-extractor] Total extracted memories: 2 across 1 scene(s)
+[tdai-gateway] [memory-tdai][sqlite] [L1-count] total=0
+[tdai-gateway] [memory-tdai][l1-dedup] Using FTS keyword recall mode (no embedding service or no vector data)
+[tdai-gateway] [memory-tdai][l1-dedup] FTS keyword recall: m_1795741141087_f71583f9→0, m_1795741141088_087ae25d→0
+[tdai-gateway] [memory-tdai][l1-dedup] No similar records found for any memory, all will be stored
+[tdai-gateway] [memory-tdai][l1-writer] Stored memory m_1795741141087_f71583f9: The user's name is Timing Probe....
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] START id=m_1795741141087_f71583f9, contentLen=32, content="The user's name is Timing Probe...."
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] Embedding OK: dims=768, norm=1.0000
+[tdai-gateway] [memory-tdai][sqlite] [L1-upsert] START id=m_1795741141087_f71583f9, type=persona, content="The user's name is Timing Probe....", embeddingDims=768, embeddingNorm=1.0000
+[tdai-gateway] [memory-tdai][sqlite] [L1-upsert] OK id=m_1795741141087_f71583f9
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] upsert result=true id=m_1795741141087_f71583f9
+[tdai-gateway] [memory-tdai][l1-writer] Stored memory m_1795741141088_087ae25d: The user (Timing Probe) prefers AI responses to be very short....
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] START id=m_1795741141088_087ae25d, contentLen=62, content="The user (Timing Probe) prefers AI responses to be very short...."
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] Embedding OK: dims=768, norm=1.0000
+[tdai-gateway] [memory-tdai][sqlite] [L1-upsert] START id=m_1795741141088_087ae25d, type=instruction, content="The user (Timing Probe) prefers AI responses to be very shor...", embeddingDims=768, embeddingNorm=1.0000
+[tdai-gateway] [memory-tdai][sqlite] [L1-upsert] OK id=m_1795741141088_087ae25d
+[tdai-gateway] [memory-tdai][l1-writer] [vec-dual-write] upsert result=true id=m_1795741141088_087ae25d
+[tdai-gateway] [memory-tdai][l1-extractor] Extraction complete: extracted=2, stored=2
+[tdai-gateway] [checkpoint] markL1ExtractionComplete session=session-G-timing: extracted=2, cursor=1795741133459, lastScene="I am talking with Timing Probe about short answers"
+[tdai-gateway] [memory-tdai] [pipeline-factory] [l1] L1 complete: extracted=2, stored=2 (1 group(s))
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L1 complete: processed 0 messages
+[tdai-gateway] Persisting states: {"session-G-timing":{"conversation_count":0,"last_extraction_time":"","last_extraction_updated_time":"","last_active_time":1795741133807,"l2_pending_l1_count":1,"warmup_threshold":0,"l2_last_extraction_time":""}}
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L2 timer advanced: firing in 0s (was 0s)
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L1] task completed (remaining=0)
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] Enqueuing L2 (trigger=timer:delay-after-l1, queue=L2)
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L2] enqueued, pending=1, running=false
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L2] dequeued, starting execution (remaining=0)
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L2 running: l2_pending_l1_count=1
+[tdai-gateway] [memory-tdai] [pipeline-factory] [L2] session=session-G-timing, updatedAfter=(full)
+[tdai-gateway] [memory-tdai][sqlite] [L1-query] filter={sessionKey=session-G-timing, sessionId=(all), updatedAfter=(none)}, returned 2 record(s)
+[tdai-gateway] [memory-tdai] [pipeline-factory] [L2] Incremental query returned 2 record(s) (session=session-G-timing)
+[tdai-gateway] [memory-tdai] [extractor] Created: dataDir=<TEST_ROOT>/data-timing, model=(default), maxScenes=15, timeout=300000ms
+[tdai-gateway] [memory-tdai] [extractor] extract() start: 2 memories
+[tdai-gateway] [memory-tdai] [extractor] extract() backup phase: 1ms
+[tdai-gateway] [memory-tdai] [extractor] extract() scene index loaded: 0 entries (1ms)
+[tdai-gateway] [memory-tdai] [extractor] extract() prompt built: 681 chars (6ms)
+[tdai-gateway] [memory-tdai] [extractor] extract() starting LLM runner (timeout=300000ms, maxTokens=model default)...
+[tdai-gateway] [memory-tdai] [standalone-runner] run() start: taskId=scene-extract-1795741141927, model=deepseek-flash, tools=true, timeout=300000ms
+[tdai-gateway] [memory-tdai] [standalone-runner] run() completed: 8036ms, steps=2, output=802 chars
+[tdai-gateway] [memory-tdai] [standalone-runner] Tool calls: write_to_file
+[tdai-gateway] [memory-tdai] [extractor] extract() LLM runner completed: 8036ms
+[tdai-gateway] [memory-tdai] [extractor] extract() soft-delete cleanup: removed 0 empty files (2ms)
+[tdai-gateway] [memory-tdai] [extractor] extract() filename normalization: skipped 1 (1ms)
+[tdai-gateway] [memory-tdai] [extractor] extract() scene index synced: 6ms
+[tdai-gateway] [memory-tdai] [extractor] updateSceneNavigation() skipped: no persona file yet, waiting for PersonaGenerator
+[tdai-gateway] [memory-tdai] [extractor] extract() persona.md navigation updated: 2ms
+[tdai-gateway] [memory-tdai] [extractor] extract() completed: 2 memories processed in 8061ms
+[tdai-gateway] [checkpoint] incrementScenesProcessed: scenes_processed=1
+[tdai-gateway] [memory-tdai] [pipeline-factory] [L2] Extraction complete: processed=2, latestCursor=2026-11-27T00:59:01.651Z
+[tdai-gateway] Persisting states: {"session-G-timing":{"conversation_count":0,"last_extraction_time":"2026-11-27T00:59:09.982Z","last_extraction_updated_time":"2026-11-27T00:59:01.651Z","last_active_time":1795741133807,"l2_pending_l1_count":0,"warmup_threshold":0,"l2_last_extraction_time":"2026-11-27T00:59:09.982Z"}}
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L2 complete
+[tdai-gateway] [memory-tdai] [pipeline] [session-G-timing] L2 maxInterval timer armed: 3600s
+[tdai-gateway] [memory-tdai] [pipeline] Triggering L3
+[tdai-gateway] [memory-tdai] [pipeline] Enqueuing L3 (queue=L3)
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L3] enqueued, pending=1, running=false
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L3] dequeued, starting execution (remaining=0)
+[tdai-gateway] [memory-tdai] [pipeline] L3 running
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L2] task completed (remaining=0)
+[tdai-gateway] [memory-tdai] [trigger] Evaluating: total_processed=2, last_persona_at=0, memories_since=2, scenes=1
+[tdai-gateway] [memory-tdai] [trigger] Trigger P2 (cold start): scenes_processed=1, total_processed=2
+[tdai-gateway] [memory-tdai] [pipeline-factory] [L3] Starting persona generation: 首次冷启动：首次提取完成且有场景文件
+[tdai-gateway] [memory-tdai] [persona] Generator created: model=(default), dataDir=<TEST_ROOT>/data-timing
+[tdai-gateway] [memory-tdai] [persona] Starting generation: reason="首次冷启动：首次提取完成且有场景文件"
+[tdai-gateway] [memory-tdai] [persona] Checkpoint: total_processed=2, last_persona_at=0
+[tdai-gateway] [memory-tdai] [persona] No existing persona file
+[tdai-gateway] [memory-tdai] [persona] Scene index: 1 total, 1 changed since last persona
+[tdai-gateway] [memory-tdai] [persona] Generation mode: first, 1 scene blocks to process
+[tdai-gateway] [memory-tdai] [persona] Calling LLM for persona generation (timeout=180s, tools=enabled, workspaceDir=<TEST_ROOT>/data-timing)...
+[tdai-gateway] [memory-tdai] [standalone-runner] run() start: taskId=persona-generation, model=deepseek-flash, tools=true, timeout=180000ms
+[tdai-gateway] [memory-tdai] [standalone-runner] run() completed: 6337ms, steps=2, output=342 chars
+[tdai-gateway] [memory-tdai] [standalone-runner] Tool calls: write_to_file
+[tdai-gateway] [memory-tdai] [persona] LLM runner completed
+[tdai-gateway] [memory-tdai] [persona] Persona written (3397 chars) in 6354ms
+[tdai-gateway] [memory-tdai] [pipeline-factory] [L3] Persona generation succeeded
+[tdai-gateway] [memory-tdai] [pipeline] L3 complete
+[tdai-gateway] [memory-tdai] [pipeline] [queue:L3] task completed (remaining=0)

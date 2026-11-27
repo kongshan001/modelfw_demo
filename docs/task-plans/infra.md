@@ -2,6 +2,15 @@
 
 ## 进行中
 
+## T-20261127-006 · 实测腾讯 TencentDB Agent Memory（跨会话长期记忆）
+- 来源: 飞书消息（B 站《给 AI 装上长期记忆，腾讯这个框架开源了》，https://b23.tv/mIvaqZU，2026-11-27，37s，UP 你也太不小心了_；简介：腾讯云数据库团队开源 Agent Memory 框架，让 AI 记住跨会话上下文）
+- 类型: infra（AI 框架实测 / 长期记忆）
+- 目标: 核实并本地试跑 `TencentCloud/TencentDB-Agent-Memory`：L0–L3 记忆层级、Chat Memory/Skill/LLM-Wiki/Code-Graph、Memory Hub、跨会话召回与 Token 节省；给出安装/许可/依赖/可用性结论
+- 交付: `agent-memory-test/`（隔离安装/复现脚本、两会话演示、日志/截图、docs 报告）；如有 UI 发截图
+- 约束: 不申请/不写死腾讯云付费资源或凭证；密钥只走 env/本地，不入库；官方 vs 社区本地 fork 明确标注；不改现有 memory/路由；真实可复现，失败给阻塞报告
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
+
 ## T-20261126-003 · 新建 game_task 仓库归档游戏代码与资产
 - 来源: 飞书消息（2026-11-26，“代码产物、游戏资产都要进 git repo，弄一个新 repo，例如叫 game_task”）
 - 类型: infra（Git 归档 / 资产快照）

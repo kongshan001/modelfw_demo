@@ -1,0 +1,114 @@
+{
+  "query_set": "update",
+  "data_dir": "<TEST_ROOT>/data",
+  "results": [
+    {
+      "id": "launch_after_update",
+      "query": "When is the Atlas mobile app launch?",
+      "latency_ms": 931,
+      "strategy": "hybrid",
+      "l1_count": 5,
+      "l1": [
+        {
+          "content": "The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01.",
+          "score": 0,
+          "type": "episodic"
+        },
+        {
+          "content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin.",
+          "score": 0,
+          "type": "persona"
+        },
+        {
+          "content": "The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes.",
+          "score": 0,
+          "type": "persona"
+        },
+        {
+          "content": "The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it).",
+          "score": 0,
+          "type": "instruction"
+        },
+        {
+          "content": "The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on.",
+          "score": 0,
+          "type": "instruction"
+        }
+      ],
+      "prepend_context": "<relevant-memories>\n以下是当前对话召回的相关记忆，不代表当前任务进程，仅作为参考：\n\n- [episodic|I am helping the user update Atlas launch schedule] The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01. (活动时间: 2026-11-27T00:47:56+00:00 ~ 2026-11-27T00:47:56+00:00)\n- [persona|I am speaking with Maya Chen about her professional background] The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin. (活动时间: 2026-11-27T00:32:10+00:00)\n- [persona|I am logging Maya Chen's project decisions and personal details] The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes. (活动时间: 2026-11-27T00:33:37+00:00)\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it). (活动时间: 2026-11-27T00:48:01+00:00 ~ 2026-11-27T00:48:01+00:00)\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on. (活动时间: 2026-11-27T00:33:16+00:00)\n</relevant-memories>",
+      "append_system_context": "<user-persona>\n# User Narrative Profile\n\n> **Archetype**: A senior PM who specifies collaboration the way she writes a spec — dated, versioned, and fenced off from scope she doesn't own.\n\n> **Basic Information**\n- Maya Chen — Senior Product Manager, Northwind Labs, Berlin\n- Atlas mobile app: launch 2027-01-10 (slipped from 2026-12-15); PostgreSQL 16; API schema freeze 2026-12-01\n\n> **Long-term Preferences**\n- Concise, bulleted answers; no preamble or padding.\n- Code examples in Go (TypeScript no longer wanted).\n- Settled decisions over open-ended options; the latest stated decision is authoritative, overwritten in place.\n- Payment integration is not hers; it routes to teammate Priya (previously Leo).\n\n## 📖 Chapter 1: Context & Current State\nMaya is late in the Atlas delivery push. She compresses launch into a critical path: schema frozen 2026-12-01, app ships 2027-01-10 on PostgreSQL 16 — a slip of roughly four weeks where architecture and the freeze date were deliberately left untouched. She owns product and platform; payments belong to Priya now, stated without apology. Slip cause, the reason for the owner change, and tenure remain unconfirmed.\n\n## 🎨 Chapter 2: The Texture of Life\nThin on interests and routines — don't guess. What shows is working texture: she reads implementation detail herself, thinks in dependency order, and treats architecture review as her territory. A recorded food allergy hints at someone used to stating constraints plainly — her \"requirements\" are usually boundaries, not wishes.\n\n## 🤖 Chapter 3: Interaction & Cognitive Protocol\n\n### 3.1 How to Speak\n- **Lead with the point**, then scannable bullets.\n- **Ship real Go**, not pseudocode or TypeScript.\n- **Peer register**: trade-offs, not teaching.\n- **Respect the fence**: payments go to Priya.\n\n### 3.2 How to Think\n- **Read the rule behind the rule**: her precision pre-empts drift.\n- **Frame in interfaces, schemas, state transitions** — her native language.\n- **Give sequencing, not option menus**: what settles first, what depends on it.\n- **Move one variable**: when a plan breaks, isolate what changed and hold the rest fixed.\n- **Keep facts current**: treat the latest stated date, language or owner as the record, with no parallel versions.\n\n## 🧩 Chapter 4: Deep Insights & Evolution\n\n* **Productive Contradictions**: A PM who reads versions and schemas yet draws hard ownership lines — precision applied to scope as much as to detail. She revises plans fast but almost never revises architecture.\n* **Evolution Trajectory**:\n  - 2026-11-27 — Format contract set: concise, bulleted; Atlas scope fixed, payments excluded.\n  - 2026-11-27 — Launch moved 2026-12-15 → 2027-01-10; PostgreSQL 16 and the 12-01 freeze held. Schedule yielded, architecture didn't.\n  - 2026-11-27 — Code examples TypeScript → Go; payment owner Leo → Priya, her own exclusion unchanged.\n* **Emergent Traits**:\n  - `Density-seeker` - Information per word over flow\n  - `Dependency-thinker` - Freeze before launch\n  - `Scope-fencer` - Unapologetic boundaries\n  - `Single-variable` - Changes one thing, holds the rest\n  - `Live-record` - Overwrites stale facts instead of explaining them\n</user-persona>\n\n<scene-navigation>\n---\n## 🗺️ Scene Navigation (Scene Index)\n*以下是当前场景记忆的索引，可根据需要 read_file 读取详细内容。*\n\n### Path: <TEST_ROOT>/data/scene_blocks/Professional-Identity-Maya-Chen.md\n**热度**: 6 | **更新**: 2026-11-27T00:53:30+00:00\nSummary: Maya Chen, senior PM at Northwind Labs in Berlin, drives the Atlas app — launch slipped from 2026-12-15 to 2027-01-10 — on PostgreSQL 16 with the API schema frozen 2026-12-01; payments now owned by Priya, and her AI answers come concise, bulleted, in Go.\n\n### Path: <TEST_ROOT>/data/scene_blocks/Daily-Life-and-Health.md\n**热度**: 1 | **更新**: 2026-11-27T00:33:38+00:00\nSummary: Maya Chen's personal constraints and small daily rituals: a peanut allergy that shapes what she can eat, and a fixed order of oat milk lattes that suggests a steady café or desk routine.\n\n📌 使用说明：\n- Path 是 scene block 的绝对路径，可直接使用 read_file 读取完整内容\n- 热度：该场景被记忆命中的累计次数，越高越重要\n- Summary：场景的核心要点摘要\n</scene-navigation>\n\n<memory-tools-guide>\n## 记忆工具调用指南\n\n当上方注入的记忆片段不足以回答用户问题时，可主动调用以下工具获取更多信息：\n\n- **tdai_memory_search**：搜索结构化记忆（L1），适用于回忆用户偏好、历史事件节点、规则等关键信息。\n- **tdai_conversation_search**：搜索原始对话（L0），适用于查找具体消息原文、时间线、上下文细节；也可用于补充或校验 memory_search 的结果。\n- **read_file**（Scene Navigation 中的路径）：当已定位到相关情境，且需要该场景的完整画像、事件经过或阶段结论时使用。\n\n### ⚠️ 调用次数限制\n每轮对话中，tdai_memory_search 和 tdai_conversation_search **合计最多调用 3 次**。\n- 首次搜索无结果时，可换关键词或换工具重试，但总调用次数不要超过 3 次。\n- 若 3 次搜索后仍无结果，说明该信息不在记忆中，请直接根据已有信息回复用户，不要继续搜索。\n</memory-tools-guide>"
+    },
+    {
+      "id": "language_after_update",
+      "query": "Which language should code examples use?",
+      "latency_ms": 186,
+      "strategy": "hybrid",
+      "l1_count": 5,
+      "l1": [
+        {
+          "content": "The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on.",
+          "score": 0,
+          "type": "instruction"
+        },
+        {
+          "content": "The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01.",
+          "score": 0,
+          "type": "episodic"
+        },
+        {
+          "content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin.",
+          "score": 0,
+          "type": "persona"
+        },
+        {
+          "content": "The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it).",
+          "score": 0,
+          "type": "instruction"
+        },
+        {
+          "content": "The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes.",
+          "score": 0,
+          "type": "persona"
+        }
+      ],
+      "prepend_context": "<relevant-memories>\n以下是当前对话召回的相关记忆，不代表当前任务进程，仅作为参考：\n\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on. (活动时间: 2026-11-27T00:33:16+00:00)\n- [episodic|I am helping the user update Atlas launch schedule] The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01. (活动时间: 2026-11-27T00:47:56+00:00 ~ 2026-11-27T00:47:56+00:00)\n- [persona|I am speaking with Maya Chen about her professional background] The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin. (活动时间: 2026-11-27T00:32:10+00:00)\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it). (活动时间: 2026-11-27T00:48:01+00:00 ~ 2026-11-27T00:48:01+00:00)\n- [persona|I am logging Maya Chen's project decisions and personal details] The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes. (活动时间: 2026-11-27T00:33:37+00:00)\n</relevant-memories>",
+      "append_system_context": "<user-persona>\n# User Narrative Profile\n\n> **Archetype**: A senior PM who specifies collaboration the way she writes a spec — dated, versioned, and fenced off from scope she doesn't own.\n\n> **Basic Information**\n- Maya Chen — Senior Product Manager, Northwind Labs, Berlin\n- Atlas mobile app: launch 2027-01-10 (slipped from 2026-12-15); PostgreSQL 16; API schema freeze 2026-12-01\n\n> **Long-term Preferences**\n- Concise, bulleted answers; no preamble or padding.\n- Code examples in Go (TypeScript no longer wanted).\n- Settled decisions over open-ended options; the latest stated decision is authoritative, overwritten in place.\n- Payment integration is not hers; it routes to teammate Priya (previously Leo).\n\n## 📖 Chapter 1: Context & Current State\nMaya is late in the Atlas delivery push. She compresses launch into a critical path: schema frozen 2026-12-01, app ships 2027-01-10 on PostgreSQL 16 — a slip of roughly four weeks where architecture and the freeze date were deliberately left untouched. She owns product and platform; payments belong to Priya now, stated without apology. Slip cause, the reason for the owner change, and tenure remain unconfirmed.\n\n## 🎨 Chapter 2: The Texture of Life\nThin on interests and routines — don't guess. What shows is working texture: she reads implementation detail herself, thinks in dependency order, and treats architecture review as her territory. A recorded food allergy hints at someone used to stating constraints plainly — her \"requirements\" are usually boundaries, not wishes.\n\n## 🤖 Chapter 3: Interaction & Cognitive Protocol\n\n### 3.1 How to Speak\n- **Lead with the point**, then scannable bullets.\n- **Ship real Go**, not pseudocode or TypeScript.\n- **Peer register**: trade-offs, not teaching.\n- **Respect the fence**: payments go to Priya.\n\n### 3.2 How to Think\n- **Read the rule behind the rule**: her precision pre-empts drift.\n- **Frame in interfaces, schemas, state transitions** — her native language.\n- **Give sequencing, not option menus**: what settles first, what depends on it.\n- **Move one variable**: when a plan breaks, isolate what changed and hold the rest fixed.\n- **Keep facts current**: treat the latest stated date, language or owner as the record, with no parallel versions.\n\n## 🧩 Chapter 4: Deep Insights & Evolution\n\n* **Productive Contradictions**: A PM who reads versions and schemas yet draws hard ownership lines — precision applied to scope as much as to detail. She revises plans fast but almost never revises architecture.\n* **Evolution Trajectory**:\n  - 2026-11-27 — Format contract set: concise, bulleted; Atlas scope fixed, payments excluded.\n  - 2026-11-27 — Launch moved 2026-12-15 → 2027-01-10; PostgreSQL 16 and the 12-01 freeze held. Schedule yielded, architecture didn't.\n  - 2026-11-27 — Code examples TypeScript → Go; payment owner Leo → Priya, her own exclusion unchanged.\n* **Emergent Traits**:\n  - `Density-seeker` - Information per word over flow\n  - `Dependency-thinker` - Freeze before launch\n  - `Scope-fencer` - Unapologetic boundaries\n  - `Single-variable` - Changes one thing, holds the rest\n  - `Live-record` - Overwrites stale facts instead of explaining them\n</user-persona>\n\n<scene-navigation>\n---\n## 🗺️ Scene Navigation (Scene Index)\n*以下是当前场景记忆的索引，可根据需要 read_file 读取详细内容。*\n\n### Path: <TEST_ROOT>/data/scene_blocks/Professional-Identity-Maya-Chen.md\n**热度**: 6 | **更新**: 2026-11-27T00:53:30+00:00\nSummary: Maya Chen, senior PM at Northwind Labs in Berlin, drives the Atlas app — launch slipped from 2026-12-15 to 2027-01-10 — on PostgreSQL 16 with the API schema frozen 2026-12-01; payments now owned by Priya, and her AI answers come concise, bulleted, in Go.\n\n### Path: <TEST_ROOT>/data/scene_blocks/Daily-Life-and-Health.md\n**热度**: 1 | **更新**: 2026-11-27T00:33:38+00:00\nSummary: Maya Chen's personal constraints and small daily rituals: a peanut allergy that shapes what she can eat, and a fixed order of oat milk lattes that suggests a steady café or desk routine.\n\n📌 使用说明：\n- Path 是 scene block 的绝对路径，可直接使用 read_file 读取完整内容\n- 热度：该场景被记忆命中的累计次数，越高越重要\n- Summary：场景的核心要点摘要\n</scene-navigation>\n\n<memory-tools-guide>\n## 记忆工具调用指南\n\n当上方注入的记忆片段不足以回答用户问题时，可主动调用以下工具获取更多信息：\n\n- **tdai_memory_search**：搜索结构化记忆（L1），适用于回忆用户偏好、历史事件节点、规则等关键信息。\n- **tdai_conversation_search**：搜索原始对话（L0），适用于查找具体消息原文、时间线、上下文细节；也可用于补充或校验 memory_search 的结果。\n- **read_file**（Scene Navigation 中的路径）：当已定位到相关情境，且需要该场景的完整画像、事件经过或阶段结论时使用。\n\n### ⚠️ 调用次数限制\n每轮对话中，tdai_memory_search 和 tdai_conversation_search **合计最多调用 3 次**。\n- 首次搜索无结果时，可换关键词或换工具重试，但总调用次数不要超过 3 次。\n- 若 3 次搜索后仍无结果，说明该信息不在记忆中，请直接根据已有信息回复用户，不要继续搜索。\n</memory-tools-guide>"
+    },
+    {
+      "id": "payment_after_update",
+      "query": "Who owns payments now?",
+      "latency_ms": 154.1,
+      "strategy": "hybrid",
+      "l1_count": 5,
+      "l1": [
+        {
+          "content": "The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it).",
+          "score": 0,
+          "type": "instruction"
+        },
+        {
+          "content": "The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on.",
+          "score": 0,
+          "type": "instruction"
+        },
+        {
+          "content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin.",
+          "score": 0,
+          "type": "persona"
+        },
+        {
+          "content": "The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01.",
+          "score": 0,
+          "type": "episodic"
+        },
+        {
+          "content": "The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes.",
+          "score": 0,
+          "type": "persona"
+        }
+      ],
+      "prepend_context": "<relevant-memories>\n以下是当前对话召回的相关记忆，不代表当前任务进程，仅作为参考：\n\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it). (活动时间: 2026-11-27T00:48:01+00:00 ~ 2026-11-27T00:48:01+00:00)\n- [instruction|I am helping the user update Atlas launch schedule] The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on. (活动时间: 2026-11-27T00:33:16+00:00)\n- [persona|I am speaking with Maya Chen about her professional background] The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin. (活动时间: 2026-11-27T00:32:10+00:00)\n- [episodic|I am helping the user update Atlas launch schedule] The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as originally confirmed, and the Atlas project's API schema will be frozen on 2026-12-01. (活动时间: 2026-11-27T00:47:56+00:00 ~ 2026-11-27T00:47:56+00:00)\n- [persona|I am logging Maya Chen's project decisions and personal details] The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes. (活动时间: 2026-11-27T00:33:37+00:00)\n</relevant-memories>",
+      "append_system_context": "<user-persona>\n# User Narrative Profile\n\n> **Archetype**: A senior PM who specifies collaboration the way she writes a spec — dated, versioned, and fenced off from scope she doesn't own.\n\n> **Basic Information**\n- Maya Chen — Senior Product Manager, Northwind Labs, Berlin\n- Atlas mobile app: launch 2027-01-10 (slipped from 2026-12-15); PostgreSQL 16; API schema freeze 2026-12-01\n\n> **Long-term Preferences**\n- Concise, bulleted answers; no preamble or padding.\n- Code examples in Go (TypeScript no longer wanted).\n- Settled decisions over open-ended options; the latest stated decision is authoritative, overwritten in place.\n- Payment integration is not hers; it routes to teammate Priya (previously Leo).\n\n## 📖 Chapter 1: Context & Current State\nMaya is late in the Atlas delivery push. She compresses launch into a critical path: schema frozen 2026-12-01, app ships 2027-01-10 on PostgreSQL 16 — a slip of roughly four weeks where architecture and the freeze date were deliberately left untouched. She owns product and platform; payments belong to Priya now, stated without apology. Slip cause, the reason for the owner change, and tenure remain unconfirmed.\n\n## 🎨 Chapter 2: The Texture of Life\nThin on interests and routines — don't guess. What shows is working texture: she reads implementation detail herself, thinks in dependency order, and treats architecture review as her territory. A recorded food allergy hints at someone used to stating constraints plainly — her \"requirements\" are usually boundaries, not wishes.\n\n## 🤖 Chapter 3: Interaction & Cognitive Protocol\n\n### 3.1 How to Speak\n- **Lead with the point**, then scannable bullets.\n- **Ship real Go**, not pseudocode or TypeScript.\n- **Peer register**: trade-offs, not teaching.\n- **Respect the fence**: payments go to Priya.\n\n### 3.2 How to Think\n- **Read the rule behind the rule**: her precision pre-empts drift.\n- **Frame in interfaces, schemas, state transitions** — her native language.\n- **Give sequencing, not option menus**: what settles first, what depends on it.\n- **Move one variable**: when a plan breaks, isolate what changed and hold the rest fixed.\n- **Keep facts current**: treat the latest stated date, language or owner as the record, with no parallel versions.\n\n## 🧩 Chapter 4: Deep Insights & Evolution\n\n* **Productive Contradictions**: A PM who reads versions and schemas yet draws hard ownership lines — precision applied to scope as much as to detail. She revises plans fast but almost never revises architecture.\n* **Evolution Trajectory**:\n  - 2026-11-27 — Format contract set: concise, bulleted; Atlas scope fixed, payments excluded.\n  - 2026-11-27 — Launch moved 2026-12-15 → 2027-01-10; PostgreSQL 16 and the 12-01 freeze held. Schedule yielded, architecture didn't.\n  - 2026-11-27 — Code examples TypeScript → Go; payment owner Leo → Priya, her own exclusion unchanged.\n* **Emergent Traits**:\n  - `Density-seeker` - Information per word over flow\n  - `Dependency-thinker` - Freeze before launch\n  - `Scope-fencer` - Unapologetic boundaries\n  - `Single-variable` - Changes one thing, holds the rest\n  - `Live-record` - Overwrites stale facts instead of explaining them\n</user-persona>\n\n<scene-navigation>\n---\n## 🗺️ Scene Navigation (Scene Index)\n*以下是当前场景记忆的索引，可根据需要 read_file 读取详细内容。*\n\n### Path: <TEST_ROOT>/data/scene_blocks/Professional-Identity-Maya-Chen.md\n**热度**: 6 | **更新**: 2026-11-27T00:53:30+00:00\nSummary: Maya Chen, senior PM at Northwind Labs in Berlin, drives the Atlas app — launch slipped from 2026-12-15 to 2027-01-10 — on PostgreSQL 16 with the API schema frozen 2026-12-01; payments now owned by Priya, and her AI answers come concise, bulleted, in Go.\n\n### Path: <TEST_ROOT>/data/scene_blocks/Daily-Life-and-Health.md\n**热度**: 1 | **更新**: 2026-11-27T00:33:38+00:00\nSummary: Maya Chen's personal constraints and small daily rituals: a peanut allergy that shapes what she can eat, and a fixed order of oat milk lattes that suggests a steady café or desk routine.\n\n📌 使用说明：\n- Path 是 scene block 的绝对路径，可直接使用 read_file 读取完整内容\n- 热度：该场景被记忆命中的累计次数，越高越重要\n- Summary：场景的核心要点摘要\n</scene-navigation>\n\n<memory-tools-guide>\n## 记忆工具调用指南\n\n当上方注入的记忆片段不足以回答用户问题时，可主动调用以下工具获取更多信息：\n\n- **tdai_memory_search**：搜索结构化记忆（L1），适用于回忆用户偏好、历史事件节点、规则等关键信息。\n- **tdai_conversation_search**：搜索原始对话（L0），适用于查找具体消息原文、时间线、上下文细节；也可用于补充或校验 memory_search 的结果。\n- **read_file**（Scene Navigation 中的路径）：当已定位到相关情境，且需要该场景的完整画像、事件经过或阶段结论时使用。\n\n### ⚠️ 调用次数限制\n每轮对话中，tdai_memory_search 和 tdai_conversation_search **合计最多调用 3 次**。\n- 首次搜索无结果时，可换关键词或换工具重试，但总调用次数不要超过 3 次。\n- 若 3 次搜索后仍无结果，说明该信息不在记忆中，请直接根据已有信息回复用户，不要继续搜索。\n</memory-tools-guide>"
+    }
+  ]
+}

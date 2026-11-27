@@ -1,0 +1,188 @@
+{
+  "token_unit": "cl100k_base",
+  "evidence_files": {
+    "base": {
+      "raw_transcript_tokens": 190,
+      "avg_recall_context_tokens": 1750.0,
+      "recall_to_transcript_ratio": 9.21,
+      "avg_prepend_tokens": 407.0,
+      "avg_append_tokens": 1343.0,
+      "l1_search_top1_accuracy": 0.875,
+      "rows": [
+        {
+          "id": "identity",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 344.5,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin."
+        },
+        {
+          "id": "atlas_launch",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 93.1,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) made the following Atlas project decisions on 2026-11-27: the Atlas mobile app will launch on 2026-12-15 using PostgreSQL 16 for the backend, and the Atlas project's API schema wi"
+        },
+        {
+          "id": "format_pref",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 72,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and always include code examples in TypeScript."
+        },
+        {
+          "id": "payment_owner",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 85,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Leo owns payments."
+        },
+        {
+          "id": "food_allergy",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 72.5,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) is allergic to peanuts and only drinks oat milk lattes."
+        },
+        {
+          "id": "api_freeze",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 77.4,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) made the following Atlas project decisions on 2026-11-27: the Atlas mobile app will launch on 2026-12-15 using PostgreSQL 16 for the backend, and the Atlas project's API schema wi"
+        },
+        {
+          "id": "cross_lingual_cn",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 111.2,
+          "l1_search_top1_hit": false,
+          "l1_search_top1_content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin."
+        },
+        {
+          "id": "broad_profile",
+          "l1_count": 5,
+          "prepend_chars": 1278,
+          "append_chars": 4276,
+          "prepend_tokens": 407,
+          "append_tokens": 1343,
+          "total_tokens": 1750,
+          "latency_ms": 89.9,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) is a senior product manager at Northwind Labs in Berlin."
+        }
+      ],
+      "gateway_recall_context_tokens": 1343,
+      "gateway_recall_latency_ms_median": 82.8
+    },
+    "update": {
+      "raw_transcript_tokens": 326,
+      "avg_recall_context_tokens": 1890.0,
+      "recall_to_transcript_ratio": 5.8,
+      "avg_prepend_tokens": 445.0,
+      "avg_append_tokens": 1445.0,
+      "l1_search_top1_accuracy": 1.0,
+      "rows": [
+        {
+          "id": "launch_after_update",
+          "l1_count": 5,
+          "prepend_chars": 1387,
+          "append_chars": 4600,
+          "prepend_tokens": 445,
+          "append_tokens": 1445,
+          "total_tokens": 1890,
+          "latency_ms": 931,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) made the following Atlas project decisions: the Atlas mobile app launch date was initially set to 2026-12-15 and later updated to 2027-01-10; PostgreSQL 16 remains the backend as "
+        },
+        {
+          "id": "language_after_update",
+          "l1_count": 5,
+          "prepend_chars": 1387,
+          "append_chars": 4600,
+          "prepend_tokens": 445,
+          "append_tokens": 1445,
+          "total_tokens": 1890,
+          "latency_ms": 186,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) requires the AI to keep answers concise, use bullet points, and use Go (not TypeScript) for code examples from now on."
+        },
+        {
+          "id": "payment_after_update",
+          "l1_count": 5,
+          "prepend_chars": 1387,
+          "append_chars": 4600,
+          "prepend_tokens": 445,
+          "append_tokens": 1445,
+          "total_tokens": 1890,
+          "latency_ms": 154.1,
+          "l1_search_top1_hit": true,
+          "l1_search_top1_content": "The user (Maya Chen) requires AI not to assign payment integration work to her; her teammate Priya now owns the payment integration (Leo no longer owns it)."
+        }
+      ],
+      "gateway_recall_context_tokens": 1445,
+      "gateway_recall_latency_ms_median": 102.6
+    }
+  },
+  "pipeline_llm_ms": {
+    "l1": {
+      "count": 1,
+      "min": 7150,
+      "median": 7150,
+      "max": 7150
+    },
+    "l2": {
+      "count": 1,
+      "min": 8036,
+      "median": 8036,
+      "max": 8036
+    },
+    "l3": {
+      "count": 1,
+      "min": 6337,
+      "median": 6337,
+      "max": 6337
+    }
+  },
+  "store_inventory": {
+    "l0_messages": 22,
+    "l1_records": 9,
+    "scene_blocks": 2,
+    "persona_chars": 4000,
+    "vectors_db_bytes": 6569984
+  }
+}

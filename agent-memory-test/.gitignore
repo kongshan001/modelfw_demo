@@ -1,0 +1,25 @@
+# Runtime / cloned code / dependencies
+.work/
+node_modules/
+
+# Local memory stores and logs
+data/
+data-timing/
+logs/
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# Python / OS noise
+__pycache__/
+*.pyc
+.DS_Store
+
+# Logs are ignored except the curated evidence excerpts
+*.log
+!evidence/*.log

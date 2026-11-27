@@ -1,0 +1,11 @@
+(node:39183) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=929ms, search=919ms(strategy=hybrid,hits=5,fts=321ms/5hits,vec=476ms/5hits), persona=5ms(3158chars), scene=4ms(loaded)
+launch_after_update: 931ms l1=5 prepend=1387 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=186ms, search=180ms(strategy=hybrid,hits=5,fts=3ms/1hits,vec=169ms/5hits), persona=6ms(3158chars), scene=0ms(loaded)
+language_after_update: 186ms l1=5 prepend=1387 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=151ms, search=147ms(strategy=hybrid,hits=5,fts=1ms/2hits,vec=140ms/5hits), persona=2ms(3158chars), scene=2ms(loaded)
+payment_after_update: 154.1ms l1=5 prepend=1387 chars

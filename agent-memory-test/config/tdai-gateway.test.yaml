@@ -1,0 +1,57 @@
+# TDAI Gateway test config — no secrets are stored here.
+# All credentials come from environment variables at runtime.
+server:
+  host: 127.0.0.1
+  corsOrigins: []
+
+data:
+  baseDir: ${TDAI_DATA_DIR}
+
+llm:
+  baseUrl: ${TDAI_LLM_BASE_URL}
+  apiKey: ${TDAI_LLM_API_KEY}
+  model: ${TDAI_LLM_MODEL}
+  maxTokens: 4096
+  timeoutMs: 300000
+  # DeepSeek-compatible endpoint: suppress reasoning tokens.
+  disableThinking: deepseek
+
+memory:
+  timezone: Asia/Shanghai
+  storeBackend: sqlite
+  capture:
+    enabled: true
+  pipeline:
+    # Test profile: force L1/L2 quickly. Production defaults are 5 / 600s / 50.
+    everyNConversations: 1
+    enableWarmup: false
+    l1IdleTimeoutSeconds: 2
+    l2DelayAfterL1Seconds: 0
+    l2MinIntervalSeconds: 0
+    l2MaxIntervalSeconds: 3600
+  extraction:
+    enabled: true
+    maxMemoriesPerSession: 20
+    enableDedup: true
+  persona:
+    triggerEveryN: 1
+    maxScenes: 15
+  recall:
+    enabled: true
+    strategy: hybrid
+    maxResults: 8
+    scoreThreshold: 0.25
+    timeoutMs: 10000
+  embedding:
+    provider: openai
+    baseUrl: ${TDAI_EMBEDDING_BASE_URL}
+    apiKey: ${TDAI_EMBEDDING_API_KEY}
+    model: ${TDAI_EMBEDDING_MODEL}
+    dimensions: 768
+    sendDimensions: false
+    timeoutMs: 30000
+  bm25:
+    enabled: true
+    language: en
+  report:
+    enabled: false

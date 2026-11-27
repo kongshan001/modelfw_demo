@@ -1,0 +1,125 @@
+{
+  "base": [
+    {
+      "id": "identity",
+      "query": "What is my name, role, and company?",
+      "expect": [
+        "Maya Chen",
+        "Northwind Labs",
+        "Berlin",
+        "product manager"
+      ]
+    },
+    {
+      "id": "atlas_launch",
+      "query": "When is the Atlas mobile app launch and which database will we use?",
+      "expect": [
+        "2026-12-15",
+        "PostgreSQL"
+      ]
+    },
+    {
+      "id": "format_pref",
+      "query": "What answer format do I prefer?",
+      "expect": [
+        "concise",
+        "bullet",
+        "TypeScript"
+      ]
+    },
+    {
+      "id": "payment_owner",
+      "query": "Who owns the payment integration?",
+      "expect": [
+        "Leo"
+      ]
+    },
+    {
+      "id": "food_allergy",
+      "query": "What food should I avoid?",
+      "expect": [
+        "peanut",
+        "oat milk"
+      ]
+    },
+    {
+      "id": "api_freeze",
+      "query": "When do we freeze the Atlas API schema?",
+      "expect": [
+        "2026-12-01"
+      ]
+    },
+    {
+      "id": "cross_lingual_cn",
+      "query": "我的项目什么时候上线？",
+      "expect": [
+        "2026-12-15",
+        "Atlas"
+      ]
+    },
+    {
+      "id": "broad_profile",
+      "query": "What do you know about me?",
+      "expect": [
+        "Maya Chen",
+        "senior",
+        "Atlas"
+      ]
+    }
+  ],
+  "update": [
+    {
+      "id": "launch_after_update",
+      "query": "When is the Atlas mobile app launch?",
+      "expect": [
+        "2027-01-10"
+      ],
+      "also_check": [
+        "2026-12-15"
+      ]
+    },
+    {
+      "id": "language_after_update",
+      "query": "Which language should code examples use?",
+      "expect": [
+        "Go"
+      ],
+      "also_check": [
+        "TypeScript"
+      ]
+    },
+    {
+      "id": "payment_after_update",
+      "query": "Who owns payments now?",
+      "expect": [
+        "Priya"
+      ],
+      "also_check": [
+        "Leo"
+      ]
+    }
+  ],
+  "restart": [
+    {
+      "id": "launch_persisted",
+      "query": "When is the Atlas mobile app launch now?",
+      "expect": [
+        "2027-01-10"
+      ]
+    },
+    {
+      "id": "language_persisted",
+      "query": "Which language should code examples use now?",
+      "expect": [
+        "Go"
+      ]
+    },
+    {
+      "id": "payment_persisted",
+      "query": "Who owns the payment integration now?",
+      "expect": [
+        "Priya"
+      ]
+    }
+  ]
+}

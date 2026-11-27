@@ -1,0 +1,6 @@
+$ command -v docker
+docker not found
+$ docker --version
+(eval):1: command not found: docker
+$ docker compose version
+(eval):1: command not found: docker

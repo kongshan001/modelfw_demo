@@ -1,0 +1,26 @@
+(node:37531) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=343ms, search=338ms(strategy=hybrid,hits=5,fts=192ms/4hits,vec=147ms/5hits), persona=3ms(2851chars), scene=2ms(loaded)
+identity: 344.5ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=93ms, search=92ms(strategy=hybrid,hits=5,fts=2ms/5hits,vec=86ms/5hits), persona=1ms(2851chars), scene=1ms(loaded)
+atlas_launch: 93.1ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=72ms, search=70ms(strategy=hybrid,hits=5,fts=1ms/0hits,vec=66ms/5hits), persona=1ms(2851chars), scene=0ms(loaded)
+format_pref: 72ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=85ms, search=84ms(strategy=hybrid,hits=5,fts=1ms/5hits,vec=80ms/5hits), persona=1ms(2851chars), scene=0ms(loaded)
+payment_owner: 85ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=72ms, search=71ms(strategy=hybrid,hits=5,fts=1ms/0hits,vec=68ms/5hits), persona=1ms(2851chars), scene=1ms(loaded)
+food_allergy: 72.5ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=77ms, search=76ms(strategy=hybrid,hits=5,fts=1ms/5hits,vec=73ms/5hits), persona=1ms(2851chars), scene=0ms(loaded)
+api_freeze: 77.4ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=111ms, search=110ms(strategy=hybrid,hits=5,fts=1ms/0hits,vec=105ms/5hits), persona=1ms(2851chars), scene=0ms(loaded)
+cross_lingual_cn: 111.2ms l1=5 prepend=1278 chars
+[memory-tdai][sqlite] [L1-search] DONE returning 5 result(s) (from 5 valid, 5 raw)
+[memory-tdai] [recall] ⏱ Recall timing: total=90ms, search=89ms(strategy=hybrid,hits=5,fts=1ms/0hits,vec=84ms/5hits), persona=0ms(2851chars), scene=0ms(loaded)
+broad_profile: 89.9ms l1=5 prepend=1278 chars
