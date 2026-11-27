@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>2D 地图里的 3D 拖尾 — 方案 / 评分 / 分档</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1712'/%3E%3Cpath d='M5 22c5-1 7-9 12-9 4 0 6 3 10 1' stroke='%23F2B35C' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M5 26c6-1 8-11 14-11 4 0 6 3 8 2' stroke='%235FD8C9' stroke-width='1.6' fill='none' stroke-linecap='round' opacity='.8'/%3E%3C/svg%3E">
+<style>
+:root[data-theme="dark"]{
+  --paper:#0A130F; --paper-2:#0E1B16; --card:#101F19; --card-2:#0C1914;
+  --ink:#E8F1E8; --ink-soft:#9AAFA2; --ink-faint:#647D70;
+  --line:rgba(150,200,170,.16); --line-strong:rgba(150,200,170,.32);
+  --gold:#F2B35C; --gold-dim:rgba(242,179,92,.12);
+  --teal:#5FD8C9; --teal-dim:rgba(95,216,201,.12);
+  --leaf:#9BD46A; --leaf-dim:rgba(155,212,106,.12); --warn:#FF8A5C; --warn-dim:rgba(255,138,92,.12);
+  --ok:#5FD88A; --ok-dim:rgba(95,216,138,.12); --bad:#FF6B6B; --bad-dim:rgba(255,107,107,.12);
+  --grid:rgba(150,200,170,.05);
+  --shadow:0 1px 0 rgba(255,255,255,.03), 0 18px 40px -28px rgba(0,0,0,.9);
+}
+:root[data-theme="light"]{
+  --paper:#F2EFE4; --paper-2:#E9E4D4; --card:#FCFBF4; --card-2:#F6F3E9;
+  --ink:#17261E; --ink-soft:#4E6256; --ink-faint:#82958A;
+  --line:rgba(23,38,30,.14); --line-strong:rgba(23,38,30,.28);
+  --gold:#A66B1E; --gold-dim:rgba(166,107,30,.09);
+  --teal:#0E7A70; --teal-dim:rgba(14,122,112,.09);
+  --leaf:#4C7F2A; --leaf-dim:rgba(76,127,42,.09); --warn:#B4441F; --warn-dim:rgba(180,68,31,.09);
+  --ok:#1B7A4A; --ok-dim:rgba(27,122,74,.09); --bad:#B02A2A; --bad-dim:rgba(176,42,42,.09);
+  --grid:rgba(23,38,30,.05);
+  --shadow:0 1px 0 rgba(23,38,30,.04), 0 14px 32px -24px rgba(23,38,30,.5);
+}
+:root{
+  --sans:"PingFang SC","Hiragino Sans GB","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Monaco,"Cascadia Mono",monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:96px 96px,96px 96px}
+.wrap{position:relative;z-index:2}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));z-index:60;transition:width .12s linear}
+header.hero{padding:clamp(44px,6.5vw,84px) clamp(20px,5vw,56px) 22px;max-width:var(--maxw);margin:0 auto}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+h1{font-family:var(--serif);font-weight:700;letter-spacing:-.01em;font-size:clamp(32px,5.2vw,56px);line-height:1.12;margin:.3em 0 .18em}
+h1 .u{color:var(--gold)} h1 .g{color:var(--teal)}
+.sub{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:84ch;margin:0 0 18px}
+.sub b{color:var(--ink);font-weight:600}
+.stat-row{display:flex;flex-wrap:wrap;gap:9px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--card)}
+.stat b{color:var(--ink);font-weight:600}
+nav.toc{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent);border-bottom:1px solid var(--line)}
+nav.toc .inner{max-width:var(--maxw);margin:0 auto;padding:8px clamp(18px,4vw,48px);display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none}
+nav.toc .inner::-webkit-scrollbar{display:none}
+nav.toc a{font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--ink-soft);text-decoration:none;padding:7px 9px;border-radius:8px;white-space:nowrap;border:1px solid transparent;transition:.2s}
+nav.toc a:hover{color:var(--ink);background:var(--card);border-color:var(--line)}
+nav.toc a.active{color:var(--ink);border-color:var(--line-strong);background:var(--card)}
+main{max-width:var(--maxw);margin:0 auto;padding:clamp(24px,4vw,44px) clamp(18px,5vw,56px) 90px}
+section{margin:0 0 clamp(44px,6vw,76px);scroll-margin-top:86px}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--ink-faint)}
+h2{font-family:var(--serif);font-size:clamp(23px,3vw,32px);margin:0;font-weight:700}
+.sec-note{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-faint)}
+h3{font-family:var(--serif);font-size:clamp(18px,2vw,22px);margin:1.2em 0 .4em;font-weight:700}
+h4{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;margin:0 0 6px}
+p{margin:0 0 .9em}
+.lead{font-size:clamp(15px,1.6vw,17px);color:var(--ink-soft)}
+.lead b{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px}
+.card .t{font-family:var(--serif);font-size:18px;font-weight:700;margin:0 0 6px}
+.card p{font-size:14px;color:var(--ink-soft);margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+.card .n{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.12em}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--teal);border:1px solid var(--teal-dim);background:var(--teal-dim);border-radius:6px;padding:2px 7px;margin-right:5px}
+.tag.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-dim)}
+.tag.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,var(--line));background:var(--warn-dim)}
+.tag.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 32%,var(--line));background:var(--bad-dim)}
+.tag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 32%,var(--line));background:var(--ok-dim)}
+.tag.leaf{color:var(--leaf);border-color:var(--leaf-dim);background:var(--leaf-dim)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px;background:var(--card)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;background:var(--card-2)}
+tr:last-child td{border-bottom:none}
+td code,p code,li code{font-family:var(--mono);font-size:.92em;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:1px 5px}
+pre{position:relative;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--ink-soft);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;margin:10px 0 16px;white-space:pre-wrap}
+pre b{color:var(--gold);font-weight:600}
+.warnbox{border-left:3px solid var(--warn);background:var(--gold-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.okbox{border-left:3px solid var(--ok);background:var(--ok-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+.badbox{border-left:3px solid var(--bad);background:var(--bad-dim);border-radius:0 10px 10px 0;padding:12px 16px;margin:10px 0 16px;font-size:14.5px}
+ul.clean{margin:.2em 0 1em;padding-left:1.1em}
+ul.clean li{margin:.25em 0}
+.muted{color:var(--ink-soft)}
+.mono{font-family:var(--mono)}
+.hr{height:1px;background:var(--line);margin:18px 0}
+.btn{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 11px;cursor:pointer;transition:.2s}
+.btn:hover{color:var(--ink);border-color:var(--teal)}
+.btn.primary{color:var(--paper);background:var(--teal);border-color:var(--teal)}
+.btn.primary:hover{color:var(--paper);filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer;white-space:nowrap;transition:.2s}
+.chip:hover{color:var(--ink);border-color:var(--line-strong)}
+.chip.active{color:var(--ink);border-color:var(--teal);background:var(--teal-dim)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:12px 0 18px}
+.flow .step{flex:1 1 145px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:11px 13px;box-shadow:var(--shadow)}
+.flow .step .n{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.1em}
+.flow .step .t{font-family:var(--serif);font-size:15px;font-weight:700;margin:2px 0 3px}
+.flow .step .d{font-size:12.5px;color:var(--ink-soft)}
+.flow .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-family:var(--mono);font-size:18px;flex:0 0 16px}
+.badge{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;border-radius:5px;padding:1px 6px;margin:0 2px;vertical-align:1px;border:1px solid transparent}
+.badge.fact{color:var(--ok);background:var(--ok-dim);border-color:color-mix(in srgb,var(--ok) 28%,var(--line))}
+.badge.infer{color:var(--gold);background:var(--gold-dim);border-color:color-mix(in srgb,var(--gold) 28%,var(--line))}
+.badge.vendor{color:var(--warn);background:var(--warn-dim);border-color:color-mix(in srgb,var(--warn) 28%,var(--line))}
+.badge.test{color:var(--teal);background:var(--teal-dim);border-color:color-mix(in srgb,var(--teal) 28%,var(--line))}
+.badge.community{color:var(--ink-soft);background:var(--paper-2);border-color:var(--line-strong)}
+.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-faint);margin:8px 0 0}
+
+/* ---------- lab ---------- */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.82fr);gap:14px;align-items:start}
+.lab-main{min-width:0}
+.canvas-shell{position:relative;border:1px solid var(--line-strong);border-radius:16px;overflow:hidden;background:#09120E;box-shadow:var(--shadow)}
+#labStage{display:block;width:100%;height:auto}
+.stage-top{position:absolute;top:10px;left:12px;right:12px;display:flex;gap:8px;justify-content:space-between;pointer-events:none;flex-wrap:wrap}
+.stage-badge{font-family:var(--mono);font-size:11px;background:rgba(9,18,14,.78);color:#E8F1E8;border:1px solid rgba(150,200,170,.24);border-radius:999px;padding:4px 9px;letter-spacing:.02em}
+.stage-badge.red{background:rgba(120,35,35,.88);border-color:rgba(255,107,107,.4)}
+.stage-badge.gold{background:rgba(90,60,20,.86);border-color:rgba(242,179,92,.4)}
+.lab-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 4px}
+.lab-toolbar .spacer{flex:1}
+.check{display:inline-flex;gap:6px;align-items:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);cursor:pointer}
+.check input{accent-color:var(--teal)}
+.lab-hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin:8px 0 0;line-height:1.5}
+.lab-side{display:grid;gap:10px}
+.panel{border:1px solid var(--line);border-radius:13px;background:var(--card);box-shadow:var(--shadow);padding:13px 14px}
+.panel h4{margin:0 0 9px}
+.slider-row{display:grid;grid-template-columns:82px 1fr 72px;gap:8px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin:8px 0}
+.slider-row input[type=range]{width:100%;accent-color:var(--teal)}
+.slider-row output{text-align:right;color:var(--teal);font-size:11px;white-space:nowrap}
+.readouts{display:grid;grid-template-columns:1fr 1fr;gap:5px;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+.readouts span{background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.readouts b{color:var(--ink);font-weight:600}
+.preset-row{display:flex;flex-wrap:wrap;gap:6px}
+.preset-row .btn{padding:5px 8px;font-size:10.5px}
+
+/* ---------- scheme cards ---------- */
+.scheme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.scheme-card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:15px 16px;box-shadow:var(--shadow);transition:.22s;position:relative;overflow:hidden}
+.scheme-card:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.scheme-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line-strong)}
+.scheme-card[data-family="3d"]::before{background:var(--gold)}
+.scheme-card[data-family="pseudo"]::before{background:var(--teal)}
+.scheme-card[data-family="particle"]::before{background:var(--warn)}
+.scheme-card[data-family="post"]::before{background:var(--bad)}
+.scheme-card[data-family="composite"]::before{background:var(--leaf)}
+.scheme-card[data-family="driver"]::before{background:#C39BFF}
+.scheme-card[data-family="sprite"]::before{background:var(--ink-faint)}
+.scheme-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.scheme-letter{font-family:var(--serif);font-size:30px;line-height:1;font-weight:700;color:var(--gold);min-width:28px}
+.scheme-top h3{font-size:17px;margin:0 0 3px;line-height:1.25}
+.scheme-top .tag{margin:0 4px 0 0}
+.scheme-card p{font-size:13.5px;color:var(--ink-soft);margin:0 0 8px}
+.scheme-meta{display:grid;gap:3px;font-size:12.5px;color:var(--ink-soft);margin:7px 0 9px}
+.scheme-meta b{color:var(--ink);font-weight:600}
+.mini-bars{display:grid;gap:4px}
+.mini-bar{display:grid;grid-template-columns:64px 1fr 18px;gap:6px;align-items:center;font-family:var(--mono);font-size:9.5px;color:var(--ink-faint)}
+.mini-bar .track{height:4px;border-radius:999px;background:var(--paper-2);overflow:hidden}
+.mini-bar .track i{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--gold),var(--ok))}
+.mini-bar b{color:var(--ink-soft);font-weight:500;text-align:right}
+
+/* ---------- matrix ---------- */
+.matrix-wrap{display:block}
+.weight-panel{border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:var(--shadow);padding:13px 14px;margin-bottom:12px}
+.weight-panel h4{margin-bottom:6px}
+#weightRows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 20px}
+.weight-row{display:grid;grid-template-columns:58px 1fr 30px;gap:7px;align-items:center;font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin:4px 0}
+.weight-row input[type=range]{width:100%;accent-color:var(--teal);height:14px}
+.weight-row output{color:var(--teal);text-align:right}
+.weight-sum{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);border-top:1px solid var(--line);padding-top:8px;margin-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.profile-row{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.profile-row .btn{padding:5px 7px;font-size:10px}
+.matrix-main{min-width:0}
+.matrix-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.matrix-toolbar .spacer{flex:1}
+.matrix-note{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+.score-table{min-width:990px;font-size:12.5px}
+.score-table th{white-space:nowrap;cursor:pointer;user-select:none;position:relative}
+.score-table th:hover{color:var(--ink)}
+.score-table th.sorted{color:var(--teal)}
+.score-table th.sorted::after{content:" ▼";font-size:9px}
+.score-table th.sorted.asc::after{content:" ▲"}
+.score-table td{padding:8px 8px}
+.score-table td.num,.score-table th.num{text-align:center}
+.score-table tbody tr.scheme-row{cursor:pointer}
+.score-table tbody tr.scheme-row:hover{background:var(--card-2)}
+.score-table .rank{font-family:var(--mono);color:var(--ink-faint);text-align:center;width:34px}
+.score-table .sname{min-width:190px}
+.score-table .sname b{display:block;font-size:13.5px;line-height:1.3}
+.score-table .sname small{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint)}
+.score-pill{display:inline-block;min-width:23px;text-align:center;border-radius:5px;padding:1px 4px;font-family:var(--mono);font-size:11px}
+.s5{color:var(--ok);background:var(--ok-dim)}
+.s4{color:var(--teal);background:var(--teal-dim)}
+.s3{color:var(--ink-soft);background:var(--paper-2)}
+.s2{color:var(--warn);background:var(--warn-dim)}
+.s1{color:var(--bad);background:var(--bad-dim)}
+.wcell{min-width:106px}
+.wbar{height:5px;border-radius:999px;background:var(--paper-2);overflow:hidden;margin-top:3px}
+.wbar i{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--gold),var(--ok))}
+.wscore{font-family:var(--mono);font-size:12px;color:var(--ink);font-weight:600}
+.wscore small{font-size:9.5px;color:var(--ink-faint);font-weight:400}
+.detail-row td{background:var(--card-2);font-size:12.5px;color:var(--ink-soft);padding:10px 14px}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.detail-grid div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.detail-grid b{color:var(--ink);display:block;font-size:11px;font-family:var(--mono);margin-bottom:2px}
+.hidden{display:none}
+
+/* ---------- diagrams ---------- */
+.diagram{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:12px;box-shadow:var(--shadow);margin:12px 0 16px;overflow:hidden}
+.diagram svg{display:block;width:100%;height:auto}
+.diagram .cap{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin:8px 2px 0;line-height:1.5}
+.svg-label{font-family:var(--mono);font-size:10px;fill:var(--ink-soft)}
+.svg-title{font-family:var(--sans);font-size:12px;font-weight:600;fill:var(--ink)}
+.formula{font-family:var(--mono);font-size:12px;background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink-soft);overflow-x:auto}
+.formula b{color:var(--gold)}
+
+/* ---------- engine / tiers / poc ---------- */
+.engine-table{min-width:1050px;font-size:12.5px}
+.engine-table td{min-width:180px}
+.engine-table .eng{font-family:var(--serif);font-size:15px;font-weight:700;min-width:100px}
+.contract-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:10px 0 6px}
+.tier-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tier-card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:15px 16px;box-shadow:var(--shadow)}
+.tier-card h3{font-size:17px;margin:0 0 4px}
+.tier-card .who{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.04em;margin-bottom:6px}
+.tier-card p{font-size:13px;color:var(--ink-soft);margin:0 0 7px}
+.tier-card ul{margin:0 0 8px;padding-left:1.05em;font-size:12.5px;color:var(--ink-soft)}
+.tier-card li{margin:2px 0}
+.tier-card .pick{font-family:var(--mono);font-size:11px;color:var(--teal);border-top:1px solid var(--line);padding-top:7px;margin-top:7px}
+.poc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.poc-card{border:1px solid var(--line);border-radius:13px;background:var(--card);padding:13px 14px;box-shadow:var(--shadow)}
+.poc-card h3{font-size:15px;margin:0 0 4px}
+.poc-card p{font-size:12.5px;color:var(--ink-soft);margin:0 0 5px}
+.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px;margin:8px 0 12px}
+.check-item{display:flex;gap:7px;align-items:flex-start;font-size:13px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.check-item b{color:var(--ink);font-weight:600}
+.check-item .mark{color:var(--teal);font-family:var(--mono);font-size:12px}
+.source-table{min-width:760px;font-size:12.5px}
+.source-table td:first-child{white-space:nowrap}
+.source-table a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim)}
+.source-table a:hover{border-bottom-color:var(--teal)}
+
+/* ---------- footer / fab ---------- */
+footer{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,5vw,56px) 80px;color:var(--ink-soft);font-size:13px}
+footer p{margin:0 0 6px}
+footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim)}
+.fab{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:7px;z-index:55}
+.fab button{font-family:var(--mono);font-size:11px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line-strong);border-radius:999px;padding:8px 11px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--ink);border-color:var(--teal)}
+
+@media (max-width:980px){
+  .lab{grid-template-columns:1fr}
+  #weightRows{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .weight-row{grid-template-columns:64px 1fr 30px}
+}
+@media (max-width:700px){
+  #weightRows{grid-template-columns:1fr}
+  .tier-grid{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  body{font-size:15px}
+  .stage-badge{font-size:9.5px;padding:3px 7px}
+  .readouts{grid-template-columns:1fr}
+  .scheme-top h3{font-size:16px}
+  .sec-note{display:none}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker"><span class="dot"></span> 2026-11 · T-20261127-013 · 2D MAP × 3D TRAIL</div>
+  <h1>2D 地图里的 <span class="u">3D 拖尾</span><br><span class="g">不是把 3D 塞进 2D</span></h1>
+  <p class="sub">俯视/等轴地图 + 移动端 + 多人同屏：把 <b>7 种方案 + 1 条混合路线</b>拆成数据、网格、材质、合成四层；用 <b>9 维加权评分</b>和可筛选矩阵给结论。目标不是“看起来有 3D”，而是<b>排序对、overdraw 稳、风格不割裂</b>。</p>
+  <div class="stat-row">
+    <span class="stat"><b>8</b> 方案</span>
+    <span class="stat"><b>9</b> 维度</span>
+    <span class="stat"><b>3</b> 档推荐</span>
+    <span class="stat"><b>15–17</b> PoC runs</span>
+    <span class="stat"><b>0</b> 外部 CDN</span>
+    <span class="stat">访问日期 <b>2026-11-27</b></span>
+  </div>
+</header>
+
+<nav class="toc" id="toc"><div class="inner">
+  <a href="#s0" class="active">结论先行</a>
+  <a href="#s1">拖尾观察台</a>
+  <a href="#s2">方案卡</a>
+  <a href="#s3">评分矩阵</a>
+  <a href="#s4">2D 难点</a>
+  <a href="#s5">引擎映射</a>
+  <a href="#s6">分档推荐</a>
+  <a href="#s7">PoC 验收</a>
+  <a href="#s8">来源</a>
+</div></nav>
+
+<main>
+
+<!-- ================= 0 ================= -->
+<section id="s0">
+  <div class="sec-head"><span class="sec-num">00</span><h2>结论先行</h2><span class="sec-note">先给答案：3D 采样 + 2D 排序</span></div>
+  <p class="lead"><b>在纯 2D y-sort 地图里，最稳的路线不是“把 3D ribbon 塞进 3D pass”，而是“3D 采样 → 屏幕空间投影 ribbon → 按 2D 规则排序/遮挡”。</b> 真 3D mesh 只给主角/技能/少量高价值单位；同屏大量单位用投影 ribbon 或 sprite 序列；低端机用单 quad/精灵；Viewport/Stencil 只在“3D 角色层已经存在 + 遮挡复杂 + 中高端”时才值得。<span class="badge infer">推断</span></p>
+
+  <div class="cards">
+    <div class="card"><div class="n">HERO / SKILL</div><div class="t">主角 / 技能 → H 混合投影</div><p>3D 采样 + 2D 屏幕空间网格 + 无光照/色阶/描边；武器刀光用骨骼/挂点驱动。排序走 y-sort，不靠全屏 RT。</p><p class="mono muted">预算：32–64 段 · 1–2 层 · ≤2 draw calls</p></div>
+    <div class="card"><div class="n">CROWD</div><div class="t">同屏 10–50 单位 → C 投影 ribbon</div><p>12–24 段、0.25–0.4s、30Hz 采样；按脚底 y 排序；按 y 分桶合批。远/小/非玩家降级或关闭。</p><p class="mono muted">预算：覆盖 ≤15% · 峰值透明层 ≤3</p></div>
+    <div class="card"><div class="n">LOW-END</div><div class="t">低端机 → G 单 quad / 精灵</div><p>单 quad 滚动 UV 或 2–4 帧 flipbook；无 glow、无描边、无 RT。比“缩水 3D”更稳、更贴风格。</p><p class="mono muted">预算：1 层 · ≤8 条 · 30fps 档</p></div>
+    <div class="card ok"><div class="n">TRUE 3D</div><div class="t">必须真 3D 观感 → H + 深度代理</div><p>先做 H（主带 + 地面影子 + 可选 curtain）；仍不够再上 A + 深度/Stencil 代理。纯 2D Canvas 不要为“真 3D”三个字上 E。</p><p class="mono muted">Viewport 只在 4 条同时满足时考虑</p></div>
+  </div>
+
+  <h3>五个硬结论</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>结论</th><th>为什么</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">01</td><td><b>正交俯视下，抬高 z 不产生屏幕位移</b></td><td>z 只影响深度；3D 感来自 ribbon 截面、朝向、明暗、描边、地面影子。只有等轴/斜俯视/透视才把高度映射到屏幕 y。<span class="badge fact">官方投影</span><span class="badge infer">推断</span></td></tr>
+      <tr><td class="mono">02</td><td><b>2D 精灵默认不写深度，3D pass 无法逐树遮挡</b></td><td>纯 2D Canvas 里，3D mesh 与 Sprite 不在同一排序系统；必须投影成 2D、深度/Stencil 代理、Viewport 分层，或按遮挡物切段。<span class="badge infer">推断</span></td></tr>
+      <tr><td class="mono">03</td><td><b>移动端先算 overdraw，再算顶点</b></td><td>50 条 160×40px 拖尾 ≈ 720p 的 35% 覆盖；两层 ≈ 70%。顶点通常只有几千个，真正贵的是透明填充率、混合带宽、全屏 RT。<span class="badge vendor">Arm/Qualcomm</span><span class="badge infer">推断</span></td></tr>
+      <tr><td class="mono">04</td><td><b>拖尾是纯本地 cosmetic</b></td><td>只同步移动/技能事件；远端用插值后的可视位置重建；传送/重生/重连清历史，否则会拉出跨地图长带。<span class="badge infer">推断</span></td></tr>
+      <tr><td class="mono">05</td><td><b>风格化在网格/材质阶段做，不靠后处理补救</b></td><td>无光照/ramp、色阶量化、抖动、硬边/描边、屏幕像素宽度；soft additive glow 会把风格拉回写实特效。<span class="badge infer">推断</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>先问四个问题，再选 API</h3>
+  <div class="flow">
+    <div class="step"><div class="n">Q1</div><div class="t">地图架构</div><div class="d">2D Canvas 还是 3D 场景面片？纯 2D 优先 C/H；3D 场景才考虑 A。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Q2</div><div class="t">角色形态</div><div class="d">2D sprite/序列帧还是 3D mesh/RT sprite？前者 C/G，后者 H/A/F。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Q3</div><div class="t">遮挡粒度</div><div class="d">整层还是逐对象（树/柱/屋檐）？逐对象才需要 y-sort 切分/Stencil/Viewport。</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Q4</div><div class="t">人数与机型</div><div class="d">50 人 + 低端 + 60fps → C/G；1–3 人 + 中高端 → H/A。</div></div>
+  </div>
+  <div class="warnbox"><b>一句话决策：</b>纯 2D 地图 + 多人 → 先做 C；主角/技能 → 升级 H；低端 → G；只有“已经有 3D 层且遮挡是硬需求”才上 E。不要先选引擎 API，再回头补排序。</div>
+</section>
+
+<!-- ================= 1 ================= -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>拖尾观察台</h2><span class="sec-note">自绘示意 · 非游戏实录 · 非引擎实测</span></div>
+  <p class="lead">同一个角色、同一条路径、同一棵树：切换模式看<b>排序/遮挡</b>和<b>成本读数</b>怎么变。重点观察“投影 2D”能把拖尾切成树前/树后，“真 3D / GPU 粒子”在 3D pass 里会整条盖在树上；再把单位数拉到 50，看覆盖率和层数怎么涨。</p>
+
+  <div class="lab">
+    <div class="lab-main">
+      <div class="canvas-shell">
+        <canvas id="labStage" width="960" height="440" aria-label="2D 地图 3D 拖尾方案示意"></canvas>
+        <div class="stage-top">
+          <span class="stage-badge" id="labMode">投影 2D · y-sort</span>
+          <span class="stage-badge" id="labSort">树遮挡：前后切分</span>
+          <span class="stage-badge" id="labCount">1 单位 · 32 段</span>
+        </div>
+      </div>
+      <div class="lab-toolbar" id="modeChips">
+        <button class="chip active" data-mode="projected">投影 2D</button>
+        <button class="chip" data-mode="true3d">真 3D</button>
+        <button class="chip" data-mode="gpu">GPU 粒子</button>
+        <button class="chip" data-mode="afterimage">残影</button>
+        <button class="chip" data-mode="sprite">Sprite 序列</button>
+        <span class="spacer"></span>
+        <button class="btn primary" id="btnPause">播放</button>
+        <button class="btn ghost" id="btnResetLab">重置</button>
+      </div>
+      <div class="lab-toolbar" id="unitChips">
+        <span class="mono muted" style="font-size:11px">同屏：</span>
+        <button class="chip active" data-units="1">1</button>
+        <button class="chip" data-units="10">10</button>
+        <button class="chip" data-units="50">50</button>
+        <span class="spacer"></span>
+        <label class="check"><input type="checkbox" id="toggleTree" checked> 树遮挡</label>
+        <label class="check"><input type="checkbox" id="toggleStyle" checked> 色阶/描边</label>
+        <label class="check"><input type="checkbox" id="toggleOverdraw"> 覆盖热区</label>
+      </div>
+      <p class="lab-hint" id="labHint">默认：投影 2D + 1 单位 + 32 段，已暂停在 34% 位置；拖“位置”滑杆看拖尾在树前/树后的切分。点“播放”让角色沿路径移动。切到“真 3D”对比：整条拖尾进入 3D pass，树挡不住它。</p>
+    </div>
+
+    <div class="lab-side">
+      <div class="panel">
+        <h4>参数</h4>
+        <div class="slider-row"><span>段数</span><input id="rSeg" type="range" min="8" max="64" step="4" value="32"><output id="oSeg">32</output></div>
+        <div class="slider-row"><span>寿命</span><input id="rLife" type="range" min="0.2" max="1.0" step="0.05" value="1.0"><output id="oLife">1.00s</output></div>
+        <div class="slider-row"><span>宽度</span><input id="rWidth" type="range" min="0.4" max="1.6" step="0.1" value="1.2"><output id="oWidth">1.2×</output></div>
+        <div class="slider-row"><span>位置</span><input id="rPose" type="range" min="0" max="100" step="1" value="34"><output id="oPose">34%</output></div>
+      </div>
+      <div class="panel">
+        <h4>读数（估算）</h4>
+        <div class="readouts">
+          <span>顶点 <b id="roVerts">64</b></span>
+          <span>三角 <b id="roTris">64</b></span>
+          <span>Draw calls <b id="roDC">1</b></span>
+          <span>覆盖 <b id="roCov">0.0%</b></span>
+          <span>透明层 <b id="roLayers">2</b></span>
+          <span>风格分 <b id="roStyle">5/5</b></span>
+          <span>采样 <b id="roHz">30Hz</b></span>
+          <span>画布 FPS <b id="roFps">60</b></span>
+        </div>
+        <p class="lab-hint">读数是几何/面积估算，不是 GPU profiler 数字；draw calls 的“合批”会被 y-sort 穿插打断，详见矩阵与 4.4 节。</p>
+      </div>
+      <div class="panel">
+        <h4>预设</h4>
+        <div class="preset-row">
+          <button class="btn" data-preset="hero">主角 / 技能</button>
+          <button class="btn" data-preset="crowd10">同屏 10</button>
+          <button class="btn" data-preset="crowd50">同屏 50</button>
+          <button class="btn" data-preset="low">低端机</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2 ================= -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>八张方案卡</h2><span class="sec-note">A–G 单方案 + H 混合路线</span></div>
+  <p class="lead">卡片只给“强项/弱项/适用”，完整数据流、引擎 API 与风险见 <a href="2d-map-3d-trail-options.md" style="color:var(--teal)">Markdown 文档</a>。评分是 1–5 的工程判断，不是实测。</p>
+
+  <div class="scheme-grid">
+    <article class="scheme-card" data-family="3d" id="card-A">
+      <div class="scheme-top"><span class="scheme-letter">A</span><div><h3>真 3D Ribbon Mesh</h3><span class="tag gold">真 3D</span><span class="tag">世界空间</span></div></div>
+      <p>世界位置历史 → 三角带；宽度/UV/颜色沿长度插值。表现上限最高，但纯 2D 地图里排序最难。</p>
+      <div class="scheme-meta"><div><b>强：</b>真截面/受光/管状/扭曲</div><div><b>弱：</b>逐对象遮挡、透明 pass</div><div><b>适用：</b>主角/技能；3D 场景</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:40%"></i></div><b>2</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="particle" id="card-B">
+      <div class="scheme-top"><span class="scheme-letter">B</span><div><h3>GPU 粒子拖尾</h3><span class="tag warn">粒子</span><span class="tag">stretched / trail</span></div></div>
+      <p>拉伸 billboard 或粒子 ribbon trail；GPU 模拟、CPU 压力低，适合火焰/能量/魔法爆发。</p>
+      <div class="scheme-meta"><div><b>强：</b>爆发/发光/参数化</div><div><b>弱：</b>overdraw 高、软边难贴风格</div><div><b>适用：</b>技能特效，不是 50 NPC 主力</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:40%"></i></div><b>2</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:40%"></i></div><b>2</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="pseudo" id="card-C">
+      <div class="scheme-top"><span class="scheme-letter">C</span><div><h3>2D/2.5D 投影 Ribbon</h3><span class="tag">伪 3D</span><span class="tag leaf">y-sort</span></div></div>
+      <p>3D/2D 位置投影到屏幕 → 屏幕空间条带 → 2D 渲染器；可加地面影子/高度/描边。多人同屏的基线最优。</p>
+      <div class="scheme-meta"><div><b>强：</b>排序正确、便宜、风格可控</div><div><b>弱：</b>无真实深度/光照</div><div><b>适用：</b>10–50 单位、2D 地图主力</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="post" id="card-D">
+      <div class="scheme-top"><span class="scheme-letter">D</span><div><h3>Afterimage / 残影</h3><span class="tag bad">后处理</span><span class="tag">反馈缓冲</span></div></div>
+      <p>过去 N 帧/多 mesh 副本 + 衰减；冲刺/瞬移/闪避的观感很强，但不是“拖尾”。</p>
+      <div class="scheme-meta"><div><b>强：</b>便宜、爆发感</div><div><b>弱：</b>无方向/宽度/UV；RT 带宽</div><div><b>适用：</b>残影点缀，不是移动主力</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:60%"></i></div><b>3</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="composite" id="card-E">
+      <div class="scheme-top"><span class="scheme-letter">E</span><div><h3>Viewport / Stencil 合成</h3><span class="tag leaf">合成</span><span class="tag">深度</span></div></div>
+      <p>3D 拖尾/角色层渲染到透明 RT，再按排序层合成；或用 Stencil/深度代理裁剪。解决硬遮挡，但贵。</p>
+      <div class="scheme-meta"><div><b>强：</b>逐对象遮挡/统一后处理</div><div><b>弱：</b>全屏 RT、带宽、单 RT 一层</div><div><b>适用：</b>主角/技能、中高端、已有 3D 层</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:40%"></i></div><b>2</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="driver" id="card-F">
+      <div class="scheme-top"><span class="scheme-letter">F</span><div><h3>骨骼 / 武器挂点驱动</h3><span class="tag">驱动</span><span class="tag gold">技能</span></div></div>
+      <p>从 bone/weapon socket 采样世界位置，接 3D 或投影 2D ribbon；刀光/鞭/链/坐骑尾迹的源头正确。</p>
+      <div class="scheme-meta"><div><b>强：</b>和动画/技能时间轴对齐</div><div><b>弱：</b>依赖挂点/配置；排序问题不变</div><div><b>适用：</b>技能/武器，与 H/A 组合</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="sprite" id="card-G">
+      <div class="scheme-top"><span class="scheme-letter">G</span><div><h3>Sprite 序列 / 动画拖尾</h3><span class="tag">精灵</span><span class="tag ok">兜底</span></div></div>
+      <p>单 quad 滚动 UV，或 2–4/4–8 帧 flipbook 沿路径放置；最便宜、最贴手绘/像素风，形状固定。</p>
+      <div class="scheme-meta"><div><b>强：</b>1 层、便宜、风格统一</div><div><b>弱：</b>形状固定、非真 3D</div><div><b>适用：</b>低端/同屏爆量/像素手绘</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:40%"></i></div><b>2</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+      </div>
+    </article>
+
+    <article class="scheme-card" data-family="pseudo" id="card-H">
+      <div class="scheme-top"><span class="scheme-letter">H</span><div><h3>混合投影 Ribbon（推荐）</h3><span class="tag gold">混合</span><span class="tag leaf">主角</span></div></div>
+      <p>H = A 的 3D 采样 + C 的屏幕空间网格 + 2D 风格化材质 + y-sort。主带 + 地面影子 + 可选 curtain，接近真 3D 观感。</p>
+      <div class="scheme-meta"><div><b>强：</b>观感/排序/风格三赢</div><div><b>弱：</b>比 C 多一层投影/高度逻辑</div><div><b>适用：</b>主角/技能/高价值单位</div></div>
+      <div class="mini-bars">
+        <div class="mini-bar"><span>视觉</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>性能</span><div class="track"><i style="width:80%"></i></div><b>4</b></div>
+        <div class="mini-bar"><span>融合</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+        <div class="mini-bar"><span>风格</span><div class="track"><i style="width:100%"></i></div><b>5</b></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= 3 ================= -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>权重评分矩阵</h2><span class="sec-note">1–5 分 · 权重滑块 · 筛选 / 排序</span></div>
+  <p class="lead">拖动上方权重，矩阵会实时重算加权分并重排；点表头按任意维度排序；点行展开“适合/风险/引擎”。<b>分数是工程判断，不是实测</b>——PoC 后应重新打分。<span class="badge infer">推断</span></p>
+
+  <div class="matrix-wrap">
+    <aside class="weight-panel">
+      <h4>权重（0–30）</h4>
+      <div class="profile-row" id="profileRow">
+        <button class="btn active" data-profile="default">均衡</button>
+        <button class="btn" data-profile="hero">主角/技能</button>
+        <button class="btn" data-profile="crowd">同屏大量</button>
+        <button class="btn" data-profile="lowend">低端机</button>
+      </div>
+      <div id="weightRows"></div>
+      <div class="weight-sum"><span id="weightSum">Σ = 100</span><span>归一化计算</span></div>
+      <button class="btn ghost" id="resetWeights" style="width:100%;margin-top:8px">重置均衡权重</button>
+    </aside>
+
+    <div class="matrix-main">
+      <div class="matrix-toolbar">
+        <div class="chips" id="familyChips">
+          <button class="chip active" data-family="all">全部</button>
+          <button class="chip" data-family="3d">真 3D</button>
+          <button class="chip" data-family="pseudo">伪 3D / 混合</button>
+          <button class="chip" data-family="particle">粒子</button>
+          <button class="chip" data-family="post">后处理</button>
+          <button class="chip" data-family="composite">合成</button>
+          <button class="chip" data-family="driver">驱动</button>
+          <button class="chip" data-family="sprite">精灵</button>
+        </div>
+        <span class="spacer"></span>
+        <span class="matrix-note" id="matrixNote">按加权分降序</span>
+      </div>
+      <div class="tablewrap">
+        <table class="score-table">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th class="sname">方案</th>
+              <th class="num" data-sort="visual">视觉</th>
+              <th class="num" data-sort="perf">性能</th>
+              <th class="num" data-sort="complexity">复杂度</th>
+              <th class="num" data-sort="merge">融合</th>
+              <th class="num" data-sort="style">风格</th>
+              <th class="num" data-sort="crowd">多人</th>
+              <th class="num" data-sort="net">网络</th>
+              <th class="num" data-sort="lowend">低端</th>
+              <th class="num" data-sort="engine">引擎</th>
+              <th class="wcell" data-sort="weighted">加权分</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+      <p class="lab-hint">复杂度 5 = 最简单；“加权分”0–5。排序/遮挡、风格、低端机是 2D 地图里最容易翻车的三项，默认权重给得较高。A 的融合分在“3D 场景 + 2D 美术面片”架构下可升到 4（默认加权约 +0.30）；纯 2D Canvas 保持 2。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4 ================= -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>2D 地图的四个关键难点</h2><span class="sec-note">投影 / 排序 / 风格 / 性能</span></div>
+
+  <h3>4.1 相机与投影：z 高度怎么映射</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 760 270" role="img" aria-label="等轴投影与高度映射示意">
+      <defs>
+        <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#173126"/><stop offset="1" stop-color="#0C1914"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="760" height="270" fill="transparent"/>
+      <text x="24" y="26" class="svg-title">等轴/斜俯视：高度 h 投影到屏幕 y</text>
+      <text x="24" y="46" class="svg-label">正俯视正交：h 不改变屏幕位置，只影响深度</text>
+      <path d="M90 190 L300 120 L540 190 L330 258 Z" fill="url(#gGround)" stroke="#5FD8C9" stroke-opacity=".35"/>
+      <path d="M300 120 L540 190" stroke="#9AAFA2" stroke-opacity=".18" stroke-dasharray="3 5"/>
+      <path d="M90 190 L330 258" stroke="#9AAFA2" stroke-opacity=".18" stroke-dasharray="3 5"/>
+      <ellipse cx="380" cy="205" rx="38" ry="16" fill="#0A130F" stroke="#9AAFA2" stroke-opacity=".3"/>
+      <circle cx="380" cy="170" r="16" fill="#F2B35C" stroke="#0A130F" stroke-width="2"/>
+      <circle cx="380" cy="205" r="5" fill="#5FD8C9"/>
+      <line x1="380" y1="205" x2="380" y2="170" stroke="#F2B35C" stroke-width="2" stroke-dasharray="4 4"/>
+      <text x="392" y="192" class="svg-label">h（世界高度）</text>
+      <text x="332" y="228" class="svg-label">脚底 (x,y,0)</text>
+      <text x="392" y="166" class="svg-label">采样点 (x,y,h)</text>
+      <line x1="380" y1="186" x2="600" y2="154" stroke="#5FD8C9" stroke-opacity=".55" stroke-dasharray="3 4"/>
+      <text x="560" y="142" class="svg-label">屏幕 y = f(x,y) - h·k</text>
+      <text x="600" y="184" class="svg-label">投影到屏幕 → 2D ribbon</text>
+      <text x="600" y="202" class="svg-label">再按脚底 y 进入 y-sort</text>
+      <text x="24" y="246" class="svg-label">常见 2:1 等轴：screenX=(x−y)·tileW/2；screenY=(x+y)·tileH/2 − h·heightScale（具体以项目相机为准）</text>
+    </svg>
+    <p class="cap">原创示意：H 方案把“高度”投影到屏幕 y，再用影子/curtain 伪造体积；纯 2D 地图不需要真 3D pass。</p>
+  </div>
+  <div class="formula"><b>2:1 等轴常用公式</b>　screenX = (x − y) × tileW / 2　　screenY = (x + y) × tileH / 2 − z × heightScale<br><span class="muted">正俯视正交时，z 不进入 screenX/screenY；只有倾斜相机/透视才有高度位移。〔推断/通用公式〕</span></div>
+
+  <h3>4.2 排序与遮挡：3D pass 和 2D y-sort 是两套系统</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 760 300" role="img" aria-label="投影 2D 与真 3D 的树遮挡对比">
+      <rect x="0" y="0" width="760" height="300" fill="transparent"/>
+      <text x="24" y="26" class="svg-title">同一棵树：两种合成方式</text>
+      <!-- left -->
+      <rect x="24" y="44" width="340" height="226" rx="12" fill="#0C1914" stroke="#9AAFA2" stroke-opacity=".18"/>
+      <text x="42" y="68" class="svg-label" style="fill:#5FD8C9">投影 2D：进入 y-sort，前后切分</text>
+      <path d="M60 238 L180 200 L320 238 L200 278 Z" fill="#14251D" stroke="#5FD8C9" stroke-opacity=".25"/>
+      <path d="M70 232 C120 214 160 220 205 200 C250 182 285 196 315 214" stroke="#F2B35C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M196 208 C214 200 230 204 246 198" stroke="#0C1914" stroke-width="13" fill="none" stroke-linecap="round"/>
+      <path d="M70 232 C120 214 160 220 205 200" stroke="#F2B35C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M246 198 C270 190 290 196 315 214" stroke="#F2B35C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".9"/>
+      <rect x="218" y="174" width="16" height="54" rx="6" fill="#6B4A2F"/>
+      <circle cx="226" cy="168" r="30" fill="#2F5A2C" stroke="#9BD46A" stroke-opacity=".4"/>
+      <circle cx="208" cy="158" r="22" fill="#3F6B31"/>
+      <circle cx="244" cy="158" r="24" fill="#38612D"/>
+      <text x="42" y="96" class="svg-label">树后段先画 → 树 → 树前段</text>
+      <text x="42" y="114" class="svg-label">拖尾被树冠正确切断</text>
+      <text x="196" y="188" class="svg-label">✓</text>
+      <!-- right -->
+      <rect x="396" y="44" width="340" height="226" rx="12" fill="#0C1914" stroke="#FF6B6B" stroke-opacity=".28"/>
+      <text x="414" y="68" class="svg-label" style="fill:#FF6B6B">真 3D / GPU：3D pass 整条盖在树上</text>
+      <path d="M432 238 L552 200 L692 238 L572 278 Z" fill="#14251D" stroke="#FF6B6B" stroke-opacity=".25"/>
+      <path d="M442 232 C492 214 532 220 577 200 C622 182 657 196 687 214" stroke="#FF8A5C" stroke-width="9" fill="none" stroke-linecap="round" opacity=".95"/>
+      <rect x="590" y="174" width="16" height="54" rx="6" fill="#6B4A2F"/>
+      <circle cx="598" cy="168" r="30" fill="#2F5A2C" stroke="#9BD46A" stroke-opacity=".4"/>
+      <circle cx="580" cy="158" r="22" fill="#3F6B31"/>
+      <circle cx="616" cy="158" r="24" fill="#38612D"/>
+      <circle cx="620" cy="206" r="8" fill="none" stroke="#FF6B6B" stroke-width="2"/>
+      <path d="M626 200 L636 212 M636 200 L626 212" stroke="#FF6B6B" stroke-width="2"/>
+      <text x="414" y="96" class="svg-label">3D 透明 pass 没有 2D 树遮挡信息</text>
+      <text x="414" y="114" class="svg-label">看起来像“贴在树上的光带”</text>
+    </svg>
+    <p class="cap">原创示意：左图是 C/H 的 y-sort 切分；右图是 A/B 在纯 2D 地图里最常见的翻车方式。E 的 Stencil/深度代理是为右图补“遮挡信息”。</p>
+  </div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>解法</th><th>做法</th><th>适用</th><th>代价</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td><b>1. 投影成 2D（C/H）</b></td><td>3D 位置投影到屏幕，生成 2D 条带，按脚底 y 进入 y-sort</td><td>纯 2D 地图、同屏多人</td><td>无真实深度/光照；投影要跟相机一致</td><td><span class="tag ok">默认推荐</span></td></tr>
+      <tr><td><b>2. 深度/Stencil 代理</b></td><td>遮挡物用 3D 代理/alpha scissor 写深度或 Stencil；3D 拖尾测试</td><td>3D 场景 + 2D 美术面片；遮挡物可代理</td><td>额外 pass；alpha test 破坏 early-Z；纯 2D Canvas 不适用</td><td>只有 3D 层已存在时</td></tr>
+      <tr><td><b>3. Viewport 分层合成</b></td><td>3D 拖尾渲染到透明 RT，在某个 2D 排序层合成</td><td>主角/技能；需要统一 bloom/描边</td><td>全屏 RT + resolve；单 RT 只能对应一层</td><td>中高端、少量单位</td></tr>
+      <tr><td><b>4. 按遮挡物切段</b></td><td>用 2D 遮罩/射线把拖尾切成前后段</td><td>少量固定遮挡物</td><td>实现脆、维护贵、运动时跳变</td><td>最后手段</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>4.3 风格：把 3D 拉回 2D 的六个开关</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>问题</th><th>做法</th><th>不要做</th></tr></thead>
+    <tbody>
+      <tr><td>光照割裂</td><td>无光照/Unlit、2–3 阶 ramp、固定方向高光</td><td>PBR 高光、环境反射、真实阴影</td></tr>
+      <tr><td>颜色割裂</td><td>从地图色板取 4–8 色；沿长度量化；尾部同色降明度</td><td>全彩渐变 + 大面积 bloom</td></tr>
+      <tr><td>边缘割裂</td><td>1–2px 深色描边/硬边 alpha；像素风 1px 对齐</td><td>软边、羽化、景深模糊</td></tr>
+      <tr><td>体积感</td><td>竖向 curtain + 地面影子 + 头部高光；宽度按速度拉伸</td><td>只靠“抬高 z”</td></tr>
+      <tr><td>像素风</td><td>屏幕像素宽度、2–4 色阶、Bayer 抖动、关闭抗锯齿</td><td>亚像素宽度、平滑渐变</td></tr>
+      <tr><td>手绘风</td><td>笔刷纹理、硬边 + 少量内发光、色阶</td><td>写实 soft particle</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>4.4 性能：先限屏幕面积，再限段数</h3>
+  <div class="formula"><b>coverage</b> = units × trailLengthPx × trailWidthPx / screenPx　　<b>overdraw</b> ≈ coverage × transparentLayers<br><b>verts</b> ≈ units × segments × 2　　<b>tris</b> ≈ units × segments × 2　　<b>draw calls</b>：逐单位 ≈ units；合批 ≈ 1（无遮挡穿插）/ 2–5（按 y 分桶）</div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>单条拖尾屏幕尺寸</th><th>1 单位覆盖</th><th>10 单位覆盖</th><th>50 单位覆盖</th><th>50 单位 × 2 层</th></tr></thead>
+    <tbody>
+      <tr><td>80×24 px</td><td>0.2%</td><td>2.1%</td><td>10.4%</td><td>20.8%</td></tr>
+      <tr><td>160×40 px</td><td>0.7%</td><td>6.9%</td><td>34.7%</td><td>69.4%</td></tr>
+      <tr><td>240×60 px</td><td>1.6%</td><td>15.6%</td><td>78.1%</td><td>156.2%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="warnbox"><b>同样的“50 条拖尾”，长度/宽度翻倍就会从“可接受”变成“填满屏幕”。</b> 先限屏幕面积，再谈段数；顶点/内存通常不是瓶颈，draw call、每帧 mesh 上传、透明填充率才是。〔推断/估算〕</div>
+  <div class="cards">
+    <div class="card"><div class="t">GPU 粒子</div><p>30 粒子/单位 × 20 单位 × 64×64px ≈ 2.46M px ≈ 720p 的 267% 覆盖；软边/additive 更贵。</p></div>
+    <div class="card"><div class="t">全屏 RT</div><p>720p RGBA8 ≈ 3.7MB；加深度 ≈ 2.8MB；MSAA 4× 约 4 倍颜色带宽；每帧 resolve/采样是额外成本。</p></div>
+    <div class="card"><div class="t">CPU 采样</div><p>50 单位 × 30Hz × 3 float ≈ 4.5k float/s，本身很小；真正贵的是每帧重建 mesh、GC、材质实例、排序。</p></div>
+  </div>
+
+  <h3>4.5 多人 / 网络 / 回放</h3>
+  <ul class="clean">
+    <li><b>只同步移动/技能事件</b>：位置、速度、朝向、状态、技能触发；拖尾顶点、段数、颜色、粒子都不进网络包。</li>
+    <li><b>远端重建</b>：用网络插值后的可视 Transform 采样，而不是原始 10–20Hz 网络位置；否则拖尾会抖/折线。</li>
+    <li><b>采样频率</b>：视觉 60fps，拖尾采样 30Hz（每 2 帧）或按距离（4–6cm）；时间制寿命保证 30/60fps 长度一致。</li>
+    <li><b>传送/重生/重连</b>：清空历史，带 `respawnEpoch`/`teleportId`，避免跨地图长带；死亡/隐身停止发射并让旧段自然消失。</li>
+    <li><b>回放</b>：记录位置时间线/技能事件即可重建；要逐帧一致再记录采样种子/采样点，不为常态加网络负担。</li>
+  </ul>
+</section>
+
+<!-- ================= 5 ================= -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>引擎映射：四层对应</h2><span class="sec-note">数据 / 网格 / 材质 / 合成</span></div>
+  <p class="lead">同一份拖尾数据换引擎时，只换这四层的实现，不换接口。版本以表中 URL 的文档页为准；Cocos/Godot 的具体版本差异见备注。</p>
+
+  <div class="tablewrap">
+    <table class="engine-table">
+      <thead><tr><th>引擎</th><th>数据/采样层</th><th>网格层</th><th>材质/风格层</th><th>合成/排序层</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="eng">Unity</td>
+          <td>C# 采样 Transform/Socket；TrailRenderer 内置 Time/Min Vertex Distance；ParticleSystem Trail；VFX Graph GPU Event/Particle Strip；Jobs/Burst 可批量化</td>
+          <td>TrailRenderer；Mesh+MeshFilter/MeshRenderer；LineRenderer；ParticleSystem Trail；VFX Graph Output ParticleStrip Quad/ShaderGraph Strip</td>
+          <td>Shader Graph/URP Unlit、ramp、quantize、outline；Trail 材质；VFX 输出材质；Stencil 用 Shader Graph/HLSL</td>
+          <td>2D Renderer TransparencySortMode（Perspective/Orthographic/Custom Axis）；3D 透明排序；RenderTexture/相机 Stacking；URP Renderer Feature；Scene Overdraw/Frame Debugger</td>
+        </tr>
+        <tr>
+          <td class="eng">Cocos Creator 3.x</td>
+          <td>节点世界 Transform 采样/环形缓冲；TrailModule 跟粒子；自定义 2D assembler 零 GC（社区 SuperTrail）</td>
+          <td>ParticleSystem TrailModule（Mode 仅 Particles、TextureMode 仅 Stretch）；MeshRenderer 自定义网格；2D 自定义 assembler</td>
+          <td>TrailMaterial 仅 builtin-particle-trail；Mesh 用自定义 effect；2D 材质/动态合图</td>
+          <td>节点树/siblingIndex、2D 合批；3D 深度；RenderTexture/多相机；3D Stencil 需自定义 pass（待验证）</td>
+        </tr>
+        <tr>
+          <td class="eng">Godot 4.6</td>
+          <td>_process/_physics_process 采样；Curve3D/Path3D 可选；环形 PackedVector3Array</td>
+          <td>ArrayMesh/ImmediateMesh 自建；RibbonTrailMesh+GPUParticles3D.trail_enabled（Forward+/Mobile，需 use_particle_trails）；Line2D（2D）；Trail3D 仅 4.8+；TubeTrailMesh</td>
+          <td>StandardMaterial3D/ShaderMaterial；无光照/ramp/quantize/outline；4.5+ Stencil；2D CanvasItem 材质</td>
+          <td>CanvasItem.y_sort_enabled（同 z_index）；z_index；SubViewport+ViewportTexture（官方支持 3D in 2D）；CanvasLayer UI；render_priority</td>
+        </tr>
+        <tr>
+          <td class="eng">Unreal</td>
+          <td>Niagara 发射器；Ribbon ID/Link Order；骨骼 Socket/骨骼采样；Blueprint 采样</td>
+          <td>Niagara Ribbon Renderer（Tessellation、Facing Screen/Custom/Custom Side Vector、Shape、UV0/UV1）；Mesh Renderer</td>
+          <td>DefaultRibbonMaterial/自定义 Unlit/Toon；材质参数/动态实例</td>
+          <td>Translucent Sort Policy SortAlongAxis（官方称适合 2D）；TranslucencySortPriority；Custom Depth/Stencil；Paper2D/UMG；后处理</td>
+        </tr>
+        <tr>
+          <td class="eng">Three.js</td>
+          <td>JS 环形缓冲 Vector3；CatmullRomCurve3；骨骼 getWorldPosition</td>
+          <td>Line2+LineGeometry（任意宽度/worldUnits）；自定义 BufferGeometry ribbon；TubeGeometry；Points/InstancedMesh</td>
+          <td>LineMaterial（linewidth/worldUnits/resolution）；ShaderMaterial（UV/色阶/描边/抖动）；SpriteMaterial</td>
+          <td>renderOrder/depthTest/depthWrite；透明排序；OrthographicCamera；WebGLRenderTarget；AfterimagePass；WebGL Stencil（需开启 stencil + 材质操作）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>移植契约（跨引擎不返工）</h3>
+  <div class="contract-grid">
+    <div class="card"><div class="n">01 DATA</div><div class="t">TrailSample</div><p><code>{ t, position, direction, width, color, uv }</code>；固定时间/距离采样；环形缓冲；最大点数；<code>respawnEpoch</code>。</p></div>
+    <div class="card"><div class="n">02 MESH</div><div class="t">TrailMeshBuilder</div><p><code>append(sample)</code>、<code>trim(now)</code>、<code>rebuild()</code>；段数上限、宽度曲线、UV 模式（Stretch/Tile）、颜色 ramp；输出顶点/索引/包围盒。</p></div>
+    <div class="card"><div class="n">03 MATERIAL</div><div class="t">TrailMaterial</div><p>无光照/色阶数、描边宽度、抖动开关、alpha 模式（blend/clip）、UV 滚动；换风格只换材质，不换网格。</p></div>
+    <div class="card"><div class="n">04 COMPOSITE</div><div class="t">TrailCompositor</div><p>排序键（脚底 y/层/优先级）、遮挡模式（none/2D clip/depth proxy/stencil/viewport）、每档预算（段数/寿命/层数/数量）。</p></div>
+  </div>
+  <div class="okbox"><b>配置数据化：</b><code>tier</code>、<code>segments</code>、<code>lifetime</code>、<code>minDistance</code>、<code>widthCurve</code>、<code>colorRamp</code>、<code>layers</code>、<code>maxVisible</code>、<code>samplingHz</code>、<code>occlusionMode</code> 全部进配置；不要把参数硬编码在特效脚本里。同一份数据在 Unity 用 <code>sortingOrder</code>、Godot 用 <code>y_sort_enabled</code>、Three.js 用 <code>renderOrder</code>，行为一致。</div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>分档推荐与参数</h2><span class="sec-note">S0–S3 · 明确建议</span></div>
+  <p class="lead">参数是起点范围，不是万能值；按相机缩放、角色尺寸、目标机型调。每档都给出“预算”和“为什么不是另一档”。</p>
+
+  <div class="tier-grid">
+    <div class="tier-card">
+      <div class="who">S0 · 同屏 1–3 个</div>
+      <h3>主角 / 技能 / 坐骑</h3>
+      <p><b>方案：</b>H 混合投影 + F 挂点；已有 3D 角色层可把主带换成 A。</p>
+      <ul>
+        <li>32–64 段；寿命 0.5–0.8s 或长度 3–5m</li>
+        <li>头宽 0.35–0.6m，尾宽 0；60Hz 或每 4–6cm 采样</li>
+        <li>主带 + 地面影子（curtain 与影子二选一，避免 3 层）</li>
+        <li>无光照 + 4–6 色阶 + 1–2px 描边</li>
+      </ul>
+      <div class="pick">预算：≤2 draw calls · ≤2 层 · 覆盖 ≤5% · GPU 增量 ≤2ms（中端 60fps，待实测）</div>
+    </div>
+
+    <div class="tier-card">
+      <div class="who">S1 · 同屏 10–50 个</div>
+      <h3>玩家 / NPC 移动</h3>
+      <p><b>方案：</b>C 投影 ribbon；按 y 分桶合批；必要时 G。</p>
+      <ul>
+        <li>12–24 段；寿命 0.25–0.4s；宽 0.2–0.35m</li>
+        <li>30Hz 采样；1 层；按距离/屏幕尺寸剔除</li>
+        <li>最多 32 条可见（玩家/技能优先）</li>
+        <li>无逐单位材质实例；远/小/非玩家关闭</li>
+      </ul>
+      <div class="pick">预算：1–4 draw calls（理想 1）· 覆盖 ≤15%（720p）· 峰值透明层 ≤3</div>
+    </div>
+
+    <div class="tier-card">
+      <div class="who">S2 · 低端 / Compatibility</div>
+      <h3>单 quad / 精灵序列</h3>
+      <p><b>方案：</b>G 单 quad 滚动 UV 或 2–4 帧 flipbook；或 C 的 8–12 段精简版。</p>
+      <ul>
+        <li>寿命 0.2–0.3s；宽 0.2m；1 层</li>
+        <li>无描边/无 glow；30fps 目标；最多 8 条</li>
+        <li>只保留玩家/技能；NPC 关闭</li>
+        <li>Godot Compatibility 不支持粒子 trails；Cocos GPU 渲染器不支持 TrailModule</li>
+      </ul>
+      <div class="pick">预算：≤1 draw call（合批）· ≤1 层 · 零全屏 RT · 稳态 GC ≈ 0</div>
+    </div>
+
+    <div class="tier-card">
+      <div class="who">S3 · 必须真 3D / 遮挡复杂</div>
+      <h3>3D 网格 + 深度代理</h3>
+      <p><b>方案：</b>A + 深度/Stencil 代理 + 排序组；或 E 在主角色层合成。</p>
+      <ul>
+        <li>32–64 段；1–3 个单位；3D 场景/角色层</li>
+        <li>alpha scissor 遮挡物写深度；Stencil 只给关键遮挡物</li>
+        <li>全屏 RT 只给主角色，不给 50 单位</li>
+        <li>中高端机型；团队能维护多相机/RT</li>
+      </ul>
+      <div class="pick">结论：纯 2D Canvas 不要为“真 3D”三个字上 E；H 的观感/成本比更好。</div>
+    </div>
+  </div>
+
+  <h3>何时才值得上 Viewport/Stencil（判定清单）</h3>
+  <div class="checklist">
+    <div class="check-item"><span class="mark">□</span><span>已有 3D 角色层/3D 相机/深度，而不是纯 2D Canvas</span></div>
+    <div class="check-item"><span class="mark">□</span><span>遮挡是逐对象（树、柱、屋檐、建筑），且 2D 投影/切段无法接受</span></div>
+    <div class="check-item"><span class="mark">□</span><span>需要统一后处理（bloom/描边/色彩空间）或真实深度</span></div>
+    <div class="check-item"><span class="mark">□</span><span>目标机型中高端，且同屏高价值单位 ≤3</span></div>
+  </div>
+  <div class="warnbox"><b>四条全部满足才考虑 E；任一不满足 → H/C；低端 → G。</b> 单个全屏 RT 只能对应一个排序层；拖尾要在多棵树之间前后穿插时，单 RT 不够，需要多 RT/Stencil/切段，成本会继续上升。〔推断〕</div>
+</section>
+
+<!-- ================= 7 ================= -->
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>PoC 与验收</h2><span class="sec-note">2–3 个小样 · 可量化口径</span></div>
+  <p class="lead">不要直接上生产；先用 2–3 个小样在目标机型上把“排序、overdraw、draw call、风格”跑成数字。下面给的是起点预算，不是行业标准。</p>
+
+  <div class="poc-grid">
+    <div class="poc-card"><h3>P1 · Godot 4.6</h3><p><b>对比：</b>C（Line2D/MeshInstance2D）、A（ArrayMesh + SubViewport）、B（GPUParticles3D trails）。</p><p><b>场景：</b>等轴地面 + 1 棵树 + 1/10/50 个移动单位。</p><p><b>验证：</b>排序/遮挡、overdraw、draw call、GC、Compatibility 降级。</p></div>
+    <div class="poc-card"><h3>P2 · Unity URP</h3><p><b>对比：</b>TrailRenderer（View/TransformZ）、ParticleSystem Trail、H（自定义 2D mesh + Shader Graph）。</p><p><b>场景：</b>2D 地图 + 树/建筑 + 1/10/50 单位。</p><p><b>验证：</b>真机 GPU/CPU、2D/3D 排序、Frame Debugger、风格 A/B。</p></div>
+    <div class="poc-card"><h3>P3 · Three.js（可选）</h3><p><b>对比：</b>Line2 vs 自定义 BufferGeometry ribbon。</p><p><b>场景：</b>正交等轴相机 + 50 个单位。</p><p><b>验证：</b>Web 端 draw call/填充率、分辨率适配、Afterimage 对比。</p></div>
+  </div>
+
+  <h3>测试矩阵（建议 15–17 个 run）</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>变量</th><th>取值</th></tr></thead>
+    <tbody>
+      <tr><td>同屏单位</td><td>1 / 10 / 50</td></tr>
+      <tr><td>段数</td><td>16 / 32 / 64</td></tr>
+      <tr><td>分辨率</td><td>720p / 1080p</td></tr>
+      <tr><td>设备档</td><td>低 / 中 / 高（实机，不用模拟器）</td></tr>
+      <tr><td>拖尾寿命</td><td>0.3 / 0.5 / 0.8s</td></tr>
+      <tr><td>网络</td><td>本地 / 100ms 延迟 + 10Hz 更新（仅远端）</td></tr>
+    </tbody>
+  </table></div>
+  <div class="formula"><b>关键组合</b>：1 单位 × 16/32/64 × 中端；10 单位 × 16/32/64 × 中端；50 单位 × 16/32/64 × 中端；50 单位 × 32 × 低端/高端；10 单位 × 32 × 低端/高端；1 单位 × 64 × 低端/高端；50 单位 × 32 × 100ms/10Hz；传送/重生/重连各 1 次。<br>每 run：预热 10s → 采样 60s；记录 p50/p95 帧时间、GPU 时间（RenderDoc/Arm Graphics Analyzer/Snapdragon Profiler/Xcode GPU Capture）、draw calls、顶点/三角形、overdraw 覆盖、内存、GC、截图/录屏。</div>
+
+  <h3>验收口径（不是“看起来更好”）</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>项</th><th>建议门槛（需按项目标定）</th><th>证据</th></tr></thead>
+    <tbody>
+      <tr><td>60fps 中端</td><td>p95 ≤ 16.6ms；拖尾增量 GPU ≤ 2ms；CPU 更新 ≤ 1ms</td><td>真机 profiler + 60s 采样</td></tr>
+      <tr><td>30fps 低端</td><td>p95 ≤ 33.3ms；12 段/0.25s/1 层；无全屏 RT</td><td>低端实机</td></tr>
+      <tr><td>Draw calls</td><td>同屏合批 ≤1（理想）/ 2–5（y 分桶）；主角 ≤2；无逐单位材质实例</td><td>Frame Debugger/RenderDoc</td></tr>
+      <tr><td>Overdraw</td><td>50 单位拖尾覆盖 ≤15% 屏幕；峰值透明层 ≤3</td><td>Scene Overdraw/GPU 工具</td></tr>
+      <tr><td>遮挡</td><td>10/10 用例正确（树/建筑/墙/UI）；UI 永不被盖</td><td>截图/录屏逐例</td></tr>
+      <tr><td>风格</td><td>5 个关键色抽样 ΔE2000 ≤ 5；描边 1–2px；手绘/像素模式无 soft additive glow</td><td>像素采样 + 3 人盲评</td></tr>
+      <tr><td>内存</td><td>50 单位拖尾缓冲 ≤256KB；稳态 GC ≈ 0</td><td>profiler/分配日志</td></tr>
+      <tr><td>网络/回放</td><td>远端跟随插值位置；传送无长带；回放可重建</td><td>延迟模拟 + 录屏</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Kill criteria（什么时候停）</h3>
+  <ul class="clean">
+    <li>50 单位低端机 C 仍 &gt;33.3ms → 切 G/减少可见数量，不再优化 3D。</li>
+    <li>H 在中端机 60fps 下增量 GPU &gt;2ms 且降段仍不达标 → 降到 C。</li>
+    <li>E 的 RT 成本 &gt;1.5ms 或不能解决逐对象遮挡 → 放弃 E，改 H + 切段/遮罩。</li>
+    <li>任何方案在目标低端机持续 GC/每帧 mesh 重建 → 先修池化/环形缓冲，再谈观感。</li>
+    <li>风格盲评 &lt;2/3 认为“和地图一致” → 先改材质/色阶/描边，不加特效层。</li>
+  </ul>
+</section>
+
+<!-- ================= 8 ================= -->
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>来源</h2><span class="sec-note">访问日期 2026-11-27 · 事实/推断已标注</span></div>
+  <p class="lead">完整 28 条来源、厂商说法/社区/推断标注见 <a href="2d-map-3d-trail-options.md" style="color:var(--teal)">Markdown 文档</a>。下表是核心 16 条。</p>
+  <div class="tablewrap">
+    <table class="source-table">
+      <thead><tr><th>来源</th><th>用途</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_ribbontrailmesh.html" target="_blank" rel="noopener">Godot 4.6 RibbonTrailMesh</a></td><td>直 ribbon、sections/curve，用于粒子拖尾</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_gpuparticles3d.html" target="_blank" rel="noopener">Godot 4.6 GPUParticles3D</a></td><td>trail_enabled/trail_lifetime、mesh skinning、use_particle_trails</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/tutorials/3d/particles/trails.html" target="_blank" rel="noopener">Godot 4.6 3D Particle trails</a></td><td>粒子拖尾仅 Forward+/Mobile，不支持 Compatibility</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/latest/tutorials/3d/using_trail_3d.html" target="_blank" rel="noopener">Godot latest Using Trail3D</a></td><td>Trail3D 4.8+；4.6 无此节点</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/tutorials/3d/standard_material_3d.html" target="_blank" rel="noopener">Godot 4.6 Stencil</a></td><td>4.5+ Stencil；写 Stencil 的材质在透明 pass</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_line2d.html" target="_blank" rel="noopener">Godot 4.6 Line2D</a></td><td>2D 折线、width_curve、gradient</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/classes/class_canvasitem.html" target="_blank" rel="noopener">Godot 4.6 CanvasItem</a></td><td>y_sort_enabled：同 z_index 内按 Y 排序</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.godotengine.org/en/4.6/tutorials/rendering/viewports.html" target="_blank" rel="noopener">Godot 4.6 Viewports</a></td><td>SubViewport 渲染 3D 到 2D 的官方用例</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/Manual/class-TrailRenderer.html" target="_blank" rel="noopener">Unity Trail Renderer</a></td><td>Time/Min Vertex Distance/Width/Color/Alignment View·TransformZ</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/Manual/PartSysTrailsModule.html" target="_blank" rel="noopener">Unity Particle Trails module</a></td><td>Mode Particle/Ribbon、Ratio、World Space、Ribbon Count</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/6/Documentation/Manual/urp/2DRendererData-overview.html" target="_blank" rel="noopener">Unity URP 2D Renderer Data</a></td><td>Transparency Sort Mode：Perspective（等轴）/Orthographic（俯视）/Custom Axis</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/6000.3/Documentation/Manual/tilemaps/work-with-tilemaps/isometric-tilemaps/renderer/sort-sprites-custom-sorting-axis.html" target="_blank" rel="noopener">Unity 等轴自定义排序轴</a></td><td>Custom Axis (0,1,0) / z=-0.26 示例</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.unity3d.com/Packages/com.unity.visualeffectgraph@17.3/manual/Context-OutputShaderGraphStrip.html" target="_blank" rel="noopener">Unity VFX Graph ParticleStrip</a></td><td>Particle Strip 输出、Tiling Mode</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/how-to-create-a-ribbon-effect-in-niagara-for-unreal-engine" target="_blank" rel="noopener">Unreal Niagara Ribbon Effect</a></td><td>Ribbon Renderer、DefaultRibbonMaterial</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://docs.cocos.com/creator/3.8/manual/en/particle-system/trail-module.html" target="_blank" rel="noopener">Cocos Creator 3.8 Trail Module</a></td><td>Mode 仅 Particles、Space 仅 World/Local、TextureMode 仅 Stretch</td><td><span class="badge fact">官方</span></td></tr>
+        <tr><td><a href="https://threejs.org/docs/pages/Line2.html.md" target="_blank" rel="noopener">Three.js Line2</a></td><td>任意宽度、world units；LineMaterial resolution</td><td><span class="badge fact">官方</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="legend">
+    <span><span class="badge fact">官方</span> 引擎/平台文档</span>
+    <span><span class="badge infer">推断</span> 工程判断/估算</span>
+    <span><span class="badge vendor">厂商</span> 厂商博客/宣传</span>
+    <span><span class="badge community">社区</span> 非官方</span>
+    <span><span class="badge test">待实测</span> 需 PoC</span>
+  </div>
+  <p class="lab-hint" style="margin-top:10px">游戏名称/商标归各自权利人；本文未复制任何游戏素材、UI 或品牌资产。部分厂商页面只能在搜索摘要下核对，正式立项前请在可访问网络/真机环境复核原文与版本号。</p>
+</section>
+
+</main>
+
+<footer>
+  <p><b>一句话带走：</b>纯 2D 多人 → C；主角/技能 → H；低端 → G；有 3D 层且遮挡硬需求 → A/E；B 只做爆发特效；D 只做残影点缀。</p>
+  <p>配套文件：<a href="2d-map-3d-trail-options.md">2d-map-3d-trail-options.md</a> · 任务 T-20261127-013 · 2026-11-27</p>
+  <p class="muted">本页为技术调研/选型工具，不是任何游戏的官方参数表；观察台为原创示意，读数不是引擎实测。交互与图表为原创，未引入外部 CDN。</p>
+</footer>
+</div>
+
+<div class="fab">
+  <button id="themeBtn" title="切换主题">◐ 主题</button>
+  <button id="topBtn" title="回到顶部">↑ 顶部</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // ---------- theme / progress / toc ----------
+  const themeBtn = $('#themeBtn');
+  themeBtn.addEventListener('click', () => {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    syncCanvasPalette();
+  });
+  $('#topBtn').addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+  const progress = $('#progress');
+  const syncProgress = () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+  };
+  window.addEventListener('scroll', syncProgress, {passive: true});
+  syncProgress();
+
+  const tocLinks = $$('#toc a');
+  const sections = tocLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, {rootMargin: '-30% 0px -60% 0px'});
+  sections.forEach(s => io.observe(s));
+
+  // =====================================================================
+  // LAB
+  // =====================================================================
+  const canvas = $('#labStage');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const CX = W * 0.5, CY = H * 0.58;
+  const ISO_X = 47, ISO_Y = 24;
+  const HEIGHT = 22;
+  const TREE = {x: 2.1, y: -1.15, s: 1.15};
+  const ROCK = {x: -2.8, y: 1.8, s: 0.85};
+  const PATH = [
+    {x: -3.6, y: -2.6}, {x: -1.2, y: -3.6}, {x: 2.4, y: -2.8}, {x: 3.4, y: 0.4},
+    {x: 1.6, y: 3.0}, {x: -2.0, y: 3.2}, {x: -3.6, y: 0.8}, {x: -3.6, y: -2.6}
+  ];
+
+  const PAL = {
+    bgTop: '#0D1B15', bgBot: '#07100C', ground: '#12241C', ground2: '#0F1E17',
+    grid: 'rgba(150,200,170,.13)', path: 'rgba(242,179,92,.16)',
+    ink: '#E8F1E8', soft: '#9AAFA2', faint: '#647D70',
+    gold: '#F2B35C', teal: '#5FD8C9', leaf: '#9BD46A', bad: '#FF6B6B',
+    shadow: 'rgba(0,0,0,.35)', outline: 'rgba(4,10,7,.62)'
+  };
+  function syncCanvasPalette() { /* intentionally fixed dark stage */ }
+
+  const state = {
+    mode: 'projected', units: 1, segments: 32, life: 1.0, width: 1.2,
+    tree: true, style: true, overdraw: false, paused: true, speed: 3.6,
+    dist: 0, lastNow: 0, lastSample: 0, histUnitCount: 1
+  };
+  let histories = [[]];
+  let fps = 60, fpsFrames = 0, fpsT = 0;
+
+  function project(x, y, h = 0) {
+    return {x: CX + (x - y) * ISO_X, y: CY + (x + y) * ISO_Y - h};
+  }
+
+  const pathInfo = (() => {
+    const segs = [];
+    let total = 0;
+    for (let i = 0; i < PATH.length - 1; i++) {
+      const a = PATH[i], b = PATH[i + 1];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy);
+      segs.push({a, b, len, start: total, dx: dx / len, dy: dy / len});
+      total += len;
+    }
+    return {segs, total};
+  })();
+
+  function pointAt(distance) {
+    const d = ((distance % pathInfo.total) + pathInfo.total) % pathInfo.total;
+    for (const s of pathInfo.segs) {
+      if (d <= s.start + s.len) {
+        const t = (d - s.start) / s.len;
+        return {x: s.a.x + (s.b.x - s.a.x) * t, y: s.a.y + (s.b.y - s.a.y) * t, dx: s.dx, dy: s.dy};
+      }
+    }
+    const s = pathInfo.segs[pathInfo.segs.length - 1];
+    return {x: s.b.x, y: s.b.y, dx: s.dx, dy: s.dy};
+  }
+
+  function unitPosAt(i, distance) {
+    const phase = (i / Math.max(1, state.units)) * pathInfo.total + i * 0.37;
+    const p = pointAt(distance + phase);
+    const h = i === 0 ? HEIGHT : HEIGHT * 0.72;
+    return {x: p.x, y: p.y, dx: p.dx, dy: p.dy, h, gy: project(p.x, p.y, 0).y};
+  }
+  function unitPos(i) { return unitPosAt(i, state.dist); }
+
+  function resetHistory() {
+    histories = Array.from({length: state.units}, () => []);
+    state.histUnitCount = state.units;
+  }
+
+  function rebuildHistoryAt(dist) {
+    const now = performance.now();
+    histories = Array.from({length: state.units}, () => []);
+    for (let i = 0; i < state.units; i++) {
+      const arr = histories[i];
+      for (let age = state.life * 1000; age >= 0; age -= 33) {
+        const p = unitPosAt(i, dist - (age / 1000) * state.speed);
+        arr.push({t: now - age, x: p.x, y: p.y, h: p.h, gy: p.gy});
+      }
+    }
+    state.lastSample = now;
+  }
+
+  function updateHistory(now) {
+    if (state.histUnitCount !== state.units) resetHistory();
+    if (now - state.lastSample < 33) return;
+    state.lastSample = now;
+    for (let i = 0; i < state.units; i++) {
+      const p = unitPos(i, now);
+      const arr = histories[i];
+      arr.push({t: now, x: p.x, y: p.y, h: p.h, gy: p.gy});
+      while (arr.length && now - arr[0].t > state.life * 1000) arr.shift();
+      if (arr.length > 96) arr.shift();
+    }
+  }
+
+  function colorAt(t) {
+    // gold -> leaf -> teal; t=0 head, t=1 tail
+    const stops = [[242,179,92],[155,212,106],[95,216,201]];
+    const p = clamp(t, 0, 1) * (stops.length - 1);
+    const i = Math.min(stops.length - 2, Math.floor(p));
+    const f = p - i;
+    const a = stops[i], b = stops[i + 1];
+    return [Math.round(a[0] + (b[0] - a[0]) * f), Math.round(a[1] + (b[1] - a[1]) * f), Math.round(a[2] + (b[2] - a[2]) * f)];
+  }
+  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+
+  function quadPath(p0, p1, w0, w1) {
+    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+    const len = Math.hypot(dx, dy) || 0.001;
+    const nx = -dy / len, ny = dx / len;
+    ctx.beginPath();
+    ctx.moveTo(p0.x + nx * w0 / 2, p0.y + ny * w0 / 2);
+    ctx.lineTo(p0.x - nx * w0 / 2, p0.y - ny * w0 / 2);
+    ctx.lineTo(p1.x - nx * w1 / 2, p1.y - ny * w1 / 2);
+    ctx.lineTo(p1.x + nx * w1 / 2, p1.y + ny * w1 / 2);
+    ctx.closePath();
+  }
+
+  function drawBackground() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, PAL.bgTop); g.addColorStop(1, PAL.bgBot);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const v = ctx.createRadialGradient(CX, H * 0.48, 60, CX, H * 0.48, W * 0.62);
+    v.addColorStop(0, 'rgba(95,216,201,.055)');
+    v.addColorStop(0.55, 'rgba(95,216,201,.018)');
+    v.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawGround() {
+    // diamond
+    const c = project(0, 0, 0);
+    const corners = [project(-5.2, -5.2, 0), project(5.2, -5.2, 0), project(5.2, 5.2, 0), project(-5.2, 5.2, 0)];
+    ctx.beginPath();
+    ctx.moveTo(corners[0].x, corners[0].y);
+    for (let i = 1; i < corners.length; i++) ctx.lineTo(corners[i].x, corners[i].y);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(c.x, c.y - 60, c.x, c.y + 80);
+    g.addColorStop(0, PAL.ground); g.addColorStop(1, PAL.ground2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = 'rgba(95,216,201,.18)'; ctx.lineWidth = 1; ctx.stroke();
+
+    // grid lines
+    ctx.strokeStyle = PAL.grid; ctx.lineWidth = 1;
+    for (let i = -5; i <= 5; i++) {
+      const a = project(i, -5, 0), b = project(i, 5, 0);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      const c1 = project(-5, i, 0), d1 = project(5, i, 0);
+      ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(d1.x, d1.y); ctx.stroke();
+    }
+
+    // path
+    ctx.setLineDash([5, 7]);
+    ctx.strokeStyle = PAL.path; ctx.lineWidth = 2;
+    ctx.beginPath();
+    PATH.forEach((p, i) => {
+      const q = project(p.x, p.y, 0);
+      if (i === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawRock() {
+    const p = project(ROCK.x, ROCK.y, 0);
+    const s = ROCK.s;
+    ctx.fillStyle = 'rgba(0,0,0,.28)';
+    ctx.beginPath(); ctx.ellipse(p.x, p.y + 2, 20 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2A3B32'; ctx.strokeStyle = 'rgba(155,212,106,.16)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 18 * s, p.y);
+    ctx.lineTo(p.x - 10 * s, p.y - 16 * s);
+    ctx.lineTo(p.x + 3 * s, p.y - 20 * s);
+    ctx.lineTo(p.x + 15 * s, p.y - 8 * s);
+    ctx.lineTo(p.x + 10 * s, p.y + 2 * s);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  function drawTree() {
+    const p = project(TREE.x, TREE.y, 0);
+    const s = TREE.s;
+    ctx.fillStyle = 'rgba(0,0,0,.32)';
+    ctx.beginPath(); ctx.ellipse(p.x, p.y + 3, 34 * s, 13 * s, 0, 0, Math.PI * 2); ctx.fill();
+    // trunk
+    ctx.fillStyle = '#5A3D28'; ctx.strokeStyle = 'rgba(4,10,7,.5)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 7 * s, p.y);
+    ctx.lineTo(p.x - 5 * s, p.y - 54 * s);
+    ctx.lineTo(p.x + 6 * s, p.y - 54 * s);
+    ctx.lineTo(p.x + 9 * s, p.y);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // canopy
+    const blobs = [
+      {x: 0, y: -78, r: 34}, {x: -27, y: -68, r: 26}, {x: 27, y: -68, r: 27},
+      {x: -14, y: -96, r: 24}, {x: 16, y: -98, r: 23}
+    ];
+    blobs.forEach((b, i) => {
+      ctx.beginPath();
+      ctx.arc(p.x + b.x * s, p.y + b.y * s, b.r * s, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 ? '#315B2B' : '#3E6C31';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(4,10,7,.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    // highlight
+    ctx.beginPath();
+    ctx.arc(p.x - 12 * s, p.y - 94 * s, 12 * s, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(155,212,106,.18)'; ctx.fill();
+    // label
+    ctx.font = '10px "SF Mono", ui-monospace, monospace';
+    ctx.fillStyle = 'rgba(232,241,232,.45)';
+    ctx.textAlign = 'center';
+    ctx.fillText('occluder', p.x, p.y - 128 * s);
+    ctx.textAlign = 'left';
+  }
+
+  function drawUnit(i, hero) {
+    const p = unitPos(i);
+    const q = project(p.x, p.y, 0);
+    const s = hero ? 1.2 : 0.62;
+    const alpha = hero ? 1 : 0.78;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    // shadow
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
+    ctx.beginPath(); ctx.ellipse(q.x, q.y + 1, 11 * s, 4.5 * s, 0, 0, Math.PI * 2); ctx.fill();
+    // legs
+    ctx.strokeStyle = '#1A2A22'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(q.x - 3 * s, q.y - 12 * s); ctx.lineTo(q.x - 6 * s, q.y);
+    ctx.moveTo(q.x + 3 * s, q.y - 12 * s); ctx.lineTo(q.x + 6 * s, q.y);
+    ctx.stroke();
+    // body
+    ctx.fillStyle = hero ? '#E8E1C8' : '#D8D2BC';
+    ctx.strokeStyle = 'rgba(4,10,7,.55)'; ctx.lineWidth = 1.4 * s;
+    ctx.beginPath();
+    ctx.moveTo(q.x - 8 * s, q.y - 13 * s);
+    ctx.lineTo(q.x - 7 * s, q.y - 27 * s);
+    ctx.lineTo(q.x + 7 * s, q.y - 27 * s);
+    ctx.lineTo(q.x + 8 * s, q.y - 13 * s);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // head
+    ctx.fillStyle = '#F0D9B5';
+    ctx.beginPath(); ctx.arc(q.x, q.y - 33 * s, 7 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // hat
+    ctx.fillStyle = hero ? PAL.gold : '#B98A47';
+    ctx.beginPath();
+    ctx.moveTo(q.x - 11 * s, q.y - 36 * s);
+    ctx.lineTo(q.x, q.y - 48 * s);
+    ctx.lineTo(q.x + 11 * s, q.y - 36 * s);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // sword
+    ctx.strokeStyle = hero ? PAL.teal : '#7FB9A8'; ctx.lineWidth = 2 * s;
+    ctx.beginPath();
+    ctx.moveTo(q.x + 8 * s, q.y - 20 * s);
+    ctx.lineTo(q.x + 18 * s, q.y - 34 * s);
+    ctx.stroke();
+    if (hero) {
+      ctx.strokeStyle = 'rgba(242,179,92,.5)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(q.x, q.y + 2, 18, 7, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function unitScreenRange(i, part, treeY) {
+    const p = unitPos(i);
+    const gy = p.gy;
+    if (part === 'all') return true;
+    if (!state.tree) return true;
+    return part === 'behind' ? gy < treeY : gy >= treeY;
+  }
+
+  function drawRibbon(i, part, treeY) {
+    if (!state.tree && part === 'front') return;
+    const arr = histories[i] || [];
+    if (arr.length < 2) return;
+    const hero = i === 0;
+    const baseW = state.width * (hero ? 15 : 8) * (state.units > 10 ? 0.82 : 1);
+    const n = Math.min(arr.length, state.segments);
+    const start = Math.max(0, arr.length - n);
+    const pts = [];
+    for (let k = start; k < arr.length; k++) {
+      const a = arr[k];
+      pts.push({p: project(a.x, a.y, a.h), g: project(a.x, a.y, 0), gy: a.gy, t: (k - start) / Math.max(1, arr.length - 1 - start)});
+    }
+    // shadow first
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k], b = pts[k + 1];
+      if (!state.tree || part === 'all' || (part === 'behind' ? (a.gy + b.gy) / 2 < treeY : (a.gy + b.gy) / 2 >= treeY)) {
+        quadPath(a.g, b.g, baseW * 0.9, baseW * 0.55);
+        ctx.fillStyle = 'rgba(0,0,0,.16)';
+        ctx.fill();
+      }
+    }
+    // main ribbon
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k], b = pts[k + 1];
+      const mid = (a.gy + b.gy) / 2;
+      if (state.tree && part !== 'all') {
+        if (part === 'behind' && mid >= treeY) continue;
+        if (part === 'front' && mid < treeY) continue;
+      }
+      const w0 = baseW * (1 - 0.72 * a.t), w1 = baseW * (1 - 0.72 * b.t);
+      quadPath(a.p, b.p, w0, w1);
+      let col = colorAt(a.t);
+      let alpha = 0.88 * (1 - 0.42 * a.t);
+      if (state.style) {
+        const idx = Math.min(3, Math.floor(a.t * 4));
+        const stops = [[242,179,92],[242,179,92],[155,212,106],[95,216,201]];
+        col = stops[idx];
+        alpha = 0.92;
+      }
+      ctx.fillStyle = rgba(col, alpha);
+      ctx.fill();
+      if (state.style) {
+        ctx.strokeStyle = PAL.outline; ctx.lineWidth = 1.2; ctx.stroke();
+      }
+      if (state.overdraw) {
+        ctx.fillStyle = 'rgba(255,80,80,.10)';
+        ctx.fill();
+      }
+    }
+  }
+
+  function draw3D(i, treeY) {
+    const arr = histories[i] || [];
+    if (arr.length < 2) return;
+    const hero = i === 0;
+    const baseW = state.width * (hero ? 15 : 8);
+    const n = Math.min(arr.length, state.segments);
+    const start = Math.max(0, arr.length - n);
+    const pts = [];
+    for (let k = start; k < arr.length; k++) {
+      const a = arr[k];
+      pts.push({p: project(a.x, a.y, a.h), g: project(a.x, a.y, 0), t: (k - start) / Math.max(1, arr.length - 1 - start)});
+    }
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k], b = pts[k + 1];
+      const w0 = baseW * (1 - 0.72 * a.t), w1 = baseW * (1 - 0.72 * b.t);
+      // side wall
+      ctx.beginPath();
+      const dx = b.p.x - a.p.x, dy = b.p.y - a.p.y;
+      const len = Math.hypot(dx, dy) || 0.001, nx = -dy / len, ny = dx / len;
+      ctx.moveTo(a.g.x + nx * w0 / 2, a.g.y + ny * w0 / 2);
+      ctx.lineTo(a.g.x - nx * w0 / 2, a.g.y - ny * w0 / 2);
+      ctx.lineTo(b.p.x - nx * w1 / 2, b.p.y - ny * w1 / 2);
+      ctx.lineTo(b.p.x + nx * w1 / 2, b.p.y + ny * w1 / 2);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(40,86,70,.55)'; ctx.fill();
+      // top
+      quadPath(a.p, b.p, w0, w1);
+      const col = colorAt(a.t);
+      ctx.fillStyle = rgba(col, 0.86);
+      ctx.fill();
+      if (state.style) { ctx.strokeStyle = PAL.outline; ctx.lineWidth = 1.2; ctx.stroke(); }
+      if (state.overdraw) { ctx.fillStyle = 'rgba(255,80,80,.10)'; ctx.fill(); }
+    }
+  }
+
+  function drawParticles(i, treeY) {
+    const arr = histories[i] || [];
+    if (arr.length < 2) return;
+    const hero = i === 0;
+    const base = state.width * (hero ? 14 : 6.5);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < arr.length; k += Math.max(1, Math.floor(arr.length / 18))) {
+      const a = arr[k];
+      const p = project(a.x, a.y, a.h);
+      const tt = k / Math.max(1, arr.length - 1);
+      const r = base * (1 - 0.55 * tt) * (0.9 + 0.2 * Math.sin(k * 1.7));
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      const c = colorAt(tt);
+      g.addColorStop(0, rgba(c, .34));
+      g.addColorStop(0.55, rgba(c, .12));
+      g.addColorStop(1, rgba(c, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawGhosts(i, part, treeY) {
+    if (!state.tree && part === 'front') return;
+    const arr = histories[i] || [];
+    if (arr.length < 3) return;
+    const hero = i === 0;
+    const step = Math.max(2, Math.floor(arr.length / 5));
+    for (let k = arr.length - 2; k >= 0; k -= step) {
+      const a = arr[k];
+      if (state.tree && part !== 'all') {
+        if (part === 'behind' && a.gy >= treeY) continue;
+        if (part === 'front' && a.gy < treeY) continue;
+      }
+      const q = project(a.x, a.y, 0);
+      const alpha = 0.10 + 0.12 * (k / Math.max(1, arr.length - 1));
+      const s = (hero ? 1.2 : 0.62) * 0.9;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = hero ? PAL.gold : PAL.teal;
+      ctx.beginPath();
+      ctx.ellipse(q.x, q.y - 20 * s, 7 * s, 22 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawStreaks(i, part, treeY) {
+    if (!state.tree && part === 'front') return;
+    const arr = histories[i] || [];
+    if (arr.length < 3) return;
+    const hero = i === 0;
+    const step = Math.max(2, Math.floor(arr.length / 7));
+    for (let k = arr.length - 2; k >= 0; k -= step) {
+      const a = arr[k];
+      if (state.tree && part !== 'all') {
+        if (part === 'behind' && a.gy >= treeY) continue;
+        if (part === 'front' && a.gy < treeY) continue;
+      }
+      const p = project(a.x, a.y, a.h * 0.6);
+      const len = (hero ? 30 : 16) * (0.5 + 0.5 * (k / Math.max(1, arr.length - 1)));
+      const w = (hero ? 11 : 5.5) * (0.55 + 0.45 * (k / Math.max(1, arr.length - 1)));
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(Math.atan2(a.y, a.x) * 0.2);
+      ctx.beginPath();
+      ctx.moveTo(-len / 2, 0);
+      ctx.lineTo(len / 2, -w / 2);
+      ctx.lineTo(len / 2 + w * 0.5, 0);
+      ctx.lineTo(len / 2, w / 2);
+      ctx.closePath();
+      ctx.fillStyle = rgba(colorAt(k / Math.max(1, arr.length - 1)), state.style ? 0.95 : 0.75);
+      ctx.fill();
+      if (state.style) { ctx.strokeStyle = PAL.outline; ctx.lineWidth = 1; ctx.stroke(); }
+      ctx.restore();
+    }
+  }
+
+  function drawScene() {
+    drawBackground();
+    drawGround();
+    drawRock();
+    const treeY = project(TREE.x, TREE.y, 0).y;
+    const idx = Array.from({length: state.units}, (_, i) => i);
+    const sorted = idx.map(i => ({i, gy: unitPos(i).gy})).sort((a, b) => a.gy - b.gy);
+
+    if (state.mode === 'true3d' || state.mode === 'gpu') {
+      sorted.forEach(u => state.mode === 'true3d' ? draw3D(u.i, treeY) : drawParticles(u.i, treeY));
+      drawTree();
+      sorted.forEach(u => drawUnit(u.i, u.i === 0));
+    } else {
+      sorted.forEach(u => {
+        if (state.mode === 'projected') drawRibbon(u.i, 'behind', treeY);
+        else if (state.mode === 'afterimage') drawGhosts(u.i, 'behind', treeY);
+        else if (state.mode === 'sprite') drawStreaks(u.i, 'behind', treeY);
+      });
+      sorted.filter(u => u.gy < treeY).forEach(u => drawUnit(u.i, u.i === 0));
+      drawTree();
+      sorted.forEach(u => {
+        if (state.mode === 'projected') drawRibbon(u.i, 'front', treeY);
+        else if (state.mode === 'afterimage') drawGhosts(u.i, 'front', treeY);
+        else if (state.mode === 'sprite') drawStreaks(u.i, 'front', treeY);
+      });
+      sorted.filter(u => u.gy >= treeY).forEach(u => drawUnit(u.i, u.i === 0));
+    }
+
+    // watermark
+    ctx.font = '10px "SF Mono", ui-monospace, monospace';
+    ctx.fillStyle = 'rgba(232,241,232,.36)';
+    ctx.textAlign = 'left';
+    ctx.fillText('原创示意 · 非引擎实测', 14, H - 14);
+  }
+
+  function estimateCoverage() {
+    const arr = histories[0] || [];
+    if (arr.length < 2) return 0;
+    let area = 0;
+    for (let k = 0; k < arr.length - 1; k++) {
+      const a = project(arr[k].x, arr[k].y, arr[k].h);
+      const b = project(arr[k + 1].x, arr[k + 1].y, arr[k + 1].h);
+      area += Math.hypot(b.x - a.x, b.y - a.y) * (state.width * (state.mode === 'true3d' ? 13 : 11));
+    }
+    let cov = area * state.units / (W * H);
+    if (state.mode === 'gpu') cov *= 1.6;
+    if (state.mode === 'true3d') cov *= 1.25;
+    if (state.mode === 'projected') cov *= 1.15;
+    return cov;
+  }
+
+  function updateReadouts() {
+    const mult = state.mode === 'true3d' ? 4 : 2;
+    const verts = state.units * state.segments * mult;
+    const tris = state.units * state.segments * mult;
+    const cov = estimateCoverage() * 100;
+    const layers = state.mode === 'true3d' ? 2 : state.mode === 'gpu' ? 3 : state.mode === 'afterimage' ? Math.min(4, Math.max(2, state.units)) : state.mode === 'projected' ? 2 : 1;
+    const dc = state.units === 1
+      ? '1'
+      : (state.mode === 'true3d' || state.mode === 'gpu')
+        ? state.units + '（逐单位）'
+        : state.units + '（逐单位）/ 1–4（分桶）';
+    const styleScore = {projected: 5, true3d: 3, gpu: 2, afterimage: 3, sprite: 5}[state.mode];
+    $('#roVerts').textContent = verts.toLocaleString('en-US');
+    $('#roTris').textContent = tris.toLocaleString('en-US');
+    $('#roDC').textContent = dc;
+    $('#roCov').textContent = cov >= 999 ? '≥999%' : cov.toFixed(1) + '%';
+    $('#roLayers').textContent = layers;
+    $('#roStyle').textContent = styleScore + '/5';
+    $('#roHz').textContent = '30Hz';
+    $('#roFps').textContent = fps.toFixed(0);
+    const modeLabel = {
+      projected: '投影 2D · y-sort', true3d: '真 3D · 3D pass', gpu: 'GPU 粒子 · 3D pass',
+      afterimage: '残影 · 2D 副本', sprite: 'Sprite 序列'
+    }[state.mode];
+    $('#labMode').textContent = modeLabel;
+    const sortBadge = $('#labSort');
+    if (state.mode === 'true3d' || state.mode === 'gpu') {
+      sortBadge.textContent = '树遮挡：整条盖在树上';
+      sortBadge.classList.add('red'); sortBadge.classList.remove('gold');
+    } else {
+      sortBadge.textContent = state.tree ? '树遮挡：前后切分' : '树遮挡：已关闭';
+      sortBadge.classList.remove('red');
+      sortBadge.classList.toggle('gold', !state.tree);
+    }
+    $('#labCount').textContent = state.units + ' 单位 · ' + state.segments + ' 段';
+  }
+
+  // lab controls
+  $$('#modeChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.mode = btn.dataset.mode;
+      $$('#modeChips .chip').forEach(b => b.classList.toggle('active', b === btn));
+      updateReadouts();
+    });
+  });
+  $$('#unitChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.units = Number(btn.dataset.units);
+      $$('#unitChips .chip').forEach(b => b.classList.toggle('active', b === btn));
+      if (state.paused) rebuildHistoryAt(state.dist); else resetHistory();
+      updateReadouts();
+    });
+  });
+  const rSeg = $('#rSeg'), oSeg = $('#oSeg');
+  rSeg.addEventListener('input', () => { state.segments = Number(rSeg.value); oSeg.textContent = state.segments; updateReadouts(); });
+  const rLife = $('#rLife'), oLife = $('#oLife');
+  rLife.addEventListener('input', () => {
+    state.life = Number(rLife.value);
+    oLife.textContent = state.life.toFixed(2) + 's';
+    if (state.paused) rebuildHistoryAt(state.dist);
+  });
+  const rWidth = $('#rWidth'), oWidth = $('#oWidth');
+  rWidth.addEventListener('input', () => { state.width = Number(rWidth.value); oWidth.textContent = state.width.toFixed(1) + '×'; });
+  const rPose = $('#rPose'), oPose = $('#oPose');
+  function setPaused(p) {
+    state.paused = p;
+    const btn = $('#btnPause');
+    btn.textContent = p ? '播放' : '暂停';
+    btn.classList.toggle('primary', p);
+    if (!p) state.lastSample = performance.now();
+  }
+  rPose.addEventListener('input', () => {
+    state.dist = pathInfo.total * (Number(rPose.value) / 100);
+    oPose.textContent = rPose.value + '%';
+    setPaused(true);
+    rebuildHistoryAt(state.dist);
+  });
+  $('#btnPause').addEventListener('click', () => {
+    setPaused(!state.paused);
+    if (state.paused) rebuildHistoryAt(state.dist);
+  });
+  $('#toggleTree').addEventListener('change', e => { state.tree = e.target.checked; });
+  $('#toggleStyle').addEventListener('change', e => { state.style = e.target.checked; });
+  $('#toggleOverdraw').addEventListener('change', e => { state.overdraw = e.target.checked; });
+
+  function applyLabPreset(name) {
+    const presets = {
+      hero: {mode: 'projected', units: 1, segments: 48, life: 1.0, width: 1.2, tree: true, style: true, overdraw: false},
+      crowd10: {mode: 'projected', units: 10, segments: 24, life: 0.5, width: 0.9, tree: true, style: true, overdraw: false},
+      crowd50: {mode: 'projected', units: 50, segments: 16, life: 0.35, width: 0.7, tree: true, style: true, overdraw: false},
+      low: {mode: 'sprite', units: 1, segments: 12, life: 0.3, width: 0.7, tree: true, style: true, overdraw: false}
+    };
+    const p = presets[name]; if (!p) return;
+    Object.assign(state, p);
+    resetHistory();
+    $$('#modeChips .chip').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+    $$('#unitChips .chip').forEach(b => b.classList.toggle('active', Number(b.dataset.units) === state.units));
+    rSeg.value = state.segments; oSeg.textContent = state.segments;
+    rLife.value = state.life; oLife.textContent = state.life.toFixed(2) + 's';
+    rWidth.value = state.width; oWidth.textContent = state.width.toFixed(1) + '×';
+    $('#toggleTree').checked = state.tree; $('#toggleStyle').checked = state.style; $('#toggleOverdraw').checked = state.overdraw;
+    setPaused(true);
+    rebuildHistoryAt(state.dist);
+    updateReadouts();
+  }
+  $$('.preset-row .btn').forEach(btn => btn.addEventListener('click', () => applyLabPreset(btn.dataset.preset)));
+  $('#btnResetLab').addEventListener('click', () => applyLabPreset('hero'));
+
+  // animation
+  state.dist = pathInfo.total * 0.34;
+  let lastNow = 0;
+  function loop(now) {
+    const dt = Math.min(0.05, (now - (lastNow || now)) / 1000);
+    lastNow = now;
+    if (!state.paused) {
+      state.dist = (state.dist + dt * state.speed) % pathInfo.total;
+      updateHistory(now);
+    }
+    drawScene();
+    updateReadouts();
+    fpsFrames++;
+    if (now - fpsT > 500) {
+      fps = fpsFrames * 1000 / (now - fpsT);
+      fpsFrames = 0; fpsT = now;
+    }
+    requestAnimationFrame(loop);
+  }
+  setPaused(true);
+  rebuildHistoryAt(state.dist);
+  updateReadouts();
+  requestAnimationFrame(loop);
+
+  // =====================================================================
+  // MATRIX
+  // =====================================================================
+  const DIMS = [
+    {id: 'visual', name: '视觉质量', short: '视觉', w: 18},
+    {id: 'perf', name: '移动端性能', short: '性能', w: 20},
+    {id: 'complexity', name: '实现复杂度', short: '复杂度', w: 10},
+    {id: 'merge', name: '2D/3D 融合', short: '融合', w: 15},
+    {id: 'style', name: '风格契合', short: '风格', w: 10},
+    {id: 'crowd', name: '多人同屏', short: '多人', w: 10},
+    {id: 'net', name: '网络/回放', short: '网络', w: 5},
+    {id: 'lowend', name: '低端机降级', short: '低端', w: 7},
+    {id: 'engine', name: '引擎支持', short: '引擎', w: 5}
+  ];
+  const PROFILES = {
+    default: {visual:18, perf:20, complexity:10, merge:15, style:10, crowd:10, net:5, lowend:7, engine:5},
+    hero: {visual:25, perf:15, complexity:8, merge:15, style:12, crowd:8, net:4, lowend:8, engine:5},
+    crowd: {visual:12, perf:25, complexity:10, merge:15, style:8, crowd:15, net:5, lowend:7, engine:3},
+    lowend: {visual:8, perf:30, complexity:10, merge:10, style:8, crowd:12, net:2, lowend:15, engine:5}
+  };
+  const SCHEMES = [
+    {id:'A', name:'真 3D Ribbon Mesh', family:'3d', tag:'真 3D', scores:{visual:5,perf:3,complexity:3,merge:2,style:3,crowd:3,net:5,lowend:3,engine:4},
+      fit:'主角/技能；已有 3D 角色层/3D 场景', risk:'纯 2D Canvas 排序难；透明 pass overdraw', engines:'Unity TrailRenderer / Godot ArrayMesh + SubViewport / Unreal Niagara Ribbon / Three BufferGeometry',
+      note:'表现上限最高，但跨 2D/3D 逐对象排序成本高。'},
+    {id:'B', name:'GPU 粒子拖尾', family:'particle', tag:'粒子', scores:{visual:4,perf:3,complexity:4,merge:2,style:2,crowd:3,net:5,lowend:2,engine:5},
+      fit:'技能爆发/火焰/能量；短时少量', risk:'软边/additive 贴不上手绘；overdraw 高；Cocos GPU 不支持 TrailModule', engines:'Unity ParticleSystem/VFX Graph / Godot GPUParticles3D trails / Unreal Niagara / Cocos TrailModule (CPU)',
+      note:'不是 50 个 NPC 移动拖尾的主力；做爆发特效很强。'},
+    {id:'C', name:'2D/2.5D 投影 Ribbon', family:'pseudo', tag:'伪 3D', scores:{visual:3,perf:5,complexity:4,merge:5,style:5,crowd:5,net:5,lowend:5,engine:5},
+      fit:'同屏 10–50 单位；纯 2D 地图主力', risk:'无真实深度/光照；投影必须跟相机一致；合批会被 y-sort 穿插打断', engines:'Godot Line2D/MeshInstance2D / Unity custom 2D mesh + CustomAxis / Cocos custom assembler / Three Line2',
+      note:'默认权重下综合第一；不是最好看，但最稳。'},
+    {id:'D', name:'Afterimage / 残影', family:'post', tag:'后处理', scores:{visual:3,perf:4,complexity:4,merge:3,style:3,crowd:3,net:5,lowend:4,engine:5},
+      fit:'冲刺/瞬移/闪避的残影层', risk:'不是拖尾；RT 带宽；mesh 副本 draw call/overdraw', engines:'Three AfterimagePass / Unity 后处理或多副本 / Godot 多 sprite 或 SubViewport feedback',
+      note:'当点缀可以，当移动拖尾主体会缺方向/宽度控制。'},
+    {id:'E', name:'Viewport / Stencil 合成', family:'composite', tag:'合成', scores:{visual:5,perf:2,complexity:2,merge:5,style:4,crowd:2,net:5,lowend:1,engine:3},
+      fit:'主角/技能；逐对象遮挡复杂；已有 3D 层', risk:'全屏 RT + resolve；单 RT 只能一层；Stencil 需额外遮挡 pass', engines:'Unity RenderTexture/Renderer Feature/Stencil / Godot SubViewport + Stencil / Unreal Custom Depth / Three WebGLRenderTarget',
+      note:'ROI 最低但能解决硬遮挡；四条判定全满足才上。'},
+    {id:'F', name:'骨骼 / 武器挂点驱动', family:'driver', tag:'驱动', scores:{visual:5,perf:4,complexity:4,merge:4,style:4,crowd:4,net:5,lowend:4,engine:4},
+      fit:'技能/刀光/鞭/链/坐骑尾迹', risk:'依赖挂点命名/配置；排序问题不变', engines:'Unity Socket + TrailRenderer / Godot BoneAttachment3D + Mesh / Unreal Skeletal Socket + Niagara / Three Bone.getWorldPosition',
+      note:'和 H/A 组合，不是独立替代移动拖尾。'},
+    {id:'G', name:'Sprite 序列 / 动画拖尾', family:'sprite', tag:'精灵', scores:{visual:2,perf:5,complexity:4,merge:5,style:5,crowd:5,net:5,lowend:5,engine:5},
+      fit:'低端机/像素手绘/同屏爆量', risk:'形状固定、非真 3D、相机旋转可能穿帮', engines:'所有引擎的 Sprite/Quad/billboard；单 quad 滚动 UV 或 2–4 帧 flipbook',
+      note:'兜底不是失败；低端/像素风往往比缩水 3D 更统一。'},
+    {id:'H', name:'混合投影 Ribbon（推荐）', family:'pseudo', tag:'混合', scores:{visual:5,perf:4,complexity:3,merge:5,style:5,crowd:4,net:5,lowend:4,engine:4},
+      fit:'主角/技能/高价值单位', risk:'比 C 多一层投影/高度逻辑；相机大转时重算', engines:'A 的 3D 采样 + C 的屏幕空间网格 + 2D 风格化材质 + y-sort',
+      note:'“真 3D 观感 + 2D 风格”的推荐答案；默认权重第二、主角权重第一。'}
+  ];
+
+  let weights = {...PROFILES.default};
+  let filter = 'all';
+  let sortKey = 'weighted';
+  let sortDir = -1;
+  const openRows = new Set();
+
+  const totalWeight = () => DIMS.reduce((s, d) => s + (Number(weights[d.id]) || 0), 0) || 1;
+  const weighted = s => DIMS.reduce((sum, d) => sum + s.scores[d.id] * (Number(weights[d.id]) || 0), 0) / totalWeight();
+  const scoreClass = n => 's' + clamp(Math.round(n), 1, 5);
+
+  function renderWeightRows() {
+    const host = $('#weightRows');
+    host.innerHTML = '';
+    DIMS.forEach(d => {
+      const row = document.createElement('div');
+      row.className = 'weight-row';
+      row.innerHTML = '<span>' + d.short + '</span><input type="range" min="0" max="30" step="1" value="' + weights[d.id] + '" data-w="' + d.id + '"><output>' + weights[d.id] + '</output>';
+      host.appendChild(row);
+      const inp = row.querySelector('input');
+      const out = row.querySelector('output');
+      inp.addEventListener('input', () => {
+        weights[d.id] = Number(inp.value);
+        out.textContent = inp.value;
+        $$('#profileRow .btn').forEach(b => b.classList.remove('active'));
+        updateWeightSum();
+        renderMatrix();
+      });
+    });
+    updateWeightSum();
+  }
+  function updateWeightSum() {
+    const sum = DIMS.reduce((s, d) => s + Number(weights[d.id] || 0), 0);
+    $('#weightSum').textContent = 'Σ = ' + sum + (sum === 100 ? '' : '（归一化）');
+  }
+  function setProfile(name) {
+    const p = PROFILES[name] || PROFILES.default;
+    weights = {...p};
+    $$('#profileRow .btn').forEach(b => b.classList.toggle('active', b.dataset.profile === name));
+    renderWeightRows();
+    renderMatrix();
+  }
+
+  function visibleSchemes() {
+    return SCHEMES.filter(s => filter === 'all' || s.family === filter);
+  }
+  function sortSchemes(rows) {
+    const copy = rows.slice();
+    if (sortKey === 'weighted') copy.sort((a, b) => weighted(a) - weighted(b));
+    else copy.sort((a, b) => a.scores[sortKey] - b.scores[sortKey]);
+    if (sortDir < 0) copy.reverse();
+    return copy;
+  }
+
+  function renderMatrix() {
+    const body = $('#matrixBody');
+    body.innerHTML = '';
+    const rows = sortSchemes(visibleSchemes());
+    rows.forEach((s, idx) => {
+      const tr = document.createElement('tr');
+      tr.className = 'scheme-row';
+      const scoreCells = DIMS.map(d => '<td class="num"><span class="score-pill ' + scoreClass(s.scores[d.id]) + '">' + s.scores[d.id] + '</span></td>').join('');
+      tr.innerHTML =
+        '<td class="rank">' + (idx + 1) + '</td>' +
+        '<td class="sname"><b>' + s.id + ' · ' + s.name + '</b><small>' + s.tag + ' · ' + s.family + '</small></td>' +
+        scoreCells +
+        '<td class="wcell"><div class="wscore">' + weighted(s).toFixed(2) + ' <small>/5</small></div><div class="wbar"><i style="width:' + (weighted(s) / 5 * 100) + '%"></i></div></td>';
+      tr.addEventListener('click', () => {
+        if (openRows.has(s.id)) openRows.delete(s.id); else openRows.add(s.id);
+        renderMatrix();
+      });
+      body.appendChild(tr);
+      if (openRows.has(s.id)) {
+        const dtr = document.createElement('tr');
+        dtr.className = 'detail-row';
+        dtr.innerHTML = '<td colspan="12"><div class="detail-grid">' +
+          '<div><b>适合</b>' + s.fit + '</div>' +
+          '<div><b>风险 / 弱项</b>' + s.risk + '</div>' +
+          '<div><b>引擎映射</b>' + s.engines + '</div>' +
+          '<div><b>一句话</b>' + s.note + '</div>' +
+          '</div></td>';
+        body.appendChild(dtr);
+      }
+    });
+    // header sort state
+    $$('.score-table th').forEach(th => {
+      th.classList.remove('sorted', 'asc');
+      if (th.dataset.sort === sortKey) {
+        th.classList.add('sorted');
+        if (sortDir > 0) th.classList.add('asc');
+      }
+    });
+    const n = rows.length;
+    $('#matrixNote').textContent = '显示 ' + n + ' / ' + SCHEMES.length + ' · 按' + (sortKey === 'weighted' ? '加权分' : DIMS.find(d => d.id === sortKey).short) + (sortDir > 0 ? '升序' : '降序');
+  }
+
+  $$('.score-table th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+      renderMatrix();
+    });
+  });
+  $$('#familyChips .chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filter = btn.dataset.family;
+      $$('#familyChips .chip').forEach(b => b.classList.toggle('active', b === btn));
+      renderMatrix();
+    });
+  });
+  $$('#profileRow .btn').forEach(btn => btn.addEventListener('click', () => setProfile(btn.dataset.profile)));
+  $('#resetWeights').addEventListener('click', () => setProfile('default'));
+
+  renderWeightRows();
+  renderMatrix();
+
+  // card -> filter
+  $$('.scheme-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const fam = card.dataset.family;
+      const chip = $$('#familyChips .chip').find(b => b.dataset.family === fam);
+      if (chip) {
+        filter = fam;
+        $$('#familyChips .chip').forEach(b => b.classList.toggle('active', b === chip));
+        renderMatrix();
+        document.getElementById('s3').scrollIntoView({behavior: 'smooth'});
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
