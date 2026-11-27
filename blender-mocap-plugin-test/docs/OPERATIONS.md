@@ -78,3 +78,83 @@ mkdir -p /tmp/blender_phases
   --glb exports/Rogue_MediaPipe_walk_raw.glb --out-dir /tmp/blender_phases
 # RENDER_DONE [1, 37, 74, 111, 148]；拼成 screenshots/blender_playback_phases.png
 ```
+
+## T-012 穿模修复（follow-up）
+
+```bash
+# 修复 + 导出 + 复制到 Godot + import + smoke
+bash scripts/fix_clipping.sh
+# FIX_ARM_START frames=1..148 clamp=0.550
+# FIX_ARM_DONE
+# FIX_FOOT_DONE max_lift_mm=65.5 mean_lift_mm=23.8 contact_adjust_min/max_mm=-26.1/0.0
+# FIX_CAPE_REBIND error_mm=0.000
+# FIX_EXPORT_GLB exports/Rogue_MediaPipe_walk_fixed.glb
+# FIX_EXPORT_FBX exports/Rogue_MediaPipe_walk_fixed.fbx
+# SMOKE_FILE fixed bones=41 meshes=7 clip=Animation len=4.9333 tracks=24 root_xz=0.0017
+# SMOKE_FOOT fixed min_foot_y=0.0840 longest=12 stance_slide=0.1696 hip_y_range=0.0635
+# MOCAP_SMOKE_OK / FIX_CLIPPING_DONE
+
+# 诊断（全 148 帧汇总 + 8 帧采样；JSON 便于对比）
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -noaudio \
+  --python scripts/diagnose_clipping.py -- \
+  --glb exports/Rogue_MediaPipe_walk_raw.glb --out .work/clipdiag/before_diag.json
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -noaudio \
+  --python scripts/diagnose_clipping.py -- \
+  --glb exports/Rogue_MediaPipe_walk_fixed.glb --out .work/clipdiag/after_diag.json
+
+# Godot 前后对比（同机位、--flat 去阴影；5 s = 150 帧；绝对路径）
+godot --path godot --resolution 1280x720 --write-movie /abs/before.avi \
+  --fixed-fps 30 --quit-after 150 -- \
+  --nohud --still --flat --preset=2 --glb=res://assets/Rogue_MediaPipe_walk.glb
+godot --path godot --resolution 1280x720 --write-movie /abs/after.avi \
+  --fixed-fps 30 --quit-after 150 -- --nohud --still --flat --preset=2
+
+# hstack + label overlay（label 用 PIL 生成 2560×720 透明 PNG）
+ffmpeg -y -i /abs/before.avi -i /abs/after.avi -loop 1 -framerate 30 \
+  -i .work/clipdiag/video_labels.png \
+  -filter_complex "[0:v][1:v]hstack=inputs=2[bg];[bg][2:v]overlay=0:0:shortest=1,scale=1920:-2[out]" \
+  -map "[out]" -t 5 -r 30 -c:v libx264 -crf 20 -pix_fmt yuv420p -movflags +faststart \
+  /tmp/godot_compare.mp4
+# 注意：两段独立 Godot 录制的相位/光照不齐，/tmp/godot_compare.mp4 仅作诊断；
+# 验收视频用 8 相位 Blender Workbench 并排（clip_before_after_phases.mp4）。
+```
+
+关键输出：
+
+```text
+before arm L: 148/148 frames, max 253.25 mm (f111), max 194 verts/frame
+before arm R: 148/148 frames, max 291.66 mm (f131), max 224 verts/frame
+after  arm L: 36/148 frames >4 mm, max 11.78 mm (f11),  max 6 verts/frame
+after  arm R: 34/148 frames >4 mm, max 11.75 mm (f24),  max 6 verts/frame
+before foot mesh: L -174.36 mm (148 frames <0), R -159.43 mm (145 frames <0)
+after  foot mesh: L +1.0 mm (0 <0), R +1.0 mm (0 <0)
+stance slide: 0.2315 m → 0.1696 m (bone head 90-sample; HUD 40-sample 0.213; no foot lock)
+hip range: 0.0501 m → 0.0635 m; root XZ: 0.0017 m (unchanged); contact L64/R96, longest 17/29
+```
+
+注意：
+
+- `--flat` 只用于前后光照一致的对比证据；默认预览保留阴影。`--phase` 会在 `_measure()` 之后重新 seek（`preview.gd` 已修），否则静止截图会被测量 scrub 到片尾。
+- 修复版 clean GLB 是 **7 mesh**（不含 5 件 handslot 武器），raw 仍是 12 mesh；`smoke.gd` 已按 fixed=7 检查。
+- HUD 的 `foot bone min` 修复后约 +9.3 cm（40 采样；smoke +8.4 cm）是 foot 骨 head，不是 mesh 脚底；真实 mesh 最低 +0.1 cm（Blender 诊断），HUD 已加注。
+- `recordings/godot_walk_before_flat.avi` / `godot_walk_after_flat.avi` 是对比视频的 1280×720 中间源，体积大，未提交；用上面的 `--write-movie` 命令可重新生成。
+- 交付媒体是 `recordings/clip_before_after_phases.mp4`（1200×726，8 s，8 相位并排）与 `.gif`（960 宽，10 fps）；由 Blender Workbench 的 8 帧 before/after + PIL 标签 + ffmpeg 生成。
+- 两段独立 Godot Movie Maker 前后录制受加载/`_measure` 时序影响，相位/光照不齐，未作为最终对比视频；Godot 侧证据是 `screenshots/clip_after_hud_1280.png` 和脚部静止图。
+
+T-012 验收补充：
+
+```text
+godot --headless --path godot --quit-after 600 → exit 0，0 SCRIPT ERROR / 0 ERROR
+Movie Maker fixed 5 s / 150 帧：6–9 s（55–83% realtime），CPU 2.43–2.46 ms/帧
+HUD 截帧（screenshots/clip_after_hud_1280.png）：FPS 32、7 mesh、foot 骨 +9.3 cm / mesh +0.1 cm、arm clip 11.8 mm、stance 0.213 m / hip 5.3 cm
+```
+
+T-012 FBX 验证：
+
+```text
+godot --headless --path godot -s tools/inspect_fbx.gd
+# FBX_BONES 41 MESHES 12 ... FILE res://assets/Rogue_MediaPipe_walk.fbx
+# FBX_ANIM Scene len=4.9000 tracks=24
+# FBX_BONES 41 MESHES 7 ... FILE res://assets/Rogue_MediaPipe_walk_fixed.fbx
+# FBX_ANIM Scene len=4.9000 tracks=24
+```

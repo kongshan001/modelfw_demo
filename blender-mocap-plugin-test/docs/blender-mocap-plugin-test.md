@@ -11,6 +11,7 @@
 3. **快速模式在 CPU 上可用**：148/148 帧检测到姿势；视频推理 **0.104 s/帧**（p95 0.121 s，总计 17.3 s；模型初始化 0.78 s）；单张图片 **0.166 s**（warm，init 0.83 s）；手部 0.079 s，15 个抽样帧中 10 帧双手、5 帧单手、0 帧无手。宣传“最快 1 秒”对单图/首帧是成立的；对整段视频是约 10 fps 的逐帧推理，不是“1 秒出整段动作”。
 4. **管线跑通，质量是“原型/previs 级”**：18 骨 Mixamo 命名源骨架 → `animation-retarget-kit` → KayKit Rogue（41 骨 / 12 mesh / 26 轨 / 4.9333 s）。root XZ 漂移 **1.7 mm**，脚底 **-0.84 cm**（轻微穿地），支撑脚世界滑移 **0.17–0.24 m**（不同采样），髋起伏 **4.8–5.0 cm**，骨长偏差 **~1e-7**，骨骼 scale 偏差 **0**。关键帧精简 **60,680 → 5,346（-91.19%）**，最大通道误差 **0.002**，时长不变。Godot 4.6 headless 600 帧 **0 SCRIPT ERROR / 0 ERROR**，`MOCAP_SMOKE_OK`。
 5. **适用/不适用**：适合快速预演、独立/风格化角色、单人物全身动作、离线 CPU；不适合生产级主角、手指细节、脚部锁定、大根运动、多人/遮挡，以及需要商业授权的准确模式（ExMR/GVHMR 非商用；SMPL-X/MANO 受限）。**插件本体与准确模式未测**；所有数字属于“同款 fast-mode 模型 + 本仓库重定向管线”，不是 Pose_AI 的官方指标。
+6. **T-012 follow-up 已修可见穿模**：手/前臂/护腕对躯干/头/披风的最大深度 **253.3 / 291.7 mm → 11.8 / 11.8 mm**（全 148 帧；≤12 mm 阈值，角色自带 Walking_A 参考 30 mm）；脚 mesh 最低 **-174.4 mm → +1.0 mm**（0 帧穿地；接触帧 L64/R96）；支撑滑 **0.2315 → 0.1696 m**（HUD 40 采样 0.213 m；仍存在，走步机原地输入）；髋起伏 **5.01→6.35 cm**；root XZ 1.7 mm 不变。修复版 41 骨 / 7 mesh / 4.9333 s；原始 raw 与输入未改。详见 §11。
 
 ## 1. 插件摸底与阻塞（摘要）
 
@@ -267,3 +268,149 @@ ffmpeg -y -i /tmp/walk.avi -c:v libx264 -crf 20 -pix_fmt yuv420p -movflags +fast
 附带 `exports/Rogue_MediaPipe_walk.fbx`（857 KB）与 `godot/tools/inspect_fbx.gd`，用于 Unity/UE/其他引擎的 FBX 路径；Godot 4.6 直接导入已验证（4.9000 s / 24 轨）。
 
 > 参考视频与插件截图只在 `/tmp/mocap_ref`，未复制进仓库；媒体中的骨架可视化由 landmark 数据重绘，不含源视频画面。
+
+## 11. T-20261127-012 穿模修复（follow-up）
+
+> 任务：修 T-004 预览里用户指出的“这个穿模比较厉害”。不改源视频/源骨架/时间轴，保留走路方向和根运动；只做可见穿模清理、导出和证据。修复脚本 `scripts/fix_clipping.py` + `scripts/fix_clipping.sh`，诊断 `scripts/diagnose_clipping.py`。
+
+### 11.1 结论
+
+| 项 | 修复前（raw） | 修复后（fixed） |
+|---|---|---|
+| 手/前臂/护腕 vs 躯干/头/披风，有穿模帧 | **L 148/148，R 148/148** | L 36/148，R 34/148（>4 mm） |
+| 最大穿模深度 | **L 253.3 mm（f111），R 291.7 mm（f131）** | **L 11.8 mm（f11），R 11.8 mm（f24）** |
+| 单帧最多穿模顶点 | L 194，R 224 | L 6，R 6 |
+| 穿模体积代理（Σ面积×深度，均值/峰值，cm³） | L 11,624 / 29,837，R 9,682 / 44,623 | L 5.3 / 59.5，R 6.7 / 44.7 |
+| 手/前臂骨中心到躯干/头/披风的最小净距（8 采样） | **-146.7 mm** | **+123.3 mm** |
+| 参考：角色自带 `Walking_A_Rig` 同类手/前臂最大深度 | L 29.6 mm，R 30.4 mm | — |
+| 脚 **mesh** 最低点 | **L -174.4 mm，R -159.4 mm** | **L +1.0 mm，R +1.0 mm** |
+| 脚 mesh < 0 的帧 | L 148/148，R 145/148 | **L 0，R 0** |
+| 脚接触帧（距最低 5 mm 内）/ 最长连续 | L 1 / R 1（穿地时无法接触） | **L 64 / R 96；17 / 29** |
+| 脚 hip lift / contact adjust | — | lift **max 65.5 mm / mean 23.8 mm**；接触下压 **max 26.1 mm** |
+| 支撑滑（骨 head，Godot smoke 90 采样；HUD 40 采样） | 0.2315 m | **0.1696 m**（HUD 0.213 m；仍存在） |
+| 髋起伏 / root XZ | 5.01 cm / 1.7 mm | **6.35 cm** / 1.7 mm（HUD 5.3 cm） |
+| 披风/武器 | 披风内部 25.7 mm；5 件武器 127–148 帧、215–288 mm | 披风保留（内部 25.7 mm，隐藏）；武器从 clean locomotion GLB 移除 |
+| 资产 | 12 mesh / 644 KB | **7 mesh / 321 KB GLB / 798 KB FBX / 24 Godot 轨**；FBX Godot 直接导入 41 骨 / 7 mesh / 4.9000 s / 24 轨 |
+
+- **可见穿模已消除**：修复后残余 ≤11.8 mm = 角色身高 2.15 m 的 0.55%，且每帧最多 6 个顶点、均位于护腕/手套边缘；1280×720 实际 GPU 渲染无可见穿模。≤12 mm 作为本次验收阈值，低于角色自带走路动画的 30 mm。
+- **脚**：旧报告“脚底 -0.84 cm”是 **骨 head** 口径；按 leg mesh 顶点，raw 实际穿地最多 174 mm（两脚分别 148/145 帧低于地面）。修复后 mesh 最低 +1.0 mm、0 帧穿地；接触帧 L 64 / R 96、最长 17 / 29；支撑滑未做脚锁，0.1696 m（HUD 40 采样 0.213 m）仍在（走步机原地输入，见 §11.5）。
+- **武器**：源资产把 Knife/Offhand/Knife、1H/2H_Crossbow、Throwable 绑在 `handslot.l/r`（持械绑定），走路时会跟随手进入躯干（215–288 mm）。本次把 5 件道具从 **locomotion clean GLB/FBX** 移除——任务允许“隐藏”，且 Godot 预览原本就隐藏它们；raw 完整 GLB 保留未改。
+- **披风**：保留并改为蒙皮到 `chest`（帧 1 误差 0.000 mm），避免再导出时 `matrix_parent_inverse` 丢失导致的 90°/1.39 m 错位；代价是丢掉原 object action 的约 1 cm 独立摆动。
+- **不改**：源视频/输入、18 骨源骨架、walk 方向、hip XZ 根运动、角色材质/比例/骨架。
+- **Godot 验收**：fixed 600 帧 headless **0 SCRIPT ERROR / 0 ERROR**、exit 0；`MOCAP_SMOKE_OK`。Movie Maker 5 s / 150 帧录制 6–9 s（55–83% realtime），CPU render **2.43–2.46 ms/帧**，HUD 截帧 **FPS 32**（录制环境，不是游戏性能基准）。
+
+### 11.2 根因
+
+1. **chibi 比例 + 角色设计宽度**：Rogue 高 2.15 m，腰带/裙摆处 body mesh x 约 **±0.48 m**，肩关节却在 x **±0.21 m**。MediaPipe 18 骨重定向后腕 x 只有 **0.0–0.33 m**，护腕/手套半径约 0.1 m，于是整段前臂/手套落在躯干内部。KayKit 自带 `Walking_A_Rig` 的腕 |x| ≈ **0.513 m**、手 |x| ≈ 0.55 m——角色本身就需要更宽的 arm corridor；这不是“手部旋转错”，是比例/碰撞问题。
+2. **无手指骨 + 手沿前臂握拳**：Rogue 没有 finger 骨，手部只能作为整体跟着前臂；本修复不改骨架，残余手部朝向仍由前臂决定。
+3. **脚**：源 foot/toe 的跖屈重定向到更大的 boot，raw foot pitch **50–74° toe-down**；mesh 最低 -174 mm。旧指标只测 `foot.*`/`toes.*` 骨 head，低估了 boot mesh。
+4. **披风**：源 cape 是 bone-parent 到 `chest` 的刚性 mesh，自带 object action。Blender glTF 再导出不往返 `matrix_parent_inverse`：第一次重导出后披风旋转 ~90°、世界位置偏 1.388 m（实测 `FIX_CAPE_REBIND error_mm=1388.373`），必须转成 skinned mesh 才能稳定导出。
+5. **武器**：5 件道具在源 GLB 里是 `BoneAttachment3D → handslot.l/r` 的持械绑定，不是腰带挂件；走路不持械时它们跟着手进入躯干。预览原本隐藏，但 raw GLB 本身仍会穿。
+
+### 11.3 方法
+
+**A. 碰撞感知手臂 IK（`scripts/fix_clipping.py`）**
+
+- 保留源动作的腕 **y/z**（前后/上下摆动）和全部身体/腿/头关键帧；仅把腕的横向 |x| clamp 到 **0.55 m**（角色自带 Walking_A 0.513 + 手套余量）。
+- 解析 2-bone IK（upperarm/lowerarm）解到新腕目标，肘极向 `(0.35·side, -0.9, +0.15)`（略外/前/上），保留原肘弯曲平面；每帧写回 upperarm/lowerarm 四元数，LINEAR。
+- 残余 mesh push：手 `hand.*` + 距腕 0.16 m 内的 `lowerarm.*` 顶点对 body/head/cape 做 3-ray 多数“内部”测试；只有穿入 >12 mm 才继续外推（本次 0.55 corridor 下未触发，输出纯 clamp+IK，避免逐帧抖动）。
+- 手/护腕未缩放、未加手指骨；手部朝向仍随前臂。
+
+**B. 脚接地 clamp**
+
+- 逐帧把 foot/toes 的**向下 pitch** 限制到 **20°**（源 50–74°），旋转轴为世界 X、枢轴为踝/趾关节。
+- 评估 `Rogue_LegLeft/Right` 的 evaluated mesh 最低 z，把残留穿地量加到 **hips location.z**（1 帧膨胀 + 3 帧均值，且不低于原始需求）；本次 lift **max 65.5 mm / mean 23.8 mm**。
+- 再做一次 **contact clamp**：逐帧下压 hips，使最低 boot mesh 距 Z=0 约 **1 mm**（本次下压 **0–26.1 mm**），避免膨胀/平滑造成悬空；最终接触帧 L64/R96、最长 17/29。
+- **不动 hips X/Y、root 方向**；因此支撑滑没有被脚锁消除，只是从 0.2315 降到 0.1696 m（90 采样；HUD 40 采样 0.213 m，采样/姿态变化）。
+
+**C. 披风**
+
+- 取帧 1 的 evaluated cape 世界顶点，按 `P_pose·P_rest⁻¹` 逆变换写回 rest 空间，权重 1.0 到 `chest`，加 Armature modifier，删除原 object action/bone parent。
+- 帧 1 重绑误差 **0.000 mm**；之后披风跟随 chest（包括 hips lift），不再出现重导出 90° 错位。原始刚性摆动约 1 cm 被丢弃。
+
+**D. 武器 / 导出**
+
+- clean GLB/FBX 不包含 5 件武器；raw GLB 保持 12 mesh 原样。clean 版 41 骨/7 mesh/4.9333 s；Godot 默认加载 clean。
+- `scripts/fix_clipping.sh` 一条命令完成 fix → 复制到 Godot → import → smoke。
+
+**E. 量化（`scripts/diagnose_clipping.py`）**
+
+- 可见手区 = `hand.*` + 腕 0.16 m 内 `lowerarm.*` 的 mesh 顶点；3-ray 多数投票判内外（body 有 neck/armhole 小开口，单 ray 会误判），最近面距离为深度。
+- 体积代理 = Σ(顶点面积 × 深度)，**不是 watertight boolean volume**，只用于前后相对比较；单位 cm³。
+- 骨净距 = wrist/hand 骨中心到 body/head/cape 的最小 signed distance（内部为负）；脚 = evaluated leg mesh 最低顶点；8 个采样帧 1/19/37/56/74/92/111/130 + 全 148 帧汇总。
+
+### 11.4 8 帧逐帧对比
+
+格式：深度 mm / 内部顶点数 / 骨净距 mm；负净距=骨头在体内。脚为 mesh 最低 z（mm）。
+
+| 帧 | Before L | Before R | After L | After R | 脚 Before L/R | 脚 After L/R |
+|---|---|---|---|---|---|---|
+| 1 | 162.2 / 85 / -37.4 | 182.4 / 129 / -32.2 | 7.8 / 2 / 140.3 | 5.7 / 2 / 144.4 | -100.6 / -107.8 | 52.4 / 1.0 |
+| 19 | 195.9 / 138 / -83.3 | 240.7 / 180 / -81.3 | 0.0 / 0 / 180.5 | 11.0 / 4 / 143.9 | -33.5 / -20.3 | 1.6 / 56.7 |
+| 37 | 127.8 / 78 / -2.3 | 140.2 / 94 / +5.4 | 6.8 / 2 / 123.3 | 0.0 / 0 / 167.2 | -98.0 / -105.1 | 43.5 / 1.0 |
+| 56 | 222.9 / 159 / -83.7 | 168.8 / 118 / -25.4 | 0.0 / 0 / 219.0 | 0.0 / 0 / 159.0 | -48.1 / -20.9 | 25.0 / 1.0 |
+| 74 | 106.4 / 80 / -17.5 | 69.6 / 29 / +124.1 | 0.0 / 0 / 225.2 | 0.0 / 0 / 214.8 | -41.8 / -50.1 | 22.3 / 1.3 |
+| 92 | 174.7 / 131 / -77.4 | 98.1 / 58 / +15.4 | 0.0 / 0 / 159.6 | 0.0 / 0 / 180.8 | -73.4 / -5.5 | 51.1 / 1.0 |
+| 111 | 253.3 / 193 / -120.3 | 90.6 / 54 / +62.7 | 0.0 / 0 / 197.5 | 0.0 / 0 / 224.2 | -59.8 / -66.0 | 1.0 / 15.0 |
+| 130 | 174.9 / 148 / -37.1 | 291.2 / 220 / -146.7 | 0.0 / 0 / 213.5 | 7.5 / 4 / 141.5 | -86.3 / -45.5 | 86.6 / 1.0 |
+
+- 全帧最坏：Before L 253.3 mm (f111) / R 291.7 mm (f131)；After L 11.8 mm (f11) / R 11.8 mm (f24)。After 的 36/34 帧仍有 1–6 个顶点 >4 mm，均 ≤11.8 mm。
+- 脚：Before 两脚分别 148/145 帧 <0；After 0 帧 <0；接触帧（距最低点 5 mm 内）**L 64 / R 96，最长连续 17 / 29 帧**。修复后接触段明显变长，但支撑滑仍 0.1696 m（HUD 0.213 m）。
+
+### 11.5 限制与未做
+
+- **残余 11.8 mm**：不是零穿模；在 2.15 m 角色上不可见（1280×720 实测），但若放大 4×/特写仍可能在手套边缘看到极浅交叠。
+- **手臂姿态变宽**：为了避开宽躯干，手臂被外推到接近角色自带 Walking_A 的宽度，视觉比 raw 更“张臂”；保留了源前后摆动，但没有手指/手腕二次修型。
+- **支撑滑仍 0.1696 m（HUD 0.213 m）**：没有脚锁/contact IK，没有改根运动；这是走步机原地输入 + chibi 短腿的已知限制。若要生产级，需要 stance 脚锁 + root motion 策略。
+- **脚 roll 被压平**：foot/toe 向下 pitch 限制 20°，丢掉一部分 toe-off/heel-strike 细节；hip lift 最高 65.5 mm（均值 23.8 mm），接触下压最多 26.1 mm，髋起伏 6.35 cm（HUD 5.3 cm）。
+- **披风**：独立约 1 cm 摆动被去掉；披风-头内部重叠 25.7 mm（领口/头发内部，渲染不可见）仍在。
+- **武器**：clean 版不含 5 件道具；如需展示持械，需要另做手部持械动作或把道具重绑到腰带/背部（当前 raw 保留完整 12 mesh）。
+- **mesh 数变化**：12 → 7；依赖 12 mesh 的脚本/计数需更新（`smoke.gd` 已按 fixed=7 处理）。
+- **HUD 口径**：Godot HUD 的 `foot bone min` 修复后约 **+9.3 cm**（40 采样；smoke 90 采样 +8.4 cm），这不是脚穿地；它测的是 **foot 骨 head**。真实 boot mesh 最低是 **+0.1 cm**（Blender 诊断），HUD 已加注 `mesh foot +0.1 cm`。
+- **预览对比**：Godot 的 `--flat` / `--phase` 用于静止截图（`_measure()` 后会重新 seek）；两段独立录制的 Godot Movie Maker 前后片段受加载/measure 时序影响，相位和光照不齐，因此**最终 before/after 视频用 8 相位 Blender Workbench 同帧并排**，Godot 侧只交付 HUD/脚部静止证据。
+- **真实复现**：修复/诊断均在本机 Blender 3.4.1 headless + Godot 4.6 实跑；不是 Pose_AI 插件本体，也没有改源视频/输入。
+
+### 11.6 复现
+
+```bash
+cd blender-mocap-plugin-test
+
+# 1) 修复 + 导出 + Godot import + smoke（末行 MOCAP_SMOKE_OK）
+bash scripts/fix_clipping.sh
+
+# 2) 诊断（全 148 帧 + 8 采样；输出 JSON）
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -noaudio \
+  --python scripts/diagnose_clipping.py -- \
+  --glb exports/Rogue_MediaPipe_walk_raw.glb --out .work/clipdiag/before_diag.json
+/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -noaudio \
+  --python scripts/diagnose_clipping.py -- \
+  --glb exports/Rogue_MediaPipe_walk_fixed.glb --out .work/clipdiag/after_diag.json
+
+# 3) Godot 前后对比（同机位/同 flat 光照；150 帧 = 5 s）
+godot --path godot --resolution 1280x720 --write-movie /abs/before.avi \
+  --fixed-fps 30 --quit-after 150 -- \
+  --nohud --still --flat --preset=2 --glb=res://assets/Rogue_MediaPipe_walk.glb
+godot --path godot --resolution 1280x720 --write-movie /abs/after.avi \
+  --fixed-fps 30 --quit-after 150 -- --nohud --still --flat --preset=2
+# ffmpeg hstack + labels → /tmp/godot_compare.mp4（可选诊断；验收视频是 8 相位 Workbench slideshow）
+
+# 4) 验收
+godot --headless --path godot -s tools/smoke.gd
+# SMOKE_FILE fixed bones=41 meshes=7 clip=Animation len=4.9333 tracks=24 root_xz=0.0017
+# SMOKE_FOOT fixed min_foot_y=0.0840 longest=12 stance_slide=0.1696 hip_y_range=0.0635 scale_dev=0.000000 loop_seam=0.000deg
+# MOCAP_SMOKE_OK
+```
+
+### 11.7 新增媒体
+
+| 文件 | 内容 |
+|---|---|
+| `screenshots/clip_before_after_phases.png` | 8 帧（1/19/37/56/74/92/111/130）× before/after，Part-color Workbench，标出可见手区口径与最大深度 |
+| `screenshots/clip_before_after_feet.png` | 脚部特写 before/after（注释 mesh 最低点/支撑滑）；`clip_before_feet_godot_1280.png` / `clip_after_feet_godot_1280.png` 为单张 |
+| `screenshots/clip_after_hud_1280.png` | 修复版 HUD：7 mesh / foot 骨 min +9.3 cm（HUD 口径）/ mesh +0.1 cm / arm clip 11.8 mm / stance slide 0.213 m / hip 5.3 cm / FPS 32（录制环境） |
+| `recordings/clip_before_after_phases.mp4` | 1200×726，8 s，8 相位 before/after 并排 + 标签（Blender Workbench，同光照/同帧） |
+| `recordings/clip_before_after_phases.gif` | 960 宽，10 fps，8 s |
+| `exports/Rogue_MediaPipe_walk_fixed.glb` / `.fbx` | 修复版 clean（7 mesh / 41 骨 / 4.9333 s / 24 Godot 轨） |
+| `.work/clipdiag/before_diag.json` / `after_diag.json` | 全帧/8 帧量化原始数据（`.work` 默认不提交，可在本机复跑） |
+
+> 修复版与原报告的其他数字口径：原 §3 的“脚底 -0.84 cm”是骨 head；本节的脚数据是 evaluated mesh 顶点。两者不要混用。

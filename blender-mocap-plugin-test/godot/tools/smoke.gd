@@ -6,6 +6,7 @@ extends SceneTree
 const FILES := {
 	"raw": "Rogue_MediaPipe_walk.glb",
 	"simplified": "Rogue_MediaPipe_walk_simplified.glb",
+	"fixed": "Rogue_MediaPipe_walk_fixed.glb",
 }
 
 var fails: Array[String] = []
@@ -131,7 +132,9 @@ func _init() -> void:
 		print("SMOKE_FILE %s bones=%d meshes=%d clip=%s len=%.4f tracks=%d root_xz=%.4f" % [
 			key, a.bones, a.meshes, a.name, a.len, a.tracks, _root_drift(a.ap)])
 		if a.bones != 41: fails.append(key + " bones != 41")
-		if a.meshes != 12: fails.append(key + " meshes != 12")
+		var expect_meshes: int = 7 if key == "fixed" else 12
+		if a.meshes != expect_meshes:
+			fails.append("%s meshes != %d" % [key, expect_meshes])
 		if absf(a.len - 4.9333) > 0.03: fails.append(key + " len != 4.9333")
 		var m: Dictionary = await _measure(a)
 		print("SMOKE_FOOT %s min_foot_y=%.4f longest=%d stance_slide=%.4f hip_y_range=%.4f scale_dev=%.6f loop_seam=%.3fdeg" % [

@@ -1,6 +1,8 @@
 # Blender Mocap Plugin Test · Pose_AI 能力拆解 + MediaPipe fast-mode 复现
 
-> 2026-11-27 · T-20261127-004 · Godot 4.6 / Blender 3.4.1 / macOS 12.7.6 Intel HD 6000
+> 2026-11-27 · T-20261127-004 / T-20261127-012 · Godot 4.6 / Blender 3.4.1 / macOS 12.7.6 Intel HD 6000
+
+> **T-012 follow-up 已修可见穿模**：手/前臂/护腕对躯干/头/披风最大深度 **253.3/291.7 mm → 11.8/11.8 mm**（≤12 mm 阈值；角色自带 Walking_A 参考 30 mm）；脚 mesh 最低 **-174.4 mm → +1.0 mm**（0 帧穿地；接触 L64/R96）；支撑滑 **0.2315 → 0.1696 m**（HUD 0.213 m；仍存在）；髋起伏 **5.01→6.35 cm**；root XZ 1.7 mm 不变。修复版 **41 骨 / 7 mesh / 4.9333 s**，Godot 默认加载 `Rogue_MediaPipe_walk_fixed.glb`。详见 [主报告 §11](docs/blender-mocap-plugin-test.md#11-t-20261127-012-穿模修复follow-up)。
 
 B 站《自制Blender动捕插件，免费分享》里的插件是 **Pose_AI**（中文 Blender 3.3.2 插件）。它没有公开下载（三连+私信/群，评论反馈未发），准确模式依赖 Windows RGB MoCap + ExMR/SAM2/SMPL-X（~11 GB 显存、模型需注册，ExMR/GVHMR 非商用），macOS 仅 Apple Silicon、Intel 被 installer 拒绝。**本机无法跑插件本体**；详见 [docs/PLUGIN_AVAILABILITY.md](docs/PLUGIN_AVAILABILITY.md)。
 
@@ -9,7 +11,8 @@ B 站《自制Blender动捕插件，免费分享》里的插件是 **Pose_AI**�
 ## 结论（TL;DR）
 
 - 148/148 帧检测；CPU **0.104 s/帧**（约 9.6 fps），单图 **0.166 s**（init 0.83 s），手 **0.079 s**。
-- Rogue GLB：41 骨 / 12 mesh / **26 轨** / **4.9333 s**（精简版 24 轨）；root XZ **1.7 mm**；脚底 **-0.84 cm**；支撑滑 **0.17–0.24 m**（不同采样）；髋起伏 **4.8–5.0 cm**；骨长偏差 ~1e-7。
+- Rogue GLB：41 骨 / 12 mesh / **26 轨** / **4.9333 s**（精简版 24 轨）；root XZ **1.7 mm**；脚底 **-0.84 cm**（骨 head 口径）；支撑滑 **0.17–0.24 m**（不同采样）；髋起伏 **4.8–5.0 cm**；骨长偏差 ~1e-7。
+- **T-012 修复版**：可见手区穿模 253.3/291.7 mm → **11.8/11.8 mm**；脚 **mesh** 最低 -174.4 mm → **+1.0 mm**（接触 L64/R96）；支撑滑 0.1696 m（HUD 0.213）；髋 6.35 cm；root XZ 不变；clean GLB **321 KB / 7 mesh**（武器从 locomotion 版移除）。
 - 关键帧 **60,680 → 5,346（-91.19%）**，最大通道误差 0.002；导出 GLB **644 KB → 413 KB（-36%）**，Godot 轨 26→24；另出 FBX 857 KB（Godot 导入 4.9000 s / 24 轨）。
 - Godot 600 帧 headless **0 SCRIPT ERROR / 0 ERROR**；`MOCAP_SMOKE_OK`。
 - 质量：可辨认的走路，但 chibi 比例下前倾/屈膝、无 foot IK、手指未映射 → **原型/previs 级，不是生产级**。
@@ -24,6 +27,7 @@ bash scripts/download_input.sh  # 上游示例 → input/（gitignored）
 bash scripts/run_pipeline.sh    # 末行 MOCAP_SMOKE_OK
 # 其他视频：CROP / SCALE 可覆盖（示例是上游屏幕录制的左画面 680×1200）
 # CROP=iw:ih:0:0 SCALE=iw:-2 bash scripts/run_pipeline.sh
+bash scripts/fix_clipping.sh    # T-012 修复 + 导出 fixed GLB/FBX + Godot import + smoke
 bash scripts/validate.sh
 
 godot --headless --path godot --quit-after 600
@@ -39,9 +43,9 @@ blender-mocap-plugin-test/
 │  ├─ blender-mocap-plugin-test.md   主报告（结论/数据/对比/许可/坑/复现）
 │  ├─ PLUGIN_AVAILABILITY.md         插件不可得 + 平台/许可阻塞证据
 │  └─ 迭代记录.md                     07:00–09:25 实验与修正
-├─ scripts/                          setup / download / extract / build / retarget / simplify / validate / bench
+├─ scripts/                          setup / download / extract / build / retarget / simplify / validate / bench / fix_clipping / diagnose_clipping
 ├─ source/                           18 骨源 GLB + 骨骼 map + 姿态/动作 JSON（衍生测试数据）
-├─ exports/                          Rogue_MediaPipe_walk_raw.glb / _simplified.glb / .fbx
+├─ exports/                          Rogue_MediaPipe_walk_raw.glb / _simplified.glb / .fbx / _fixed.glb / _fixed.fbx
 ├─ godot/                            Godot 4.6 预览 + smoke
 ├─ screenshots/                       HUD/3-4/侧/正/相位/骨骼/骨架
 ├─ recordings/                       10 s MP4、GIF、骨骼 MP4、骨架 GIF
@@ -55,6 +59,7 @@ blender-mocap-plugin-test/
 - `recordings/godot_mediapipe_walk.mp4`（10 s / 1280×720 / 30 fps）
 - `recordings/godot_mediapipe_walk_bones.mp4`（5 s 骨骼）
 - `recordings/godot_mediapipe_walk_small.gif`
+- **T-012**：`recordings/clip_before_after_phases.mp4`（8 s / 1200×726 8 相位并排+标签）、`clip_before_after_phases.gif`、`screenshots/clip_before_after_phases.png`（8 帧 × before/after）、`clip_before_after_feet.png`、`clip_after_hud_1280.png`
 - `screenshots/godot_hud_1280.png`、`godot_walk_*.png`、`godot_bones_1280.png`、`source_skeleton_phases.png`、`plugin_blocker_evidence.png`、`blender_playback_phases.png`
 
 ## 许可

@@ -2,6 +2,21 @@
 
 ## 进行中
 
+## T-20261127-012 · 修动捕走路穿模（T-004 follow-up）
+- 线程: T-20261127-004（Blender 动捕实测）
+- 父任务: T-20261127-004（done）
+- 类型: 3d-asset（动画修复 / IK / 碰撞）
+- 目标: 修 MediaPipe→KayKit Rogue 走路预览的穿模：护腕/拳头/前臂穿躯干/腰带/披风、披风/武器穿插、脚底穿地/滑步；碰撞感知 IK/偏移 + 量化验证
+- 交付: 更新 `blender-mocap-plugin-test/`；修复 GLB/FBX、Godot 预览、前后截图/GIF/MP4、docs；媒体
+- 约束: 保留原动捕风格/输入；原创/CC0 资产；Godot 4.6；真实可复现；穿模帧有量化数据
+- 指派: game-artist worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-012/result.md
+  - 关键数字: 可见手区（hand.* + 腕 0.16 m 内 lowerarm.*）最大穿模 **L 253.3 mm (f111) / R 291.7 mm (f131) → L 11.8 / R 11.8 mm**；>4 mm 帧 L 36/R 34，每帧最多 6 顶点；骨净距最小 **-146.7 → +123.3 mm**；角色自带 Walking_A 参考 30 mm。脚 evaluated **mesh** 最低 **-174.36/-159.43 mm，148/145 帧 <0 → +1.0/+1.0 mm，0 帧 <0**；接触 **L64/R96、最长 17/29**；支撑滑 **0.2315 → 0.1696 m**（HUD 0.213；未脚锁）；髋 5.01→**6.35 cm**；root XZ 1.7 mm 不变；披风重绑帧 1 误差 0.000 mm；clean GLB **321 KB / 7 mesh / 41 骨 / 4.9333 s / 24 轨**，FBX 798 KB；Godot `MOCAP_SMOKE_OK`。
+  - 方法: `scripts/fix_clipping.py` 2-bone arm IK + |wrist.x|≥0.55 corridor（保留源 y/z 摆动/肘极向）；foot/toes pitch cap 20° + hips 残留 lift（max 65.5 mm，mean 23.8 mm）；cape 由 bone-parent/object action 改为 chest 蒙皮（规避 glTF `matrix_parent_inverse` 90°/1.388 m 再导出坑）；5 件 handslot 武器从 locomotion clean 版移除（raw 保留 12 mesh）；`scripts/diagnose_clipping.py` 3-ray 多数内外测试 + 148 帧 + 8 帧表 + 体积代理/骨净距。
+  - 交付: `exports/Rogue_MediaPipe_walk_fixed.glb/.fbx`、`godot/assets/`、`godot/scripts/preview.gd`（默认 fixed、`--flat`、`--phase` 修复）、`godot/tools/smoke.gd`（fixed=7 mesh）、`scripts/fix_clipping.py/.sh`、`scripts/diagnose_clipping.py`、`docs/blender-mocap-plugin-test.md §11`、`docs/迭代记录.md §T-012`、`docs/OPERATIONS.md`、`README.md`、`godot/README.md`、`screenshots/clip_*`、`recordings/clip_before_after_phases.mp4/.gif`。
+  - 限制: 残余 11.8 mm；手臂比 raw 更外张；支撑滑 0.1696 m（HUD 0.213）未脚锁；脚 roll 被 20° cap 压平、hips lift 最高 65.5 mm、接触下压最多 26.1 mm、髋 6.35 cm；披风独立摆动丢失；无手指骨；武器在 clean 版不可见；HUD 骨 head +9.3 cm 与 mesh +0.1 cm 口径差异已注明。
+
 ## T-20261127-004 · 实测自制 Blender 动捕插件（视频→动作）
 - 来源: 飞书消息（B 站《自制Blender动捕插件，免费分享》，https://b23.tv/JBFZB7h，2026-11-27，583s，UP 黑黑猴blender；简介：AI 整合开源动作识别模型，图片/视频生成动作，最快 1 秒识别，手脚预设/重定向/关键帧精简；模型自行下载，许可自理）
 - 类型: 3d-asset（Blender 插件 / 视频动捕实测）
@@ -11,6 +26,7 @@
 - 指派: game-engineer worker（dispatcher）
 - 状态: done
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-004/result.md
+- 后续: T-20261127-012 修走路穿模（手臂/护腕穿躯干、披风/武器、脚底）
   - 插件摸底: 视频中插件为 **Pose_AI**（Blender 3.3.2，中文；安装目录 `Blender_Addons/Pose_AI`）；**无公开下载**（简介/评论区无链接，私信/群分发；评论反馈未发），不登录/不绕过。准确模式包 `RGBMocap_CN`（上游 toyxyz_RGBMocap，MIT 代码 + ExMR/SAM2/SMPL-X/MANO，11G 显存，模型需注册，SMPL-X/MANO 不可再分发）；macOS 仅 Apple Silicon，Intel Mac 被 installer 明确拒绝 → 本机无法跑插件本体，出具可复现阻塞证据。
   - 替代验证（同款 fast-mode）: MediaPipe PoseLandmarker Heavy + HandLandmarker（与 Pose_AI 快速模式同模型）处理上游示例 148 帧/4.93s；**148/148 检测**，CPU 0.104 s/帧（p95 0.121），单图 0.166 s（init 0.83 s），手 0.079 s（10/15 帧双手）；18 骨 Mixamo 源骨架 → animation-retarget-kit → KayKit Rogue（41 骨/12 mesh/26 轨，4.9333 s，root XZ 1.7 mm，脚底 -0.84 cm，支撑滑 0.17–0.24 m（不同采样），髋起伏 4.8–5.0 cm，骨长偏差 ~1e-7）；关键帧精简 60,680→5,346（**-91.19%**，最大通道误差 0.002；导出 GLB 644→413 KB，Godot 轨 26→24）；Godot 4.6 headless 600 帧 0 SCRIPT ERROR，`MOCAP_SMOKE_OK`；Godot Movie Maker 1280×720 10 s 预览/5 s 骨骼预览/GIF/截图。
   - 结论: fast mode 可做原型/previs，不能当生产级；准确模式未测（插件不可得 + 平台/许可阻塞）；商业使用看模型许可（ExMR/GVHMR 非商用、SMPL-X/MANO 受限；MediaPipe Apache-2.0）。

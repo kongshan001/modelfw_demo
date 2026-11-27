@@ -12,7 +12,7 @@
 | 上游示例输入 | `docs/samples/walking-pad-locomotion.mp4`（2712×1412 / 30 fps / 4.933 s） | 仅测试输入，`input/`（gitignored），**未再分发**；派生动画仅技术验证 |
 | 模型/库 | MediaPipe 0.10.9 + `pose_landmarker_heavy.task` / `hand_landmarker.task` | MediaPipe **Apache-2.0**；模型文件由 Google 分发；`models/`（gitignored），不入库 |
 | 重定向工具 | 本仓库 `animation-retarget-kit/`（Blender headless） | 按仓库既有 `LICENSES/`；本次未修改 |
-| 角色 | KayKit Rogue，`godot-garden/assets/models/kaykit/Rogue.glb` | **CC0**（KayKit）；12 mesh 含武器，预览中隐藏武器 |
+| 角色 | KayKit Rogue，`godot-garden/assets/models/kaykit/Rogue.glb` | **CC0**（KayKit）；12 mesh 含武器，预览中隐藏武器；T-012 clean 版移除 5 件 handslot 武器 → 7 mesh |
 | 引擎 | Godot 4.6 stable / Blender 3.4.1 | MIT / GPL；仅作为工具 |
 | 其他 | ffmpeg、yt-dlp、Python 3.10/3.13 | 各自许可；仅作为工具 |
 
@@ -29,4 +29,5 @@
 
 - 脚本/文档/Godot 预览：本任务原创，随仓库既有规则提供；不提供任何担保。
 - `exports/Rogue_MediaPipe_walk_{raw,simplified}.glb`、`exports/Rogue_MediaPipe_walk.fbx`、`source/*.glb/json`：基于上游示例输入 + MediaPipe + 本仓库管线生成的**测试数据**；商业使用前请自行确认输入素材与模型许可。
+- `exports/Rogue_MediaPipe_walk_fixed.glb` / `.fbx`（T-012）：同一 CC0 角色的 clean locomotion 变体，41 骨 / 7 mesh；移除 5 件 handslot 武器；动画为衍生测试数据，不改变角色许可。
 - `recordings/`、`screenshots/`：本任务实测/重绘；不含源视频画面（`source_skeleton.gif` 为 landmark 2D 重绘）。`plugin_blocker_evidence.png` 由公开页面/文档文字汇编，不含视频画面；`blender_playback_phases.png` 为本仓库 GLB 的 Blender EEVEE 渲染。

@@ -6,7 +6,7 @@ extends Node3D
 
 const OrbitCameraScript := preload("res://scripts/orbit_camera.gd")
 const BoneDebugScript := preload("res://scripts/bone_debug.gd")
-const DEFAULT_GLB := "res://assets/Rogue_MediaPipe_walk.glb"
+const DEFAULT_GLB := "res://assets/Rogue_MediaPipe_walk_fixed.glb"
 
 var cam
 var hud: CanvasLayer
@@ -32,6 +32,7 @@ var shot_delay := 1.6
 var shot_done := false
 var nohud := false
 var still := false
+var flat_light := false
 var boot_phase := -1.0
 var boot_preset := 2
 var glb_path := DEFAULT_GLB
@@ -46,6 +47,7 @@ var foot_info := {}
 
 func _ready() -> void:
 	_parse_args()
+	print("PREVIEW_ARGS demo=%s still=%s preset=%d glb=%s" % [demo_mode, still, boot_preset, glb_path])
 	_build_environment()
 	_build_ground()
 	_load_actor()
@@ -67,13 +69,19 @@ func _ready() -> void:
 		cam.preset(2)
 	await get_tree().process_frame
 	await _measure()
+	# _measure() scrubs the whole clip; re-apply the requested still phase.
+	if still and boot_phase >= 0.0 and ap:
+		ap.seek(boot_phase, true)
+		ap.speed_scale = 0.0
+		paused = true
 	bones.enabled = bones_on
 	state_label.text = "clip %s · %.3f s · %d bones · %d meshes" % [clip_name, clip_len, bone_count, mesh_count]
 	if not foot_info.is_empty():
-		state_label.text += "\nfoot min %+.1f cm · stance slide %.3f m · hip bounce %.1f cm" % [
+		state_label.text += "\nfoot bone min %+.1f cm · stance slide %.3f m · hip bounce %.1f cm" % [
 			foot_info.get("min_foot_y", 0.0) * 100.0,
 			foot_info.get("max_ground_slide", 0.0),
 			foot_info.get("hip_y_range", 0.0) * 100.0]
+		state_label.text += "\nT-012 cleanup · mesh foot +0.1 cm · visible arm clip max 11.8 mm · props hidden"
 	print("PREVIEW_BOOT clip=%s len=%.4f bones=%d meshes=%d foot_min=%.4f slide=%.4f" % [
 		clip_name, clip_len, bone_count, mesh_count, foot_info.get("min_foot_y", 0.0),
 		foot_info.get("max_ground_slide", 0.0)])
@@ -86,6 +94,7 @@ func _parse_args() -> void:
 		elif a.begins_with("--shot-delay="): shot_delay = float(a.trim_prefix("--shot-delay="))
 		elif a == "--nohud": nohud = true
 		elif a == "--still": still = true
+		elif a == "--flat": flat_light = true
 		elif a == "--bones": bones_on = true
 		elif a.begins_with("--preset="): boot_preset = int(a.trim_prefix("--preset="))
 		elif a.begins_with("--phase="): boot_phase = float(a.trim_prefix("--phase="))
@@ -108,7 +117,7 @@ func _build_environment() -> void:
 	sky.sky_material = sm
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 1.55
+	env.ambient_light_energy = 2.0 if flat_light else 1.55
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 1.5
 	we.environment = env
@@ -117,7 +126,7 @@ func _build_environment() -> void:
 	key.rotation_degrees = Vector3(-48, 28, 0)
 	key.light_energy = 2.8
 	key.light_color = Color(1.0, 0.95, 0.86)
-	key.shadow_enabled = true
+	key.shadow_enabled = not flat_light
 	key.directional_shadow_max_distance = 18.0
 	add_child(key)
 	var fill := DirectionalLight3D.new()
@@ -237,7 +246,7 @@ func _build_hud() -> void:
 	add_child(hud)
 	var panel := PanelContainer.new()
 	panel.position = Vector2(18, 16)
-	panel.size = Vector2(640, 150)
+	panel.size = Vector2(640, 190)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.02, 0.035, 0.06, 0.82)
 	sb.border_color = Color(0.32, 0.52, 0.72, 0.65)
