@@ -352,6 +352,7 @@ footer a{color:var(--teal);text-decoration:none;border-bottom:1px solid var(--te
   <a href="#s0" class="active">结论先行</a>
   <a href="#s1">拖尾观察台</a>
   <a href="#s3to2">3渲2 管线</a>
+  <a href="#s3to2gif">GIF 证据</a>
   <a href="#s2">方案卡</a>
   <a href="#s3">评分矩阵</a>
   <a href="#s4">2D 难点</a>
@@ -699,6 +700,86 @@ A_map      = 地图投影(bone_world)                // 地图空间的理论位
   <div class="warnbox"><b>默认永远是 R2</b>，除非拖尾短到完全在角色 RT 框内且“自遮挡/绝对贴手”比“逐树遮挡”更重要（R1），或者跨层像素级遮挡是核心卖点且预算允许（R3）。角色有 RT/3D 相机，不代表 2D 树/建筑会自动写深度；R3 必须额外做深度/Stencil 代理。</div>
   <p class="lab-hint">完整推导、RT 预算表、五个引擎映射与 PoC 验收见 <a href="2d-map-3d-trail-3to2-pipeline.md" style="color:var(--teal)">docs/2d-map-3d-trail-3to2-pipeline.md</a>。</p>
 </section>
+
+
+<!-- ================= 3to2 GIF ================= -->
+<style>#s3to2gif .t3-grid>.panel{min-width:0}#s3to2gif .tablewrap{max-width:100%}</style>
+<section id="s3to2gif">
+  <div class="sec-head"><span class="sec-num">01.6</span><h2>GIF 证据：六种落层动起来</h2><span class="sec-note">T-20261127-015 · 960×540 · 24fps × 4s</span></div>
+  <p class="lead">静态矩阵不够——下面是<b>同一场景、同一动画、同一武器尖采样</b>的六段真实时间序列，只改“拖尾落在哪一层、怎么排序”。角色先渲染到 <b>160×160 离屏 RT</b> 再作为 2D 精灵进入等轴地图；每段 4 秒无缝循环。<b>可视化模拟，非引擎实测。</b></p>
+
+  <div class="panel" style="padding:0;overflow:hidden;background:#07110c">
+    <img id="gifShot" src="shots/2d-map-3d-trail-map.gif" alt="3渲2 拖尾 GIF：当前模式" loading="lazy"
+         style="display:block;width:100%;height:auto;background:#07110c">
+    <div style="padding:12px 14px 14px;border-top:1px solid var(--line)">
+      <div class="lab-toolbar" id="gifChips" style="margin:0 0 8px">
+        <button class="chip" data-gif="rt" data-accent="var(--teal)"><span style="color:var(--teal)">●</span> 01 R1 · RT 内</button>
+        <button class="chip active" data-gif="map" data-accent="var(--ok)"><span style="color:var(--ok)">●</span> 02 R2 · 地图空间（推荐）</button>
+        <button class="chip" data-gif="hybrid" data-accent="var(--gold)"><span style="color:var(--gold)">●</span> 03 R4 · 混合</button>
+        <button class="chip" data-gif="true3d" data-accent="#8FA8FF"><span style="color:#8FA8FF">●</span> 04 A · 真 3D（对照）</button>
+        <button class="chip" data-gif="gpu" data-accent="var(--warn)"><span style="color:var(--warn)">●</span> 05 B · GPU 粒子（对照）</button>
+        <button class="chip" data-gif="afterimage" data-accent="var(--bad)"><span style="color:var(--bad)">●</span> 06 R5 · 残影（对照）</button>
+      </div>
+      <div id="gifCaption" style="font-size:13.5px;color:var(--ink-soft);line-height:1.65">
+        <b style="color:var(--ink)" id="gifName">R2 · 地图空间 2D ribbon（推荐）</b>
+        <span id="gifIssue">近端 0.18s 用 RT 投影校准贴住可见刀尖；每段按地面 y 分段，树后/树前正确。</span>
+        <span class="mono" id="gifStats" style="display:block;margin-top:5px;font-size:11.5px;color:var(--ok)">hero 帧 · Δ 10.5px → 校准后 &lt;1px · 排序 2 组（树后 1）· 额外 RT 0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="t3-grid" style="margin-top:14px">
+    <div class="panel">
+      <h4>逐段读数（hero 帧）</h4>
+      <div class="tablewrap"><table>
+        <thead><tr><th>模式</th><th>动态里看到</th><th>读数</th></tr></thead>
+        <tbody>
+          <tr><td><b>R1 · RT 内</b></td><td class="bad">长尾出框被裁；整张精灵 1 个排序点</td><td>裁剪 56% · 排序点 1 · Δ 10.5px</td></tr>
+          <tr><td><b>R2 · 地图空间</b></td><td class="good">近端校准 + 树的 y 线切段，树后/树前正确</td><td>Δ 10.5px → &lt;1px · 2 组 · 0 额外 RT</td></tr>
+          <tr><td><b>R4 · 混合</b></td><td class="warn">青色近段在 RT、金色长段在地图；接缝贴边即断</td><td>接缝距 RT 边 42px（另一姿态 −2px）</td></tr>
+          <tr><td><b>A · 真 3D</b></td><td class="bad">整条一个 3D 合成层，树冠挡不住</td><td>排序层 1 · 需深度/Stencil 代理</td></tr>
+          <tr><td><b>B · GPU 粒子</b></td><td class="bad">点阵有缝、宽度随机，仍是单层</td><td>40 粒子 · 无连续宽度</td></tr>
+          <tr><td><b>R5 · 残影</b></td><td class="bad">副本各自排序，穿树逐帧跳变</td><td>7 个排序点 · 无方向/宽度</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h4>怎么看 / 边界</h4>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 7px"><b style="color:var(--ok)">先看排序，再看亮度。</b>R1/A/B 的差别不是“谁更炫”，而是拖尾能不能被树/建筑按段遮挡；R5 的每个副本各自排序，所以穿树会跳。</p>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 7px"><b style="color:var(--gold)">接缝是 R4 的硬成本。</b>近段必须≤0.12–0.2s 且完全在 RT 框内；接缝离 RT 边太近就会断口。</p>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:0"><b style="color:var(--bad)">这不是引擎实测：</b>没有测 RT 带宽/draw call/overdraw/Compatibility；遮挡只有 1 棵树；角色是原创简化几何。Δ 的 10.5px 只属于这组模拟相机。</p>
+      <p class="lab-hint" style="margin-top:9px">可交互实验台：<a href="2d-map-3d-trail-gif-lab.html" style="color:var(--teal)">2d-map-3d-trail-gif-lab.html</a> · 全部素材：<a href="shots/2d-map-3d-trail-gif-contact-sheet.png" style="color:var(--teal)">contact sheet</a> · 逐段论证：<a href="2d-map-3d-trail-3to2-pipeline.md" style="color:var(--teal)">pipeline §12.6</a></p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const DATA = {
+    rt:        {name:'R1 · RT 内拖尾',            accent:'var(--teal)', issue:'长尾超出 RT 边框被裁；整块 RT 只按脚底一个 y 排序，尾段无法绕到树后。', stats:'hero 帧 · 裁剪 56% · 排序点 1 · 起点 Δ 10.5px · 精灵 202px'},
+    map:       {name:'R2 · 地图空间 2D ribbon（推荐）', accent:'var(--ok)', issue:'近端 0.18s 用 RT 投影校准贴住可见刀尖；每段按地面 y 分段，树后/树前正确。', stats:'hero 帧 · Δ 10.5px → 校准后 <1px · 排序 2 组（树后 1）· 额外 RT 0'},
+    hybrid:    {name:'R4 · 短 RT + 长地图',        accent:'var(--gold)', issue:'近端 160ms 在 RT、远端 340ms 在地图；接缝贴到 RT 边界就会断口/跳变。', stats:'hero 帧 · 接缝距 RT 边 42px（另一姿态 −2px）· 双份材质/调参'},
+    true3d:    {name:'A · 真 3D ribbon（对照）',    accent:'#8FA8FF', issue:'整条世界空间 ribbon 合成在 2D 之上：一个排序层，2D 树/建筑挡不住。', stats:'hero 帧 · 排序层 1 · 跨层遮挡需深度/Stencil 代理'},
+    gpu:       {name:'B · GPU 粒子（对照）',        accent:'var(--warn)', issue:'拉伸 billboard 沿武器尖发射：点阵有缝、宽度随机，仍是一个排序层。', stats:'hero 帧 · 40 粒子 · 无连续宽度 · 适合火花/拖尘'},
+    afterimage:{name:'R5 · 残影 / afterimage（对照）', accent:'var(--bad)', issue:'6 份角色副本 + 本体各自排序，穿树逐帧跳变；没有方向/宽度/UV。', stats:'hero 帧 · 7 个排序点 · 只作冲刺/瞬移点缀'}
+  };
+  const img = document.getElementById('gifShot');
+  const nameEl = document.getElementById('gifName');
+  const issueEl = document.getElementById('gifIssue');
+  const statsEl = document.getElementById('gifStats');
+  const chips = [...document.querySelectorAll('#gifChips .chip')];
+  function pick(key){
+    const d = DATA[key]; if (!d) return;
+    img.src = 'shots/2d-map-3d-trail-' + key + '.gif';
+    nameEl.textContent = d.name;
+    issueEl.textContent = ' ' + d.issue;
+    statsEl.textContent = d.stats;
+    statsEl.style.color = d.accent;
+    chips.forEach(c => c.classList.toggle('active', c.dataset.gif === key));
+  }
+  chips.forEach(c => c.addEventListener('click', () => pick(c.dataset.gif)));
+})();
+</script>
 
 <!-- ================= 2 ================= -->
 <section id="s2">

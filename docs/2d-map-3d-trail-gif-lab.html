@@ -1,0 +1,1624 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3渲2 拖尾 GIF 实验台 · RT 内 / 地图 ribbon / 混合 / 对照</title>
+<style>
+  :root{
+    --bg:#070F0B; --panel:#0D1A14; --line:rgba(140,205,170,.18);
+    --ink:#EAF3EA; --soft:#9FB4A6; --faint:#6C8377;
+    --teal:#5FD8C9; --green:#7EE787; --gold:#F2B35C; --blue:#8FA8FF; --bad:#FF6B6B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif}
+  .app{max-width:1000px;margin:0 auto;padding:18px 20px 40px}
+  header.top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  header.top h1{font-size:17px;margin:0;letter-spacing:.2px}
+  header.top .meta{font-size:11.5px;color:var(--faint);font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  .stage-wrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    background:#08110D;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  canvas#stage{display:block;width:100%;height:auto;aspect-ratio:960/540}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  .chip{appearance:none;border:1px solid var(--line);background:#0C1712;color:var(--soft);
+    font:12px/1 "PingFang SC","Hiragino Sans GB",sans-serif;padding:8px 11px;border-radius:8px;cursor:pointer}
+  .chip:hover{color:var(--ink);border-color:rgba(140,205,170,.34)}
+  .chip.on{color:#07120D;font-weight:600;border-color:transparent}
+  .chip .n{font-family:"SF Mono",ui-monospace,Menlo,monospace;opacity:.62;margin-right:5px}
+  .btn{appearance:none;border:1px solid var(--line);background:#0C1712;color:var(--ink);
+    font:12px/1 "PingFang SC",sans-serif;padding:8px 13px;border-radius:8px;cursor:pointer}
+  .btn:hover{border-color:rgba(140,205,170,.4)}
+  .btn.primary{background:#16352A;border-color:#2E6B54}
+  .scrub{display:flex;align-items:center;gap:8px;margin-left:auto;color:var(--faint);font-size:11px;
+    font-family:"SF Mono",ui-monospace,Menlo,monospace}
+  input[type=range]{width:150px;accent-color:#5FD8C9}
+  .note{margin-top:12px;font-size:11.5px;line-height:1.7;color:var(--faint);max-width:860px}
+  .note b{color:var(--soft);font-weight:600}
+  .note code{font-family:"SF Mono",ui-monospace,Menlo,monospace;color:#B9D3C3}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>3渲2 拖尾 GIF 实验台</h1>
+    <span class="meta">R1 / R2 / R4 / A / B / R5 · 960×540 · 24fps × 4s 循环 · 无外部 CDN</span>
+  </header>
+  <div class="stage-wrap"><canvas id="stage" width="960" height="540"></canvas></div>
+  <div class="toolbar" id="modeBar"></div>
+  <div class="toolbar" style="margin-top:8px">
+    <button class="btn primary" id="playBtn">暂停</button>
+    <button class="btn" id="resetBtn">回到 0s</button>
+    <div class="scrub"><span>t</span><input id="scrub" type="range" min="0" max="3999" step="1" value="0"><span id="tOut">0.00s</span></div>
+  </div>
+  <p class="note">
+    <b>可视化模拟，非引擎实测。</b>角色用一小组原创几何体在软件里做 3D 蒙皮式动画，先渲染到离屏 <code>160×160</code> RT，再作为 2D 精灵按脚底锚点放进等轴地图——这就是本页的“3渲2”。
+    拖尾全部由同一个武器尖骨骼的世界坐标历史实时求出（不是静态贴图加鼠标）。树、地面、角色均为原创几何/色块，无外部素材。
+    六种模式都用同一场景/同一动画，只改“拖尾落在哪一层、怎么排序”。每个 GIF 4 秒无缝循环。
+  </p>
+</div>
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   0. 常量 / 工具
+   ============================================================ */
+const W = 960, H = 540;
+const STAGE_Y = 46, STAGE_H = 424;
+const T_LOOP = 4;
+const TAU = Math.PI * 2;
+
+const MAP_S = 72, ISO_C = Math.cos(Math.PI / 6), ISO_S = 0.5;
+const OX = 440, OY = 252;
+
+const RT = 160;
+const RT_DIST = 6.5;
+const RT_FOV = 24.3 * Math.PI / 180;   // 可见高度约 2.8 单位；距离拉远≈弱透视，Δ 更接近真实相机差
+// 地图是等轴“左手”投影（sx = x-y）；RT 相机在 +x+y 侧，因此投影时把 screen-x 镜像，
+// 否则同一骨骼在两条链上的左右方向相反（会得到 100px+ 的假 Δ）。
+const RT_DIR = (function(){ const v = {x:0.60, y:0.72, z:0.44}; const l = Math.hypot(v.x,v.y,v.z); return {x:v.x/l,y:v.y/l,z:v.z/l}; })();
+
+const TREE = {x:0.90, y:0.60};
+const TRAIL_LIFE = 0.50;
+const TRAIL_HZ = 48;
+
+const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+const lerp = (a,b,t)=> a+(b-a)*t;
+const TAUF = (v)=> ((v % TAU) + TAU) % TAU;
+
+function normalize3(v){ const l = Math.hypot(v.x,v.y,v.z)||1; return {x:v.x/l,y:v.y/l,z:v.z/l}; }
+function sub3(a,b){ return {x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}; }
+function add3(a,b){ return {x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}; }
+function mul3(a,s){ return {x:a.x*s,y:a.y*s,z:a.z*s}; }
+function dot3(a,b){ return a.x*b.x+a.y*b.y+a.z*b.z; }
+function cross3(a,b){ return {x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x}; }
+
+function iso(p){
+  return {
+    x: OX + (p.x - p.y) * ISO_C * MAP_S,
+    y: OY + (p.x + p.y) * ISO_S * MAP_S - p.z * MAP_S
+  };
+}
+function hash(n){
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+const C = {
+  ink:'#EAF3EA', soft:'#9FB4A6', faint:'#647D70',
+  teal:'#5FD8C9', green:'#7EE787', gold:'#F2B35C', blue:'#8FA8FF',
+  party:'#FFD166', ghost:'#7EE0FF', bad:'#FF6B6B', warn:'#F2B35C',
+  outline:'#07120D',
+  ground:'#10241B', ground2:'#0C1C15', grid:'rgba(130,200,165,.075)',
+  trunk:'#4C3524', trunkHi:'#6B4A31',
+  leaf1:'#356B39', leaf2:'#427F42', leaf3:'#52964D', leaf4:'#63A85A'
+};
+
+const MODES = [
+  { key:'rt',        no:'01', name:'RT 内拖尾',                 en:'R1 · in-RT trail',           accent:C.teal,
+    sub:'把长拖尾画进角色胶片',
+    problem:'长尾超出角色 RT 边框被裁；整张 RT 只有脚底 1 个排序点，尾段无法绕到树后。',
+    verdict:'RT 只装 ≤0.4–0.5s、完全在框内的近手短刀光；长尾走地图空间。' },
+  { key:'map',       no:'02', name:'骨骼 → 地图空间 2D ribbon',  en:'R2 · map-space ribbon',      accent:C.green,
+    sub:'推荐默认 · 近端校准 + 分段 y-sort',
+    problem:'RT 相机与地图相机不同：纯地图投影的起点会偏离画面里可见的刀尖（Δ）。',
+    verdict:'近端 0.18s 用 RT 投影校准、随后回地图投影；每段按地面 y 分段 → 树前/树后正确。' },
+  { key:'hybrid',    no:'03', name:'混合：短 RT + 长地图',       en:'R4 · hybrid',                accent:C.gold,
+    sub:'近端贴手 · 远端回地图',
+    problem:'短段在 RT、长段在地图；接缝落在 RT 边界附近时会露出断口/宽度跳变。',
+    verdict:'近段 ≤0.12–0.2s、重叠 2–3 个采样、alpha/宽度匹配；接缝避开 RT 边界。' },
+  { key:'true3d',    no:'04', name:'对照：真 3D ribbon',         en:'A · world-space mesh',       accent:C.blue,
+    sub:'对照项 · 整条一个排序层',
+    problem:'真 3D 拖尾合成在 2D 地图之上：整条一个排序层，2D 树/建筑整块挡不住。',
+    verdict:'跨层遮挡要额外做深度/Stencil 代理与多 RT；成本最高，只在 ≤3 单位 + 中高端考虑。' },
+  { key:'gpu',       no:'05', name:'对照：GPU 粒子拖尾',         en:'B · stretched billboards',   accent:C.party,
+    sub:'对照项 · 有缝、无宽度控制',
+    problem:'粒子按发射点离散、长度随机，刀光是“有缝的点阵”；仍是一个排序层。',
+    verdict:'适合火花/拖尘/尾气，不适合作为武器主刀光；要连续面就回到 ribbon。' },
+  { key:'afterimage',no:'06', name:'对照：残影 / afterimage',    en:'R5 · ghost sprites',         accent:C.ghost,
+    sub:'对照项 · 冲刺点缀',
+    problem:'残影是角色副本：没有方向/宽度/UV；每个副本各自排序，穿树时逐帧跳变。',
+    verdict:'只作冲刺/瞬移/闪避点缀，不作为移动拖尾主体。' }
+];
+const MODE_INFO = {};
+MODES.forEach(m => MODE_INFO[m.key] = m);
+
+const HERO = { rt:0.90, map:0.30, hybrid:1.35, true3d:0.50, gpu:0.40, afterimage:0.35 };
+
+/* ============================================================
+   1. 画布 / 离屏 RT
+   ============================================================ */
+const canvas = document.getElementById('stage');
+const g = canvas.getContext('2d');
+
+const rtCanvas = document.createElement('canvas');
+rtCanvas.width = rtCanvas.height = RT;
+const rtCtx = rtCanvas.getContext('2d');
+
+const ghostCanvas = document.createElement('canvas');
+ghostCanvas.width = ghostCanvas.height = RT;
+const ghostCtx = ghostCanvas.getContext('2d');
+
+const tintCanvas = document.createElement('canvas');
+tintCanvas.width = tintCanvas.height = RT;
+const tintCtx = tintCanvas.getContext('2d');
+
+/* ============================================================
+   2. 角色：解析式姿态（t → 骨骼）
+   ============================================================ */
+function poseAt(t){
+  const tt = ((t % T_LOOP) + T_LOOP) % T_LOOP;
+  const w = TAU / T_LOOP;
+
+  const x = 2.55 * Math.sin(w * tt);
+  const y = 0.62 - 0.16 * Math.cos(w * tt);
+  const vx = 2.55 * w * Math.cos(w * tt);
+  const vy = 0.16 * w * Math.sin(w * tt);
+  const speed = Math.hypot(vx, vy);
+
+  // 转身：速度反号时从 0 平滑转到 π（经过侧面），避免瞬间翻面
+  const yaw = Math.PI / 2 - (Math.PI / 2) * Math.tanh(vx * 2.4);
+  const move = clamp(speed / 2.0, 0, 1);
+
+  const step = TAU * 2.0 * tt;          // 2 个完整步态循环 / 4s
+  const swing = TAU * 0.5 * tt;         // 2 次挥砍 / 4s（与 4s 循环整除）
+  const bob = (0.022 + 0.026 * Math.abs(Math.sin(step))) * move + 0.010 * Math.sin(swing * 2);
+
+  const f = {x: Math.cos(yaw), y: Math.sin(yaw)};
+  const r = {x: -Math.sin(yaw), y: Math.cos(yaw)};
+  const P = (fw, rt, z) => ({
+    x: x + f.x * fw + r.x * rt,
+    y: y + f.y * fw + r.y * rt,
+    z: z
+  });
+
+  const root  = {x, y, z: 0};
+  const hip   = P(0, 0, 0.86 + bob);
+  const chest = P(0.02, 0, 1.19 + bob);
+  const neck  = P(0.03, 0, 1.36 + bob);
+  const head  = P(0.04, 0, 1.53 + bob);
+
+  const stride = 0.24 * move;
+  const footL = P(stride * Math.sin(step), 0.105, 0.035 + 0.10 * Math.max(0, Math.cos(step)) * move);
+  const footR = P(stride * Math.sin(step + Math.PI), -0.105, 0.035 + 0.10 * Math.max(0, Math.cos(step + Math.PI)) * move);
+  const kneeL = P(stride * Math.sin(step) * 0.52 + 0.07, 0.105, 0.46 + 0.035 * Math.max(0, Math.cos(step)));
+  const kneeR = P(stride * Math.sin(step + Math.PI) * 0.52 + 0.07, -0.105, 0.46 + 0.035 * Math.max(0, Math.cos(step + Math.PI)));
+
+  // 持刀手（右手，右侧 = +r）
+  const armAng = 0.55 + 1.02 * Math.sin(swing);
+  const ad = {x: f.x * Math.cos(armAng) + r.x * Math.sin(armAng),
+              y: f.y * Math.cos(armAng) + r.y * Math.sin(armAng)};
+  const td = {x: -f.x * Math.sin(armAng) + r.x * Math.cos(armAng),
+              y: -f.y * Math.sin(armAng) + r.y * Math.cos(armAng)};
+  const shoulderS = P(0.02, 0.22, 1.28 + bob);
+  const elbowS = {x: shoulderS.x + ad.x * 0.26, y: shoulderS.y + ad.y * 0.26, z: shoulderS.z - 0.035};
+  const wristS = {x: shoulderS.x + ad.x * 0.50, y: shoulderS.y + ad.y * 0.50,
+                  z: shoulderS.z - 0.055 + 0.075 * Math.cos(swing)};
+  const bladeDir = normalize3({
+    x: ad.x * 0.55 + td.x * 0.72,
+    y: ad.y * 0.55 + td.y * 0.72,
+    z: 0.10 * Math.cos(swing) + 0.05
+  });
+  const tip = add3(wristS, mul3(bladeDir, 0.72));
+
+  // 空手
+  const shoulderO = P(0.02, -0.22, 1.28 + bob);
+  const elbowO = P(0.10, -0.30, 1.06 + bob);
+  const wristO = P(0.16, -0.26, 0.90 + bob);
+
+  // 围巾（向后飘）
+  const scarf = [];
+  for (let i = 0; i < 4; i++){
+    const k = i / 3;
+    scarf.push({
+      x: neck.x - f.x * (0.16 + 0.34 * k) + Math.sin(swing * 2 + k * 3.1) * 0.05 * k,
+      y: neck.y - f.y * (0.16 + 0.34 * k) + Math.cos(swing * 2 + k * 3.1) * 0.05 * k,
+      z: neck.z + 0.02 - 0.12 * k + Math.sin(swing * 2 + k * 2.2) * 0.05 * k
+    });
+  }
+
+  return {
+    t: tt, x, y, vx, vy, speed, yaw, move,
+    root, hip, chest, neck, head, headR: 0.135,
+    footL, footR, kneeL, kneeR,
+    shoulderS, elbowS, wristS, shoulderO, elbowO, wristO,
+    bladeDir, tip, scarf, swing, step, bob
+  };
+}
+
+/* ============================================================
+   3. 相机：RT（透视，跟随角色） / 地图（等轴）
+   ============================================================ */
+function makeRTCam(sk){
+  const target = {x: sk.root.x, y: sk.root.y, z: sk.root.z + 0.85};
+  const eye = add3(target, mul3(RT_DIR, RT_DIST));
+  const fwd = normalize3(sub3(target, eye));
+  const right = normalize3(cross3(fwd, {x:0, y:0, z:1}));
+  const up = cross3(right, fwd);
+  const f = (RT / 2) / Math.tan(RT_FOV / 2);
+  return {
+    eye, fwd, right, up, f, dist: RT_DIST,
+    pxPerUnit: f / RT_DIST,
+    project(p){
+      const d = sub3(p, eye);
+      const z = dot3(d, fwd);
+      if (z <= 0.05) return null;
+      return {x: RT / 2 - dot3(d, right) / z * f, y: RT / 2 - dot3(d, up) / z * f, z};
+    },
+    depth(p){ return dot3(sub3(p, eye), fwd); }
+  };
+}
+
+function spriteMapFor(sk){
+  const cam = makeRTCam(sk);
+  const footWorld = {x: sk.root.x, y: sk.root.y, z: 0};
+  const footRT = cam.project(footWorld) || {x: RT/2, y: RT/2};
+  const footMap = iso(footWorld);
+  const scale = MAP_S / cam.pxPerUnit;
+  const m = {
+    cam, footRT, footMap, scale,
+    x: footMap.x - footRT.x * scale,
+    y: footMap.y - footRT.y * scale,
+    size: RT * scale
+  };
+  m.toScreen = function(p){
+    const q = cam.project(p);
+    if (!q) return null;
+    return {x: m.x + q.x * m.scale, y: m.y + q.y * m.scale};
+  };
+  return m;
+}
+
+/* ============================================================
+   4. RT 角色渲染（3D → 2D 胶片）
+   ============================================================ */
+function projSeg(cam, a, b){
+  const pa = cam.project(a), pb = cam.project(b);
+  if (!pa || !pb) return null;
+  return {pa, pb, z: (pa.z + pb.z) / 2};
+}
+
+function drawCharParts(ctx, cam, sk){
+  const parts = [];
+
+  const seg = (a, b, w0, w1, col, order) => {
+    const p = projSeg(cam, a, b);
+    if (!p) return;
+    parts.push({kind:'seg', pa:p.pa, pb:p.pb, z:p.z, w0, w1, col, order:order||0});
+  };
+  const blob = (c, r, col, order) => {
+    const pc = cam.project(c);
+    if (!pc) return;
+    parts.push({kind:'blob', p:pc, z:pc.z, r, col, order:order||0});
+  };
+
+  // 围巾在最里层
+  for (let i = 0; i < sk.scarf.length - 1; i++){
+    seg(sk.scarf[i], sk.scarf[i+1], 0.10 - i*0.012, 0.085 - i*0.012, i % 2 ? '#D99B45' : C.gold, -1);
+  }
+  // 腿
+  seg(sk.hip, sk.kneeL, 0.145, 0.125, '#2C7F73', 0);
+  seg(sk.kneeL, sk.footL, 0.115, 0.085, '#256B61', 0);
+  seg(sk.hip, sk.kneeR, 0.145, 0.125, '#266F65', 0);
+  seg(sk.kneeR, sk.footR, 0.115, 0.085, '#205E55', 0);
+  // 脚
+  blob(sk.footL, 0.075, '#3B2A1E', 0);
+  blob(sk.footR, 0.075, '#33241A', 0);
+  // 躯干
+  seg(sk.hip, sk.chest, 0.34, 0.30, '#35B7A8', 0);
+  // 空手
+  seg(sk.shoulderO, sk.elbowO, 0.10, 0.09, '#2E9E92', 0);
+  seg(sk.elbowO, sk.wristO, 0.085, 0.07, '#F0D2B0', 0);
+  // 头 + 头发（只盖上半部，别盖住脸）
+  blob(sk.head, sk.headR, '#F0D2B0', 1);
+  blob({x:sk.head.x - 0.01, y:sk.head.y, z:sk.head.z + sk.headR*0.95}, sk.headR*0.80, '#2A3B33', 1.2);
+  // 持刀手
+  seg(sk.shoulderS, sk.elbowS, 0.11, 0.095, '#35B7A8', 0);
+  seg(sk.elbowS, sk.wristS, 0.09, 0.075, '#F0D2B0', 0);
+  blob(sk.wristS, 0.075, '#F0D2B0', 0.5);
+
+  // 排序：远 → 近；同 z 时 order 小的先画（围巾在身体里层）
+  parts.sort((a,b)=> (b.z - a.z) || (a.order - b.order));
+
+  for (const p of parts){
+    const pxW = (w) => Math.max(1.2, w * cam.f / Math.max(p.z, 0.2));
+    if (p.kind === 'blob'){
+      const rp = Math.max(1.2, p.r * cam.f / Math.max(p.z, 0.2));
+      ctx.beginPath();
+      ctx.arc(p.p.x, p.p.y, rp + 1.6, 0, TAU);
+      ctx.fillStyle = C.outline; ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.p.x, p.p.y, rp, 0, TAU);
+      ctx.fillStyle = p.col; ctx.fill();
+    } else {
+      const w0 = pxW(p.w0), w1 = pxW(p.w1);
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(p.pa.x, p.pa.y); ctx.lineTo(p.pb.x, p.pb.y);
+      ctx.strokeStyle = C.outline; ctx.lineWidth = Math.max(w0, w1) + 3.0; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.pa.x, p.pa.y); ctx.lineTo(p.pb.x, p.pb.y);
+      ctx.strokeStyle = p.col; ctx.lineWidth = Math.max(w0, w1); ctx.stroke();
+    }
+  }
+
+  // 刀（单独画，压在手上）
+  const pw = cam.project(sk.wristS);
+  const pt = cam.project(sk.tip);
+  if (pw && pt){
+    const dx = pt.x - pw.x, dy = pt.y - pw.y;
+    const l = Math.hypot(dx, dy) || 1;
+    const nx = -dy / l, ny = dx / l;
+    const w0 = 0.055 * cam.f / Math.max(pw.z, 0.2);
+    const w1 = 0.014 * cam.f / Math.max(pt.z, 0.2);
+    ctx.beginPath();
+    ctx.moveTo(pw.x + nx*w0, pw.y + ny*w0);
+    ctx.lineTo(pt.x + nx*w1, pt.y + ny*w1);
+    ctx.lineTo(pt.x - nx*w1, pt.y - ny*w1);
+    ctx.lineTo(pw.x - nx*w0, pw.y - ny*w0);
+    ctx.closePath();
+    ctx.fillStyle = C.outline; ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(pw.x + nx*w0*0.62, pw.y + ny*w0*0.62);
+    ctx.lineTo(pt.x + nx*w1*0.8, pt.y + ny*w1*0.8);
+    ctx.lineTo(pt.x - nx*w1*0.8, pt.y - ny*w1*0.8);
+    ctx.lineTo(pw.x - nx*w0*0.62, pw.y - ny*w0*0.62);
+    ctx.closePath();
+    ctx.fillStyle = '#DCEBEF'; ctx.fill();
+    // 护手
+    ctx.beginPath();
+    ctx.moveTo(pw.x + nx*w0*2.0, pw.y + ny*w0*2.0);
+    ctx.lineTo(pw.x - nx*w0*2.0, pw.y - ny*w0*2.0);
+    ctx.strokeStyle = '#B8863B'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
+    // 刀尖高光
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.9, 0, TAU);
+    ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  }
+}
+
+/* ============================================================
+   5. 采样：武器尖历史
+   ============================================================ */
+function trailSamples(t, life, hz){
+  life = life || TRAIL_LIFE;
+  hz = hz || TRAIL_HZ;
+  const n = Math.ceil(life * hz);
+  const out = [];
+  for (let i = 0; i <= n; i++){
+    const age = life * i / n;
+    const p = poseAt(t - age);
+    out.push({
+      age, tip: p.tip, root: p.root,
+      sort: p.root.x + p.root.y,
+      pose: p
+    });
+  }
+  return out;
+}
+
+/* ============================================================
+   6. 2D ribbon 几何
+   ============================================================ */
+function ribbonPath(ctx, pts, widths){
+  if (!pts || pts.length < 2) return;
+  const L = [], Rr = [];
+  for (let i = 0; i < pts.length; i++){
+    const p = pts[i];
+    const a = pts[Math.max(0, i - 1)];
+    const b = pts[Math.min(pts.length - 1, i + 1)];
+    let dx = b.x - a.x, dy = b.y - a.y;
+    const l = Math.hypot(dx, dy) || 1;
+    const nx = -dy / l, ny = dx / l;
+    const hw = Math.max(0.6, widths[i] / 2);
+    L.push({x: p.x + nx * hw, y: p.y + ny * hw});
+    Rr.push({x: p.x - nx * hw, y: p.y - ny * hw});
+  }
+  ctx.beginPath();
+  ctx.moveTo(L[0].x, L[0].y);
+  for (let i = 1; i < L.length; i++) ctx.lineTo(L[i].x, L[i].y);
+  for (let i = Rr.length - 1; i >= 0; i--) ctx.lineTo(Rr[i].x, Rr[i].y);
+  ctx.closePath();
+}
+
+function drawRibbon(ctx, pts, opts){
+  if (!pts || pts.length < 2) return;
+  const life = opts.life || TRAIL_LIFE;
+  const w0 = opts.w0;
+  const widths = pts.map(p => {
+    const k = clamp(1 - p.age / life, 0, 1);
+    return Math.max(opts.wMin || 1.3, w0 * Math.pow(k, 0.55));
+  });
+
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // 外描边（深色）
+  ribbonPath(ctx, pts, widths.map(w => w + (opts.outline || 5)));
+  ctx.fillStyle = opts.outlineCol || 'rgba(5,12,9,.62)';
+  ctx.fill();
+
+  // 主体
+  ribbonPath(ctx, pts, widths);
+  if (opts.grad !== false){
+    const a = pts[0], b = pts[pts.length - 1];
+    const gr = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+    gr.addColorStop(0, opts.color);
+    gr.addColorStop(0.55, opts.color2 || opts.color);
+    gr.addColorStop(1, opts.tail || 'rgba(255,255,255,0)');
+    ctx.fillStyle = gr;
+  } else {
+    ctx.fillStyle = opts.color;
+  }
+  ctx.globalAlpha = opts.alpha == null ? 1 : opts.alpha;
+  ctx.fill();
+
+  // 亮芯
+  if (opts.core !== false){
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.strokeStyle = opts.coreCol || 'rgba(255,247,230,.55)';
+    ctx.lineWidth = Math.max(1, w0 * 0.16);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function splitRuns(pts, treeSort){
+  const runs = [];
+  let cur = null;
+  for (let i = 0; i < pts.length - 1; i++){
+    const key = (pts[i].sort + pts[i+1].sort) / 2;
+    const behind = key < treeSort;
+    if (!cur || cur.behind !== behind){
+      cur = {behind, pts: [pts[i]]};
+      runs.push(cur);
+    }
+    cur.pts.push(pts[i+1]);
+  }
+  return runs;
+}
+
+/* ============================================================
+   7. 地图 / 场景元素
+   ============================================================ */
+function drawBackdrop(){
+  const gd = g.createLinearGradient(0, STAGE_Y, 0, STAGE_Y + STAGE_H);
+  gd.addColorStop(0, '#0C1B14');
+  gd.addColorStop(0.55, '#0A1711');
+  gd.addColorStop(1, '#060F0B');
+  g.fillStyle = gd;
+  g.fillRect(0, STAGE_Y, W, STAGE_H);
+
+  const glow = g.createRadialGradient(OX, OY + 40, 20, OX, OY + 40, 430);
+  glow.addColorStop(0, 'rgba(95,216,201,.075)');
+  glow.addColorStop(0.5, 'rgba(95,216,201,.028)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, STAGE_Y, W, STAGE_H);
+}
+
+function drawGround(){
+  g.save();
+  g.fillStyle = C.ground;
+  g.fillRect(0, STAGE_Y, W, STAGE_H);
+
+  // 等轴网格
+  g.strokeStyle = C.grid;
+  g.lineWidth = 1;
+  for (let i = -4; i <= 4; i++){
+    const a = iso({x:i, y:-4.4, z:0}), b = iso({x:i, y:4.4, z:0});
+    g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+    const c = iso({x:-4.4, y:i, z:0}), d = iso({x:4.4, y:i, z:0});
+    g.beginPath(); g.moveTo(c.x, c.y); g.lineTo(d.x, d.y); g.stroke();
+  }
+
+  // 巡逻路径（角色实际走的曲线）
+  g.beginPath();
+  for (let i = 0; i <= 120; i++){
+    const tt = i / 120 * T_LOOP;
+    const p = poseAt(tt);
+    const q = iso({x:p.x, y:p.y, z:0});
+    i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y);
+  }
+  g.strokeStyle = 'rgba(242,179,92,.075)';
+  g.lineWidth = 17;
+  g.lineCap = 'round';
+  g.stroke();
+  g.strokeStyle = 'rgba(242,179,92,.20)';
+  g.lineWidth = 1;
+  g.setLineDash([5, 7]);
+  g.stroke();
+  g.setLineDash([]);
+
+  // 树下的空地
+  const tb = iso({x:TREE.x, y:TREE.y, z:0});
+  const cl = g.createRadialGradient(tb.x, tb.y, 8, tb.x, tb.y, 120);
+  cl.addColorStop(0, 'rgba(242,179,92,.10)');
+  cl.addColorStop(1, 'rgba(242,179,92,0)');
+  g.fillStyle = cl;
+  g.beginPath(); g.ellipse(tb.x, tb.y, 120, 64, 0, 0, TAU); g.fill();
+
+  // 背景石头 / 矮丛（都在远处，排序值小）
+  drawRock(-3.25, -1.55, 0.30);
+  drawRock(3.30, -1.30, 0.24);
+  drawBush(-2.60, -0.95, 0.9);
+  drawBush(3.05, 0.15, 0.7);
+
+  // 尘埃
+  for (let i = 0; i < 16; i++){
+    const seed = hash(i * 3.7);
+    const x = 60 + seed * 840 + Math.sin(currentT * 0.4 + i) * 8;
+    const y = STAGE_Y + 40 + hash(i * 9.1) * 360 + Math.cos(currentT * 0.3 + i * 1.7) * 6;
+    g.beginPath();
+    g.arc(x, y, 0.9 + hash(i * 5.3) * 1.4, 0, TAU);
+    g.fillStyle = 'rgba(210,235,215,' + (0.05 + hash(i * 2.1) * 0.10) + ')';
+    g.fill();
+  }
+  g.restore();
+}
+
+function drawRock(mx, my, s){
+  const p = iso({x:mx, y:my, z:0});
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,.28)';
+  g.beginPath(); g.ellipse(p.x, p.y + 2, 16 * s / 0.3, 6 * s / 0.3, 0, 0, TAU); g.fill();
+  g.beginPath();
+  g.moveTo(p.x - 13, p.y);
+  g.lineTo(p.x - 6, p.y - 13);
+  g.lineTo(p.x + 6, p.y - 10);
+  g.lineTo(p.x + 12, p.y + 1);
+  g.closePath();
+  g.fillStyle = '#31443B'; g.fill();
+  g.strokeStyle = 'rgba(6,14,10,.65)'; g.lineWidth = 1.5; g.stroke();
+  g.restore();
+}
+
+function drawBush(mx, my, s){
+  const p = iso({x:mx, y:my, z:0});
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,.22)';
+  g.beginPath(); g.ellipse(p.x, p.y + 1, 18 * s, 6 * s, 0, 0, TAU); g.fill();
+  const blobs = [[-8, -6, 9], [3, -10, 11], [10, -5, 8]];
+  blobs.forEach((b, i) => {
+    g.beginPath();
+    g.arc(p.x + b[0] * s, p.y + b[1] * s, b[2] * s, 0, TAU);
+    g.fillStyle = i === 1 ? '#3E7A40' : '#356B39';
+    g.fill();
+    g.strokeStyle = 'rgba(5,12,8,.55)'; g.lineWidth = 1.2; g.stroke();
+  });
+  g.restore();
+}
+
+function drawTree(){
+  const base = iso({x:TREE.x, y:TREE.y, z:0});
+  const bx = base.x, by = base.y;
+  g.save();
+
+  // 影子
+  g.fillStyle = 'rgba(0,0,0,.34)';
+  g.beginPath(); g.ellipse(bx + 4, by + 3, 46, 15, 0, 0, TAU); g.fill();
+
+  // 树干
+  g.beginPath();
+  g.moveTo(bx - 9, by);
+  g.quadraticCurveTo(bx - 5, by - 40, bx - 7, by - 66);
+  g.lineTo(bx + 8, by - 68);
+  g.quadraticCurveTo(bx + 5, by - 38, bx + 10, by);
+  g.closePath();
+  g.fillStyle = C.trunk; g.fill();
+  g.strokeStyle = 'rgba(5,12,8,.72)'; g.lineWidth = 2; g.stroke();
+  g.strokeStyle = C.trunkHi; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(bx - 2, by - 8); g.quadraticCurveTo(bx + 1, by - 36, bx - 1, by - 60); g.stroke();
+
+  // 树冠（多个圆团）
+  const cx = bx + 2, cy = by - 96;
+  const blobs = [
+    {x: cx - 34, y: cy + 18, r: 30, c: C.leaf1},
+    {x: cx + 32, y: cy + 16, r: 32, c: C.leaf2},
+    {x: cx - 16, y: cy - 14, r: 33, c: C.leaf2},
+    {x: cx + 18, y: cy - 20, r: 31, c: C.leaf3},
+    {x: cx + 0,  y: cy + 6,  r: 38, c: C.leaf3},
+    {x: cx - 4,  y: cy - 6,  r: 28, c: C.leaf4}
+  ];
+  blobs.forEach(b => {
+    g.beginPath(); g.arc(b.x, b.y, b.r + 2.2, 0, TAU);
+    g.fillStyle = 'rgba(4,10,7,.62)'; g.fill();
+  });
+  blobs.forEach(b => {
+    g.beginPath(); g.arc(b.x, b.y, b.r, 0, TAU);
+    g.fillStyle = b.c; g.fill();
+  });
+  // 高光
+  g.globalAlpha = 0.30;
+  [[-18, -26, 12], [12, -30, 9], [-38, 2, 8], [26, -2, 10]].forEach(h => {
+    g.beginPath(); g.arc(cx + h[0], cy + h[1], h[2], 0, TAU);
+    g.fillStyle = '#C3E79A'; g.fill();
+  });
+  g.globalAlpha = 1;
+
+  // 树冠底部加深（让“树后”更清楚）
+  g.globalAlpha = 0.22;
+  g.beginPath(); g.ellipse(cx, cy + 34, 44, 16, 0, 0, TAU);
+  g.fillStyle = '#173020'; g.fill();
+  g.globalAlpha = 1;
+
+  g.restore();
+  return {x: bx, y: by, canopyY: cy, sort: TREE.x + TREE.y};
+}
+
+function drawCharShadow(sk, scale){
+  const p = iso({x:sk.root.x, y:sk.root.y, z:0});
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,.36)';
+  g.beginPath();
+  g.ellipse(p.x, p.y + 1, 22 * (scale || 1), 7.5 * (scale || 1), 0, 0, TAU);
+  g.fill();
+  g.restore();
+}
+
+function drawSprite(rtSrc, sm, opts){
+  opts = opts || {};
+  g.save();
+  g.imageSmoothingEnabled = !!opts.smooth;
+  if (opts.alpha != null) g.globalAlpha = opts.alpha;
+  g.drawImage(rtSrc, sm.x, sm.y, sm.size, sm.size);
+  g.restore();
+}
+
+function drawRTBorder(sm, color, label){
+  g.save();
+  g.setLineDash([5, 5]);
+  g.strokeStyle = color;
+  g.lineWidth = 1.4;
+  g.strokeRect(sm.x + 0.5, sm.y + 0.5, sm.size - 1, sm.size - 1);
+  g.setLineDash([]);
+  g.strokeStyle = 'rgba(0,0,0,.5)';
+  g.lineWidth = 1;
+  g.strokeRect(sm.x - 0.5, sm.y - 0.5, sm.size + 1, sm.size + 1);
+  if (label){
+    const bx = sm.x + sm.size - 4;
+    g.font = '600 9.5px "SF Mono",ui-monospace,Menlo,monospace';
+    const tw = g.measureText(label).width;
+    g.fillStyle = 'rgba(6,16,11,.82)';
+    g.fillRect(bx - tw - 8, sm.y + 3, tw + 8, 15);
+    g.fillStyle = color;
+    g.textAlign = 'right';
+    g.fillText(label, bx - 4, sm.y + 14);
+  }
+  g.restore();
+}
+
+/* ============================================================
+   8. RT 渲染（角色 + 可选拖尾）
+   ============================================================ */
+function renderRT(t, trailArr, opts){
+  opts = opts || {};
+  const sk = poseAt(t);
+  const cam = makeRTCam(sk);
+  rtCtx.setTransform(1,0,0,1,0,0);
+  rtCtx.clearRect(0, 0, RT, RT);
+  rtCtx.lineJoin = 'round';
+
+  if (trailArr && trailArr.length > 1){
+    const pts = [];
+    for (const s of trailArr){
+      const q = cam.project(s.tip);
+      if (!q) continue;
+      pts.push({x:q.x, y:q.y, age:s.age});
+    }
+    if (pts.length > 1){
+      drawRibbon(rtCtx, pts, {
+        w0: opts.w0 || 11,
+        wMin: 1.5,
+        life: opts.life || TRAIL_LIFE,
+        color: opts.color || C.teal,
+        color2: opts.color2 || '#8FF0E4',
+        tail: 'rgba(95,216,201,0)',
+        coreCol: 'rgba(240,255,250,.75)',
+        outline: 3
+      });
+    }
+  }
+
+  drawCharParts(rtCtx, cam, sk);
+  return {sk, cam};
+}
+
+function tintCopy(src, color, alpha){
+  tintCtx.setTransform(1,0,0,1,0,0);
+  tintCtx.clearRect(0, 0, RT, RT);
+  tintCtx.globalAlpha = 1;
+  tintCtx.drawImage(src, 0, 0);
+  tintCtx.globalCompositeOperation = 'source-in';
+  tintCtx.fillStyle = color;
+  tintCtx.fillRect(0, 0, RT, RT);
+  tintCtx.globalCompositeOperation = 'source-over';
+  return tintCanvas;
+}
+
+/* ============================================================
+   9. 读数 / 标记
+   ============================================================ */
+function text(ctx, str, x, y, size, color, align, weight, mono){
+  ctx.save();
+  ctx.font = (weight || 400) + ' ' + size + 'px ' + (mono ? '"SF Mono",ui-monospace,Menlo,monospace' : '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif');
+  ctx.fillStyle = color;
+  ctx.textAlign = align || 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(str, x, y);
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function card(x, y, w, h, accent){
+  g.save();
+  g.fillStyle = 'rgba(7,17,12,.86)';
+  roundRect(g, x, y, w, h, 9);
+  g.fill();
+  g.strokeStyle = 'rgba(140,205,170,.20)';
+  g.lineWidth = 1;
+  g.stroke();
+  if (accent){
+    g.fillStyle = accent;
+    g.globalAlpha = 0.9;
+    roundRect(g, x + 0.5, y + 10, 2.5, h - 20, 1.5);
+    g.fill();
+    g.globalAlpha = 1;
+  }
+  g.restore();
+}
+
+function pill(str, x, y, color, opts){
+  opts = opts || {};
+  g.save();
+  g.font = (opts.size || 10.5) + 'px "SF Mono",ui-monospace,Menlo,monospace';
+  const tw = g.measureText(str).width;
+  const w = tw + 14, h = opts.h || 19;
+  g.fillStyle = opts.bg || 'rgba(7,17,12,.86)';
+  roundRect(g, x, y, w, h, 5);
+  g.fill();
+  g.strokeStyle = color;
+  g.globalAlpha = opts.borderAlpha == null ? 0.55 : opts.borderAlpha;
+  g.lineWidth = 1;
+  g.stroke();
+  g.globalAlpha = 1;
+  g.fillStyle = color;
+  g.textBaseline = 'middle';
+  g.fillText(str, x + 7, y + h / 2 + 0.5);
+  g.restore();
+  return w;
+}
+
+/* ============================================================
+   10. 各模式渲染
+   ============================================================ */
+let currentT = 0;
+let lastStats = {};
+
+function drawSortLine(tree, accent){
+  g.save();
+  g.setLineDash([4, 7]);
+  g.strokeStyle = 'rgba(242,179,92,.30)';
+  g.lineWidth = 1;
+  g.beginPath();
+  g.moveTo(210, tree.y + 0.5);
+  g.lineTo(690, tree.y + 0.5);
+  g.stroke();
+  g.setLineDash([]);
+  g.fillStyle = 'rgba(6,16,11,.72)';
+  roundRect(g, 212, tree.y - 21, 132, 15, 4); g.fill();
+  text(g, '树 y-sort 线 · ↑后 ↓前', 218, tree.y - 10, 8.5, 'rgba(242,179,92,.78)', 'left', 400, true);
+  g.restore();
+}
+
+function drawCalibMarkers(sk, sm, deltaPx){
+  const amap = iso(sk.tip);
+  const art = sm.toScreen(sk.tip);
+  if (!art) return;
+  g.save();
+  // 地图投影
+  g.beginPath(); g.arc(amap.x, amap.y, 4.2, 0, TAU);
+  g.fillStyle = 'rgba(240,250,242,.96)'; g.fill();
+  g.strokeStyle = 'rgba(5,12,9,.9)'; g.lineWidth = 1.4; g.stroke();
+  // RT 可见刀尖
+  g.strokeStyle = C.bad; g.lineWidth = 1.8;
+  g.beginPath(); g.moveTo(art.x - 6, art.y); g.lineTo(art.x + 6, art.y);
+  g.moveTo(art.x, art.y - 6); g.lineTo(art.x, art.y + 6); g.stroke();
+  // Δ
+  if (deltaPx > 0.8){
+    g.setLineDash([3, 3]);
+    g.strokeStyle = 'rgba(255,107,107,.75)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(amap.x, amap.y); g.lineTo(art.x, art.y); g.stroke();
+    g.setLineDash([]);
+    text(g, 'Δ ' + deltaPx.toFixed(1) + 'px', Math.max(amap.x, art.x) + 7, Math.min(amap.y, art.y) - 6,
+      9.5, 'rgba(255,140,140,.96)', 'left', 400, true);
+  }
+  g.restore();
+}
+
+function readoutRows(rows, accent){
+  const x = W - 290, y = 56, w = 266, h = 24 + rows.length * 19;
+  card(x, y, w, h, accent);
+  text(g, '实时读数 · 模拟', x + 14, y + 18, 9.5, 'rgba(159,180,166,.72)', 'left', 400, true);
+  rows.forEach((r, i) => {
+    const yy = y + 38 + i * 19;
+    text(g, r[0], x + 14, yy, 10.5, 'rgba(159,180,166,.82)');
+    text(g, String(r[1]), x + w - 14, yy, 10.5, r[2] || C.ink, 'right', 600, true);
+  });
+  return {x, y, w, h};
+}
+
+function drawRTInset(accent, label, alpha){
+  const size = 146;
+  const x = W - 24 - size, y = 300;
+  card(x - 10, y - 30, size + 20, size + 42, accent);
+  text(g, label || '角色 RT · 原始胶片', x - 2, y - 12, 9.5, 'rgba(220,238,226,.86)');
+  g.save();
+  g.globalAlpha = alpha == null ? 1 : alpha;
+  g.imageSmoothingEnabled = false;
+  // 棋盘格底，强调透明区域
+  const cw = 8;
+  for (let yy = 0; yy < size; yy += cw){
+    for (let xx = 0; xx < size; xx += cw){
+      const odd = ((xx / cw) + (yy / cw)) % 2;
+      g.fillStyle = odd ? 'rgba(20,38,30,.9)' : 'rgba(13,27,21,.9)';
+      g.fillRect(x + xx, y + yy, Math.min(cw, size - xx), Math.min(cw, size - yy));
+    }
+  }
+  g.drawImage(rtCanvas, x, y, size, size);
+  g.restore();
+  g.save();
+  g.strokeStyle = accent;
+  g.globalAlpha = 0.75;
+  g.lineWidth = 1.2;
+  g.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
+  g.restore();
+  text(g, 'RT ' + RT + '×' + RT, x + 4, y + size + 14, 9, 'rgba(120,145,130,.92)', 'left', 400, true);
+}
+
+/* ---------- 模式 01：R1 RT 内 ---------- */
+function renderRTMode(t, accent){
+  const samples = trailSamples(t);
+  const {sk} = renderRT(t, samples);
+  const sm = spriteMapFor(sk);
+  const treeSort = TREE.x + TREE.y;
+  const charSort = sk.root.x + sk.root.y;
+
+  drawBackdrop();
+  drawGround();
+  const tree = drawTree();
+  drawCharShadow(sk, 1.0);
+
+  // 裁剪率
+  let outside = 0;
+  for (const s of samples){
+    const q = sm.cam.project(s.tip);
+    if (!q || q.x < 0 || q.x > RT || q.y < 0 || q.y > RT) outside++;
+  }
+  const clipPct = Math.round(outside / samples.length * 100);
+
+  // 单排序点：整张 RT 参与树的前后
+  if (charSort < treeSort){
+    drawSprite(rtCanvas, sm);
+    drawTree();
+  } else {
+    drawTree();
+    drawSprite(rtCanvas, sm);
+  }
+  drawRTBorder(sm, accent, 'RT 160² → 精灵 ' + sm.size.toFixed(0) + 'px');
+
+  // 被裁尾段：把地图空间的完整尾画成红色虚线（示意）
+  const full = samples.map(s => iso(s.tip));
+  g.save();
+  g.setLineDash([2, 5]);
+  g.strokeStyle = 'rgba(255,107,107,.34)';
+  g.lineWidth = 1.4;
+  g.beginPath();
+  let started = false;
+  for (let i = 0; i < samples.length; i++){
+    const q = sm.cam.project(samples[i].tip);
+    const isOut = !q || q.x < 0 || q.x > RT || q.y < 0 || q.y > RT;
+    if (isOut){
+      const p = full[i];
+      if (!started){ g.moveTo(p.x, p.y); started = true; }
+      else g.lineTo(p.x, p.y);
+    } else started = false;
+  }
+  g.stroke();
+  g.setLineDash([]);
+  g.restore();
+
+  // 标出尾巴越界点
+  for (let i = 1; i < samples.length; i++){
+    const q0 = sm.cam.project(samples[i-1].tip);
+    const q1 = sm.cam.project(samples[i].tip);
+    const in0 = q0 && q0.x >= 0 && q0.x <= RT && q0.y >= 0 && q0.y <= RT;
+    const in1 = q1 && q1.x >= 0 && q1.x <= RT && q1.y >= 0 && q1.y <= RT;
+    if (in0 && !in1){
+      const p = iso(samples[i].tip);
+      g.save();
+      g.fillStyle = C.bad;
+      g.beginPath(); g.arc(p.x, p.y, 3.2, 0, TAU); g.fill();
+      g.restore();
+      break;
+    }
+  }
+  if (clipPct > 0){
+    text(g, '✂ 超出 RT 的部分被裁：' + clipPct + '% 采样在框外', 24, 392, 10.5, 'rgba(255,130,130,.95)');
+    text(g, '红色虚线 = 地图空间里本应存在的尾段（示意）', 24, 407, 9, 'rgba(255,130,130,.55)');
+  } else {
+    text(g, '✓ 这个姿态整条尾都在 RT 内 —— 但长尾只要一挥就会出框', 24, 392, 10.5, 'rgba(126,231,135,.9)');
+    text(g, 'RT 的实际裁剪率随姿态/朝向在 0–100% 间跳变', 24, 407, 9, 'rgba(126,231,135,.55)');
+  }
+
+  // 排序错误标记
+  const misSamples = samples.filter(s => (s.sort > treeSort) !== (charSort > treeSort));
+  if (misSamples.length){
+    const m = misSamples[Math.floor(misSamples.length / 2)];
+    const p = iso(m.tip);
+    g.save();
+    g.beginPath(); g.arc(p.x, p.y, 16, 0, TAU);
+    g.strokeStyle = 'rgba(255,107,107,.85)'; g.lineWidth = 1.6;
+    g.setLineDash([3, 3]); g.stroke();
+    g.setLineDash([]);
+    g.restore();
+    pill(charSort < treeSort ? '✗ 该在树前，被整块 RT 带走' : '✗ 该在树后，却跟着精灵盖住树',
+      p.x + 20, p.y - 9, 'rgba(255,140,140,.98)', {bg: 'rgba(24,8,8,.9)', size: 9.5});
+  }
+
+  const delta = (function(){
+    const a = iso(sk.tip), b = sm.toScreen(sk.tip);
+    return b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+  })();
+  lastStats = {mode:'rt', clip: clipPct, delta: +delta.toFixed(1), samples: samples.length, sortPoints: 1};
+  readoutRows([
+    ['排序点（整张 RT）', '1 个 · 脚底 y'],
+    ['RT 裁剪率（尾段采样）', clipPct + '%'],
+    ['RT 内可见尾长', Math.round((1 - clipPct / 100) * 100) + '%'],
+    ['起点 Δ（RT vs 地图）', delta.toFixed(1) + 'px'],
+    ['额外成本', '160² RT 填充/帧']
+  ], accent);
+
+  drawRTInset(accent, '角色 RT 160² · 含被裁拖尾');
+}
+
+/* ---------- 模式 02：R2 地图 ribbon ---------- */
+function mapTrailPoints(t, sk, sm, useCalib){
+  const samples = trailSamples(t);
+  const amap = iso(sk.tip);
+  const art = sm ? sm.toScreen(sk.tip) : null;
+  const dx = art ? art.x - amap.x : 0;
+  const dy = art ? art.y - amap.y : 0;
+
+  return samples.map(s => {
+    const p = iso(s.tip);
+    const w = useCalib ? clamp(1 - s.age / 0.18, 0, 1) : 0;
+    return {
+      x: p.x + dx * w,
+      y: p.y + dy * w,
+      age: s.age,
+      sort: s.sort,
+      behind: s.sort < TREE.x + TREE.y
+    };
+  });
+}
+
+function renderMapMode(t, accent){
+  renderRT(t, null);
+  const sk = poseAt(t);
+  const sm = spriteMapFor(sk);
+  const treeSort = TREE.x + TREE.y;
+  const charSort = sk.root.x + sk.root.y;
+  const pts = mapTrailPoints(t, sk, sm, true);
+  const runs = splitRuns(pts, treeSort);
+
+  drawBackdrop();
+  drawGround();
+  const tree = drawTree();
+  drawCharShadow(sk, 1.0);
+  drawSortLine(tree, accent);
+
+  const opt = {
+    w0: 12, wMin: 1.4, life: TRAIL_LIFE,
+    color: 'rgba(242,179,92,.94)', color2: 'rgba(255,213,120,.92)',
+    tail: 'rgba(255,240,200,0)', coreCol: 'rgba(255,250,235,.62)', outline: 4
+  };
+
+  // 树后的尾段
+  for (const r of runs) if (r.behind) drawRibbon(g, r.pts, opt);
+
+  if (charSort < treeSort){
+    drawSprite(rtCanvas, sm);
+    drawTree();
+  } else {
+    drawTree();
+    drawSprite(rtCanvas, sm);
+  }
+
+  // 树前的尾段
+  for (const r of runs) if (!r.behind) drawRibbon(g, r.pts, opt);
+
+  const delta = (function(){
+    const a = iso(sk.tip), b = sm.toScreen(sk.tip);
+    return b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+  })();
+  drawCalibMarkers(sk, sm, delta);
+
+  // 图例
+  g.save();
+  g.beginPath(); g.arc(30, 172, 3.6, 0, TAU);
+  g.fillStyle = 'rgba(240,250,242,.96)'; g.fill();
+  g.beginPath(); g.arc(30, 190, 4.6, 0, TAU);
+  g.strokeStyle = C.bad; g.lineWidth = 1.5; g.stroke();
+  text(g, '地图投影刀尖', 42, 175, 9.5, 'rgba(200,220,205,.7)');
+  text(g, 'RT 可见刀尖（校准锚）', 42, 193, 9.5, 'rgba(200,220,205,.7)');
+  g.restore();
+
+  const runCount = runs.length;
+  const behindCount = runs.filter(r => r.behind).length;
+  lastStats = {mode:'map', delta: +delta.toFixed(1), groups: runCount, behindGroups: behindCount, samples: pts.length};
+  readoutRows([
+    ['排序分组（动态）', runCount + ' 组 · 树后 ' + behindCount],
+    ['RT 裁剪', '0%'],
+    ['起点 Δ（校准前）', delta.toFixed(1) + 'px'],
+    ['起点偏差（校准后）', '< 1px', C.green],
+    ['额外 RT / 尾段采样', '0 / ' + (pts.length - 1) + ' 段']
+  ], accent);
+
+  drawRTInset(accent, '角色 RT 160² · 不含拖尾');
+  pill('R2b 校准混合 0.18s', 24, 210, accent, {bg:'rgba(7,17,12,.8)'});
+}
+
+/* ---------- 模式 03：R4 混合 ---------- */
+function renderHybridMode(t, accent){
+  const SEAM_AGE = 0.16;
+  const all = trailSamples(t);
+  const near = all.filter(s => s.age <= SEAM_AGE);
+  const far = all.filter(s => s.age >= SEAM_AGE);
+  const {sk} = renderRT(t, near, {w0: 12, color: C.teal, color2:'#9BF2E7'});
+  const sm = spriteMapFor(sk);
+  const treeSort = TREE.x + TREE.y;
+  const charSort = sk.root.x + sk.root.y;
+
+  // 接缝校准：长段第一个点落在 RT 里可见的同一采样点上，再在 0.12s 内回地图投影，
+  // 这样接缝不出现“相机差”造成的断口；风险只剩 RT 边界裁剪。
+  const seamSample = far[0];
+  const seamRT = sm.toScreen(seamSample.tip);
+  const seamMap = iso(seamSample.tip);
+  const seamDx = seamRT ? seamRT.x - seamMap.x : 0;
+  const seamDy = seamRT ? seamRT.y - seamMap.y : 0;
+
+  const pts = far.map(s => {
+    const p = iso(s.tip);
+    const w = clamp(1 - (s.age - SEAM_AGE) / 0.12, 0, 1);
+    return {x: p.x + seamDx * w, y: p.y + seamDy * w, age: s.age, sort: s.sort, behind: s.sort < treeSort};
+  });
+  const runs = splitRuns(pts, treeSort);
+
+  drawBackdrop();
+  drawGround();
+  const tree = drawTree();
+  drawCharShadow(sk, 1.0);
+  drawSortLine(tree, accent);
+
+  const opt = {
+    w0: 11, wMin: 1.4, life: TRAIL_LIFE,
+    color: 'rgba(242,179,92,.94)', color2: 'rgba(255,213,120,.92)',
+    tail: 'rgba(255,240,200,0)', coreCol: 'rgba(255,250,235,.6)', outline: 4
+  };
+
+  for (const r of runs) if (r.behind) drawRibbon(g, r.pts, opt);
+  if (charSort < treeSort){
+    drawSprite(rtCanvas, sm);
+    drawTree();
+  } else {
+    drawTree();
+    drawSprite(rtCanvas, sm);
+  }
+  for (const r of runs) if (!r.behind) drawRibbon(g, r.pts, opt);
+
+  drawRTBorder(sm, 'rgba(95,216,201,.45)', 'RT');
+
+  // 接缝
+  const seam = seamRT;
+  let seamDist = 0;
+  if (seam){
+    // 到 RT 边框的最近距离（框内为正）
+    const local = {x: (seam.x - sm.x) / sm.scale, y: (seam.y - sm.y) / sm.scale};
+    seamDist = Math.min(local.x, RT - local.x, local.y, RT - local.y);
+    const inRT = local.x >= 0 && local.x <= RT && local.y >= 0 && local.y <= RT;
+    const col = inRT && seamDist > 12 ? C.gold : C.bad;
+    g.save();
+    g.beginPath(); g.arc(seam.x, seam.y, 10, 0, TAU);
+    g.strokeStyle = col; g.lineWidth = 1.6; g.setLineDash([3, 3]); g.stroke();
+    g.setLineDash([]);
+    g.beginPath(); g.arc(seam.x, seam.y, 2.4, 0, TAU);
+    g.fillStyle = col; g.fill();
+    g.restore();
+    pill('接缝 ' + (inRT ? '距 RT 边 ' + seamDist.toFixed(0) + 'px' : '已在 RT 外（断口）'),
+      seam.x + 16, seam.y - 10, inRT ? 'rgba(242,179,92,.98)' : 'rgba(255,120,120,.98)',
+      {bg: 'rgba(18,12,5,.92)', size: 9.5});
+  }
+
+  text(g, 'RT 内近端 ' + Math.round(SEAM_AGE * 1000) + 'ms（青） · 地图远端 ' + Math.round((TRAIL_LIFE - SEAM_AGE) * 1000) + 'ms（金）',
+    24, 396, 10, 'rgba(220,230,222,.86)');
+
+  lastStats = {mode:'hybrid', seamDist: +seamDist.toFixed(0), groups: runs.length, nearMs: Math.round(SEAM_AGE*1000), farMs: Math.round((TRAIL_LIFE-SEAM_AGE)*1000)};
+  readoutRows([
+    ['近段（RT 内）', '≤ ' + Math.round(SEAM_AGE * 1000) + 'ms'],
+    ['长段（地图 ribbon）', Math.round((TRAIL_LIFE - SEAM_AGE) * 1000) + 'ms'],
+    ['接缝到 RT 边', seamDist.toFixed(0) + 'px', seamDist > 12 ? C.green : C.bad],
+    ['排序点', '1（近）+ ' + runs.length + ' 组'],
+    ['调参成本', '双份材质 / 接缝', C.warn]
+  ], accent);
+
+  drawRTInset(accent, 'RT 内只有近端短刀光');
+}
+
+/* ---------- 模式 04：真 3D ribbon ---------- */
+function renderTrue3DMode(t, accent){
+  renderRT(t, null);
+  const sk = poseAt(t);
+  const sm = spriteMapFor(sk);
+  const treeSort = TREE.x + TREE.y;
+  const charSort = sk.root.x + sk.root.y;
+  const pts = mapTrailPoints(t, sk, sm, true);
+
+  drawBackdrop();
+  drawGround();
+  const tree = drawTree();
+  drawCharShadow(sk, 1.0);
+
+  if (charSort < treeSort){
+    drawSprite(rtCanvas, sm);
+    drawTree();
+  } else {
+    drawTree();
+    drawSprite(rtCanvas, sm);
+  }
+
+  // 3D pass 合成在 2D 之上：先外发光，再主体
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  for (const pass of [[2.02, 0.10], [1.45, 0.16], [1.0, 0.9]]){
+    drawRibbon(g, pts, {
+      w0: 17 * pass[0], wMin: 1.6, life: TRAIL_LIFE,
+      color: 'rgba(143,168,255,' + pass[1] + ')',
+      color2: 'rgba(173,196,255,' + pass[1] + ')',
+      tail: 'rgba(143,168,255,0)',
+      core: pass[0] === 1.0,
+      coreCol: 'rgba(240,246,255,.55)',
+      outline: 0, outlineCol: 'rgba(0,0,0,0)', grad: true
+    });
+  }
+  g.restore();
+
+  // 透视宽度 + 体积高光
+  const pts2 = pts.map((p, i) => ({...p, y: p.y - 2}));
+  drawRibbon(g, pts2, {
+    w0: 4.5, wMin: 0.8, life: TRAIL_LIFE,
+    color: 'rgba(225,236,255,.55)', color2: 'rgba(225,236,255,.4)',
+    tail: 'rgba(225,236,255,0)', core: false, outline: 0, outlineCol: 'rgba(0,0,0,0)', grad: true
+  });
+
+  // 覆盖标记
+  const over = pts.find(p => p.sort > treeSort);
+  if (over){
+    g.save();
+    g.strokeStyle = 'rgba(255,107,107,.9)'; g.lineWidth = 1.6; g.setLineDash([3, 3]);
+    g.beginPath(); g.arc(over.x, over.y, 18, 0, TAU); g.stroke();
+    g.setLineDash([]);
+    g.restore();
+    pill('✗ 2D 树挡不住 3D pass', over.x + 22, over.y - 9, 'rgba(255,140,140,.98)', {bg:'rgba(24,8,8,.9)', size:9.5});
+  }
+
+  pill('3D pass · 单排序层（合成在 2D 之上）', 24, 168, accent, {bg:'rgba(7,17,12,.82)'});
+  text(g, '蓝紫色 = 独立 3D pass 里的世界空间 ribbon', 24, 200, 9.5, 'rgba(173,196,255,.75)');
+
+  lastStats = {mode:'true3d', samples: pts.length, sortLayers: 1};
+  readoutRows([
+    ['排序层', '1（全在最上）'],
+    ['2D 树的遮挡', '✗ 无', C.bad],
+    ['跨层像素遮挡', '需深度/Stencil 代理', C.warn],
+    ['额外成本', '全屏 RT + resolve'],
+    ['同屏 50 单位', '不可行', C.bad]
+  ], accent);
+
+  drawRTInset(accent, '角色 RT 160² · 与 3D pass 分离');
+}
+
+/* ---------- 模式 05：GPU 粒子 ---------- */
+function renderParticlesMode(t, accent){
+  renderRT(t, null);
+  const sk = poseAt(t);
+  const sm = spriteMapFor(sk);
+  const treeSort = TREE.x + TREE.y;
+  const charSort = sk.root.x + sk.root.y;
+
+  drawBackdrop();
+  drawGround();
+  const tree = drawTree();
+  drawCharShadow(sk, 1.0);
+
+  if (charSort < treeSort){
+    drawSprite(rtCanvas, sm);
+    drawTree();
+  } else {
+    drawTree();
+    drawSprite(rtCanvas, sm);
+  }
+
+  const N = 40;
+  const life = 0.34;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  let drawn = 0;
+  for (let i = 0; i < N; i++){
+    const age = life * i / (N - 1);
+    const p = poseAt(t - age);
+    const pPrev = poseAt(t - age - 0.050);
+    const a = iso(p.tip), b = iso(pPrev.tip);
+    if (!a || !b) continue;
+    const j = hash(i * 7.31 + 4.2);
+    const j2 = hash(i * 3.17 + 11.2);
+    const dx = a.x - b.x, dy = a.y - b.y;
+    const l = Math.hypot(dx, dy) || 1;
+    const nx = -dy / l, ny = dx / l;
+    const off = (j - 0.5) * 13;
+    const k = 1 - age / life;
+    g.strokeStyle = 'rgba(255,209,102,' + (0.16 + 0.62 * k) + ')';
+    g.lineWidth = 1.4 + j2 * 4.6 * k;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.moveTo(b.x + nx * off, b.y + ny * off);
+    g.lineTo(a.x + nx * off * 0.35, a.y + ny * off * 0.35);
+    g.stroke();
+    g.fillStyle = 'rgba(255,246,214,' + (0.35 + 0.55 * k) + ')';
+    g.beginPath();
+    g.arc(a.x + nx * off * 0.3, a.y + ny * off * 0.3, 0.9 + 1.9 * k, 0, TAU);
+    g.fill();
+    drawn++;
+  }
+  g.restore();
+
+  // 覆盖标记
+  const pMid = iso(poseAt(t - 0.12).tip);
+  g.save();
+  g.strokeStyle = 'rgba(255,107,107,.9)'; g.lineWidth = 1.6; g.setLineDash([3, 3]);
+  g.beginPath(); g.arc(pMid.x, pMid.y, 20, 0, TAU); g.stroke();
+  g.setLineDash([]);
+  g.restore();
+  pill('✗ 单层排序 + 缝隙', pMid.x + 24, pMid.y - 9, 'rgba(255,140,140,.98)', {bg:'rgba(24,8,8,.9)', size:9.5});
+
+  pill('stretched billboards · 无连续宽度', 24, 168, accent, {bg:'rgba(7,17,12,.82)'});
+  text(g, '金色 = 每个发射点的拉伸粒子（寿命 340ms，带随机横向抖动）', 24, 200, 9.5, 'rgba(255,209,102,.78)');
+
+  lastStats = {mode:'gpu', particles: drawn};
+  readoutRows([
+    ['粒子数', drawn + ' 个'],
+    ['采样率', '30–60Hz 发射'],
+    ['连续性', '有缝 · 宽度随机', C.warn],
+    ['排序层', '1（全在最上）'],
+    ['适合', '火花 / 拖尘 / 尾气']
+  ], accent);
+
+  drawRTInset(accent, '角色 RT 160² · 无拖尾');
+}
+
+/* ---------- 模式 06：残影 ---------- */
+const ghostPool = [];
+for (let i = 0; i < 8; i++){
+  const c = document.createElement('canvas');
+  c.width = c.height = RT;
+  ghostPool.push({c, g: c.getContext('2d')});
+}
+
+function renderAfterimageMode(t, accent){
+  const treeSort = TREE.x + TREE.y;
+  const sk = poseAt(t);
+  const N = 6;
+  const dt = 0.095;
+  const items = [];
+
+  // 先把 6 份残影各自渲染/染色存进独立 canvas（共享 rtCanvas 会被覆盖）
+  for (let k = N; k >= 1; k--){
+    const tt = t - k * dt;
+    const p = poseAt(tt);
+    renderRT(tt, null);
+    const slot = ghostPool[k - 1];
+    slot.g.setTransform(1,0,0,1,0,0);
+    slot.g.clearRect(0, 0, RT, RT);
+    slot.g.drawImage(rtCanvas, 0, 0);
+    slot.g.globalCompositeOperation = 'source-in';
+    slot.g.fillStyle = C.ghost;
+    slot.g.fillRect(0, 0, RT, RT);
+    slot.g.globalCompositeOperation = 'source-over';
+    items.push({
+      sort: p.root.x + p.root.y, k, sm: spriteMapFor(p),
+      alpha: 0.50 * (1 - k / (N + 2)), src: slot.c, ghost: true
+    });
+  }
+  // 本体
+  renderRT(t, null);
+  items.push({sort: sk.root.x + sk.root.y, k: 0, sm: spriteMapFor(sk), alpha: 1, src: rtCanvas, ghost: false});
+
+  const behind = items.filter(i => i.sort < treeSort);
+  const front = items.filter(i => i.sort >= treeSort);
+
+  drawBackdrop();
+  drawGround();
+  drawCharShadow(sk, 1.0);
+  behind.forEach(it => drawSprite(it.src, it.sm, {alpha: it.alpha, smooth: it.ghost}));
+  const tree = drawTree();
+  front.forEach(it => drawSprite(it.src, it.sm, {alpha: it.alpha, smooth: it.ghost}));
+
+  // 树后残影被盖住的数量
+  const hidden = behind.length;
+  g.save();
+  g.strokeStyle = 'rgba(255,107,107,.8)'; g.lineWidth = 1.4; g.setLineDash([3, 3]);
+  g.beginPath(); g.arc(tree.x, tree.y - 60, 46, 0, TAU); g.stroke();
+  g.setLineDash([]);
+  g.restore();
+  pill('✗ 每个残影各自排序 → 穿树跳变', tree.x + 64, tree.y - 128, 'rgba(255,140,140,.98)', {bg:'rgba(24,8,8,.9)', size:9.5});
+
+  pill('ghost sprites · 6 份 RT 副本 + 本体', 24, 168, accent, {bg:'rgba(7,17,12,.82)'});
+  text(g, '青色 = 残影（无方向/宽度/UV，只是角色副本）', 24, 200, 9.5, 'rgba(126,224,255,.8)');
+
+  lastStats = {mode:'afterimage', ghosts: N, items: items.length, sortPoints: items.length};
+  readoutRows([
+    ['残影数', N + ' + 本体'],
+    ['各自排序点', String(items.length)],
+    ['方向 / 宽度控制', '✗ 无', C.bad],
+    ['穿树表现', '逐帧跳变', C.bad],
+    ['适合', '冲刺 / 瞬移']
+  ], accent);
+
+  drawRTInset(accent, '角色 RT 160² · 残影源');
+}
+
+/* ============================================================
+   11. HUD
+   ============================================================ */
+function drawHeader(mode){
+  g.save();
+  g.fillStyle = 'rgba(7,15,11,.96)';
+  g.fillRect(0, 0, W, STAGE_Y);
+  g.strokeStyle = 'rgba(140,205,170,.14)';
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(0, STAGE_Y + 0.5); g.lineTo(W, STAGE_Y + 0.5); g.stroke();
+
+  g.fillStyle = mode.accent;
+  g.beginPath(); g.arc(26, 23, 3.2, 0, TAU); g.fill();
+  text(g, '3渲2 拖尾 GIF 实验台', 38, 27, 13.5, C.ink, 'left', 600);
+  text(g, '骨骼 → 地图空间 · RT 内 · 混合 · 对照', 190, 27, 11, 'rgba(140,165,148,.9)');
+
+  text(g, '960×540 · 24fps × 4s 无缝循环', W - 26, 18, 9.5, 'rgba(120,145,130,.95)', 'right', 400, true);
+  text(g, '可视化模拟 · 非引擎实测', W - 26, 33, 9.5, 'rgba(242,179,92,.9)', 'right', 400, true);
+  g.restore();
+}
+
+function drawFooter(mode){
+  g.save();
+  g.fillStyle = 'rgba(7,15,11,.96)';
+  g.fillRect(0, STAGE_Y + STAGE_H, W, H - STAGE_Y - STAGE_H);
+  g.strokeStyle = 'rgba(140,205,170,.14)';
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(0, STAGE_Y + STAGE_H + 0.5); g.lineTo(W, STAGE_Y + STAGE_H + 0.5); g.stroke();
+
+  g.fillStyle = mode.accent;
+  g.beginPath(); g.arc(28, 488, 3, 0, TAU); g.fill();
+  text(g, '问题', 38, 492, 11.5, C.bad, 'left', 600);
+  text(g, mode.problem, 76, 492, 11.5, 'rgba(226,238,230,.92)');
+  text(g, '结论', 38, 515, 11.5, C.green, 'left', 600);
+  text(g, mode.verdict, 76, 515, 11.5, 'rgba(226,238,230,.92)');
+
+  text(g, '可视化模拟，非引擎实测', W - 26, 482, 9.5, 'rgba(242,179,92,.95)', 'right', 500);
+  text(g, '原创几何/色块 · 无外部 CDN', W - 26, 497, 9, 'rgba(120,145,130,.9)', 'right', 400, true);
+  text(g, '真实时间序列 · 非静态图', W - 26, 512, 9, 'rgba(120,145,130,.9)', 'right', 400, true);
+  g.restore();
+}
+
+function drawModeTitle(mode){
+  const x = 24, y = 58;
+  g.save();
+  // 标题卡
+  card(x, y, 372, 96, mode.accent);
+  g.fillStyle = mode.accent;
+  g.globalAlpha = 0.9;
+  g.fillRect(x + 0.5, y + 14, 3, 68);
+  g.globalAlpha = 1;
+
+  text(g, mode.no, x + 18, y + 30, 11, mode.accent, 'left', 600, true);
+  text(g, '· ' + mode.name, x + 40, y + 31, 17.5, C.ink, 'left', 600);
+  text(g, mode.en, x + 18, y + 49, 10, 'rgba(140,165,148,.92)', 'left', 400, true);
+  text(g, mode.sub, x + 18, y + 72, 11.5, 'rgba(213,228,217,.9)');
+  g.restore();
+}
+
+/* ============================================================
+   12. 帧渲染入口
+   ============================================================ */
+function renderFrame(modeKey, t){
+  currentT = t;
+  const mode = MODE_INFO[modeKey] || MODES[0];
+
+  g.setTransform(1,0,0,1,0,0);
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#06100B';
+  g.fillRect(0, 0, W, H);
+
+  g.save();
+  g.beginPath();
+  g.rect(0, STAGE_Y, W, STAGE_H);
+  g.clip();
+
+  if (mode.key === 'rt') renderRTMode(t, mode.accent);
+  else if (mode.key === 'map') renderMapMode(t, mode.accent);
+  else if (mode.key === 'hybrid') renderHybridMode(t, mode.accent);
+  else if (mode.key === 'true3d') renderTrue3DMode(t, mode.accent);
+  else if (mode.key === 'gpu') renderParticlesMode(t, mode.accent);
+  else renderAfterimageMode(t, mode.accent);
+
+  g.restore();
+
+  drawHeader(mode);
+  drawModeTitle(mode);
+  drawFooter(mode);
+}
+
+/* ============================================================
+   13. 交互 / 捕获 API
+   ============================================================ */
+let modeKey = 'rt';
+let playing = true;
+let captureLocked = false;   // seek() 之后冻结 RAF，保证截帧确定性
+let rafId = 0;
+let clockStart = performance.now();
+let pausedAt = 0;
+
+const modeBar = document.getElementById('modeBar');
+MODES.forEach(m => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (m.key === modeKey ? ' on' : '');
+  b.dataset.mode = m.key;
+  b.innerHTML = '<span class="n">' + m.no + '</span>' + m.name;
+  b.style.background = m.key === modeKey ? m.accent : '';
+  b.style.setProperty('--a', m.accent);
+  b.addEventListener('click', () => selectMode(m.key));
+  modeBar.appendChild(b);
+});
+
+const playBtn = document.getElementById('playBtn');
+const resetBtn = document.getElementById('resetBtn');
+const scrub = document.getElementById('scrub');
+const tOut = document.getElementById('tOut');
+
+function syncChips(){
+  [...modeBar.children].forEach(b => {
+    const on = b.dataset.mode === modeKey;
+    b.classList.toggle('on', on);
+    b.style.background = on ? MODE_INFO[b.dataset.mode].accent : '';
+    b.style.color = on ? '#07120D' : '';
+  });
+}
+
+function selectMode(k){
+  modeKey = k;
+  syncChips();
+  if (!playing){
+    renderFrame(modeKey, pausedAt);
+  }
+}
+
+function setPlaying(p){
+  playing = p;
+  playBtn.textContent = p ? '暂停' : '播放';
+  if (p){
+    captureLocked = false;
+    clockStart = performance.now() - pausedAt * 1000;
+  } else {
+    pausedAt = ((performance.now() - clockStart) / 1000) % T_LOOP;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    renderFrame(modeKey, pausedAt);   // 停在确定的帧，避免挂起的 RAF 再画一帧
+  }
+  if (p) tick();
+}
+
+function tick(){
+  if (!playing || captureLocked) return;
+  const t = ((performance.now() - clockStart) / 1000) % T_LOOP;
+  renderFrame(modeKey, t);
+  scrub.value = Math.round(t * 1000);
+  tOut.textContent = t.toFixed(2) + 's';
+  rafId = requestAnimationFrame(tick);
+}
+
+playBtn.addEventListener('click', () => setPlaying(!playing));
+resetBtn.addEventListener('click', () => {
+  clockStart = performance.now();
+  pausedAt = 0;
+  if (!playing) renderFrame(modeKey, 0);
+});
+scrub.addEventListener('input', () => {
+  const t = Number(scrub.value) / 1000;
+  pausedAt = t;
+  if (playing) setPlaying(false);
+  renderFrame(modeKey, t);
+  tOut.textContent = t.toFixed(2) + 's';
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === ' '){ e.preventDefault(); setPlaying(!playing); }
+  if (e.key >= '1' && e.key <= '6') selectMode(MODES[Number(e.key) - 1].key);
+});
+
+// 捕获：确定性 seek，不依赖 RAF / 时钟
+window.__DBG = {poseAt, makeRTCam, spriteMapFor, iso, trailSamples, TREE, RT, MAP_S, renderFrame, renderMapMode, drawBackdrop, drawGround, drawTree, g};
+
+window.GIFLAB = {
+  ready: true,
+  loopSeconds: T_LOOP,
+  fps: 24,
+  modes: MODES.map(m => m.key),
+  heroes: HERO,
+  stop(){ playing = false; captureLocked = true; if (rafId) cancelAnimationFrame(rafId); },
+  seek(mode, t){
+    if (!MODE_INFO[mode]) throw new Error('unknown mode: ' + mode);
+    playing = false;
+    captureLocked = true;
+    if (rafId) cancelAnimationFrame(rafId);
+    modeKey = mode;
+    pausedAt = t;
+    renderFrame(mode, t);
+  },
+  stats(){ return lastStats; },
+  meta(mode){
+    const info = MODE_INFO[mode];
+    return {
+      key: mode, name: info.name, accent: info.accent,
+      problem: info.problem, verdict: info.verdict
+    };
+  }
+};
+
+renderFrame(modeKey, 0);
+tick();
+})();
+</script>
+</body>
+</html>

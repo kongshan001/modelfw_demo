@@ -558,6 +558,30 @@ p_screen = P_map · C · p_bone + Δ · w
 | P3 | Three.js（可选） | `Line2` vs 自定义 `BufferGeometry` ribbon | 正交等轴相机 + 50 个单位 | Web 端 draw call/填充率、分辨率适配、Afterimage 对比 |
 | **P4** | **Godot 4.6 / Unity URP** | **R1（角色 RT 内短尾）vs R2（地图空间骨骼 ribbon）vs R2b（RT 锚点校准）**；可选 R3（独立 pass + 深度代理） | **3渲2 角色 RT（256/384/512）+ 骨骼/武器挂点 + 1 棵树 + 墙/桥 + UI + 1/10/50 单位** | **RT 裁剪率、origin 偏差 px、遮挡正确率、RT 显存/带宽、1/10/50 FPS/draw call/overdraw、风格一致性** |
 
+### 7.1.1 GIF 证据（T-20261127-015）
+
+上面 P4 的三个 3渲2 落层已做成**可循环的动态对比**，同一场景/动画/武器尖采样，只改拖尾落在哪一层：
+
+![六模式 contact sheet](shots/2d-map-3d-trail-gif-contact-sheet.png)
+
+- 实验台：`docs/2d-map-3d-trail-gif-lab.html`（Canvas 2D，自写 3D → 160² 离屏 RT → 2D 精灵；六模式可切换，`file://` 可跑，无外部 CDN）
+- GIF：`docs/shots/2d-map-3d-trail-{rt,map,hybrid,true3d,gpu,afterimage}.gif`（960×540 · 24fps · 96 帧 · 4s 循环 · 0.77–1.19MiB）
+- 完整条件、逐段读数、能证明/不能证明的边界：见 `docs/2d-map-3d-trail-3to2-pipeline.md` §12.6
+
+| GIF | 落层 | 动态里看到的关键现象 | 模拟读数（hero 帧） |
+|---|---|---|---|
+| `2d-map-3d-trail-rt.gif` | R1 · RT 内 | 长尾出框被裁 + 整张精灵 1 个排序点，尾段跟着一起穿树 | 裁剪 56% · 排序点 1 · Δ 10.5px |
+| `2d-map-3d-trail-map.gif` | **R2 · 地图空间** | 近端校准贴刀尖，金带在树的排序线处切成树后/树前 | Δ 10.5px → 校准后 <1px · 2 组 · 0 额外 RT |
+| `2d-map-3d-trail-hybrid.gif` | R4 · 混合 | 青色近段在 RT、金色长段在地图；接缝贴到 RT 边就断 | 接缝距 RT 边 42px（另一姿态 −2px） |
+| `2d-map-3d-trail-true3d.gif` | A · 真 3D | 整条一个 3D 合成层，树冠挡不住 | 排序层 1 |
+| `2d-map-3d-trail-gpu.gif` | B · GPU 粒子 | 点阵有缝、宽度随机，仍是单层 | 40 粒子 |
+| `2d-map-3d-trail-afterimage.gif` | R5 · 残影 | 6 份副本各自排序，穿树逐帧跳变 | 7 个排序点 |
+
+> **边界**：可视化模拟，非引擎实测。没有测 RT pass/带宽/draw call/overdraw，也没有树冠 overlay、桥/拱门、多层地形；Δ 的 10.5px 只属于这组模拟相机，不能当项目验收值。动态证据用来判断“方向对不对、失败模式长什么样”，最终数值仍要按 §7.2/§7.3 在目标引擎和机型上跑 P4。
+
+![R1 RT 内拖尾](shots/2d-map-3d-trail-rt.gif)
+![R2 地图空间 ribbon](shots/2d-map-3d-trail-map.gif)
+
 ### 7.2 测试矩阵（建议 18–22 个 run）
 
 | 变量 | 取值 |

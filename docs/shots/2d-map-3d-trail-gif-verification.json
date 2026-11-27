@@ -1,0 +1,118 @@
+{
+  "generated": "2026-11-27",
+  "lab": "docs/2d-map-3d-trail-gif-lab.html",
+  "capture": "node tools/giflab_capture.js (Playwright deterministic seek + canvas.toDataURL; blank-frame retry)",
+  "encoder": "ffmpeg palettegen 128 colors + bayer dither",
+  "loop_seconds": 4,
+  "fps": 24,
+  "frames_per_gif": 96,
+  "visual_note": "可视化模拟，非引擎实测；原创几何/色块，无外部 CDN",
+  "gifs": {
+    "rt": {
+      "file": "2d-map-3d-trail-rt.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 1242844,
+      "mib": 1.19,
+      "sha256_16": "a29115f7e8ef168e"
+    },
+    "map": {
+      "file": "2d-map-3d-trail-map.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 807148,
+      "mib": 0.77,
+      "sha256_16": "e4a1064785171cab"
+    },
+    "hybrid": {
+      "file": "2d-map-3d-trail-hybrid.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 1188390,
+      "mib": 1.13,
+      "sha256_16": "eba1ae44516a5fbc"
+    },
+    "true3d": {
+      "file": "2d-map-3d-trail-true3d.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 848609,
+      "mib": 0.81,
+      "sha256_16": "84ed07b7438448f9"
+    },
+    "gpu": {
+      "file": "2d-map-3d-trail-gpu.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 882614,
+      "mib": 0.84,
+      "sha256_16": "4cc7e722a5339a9b"
+    },
+    "afterimage": {
+      "file": "2d-map-3d-trail-afterimage.gif",
+      "width": 960,
+      "height": 540,
+      "frames": 96,
+      "fps": "24/1",
+      "duration": 4.0,
+      "bytes": 1230547,
+      "mib": 1.17,
+      "sha256_16": "6c8d64f0e60d02c8"
+    }
+  },
+  "contact_sheet": {
+    "file": "2d-map-3d-trail-gif-contact-sheet.png",
+    "width": 1940,
+    "height": 1120,
+    "bytes": 593644
+  },
+  "hero_stats": {
+    "rt": {
+      "rt_clip_pct": 56,
+      "sort_points": 1,
+      "delta_px": 10.5,
+      "samples": 25,
+      "sprite_px": 202
+    },
+    "map": {
+      "delta_px": 10.5,
+      "sort_groups": 2,
+      "behind_groups": 1,
+      "samples": 25,
+      "extra_rt": 0
+    },
+    "hybrid": {
+      "seam_dist_to_rt_edge_px": 42,
+      "near_ms": 160,
+      "far_ms": 340,
+      "sort_groups": 1
+    },
+    "true3d": {
+      "sort_layers": 1,
+      "samples": 25
+    },
+    "gpu": {
+      "particles": 40,
+      "sort_layers": 1
+    },
+    "afterimage": {
+      "ghosts": 6,
+      "sort_points": 7
+    }
+  }
+}

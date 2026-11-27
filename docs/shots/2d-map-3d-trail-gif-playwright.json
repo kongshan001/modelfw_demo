@@ -1,0 +1,131 @@
+{
+  "task": "T-20261127-015",
+  "date": "2026-11-27",
+  "lab": "docs/2d-map-3d-trail-gif-lab.html",
+  "interactive_doc": "docs/2d-map-3d-trail-options-交互版.html",
+  "tooling": "Playwright Chromium (headless, file://), node tools/giflab_capture.js, ffmpeg/ffprobe, PIL",
+  "capture": {
+    "method": "window.GIFLAB.seek(mode,t) 确定性渲染 + canvas.toDataURL（960×540 后备缓冲），非屏幕录制",
+    "frames_per_mode": 96,
+    "fps": 24,
+    "seconds": 4,
+    "blank_frame_guard": "首个 canvas 读回可能为空（Chromium 首次呈现竞态）；PNG <20KB 视为空帧并重试。加 guard 后重跑得到与首轮字节相同的 GIF（sha256 一致）",
+    "external_requests": [],
+    "console_errors": [],
+    "deterministic_sha256_16": {
+      "rt": "a29115f7e8ef168e",
+      "map": "e4a1064785171cab",
+      "hybrid": "eba1ae44516a5fbc",
+      "true3d": "84ed07b7438448f9",
+      "gpu": "4cc7e722a5339a9b",
+      "afterimage": "6c8d64f0e60d02c8"
+    }
+  },
+  "lab_test": {
+    "errors": [],
+    "external": [],
+    "chipCount": 6,
+    "modeHashes": {
+      "rt": "cdc0d6487707",
+      "map": "fa9be86fc5c3",
+      "hybrid": "f28544aa4865",
+      "true3d": "be5eeb1f4afe",
+      "gpu": "170a473434d7",
+      "afterimage": "c2c4deaaba10"
+    },
+    "uniqueModeHashes": 6,
+    "pausedStable": true,
+    "pausedBtn": "播放",
+    "playingBtn": "暂停",
+    "playingChanges": true,
+    "scrubLabel": "2.00s",
+    "overflow1440": 0,
+    "overflow390": 0,
+    "chipActiveColor": "rgb(7, 18, 13)"
+  },
+  "interactive_doc_test": {
+    "errors": [],
+    "external": [],
+    "sectionExists": 1,
+    "chips": 6,
+    "srcs": [
+      {
+        "key": "rt",
+        "src": "shots/2d-map-3d-trail-rt.gif",
+        "nw": 960,
+        "nh": 540,
+        "name": "R1 · RT 内拖尾",
+        "stats": "hero 帧 · 裁剪 56% · 排序点 1 · 起点 Δ 10.5px · 精灵 202px",
+        "active": "rt"
+      },
+      {
+        "key": "hybrid",
+        "src": "shots/2d-map-3d-trail-hybrid.gif",
+        "nw": 960,
+        "nh": 540,
+        "name": "R4 · 短 RT + 长地图",
+        "stats": "hero 帧 · 接缝距 RT 边 42px（另一姿态 −2px）· 双份材质/调参",
+        "active": "hybrid"
+      },
+      {
+        "key": "true3d",
+        "src": "shots/2d-map-3d-trail-true3d.gif",
+        "nw": 960,
+        "nh": 540,
+        "name": "A · 真 3D ribbon（对照）",
+        "stats": "hero 帧 · 排序层 1 · 跨层遮挡需深度/Stencil 代理",
+        "active": "true3d"
+      }
+    ],
+    "labModeBefore": "投影 2D · y-sort",
+    "labModeAfter": "GPU 粒子 · 3D pass",
+    "overflow1440": 0,
+    "overflow390": 0
+  },
+  "loop_seam": {
+    "rt": {
+      "loop_95_to_0_mean_abs_diff": 1.1,
+      "normal_step_47_to_48": 1.38,
+      "normal_step_0_to_1": 0.99,
+      "loop_ratio": 0.8
+    },
+    "map": {
+      "loop_95_to_0_mean_abs_diff": 0.61,
+      "normal_step_47_to_48": 0.69,
+      "normal_step_0_to_1": 0.47,
+      "loop_ratio": 0.88
+    },
+    "hybrid": {
+      "loop_95_to_0_mean_abs_diff": 1.04,
+      "normal_step_47_to_48": 1.07,
+      "normal_step_0_to_1": 0.94,
+      "loop_ratio": 0.97
+    },
+    "true3d": {
+      "loop_95_to_0_mean_abs_diff": 0.6,
+      "normal_step_47_to_48": 0.95,
+      "normal_step_0_to_1": 0.48,
+      "loop_ratio": 0.63
+    },
+    "gpu": {
+      "loop_95_to_0_mean_abs_diff": 0.91,
+      "normal_step_47_to_48": 0.9,
+      "normal_step_0_to_1": 0.78,
+      "loop_ratio": 1.01
+    },
+    "afterimage": {
+      "loop_95_to_0_mean_abs_diff": 0.94,
+      "normal_step_47_to_48": 1.14,
+      "normal_step_0_to_1": 0.89,
+      "loop_ratio": 0.83
+    }
+  },
+  "notes": [
+    "lab_test.modeHashes = 6 个模式在 t=1.0s 的 canvas sha256 前缀，6 个互不相同 -> 模式切换真实生效",
+    "pausedStable=true：暂停 350ms 前后 canvas 完全一致；playingChanges=true：播放 350ms 后变化",
+    "overflow390/1440 = 0：无横向溢出（修了新增 section 的 grid min-width:auto 溢出）",
+    "interactive_doc_test.srcs 验证 img.naturalWidth=960/naturalHeight=540，GIF 从 file:// 加载并随 chip 切换",
+    "loop_ratio 0.63–1.01：第 95→0 帧差与普通相邻帧差同量级，循环无明显接缝",
+    "所有读数来自可视化模拟（几何/面积估算），非引擎实测"
+  ]
+}

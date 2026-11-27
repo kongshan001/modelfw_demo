@@ -2,6 +2,20 @@
 
 ## 进行中 / 最近完成
 
+## T-20261127-015 · 拖尾方案 GIF 可视化对照（T-013/T-014 follow-up）
+- 线程: T-20261127-013（2D 地图 3D 拖尾）
+- 父任务: T-20261127-014（3渲2 补研）
+- 类型: docs-research（可视化 PoC / GIF 证据）
+- 目标: 补 GIF 动画，直观对比 3渲2 管线下的拖尾：RT 内拖尾、骨骼世界变换→地图空间 2D ribbon、混合、真 3D/粒子/残影对照；展示 RT 边界、origin 偏差、y-sort/树遮挡
+- 交付: `docs/shots/2d-map-3d-trail-*.gif` + 更新报告/HTML 内嵌 + 对照 contact sheet + 截图；媒体
+- 约束: 只做可视化/文档，不改游戏代码；原创简单场景；不复制素材；GIF 3–6s 可循环、标注模式/问题；无外部 CDN
+- 指派: general-purpose worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-015/result.md
+- 文档: `docs/2d-map-3d-trail-3to2-pipeline.md` §12.6「GIF 证据」（条件/六段读数/能证明与不能证明/复现/实现陷阱）；`docs/2d-map-3d-trail-options.md` §7.1.1（内嵌 contact sheet + 2 GIF + 六段表）；交互 HTML 新增 01.6「GIF 证据」模式切换
+- 验证: Playwright（Chromium，file://）0 console/page error、0 外部请求；6 模式 canvas hash 互异；暂停 350ms 稳定、播放 350ms 变化；交互 HTML 6 个 GIF 切换 naturalWidth=960、caption/active 同步；1440/390px 均 0 横向溢出；GIF 95→0 帧差 0.63–1.01× 普通帧差（无接缝）；capture tool 重跑得字节相同 GIF（sha256 一致）
+- 备注: 修了 Chromium 首次 canvas 读回为空的白帧竞态（PNG<20KB 重试）；修了等轴左手投影直接拼物理 RT 相机导致的 145px 假 Δ（镜像 screen-x 后 10.5px）；读数均为几何模拟，非引擎实测
+
 ## T-20261127-014 · 补研：3渲2/RT 角色 + 骨骼绑定 3D 拖尾（T-013 follow-up）
 - 线程: T-20261127-013（2D 地图 3D 拖尾调研）
 - 父任务: T-20261127-013（done）
