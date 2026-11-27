@@ -1,0 +1,30 @@
+; Engine configuration file.
+; Pool Caustics · 池底光网 — clean-room Voronoi F1/F2 caustic study.
+; Original code, meshes, materials and procedural textures only.
+
+config_version=5
+
+[application]
+
+config/name="池底光网 · Pool Caustics"
+config/description="A Voronoi F1/F2 caustic study: 3×3 neighbour search, distance-difference beams, domain warp, junction knots, gather light, soft halo and a lava-crack variant."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/vsync/vsync_mode=0
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.003, 0.018, 0.021, 1)

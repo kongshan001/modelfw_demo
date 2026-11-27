@@ -2,6 +2,16 @@
 
 ## 进行中
 
+## T-20261127-016 · 复刻“池底光斑”Voronoi F1/F2 Shader
+- 来源: 飞书消息（B 站《Shader 解析 11｜池底光斑》，https://b23.tv/hT1L003，2026-11-27，513s，2560×1440，UP Hankz__；简介：Voronoi · F1/F2 · 3×3 邻域搜索 · GLSL；池底/圆石青白光网、单格切缝、F2−F1 边界归零、指数衰减、坐标扭曲、交点鼓结、明暗聚散、宽柔光；同套距离差做熔岩裂缝）
+- 类型: game-demo（Shader / Voronoi 焦散 / 程序化纹理）
+- 目标: 复刻池底与圆石上的青白光网：Voronoi 3×3 邻域 F1/F2 → F2−F1 亮纹 → 指数衰减/软光 → 池底场景 + 熔岩裂缝变体；可调/可调试
+- 交付: `godot-pool-caustics/` 可运行项目；池底/圆石/调试/熔岩截图 + GIF/MP4；README/TECH/迭代记录/CREDITS；smoke/真实 GPU
+- 约束: 原创场景/材质/代码；不复制视频作者场景/素材/代码；Godot 4.6 GL Compatibility，1280×720/1920×1080，Intel 30fps+
+- 指派: game-engineer worker（dispatcher）
+- 状态: done（2026-11-28）
+- 产出: `godot-pool-caustics/` 可运行；`docs/TECH.md`、`docs/迭代记录.md`、`README.md`、`CREDITS.md`；11 张 1920×1080 截图、10s MP4/GIF；smoke 93 checks + headless/GPU 600 帧清洁；1280×720 实测 105.9 fps / 9.45 ms（多次 94.6–105.9；Intel HD 6000，DC 143 含 UI），1920×1080 离屏 58.2 fps（多次 53.5–58.2）；`POOL_CAUSTICS_VERIFY_OK`
+
 ## T-20261127-011 · 废墟花园场景续跑（T-007 retry）
 - 线程: T-20261127-007（废墟花园）
 - 父任务: T-20261127-007（failed；worker 被 SIGTERM，rc=143）
