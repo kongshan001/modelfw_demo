@@ -2,6 +2,49 @@
 
 ## 进行中
 
+## T-20261127-022 · Legionfall 美术升级独立复评（T-018 follow-up）
+- 线程: T-20261127-018（Legionfall）
+- 父任务: T-20261127-021（QA）
+- 类型: game-demo（美术复评）
+- 目标: 对照 T-20261127-019 brief 判断升级后是否达到生产级 3D RTS+TD 美术；单位/敌人/塔/地形/VFX/UI/动画/性能；PASS/REJECT
+- 交付: `godot-legion-td/docs/art-review-final-T-20261127-022.md`；证据
+- 约束: 不改代码/资产；1920×1080 目标尺寸
+- 指派: game-art-director worker（dispatcher）
+- 状态: queued
+
+## T-20261127-021 · Legionfall 美术升级 QA 验收（T-018 follow-up）
+- 线程: T-20261127-018（Legionfall）
+- 父任务: T-20261127-020（美术 pass）
+- 类型: game-demo（QA 验收）
+- 目标: 独立验收 P0/P1 关闭情况；框选/指挥/造兵/建塔/波次/三选一/胜负回归；1080p/720p FPS/console/smoke/draw calls；PASS/REJECT
+- 交付: `godot-legion-td/docs/qa-T-20261127-021.md`；可复现证据
+- 约束: 不改美术/实现；真实 GPU
+- 指派: game-qa-lead worker（dispatcher）
+- 状态: queued
+
+## T-20261127-020 · Legionfall 3D 美术生产 pass（T-018 follow-up）
+- 线程: T-20261127-018（Legionfall）
+- 父任务: T-20261127-019（brief）
+- 类型: game-demo（美术实现）
+- 目标: 按 brief 落地 P0/P1：3 兵种+英雄、2–4 敌人、3 塔+等级、地形/熔岩/遗迹/传送门/核心、VFX、UI；加简单 idle/walk/attack/death 动画；保持玩法/性能
+- 交付: 更新 `godot-legion-td/`；before/after 截图/GIF/MP4；docs；性能数据
+- 约束: 原创低模/材质/UI；不复制 Warcraft/军团塔防；不改玩法/数值；1080p/720p 30fps+；Godot 4.6 GL Compatibility
+- 指派: game-artist worker（dispatcher）
+- 状态: queued
+
+## T-20261127-019 · Legionfall 生产级美术 brief（T-018 follow-up）
+- 线程: T-20261127-018（Legionfall）
+- 父任务: T-20261127-018（done）
+- 类型: game-demo（美术总监 brief）
+- 目标: 在 1920×1080 审查当前程序化低模，定义生产级 3D RTS+TD 美术标准：单位/英雄/敌人剪影与阵营色、动画、塔/等级、熔岩战场/传送门/核心、VFX、UI/HUD；给 P0–P2、参数、资产清单、性能预算
+- 交付: `godot-legion-td/docs/art-review-T-20261127-019.md` + 标注图；不改代码/资产
+- 约束: 不复制 Warcraft/军团塔防；原创；1080p 30fps/714 draw calls 现状是硬约束；fail-closed
+- 指派: game-art-director worker（dispatcher）
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-019/result.md
+- 关键结果: 加权 3.0/10（外放门槛 7.0）→ REJECT 外放；8 条 P0/P1/P2（单位剪影/敌人图底/塔等级/UI/渲染结构/环境/VFX+动画）；fail-closed 验收表；真实重跑 9/9 截图、smoke 80/80、720p 41.2fps/P95 34.17ms/727dc
+- 后续: T-20261127-020 美术 pass → T-021 QA → T-022 独立复评
+
 ## T-20261127-018 · 军团塔防续跑（T-017 retry）
 - 线程: T-20261127-017（军团塔防）
 - 父任务: T-20261127-017（failed：API Error: Connection closed mid-response）
@@ -14,6 +57,7 @@
 - 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-018/result.md
 - 证据: `godot-legion-td/docs/shots/`、`godot-legion-td/docs/legionfall_10s.mp4`、`godot-legion-td/docs/perf_legion_td.json`
 - 关键结果: headless 0 error；smoke 80/80；6 波核心 100 通关；Intel HD 6000 38.2fps@720p / 36.8fps@1080p；修复父任务 parse/runtime/强化链/重开等缺陷
+- 后续: T-20261127-019 美术 brief → T-020 美术 pass → T-021 QA → T-022 独立复评
 
 ## T-20261127-017 · 复刻《军团塔防》式塔防+RTS+肉鸽 Vertical Slice
 - 来源: 飞书消息（B 站《肉鸽版魔兽争霸？塔防+RTS让人手忙脚乱！》，https://b23.tv/Aa3PdUh，2026-11-27，2181s，UP 以子OvO；游戏《军团塔防》，塔防+RTS+roguelike，3D 俯视 Warcraft 风）
