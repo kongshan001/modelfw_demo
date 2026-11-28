@@ -71,6 +71,9 @@ var _idle_anchor := Vector3.ZERO
 var _scan_t := 0.0
 var _attack_target_core := false
 var _rng := RandomNumberGenerator.new()
+var _flash_overlay: MeshInstance3D
+var _dmg_num_t := 0.0
+var _tele_visible := false
 
 
 func setup(p_game: Node, p_kind: String, p_team: int, p_lane: int = 0,
@@ -117,6 +120,15 @@ func setup(p_game: Node, p_kind: String, p_team: int, p_lane: int = 0,
 	var body_node: Node3D = rig.get("body", null)
 	if body_node != null:
 		_body_base_y = body_node.position.y
+		var body_mi: MeshInstance3D = body_node.get_node_or_null("Body")
+		if body_mi != null:
+			_flash_overlay = MeshInstance3D.new()
+			_flash_overlay.name = "HitFlash"
+			_flash_overlay.mesh = body_mi.mesh
+			_flash_overlay.material_override = Art.glow_mat(Color(1.0, 0.96, 0.90, 0.45), false)
+			_flash_overlay.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			_flash_overlay.visible = false
+			body_mi.add_child(_flash_overlay)
 	# 选中环 / 减速环 / 血条
 	var ring_color := D.C_GOLD if is_hero else (D.C_BLOOD if is_enemy else D.C_TEAL)
 	selection_ring = Art.build_selection_ring(radius + 0.34, ring_color)
@@ -137,22 +149,31 @@ func setup(p_game: Node, p_kind: String, p_team: int, p_lane: int = 0,
 
 func _build_hp_bar() -> void:
 	hp_root = Node3D.new()
-	hp_root.position.y = height + 0.48
+	var off := 0.45
+	if is_enemy:
+		match kind:
+			"crawler":
+				off = 0.18
+			"spitter":
+				off = 0.12
+			"colossus":
+				off = 0.42
+	hp_root.position.y = height + off
 	add_child(hp_root)
 	var bg_color := Color(0.03, 0.025, 0.04, 0.78)
 	var fg := D.C_BLOOD if is_enemy else (D.C_GOLD if is_hero else D.C_TEAL)
 	if is_enemy:
 		fg = Color("#ff5f74") if not bool(D.enemy_def(kind).get("elite", false)) else Color("#c47bff")
-	_hp_bg = _bar_quad(0.92, 0.105, bg_color)
+	_hp_bg = _bar_quad(1.00, 0.095, bg_color)
 	hp_root.add_child(_hp_bg)
-	var fill := _bar_quad(0.84, 0.062, fg)
+	var fill := _bar_quad(0.92, 0.058, fg)
 	hp_fill_pivot = Node3D.new()
-	hp_fill_pivot.position.x = -0.42
+	hp_fill_pivot.position.x = -0.46
 	hp_root.add_child(hp_fill_pivot)
-	fill.position.x = 0.42
+	fill.position.x = 0.46
 	hp_fill_pivot.add_child(fill)
 	hp_fill = fill
-	hp_root.visible = is_enemy
+	hp_root.visible = false
 
 
 func _bar_quad(w: float, h: float, color: Color) -> MeshInstance3D:
@@ -249,6 +270,13 @@ func take_damage(amount: float, from_player: bool = true) -> void:
 	if hp_fill_pivot != null:
 		var ratio := clampf(hp / max_hp, 0.0, 1.0)
 		hp_fill_pivot.scale.x = maxf(ratio, 0.001)
+	if _dmg_num_t <= 0.0 and amount >= 1.0 and game != null:
+		_dmg_num_t = 0.16
+		if is_enemy:
+			game.fx_damage_number(global_position + Vector3(0, height * 0.95, 0), amount,
+				D.C_TEXT if amount < 40.0 else D.C_GOLD)
+		else:
+			game.fx_damage_number(global_position + Vector3(0, height * 0.95, 0), amount, D.C_BLOOD)
 	hp_root.visible = true
 	if hp <= 0.0:
 		die(from_player)
@@ -272,7 +300,11 @@ func die(from_player: bool = true) -> void:
 	selection_ring.visible = false
 	slow_ring.visible = false
 	hp_root.visible = false
+	if rig.get("telegraph", null) != null:
+		rig["telegraph"].visible = false
 	if game != null:
+		game.fx_death(global_position + Vector3(0, height * 0.45, 0),
+			Color("#FF6B35") if is_enemy else D.C_TEAL, kind == "colossus")
 		game.on_actor_died(self, from_player)
 
 
@@ -296,6 +328,8 @@ func tick(dt: float) -> void:
 			slow_pct = 0.0
 	if hit_flash > 0.0:
 		hit_flash -= dt
+	if _dmg_num_t > 0.0:
+		_dmg_num_t -= dt
 	if slow_ring != null:
 		slow_ring.visible = slow_t > 0.0
 		slow_ring.rotation.y += dt * 0.6
@@ -469,11 +503,43 @@ func _tick_motion_after(dt: float) -> void:
 
 func _tick_death(dt: float) -> void:
 	death_t += dt
-	var t := clampf(death_t / 0.85, 0.0, 1.0)
-	model.rotation_degrees.z = lerpf(0.0, -82.0, ease(t, 0.4))
-	model.position.y = _base_model_y - 0.35 * t
+	# 0.15s flash -> 0.35s stagger -> 0.65s fall / sink (visual only)
+	if death_t < 0.15:
+		model.scale = Vector3.ONE * 1.06
+		if _flash_overlay != null:
+			_flash_overlay.visible = true
+		return
+	if _flash_overlay != null:
+		_flash_overlay.visible = false
+	model.scale = Vector3.ONE
+	var t := clampf((death_t - 0.15) / 1.0, 0.0, 1.0)
+	if t < 0.35:
+		model.rotation_degrees.z = lerpf(0.0, -14.0, ease(t / 0.35, 0.5))
+		model.position.y = _base_model_y - 0.10 * (t / 0.35)
+	else:
+		var k := (t - 0.35) / 0.65
+		model.rotation_degrees.z = lerpf(-14.0, -84.0, ease(k, 0.5))
+		model.position.y = _base_model_y - 0.10 - 0.42 * k
 	if hp_root != null:
 		hp_root.visible = false
+
+
+func _windup_time() -> float:
+	match kind:
+		"crawler":
+			return 0.35
+		"spitter":
+			return 0.55
+		"colossus":
+			return 0.80
+		"hero":
+			return 0.30
+		"adept":
+			return 0.28
+		"bolt":
+			return 0.24
+		_:
+			return 0.20
 
 
 func _animate(dt: float) -> void:
@@ -483,44 +549,64 @@ func _animate(dt: float) -> void:
 	anim_t += dt * (4.5 + spd * 0.7) * (1.0 if _moving else 0.55)
 	var swing := 0.0
 	if _moving:
-		swing = sin(anim_t * 1.4) * 0.55
+		swing = sin(anim_t * 1.4) * 0.49
 	else:
-		swing = sin(anim_t * 0.4) * 0.04
+		swing = sin(anim_t * 0.4) * 0.035
 	var legs: Array = rig.get("legs", [])
 	if legs.size() >= 2:
 		legs[0].rotation.x = swing
 		legs[1].rotation.x = -swing
 	elif legs.size() == 1:
 		legs[0].rotation.x = swing * 0.5
+	# pre-strike telegraph pose, no gameplay timing change
+	var windup := _windup_time()
+	var tele := 0.0
+	if state == State.ATTACK and attack_cd > 0.0 and attack_cd < windup:
+		tele = 1.0 - attack_cd / windup
 	var arms: Array = rig.get("arms", [])
 	var attack_pose := 0.0
 	if atk_anim > 0.0:
-		attack_pose = sin((1.0 - atk_anim / 0.34) * PI) * 1.1
+		attack_pose = sin((1.0 - atk_anim / 0.40) * PI) * 1.15
 	if arms.size() >= 2:
 		arms[0].rotation.x = -swing * 0.6 - attack_pose * 0.15
 		arms[1].rotation.x = swing * 0.6 - attack_pose
 	elif arms.size() == 1:
-		arms[0].rotation.x = -attack_pose
+		arms[0].rotation.x = -0.55 * tele - attack_pose
 	var body: Node3D = rig.get("body", null)
 	if body != null:
-		if is_enemy and (kind == "crawler" or kind == "spitter"):
+		if is_enemy:
 			body.position.y = _body_base_y + (0.025 * absf(sin(anim_t * 3.0)) if _moving else 0.0)
+			body.rotation.x = -0.20 * tele + 0.16 * maxf(0.0, 1.0 - atk_anim / 0.40) * (1.0 if atk_anim > 0.0 else 0.0)
 		else:
 			body.position.y = _body_base_y + (0.02 * sin(anim_t * 1.4) if _moving else 0.01 * sin(anim_t * 0.4))
+			body.rotation.x = -0.06 * tele + 0.07 * (attack_pose / 1.15)
 	var cape: Node3D = rig.get("cape", null)
 	if cape != null:
-		cape.rotation.x = -0.12 + sin(anim_t * 0.8) * 0.06 + (0.15 if _moving else 0.0)
+		cape.rotation.x = -0.10 + sin(anim_t * 0.8) * 0.06 + (0.14 if _moving else 0.0)
 	model.position.y = _base_model_y + (0.03 if _moving else 0.0) * absf(sin(anim_t * 1.4))
 	if hit_flash > 0.0:
-		model.scale = Vector3.ONE * (1.0 + hit_flash * 0.35)
+		model.scale = Vector3.ONE * (1.0 + hit_flash * 0.12)
 	else:
 		model.scale = Vector3.ONE
+	if _flash_overlay != null:
+		_flash_overlay.visible = hit_flash > 0.0
+	# enemy ground telegraph decal
+	var tele_node: MeshInstance3D = rig.get("telegraph", null)
+	if tele_node != null:
+		var show := is_enemy and state == State.ATTACK and attack_cd > 0.0 and attack_cd < windup
+		tele_node.visible = show
+		if show:
+			var k := 1.0 - attack_cd / windup
+			tele_node.scale = Vector3.ONE * (0.6 + 0.5 * k)
+			var m := tele_node.material_override as StandardMaterial3D
+			if m != null:
+				m.albedo_color.a = 0.12 + 0.18 * k
 
 
 func _refresh_hp_visibility() -> void:
 	if hp_root == null or dead:
 		return
-	hp_root.visible = is_enemy or selected or hp < max_hp - 0.01
+	hp_root.visible = selected or hp < max_hp - 0.01 or slow_t > 0.0
 
 
 func _flat_distance(a: Vector3, b: Vector3) -> float:

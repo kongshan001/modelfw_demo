@@ -28,3 +28,12 @@
 ## 使用与再分发
 
 本原型用于内部原型与演示。若要再分发，请保留本 CREDITS、附上参考视频链接，并自行确认运行环境中的系统字体许可；项目本身不附带字体许可或第三方素材许可。
+
+
+## T-20261127-020 美术 pass 增补
+
+- 所有新单位/敌人/塔/传送门/核心/遗迹/UI 图标/色板/文案仍为**本仓库原创、程序化生成**；未使用 Tripo/GLB/外部模型、外部贴图、外部 UI 图标、第三方字体文件或音频。
+- 运行时字体仍通过 `SystemFont` 引用系统字体（PingFang SC / Noto Sans CJK / Inter / SF Mono / Menlo / Consolas 等），不随仓库分发。
+- 证据工具：Godot 4.6 真实 GPU 截图/视频、Python 3 + Pillow + NumPy（只读截图分析）、ffmpeg 8.0.1（H.264/GIF）。这些工具不改变游戏内容。
+- `docs/shots/after/07_win_1920.png`、`08_lose_1920.png` 是真实运行时结算画面，但数字由 debug API 填写为代表性整局值；`00/11/11b/12/15` 为资产证据隐藏 HUD。详见 `docs/shots/after/README.md`。
+- 参考研究仍仅为 B 站 BV1kZyrzSEVM 的抽象机制（塔防+RTS+每波三选一）；未复制《军团塔防》/Warcraft 的任何角色、单位、塔、地图、UI、关卡、品牌或素材。

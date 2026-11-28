@@ -30,7 +30,11 @@
 - 交付: 更新 `godot-legion-td/`；before/after 截图/GIF/MP4；docs；性能数据
 - 约束: 原创低模/材质/UI；不复制 Warcraft/军团塔防；不改玩法/数值；1080p/720p 30fps+；Godot 4.6 GL Compatibility
 - 指派: game-artist worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 产出: /Users/ks_128/.cc-connect/tasks/done/T-20261127-020/result.md
+- 关键结果: 单位/敌人/塔/门/核心/UI/VFX 重做；draw calls 727→292；1080p 41.1 FPS/P95 29.70ms，720p 55.6/P95 22.05ms；玩家剪影 max IoU 0.586，敌人 vs 地表 ΔL* 22.4，HUD 24.8%，Q 近白 0.011%；峰值 639dc/25.2FPS 未过 → engineer 继续
+- 证据: `godot-legion-td/docs/shots/before/` vs `after/`；smoke 80/80；probe 6 波 WIN 131 kills；截图 16/16；视频 150 帧/10.000s
+- 后续: T-20261127-021 QA → T-20261127-022 美术总监复评（保持 queued，不另起任务）
 
 ## T-20261127-019 · Legionfall 生产级美术 brief（T-018 follow-up）
 - 线程: T-20261127-018（Legionfall）

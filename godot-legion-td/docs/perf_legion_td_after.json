@@ -1,0 +1,171 @@
+{
+  "task": "T-20261127-020",
+  "project": "Legionfall / 军团陨落",
+  "parent_baseline": "docs/perf_legion_td.json",
+  "environment": {
+    "gpu": "Intel(R) HD Graphics 6000",
+    "engine": "4.6-stable (official)",
+    "os": "macOS",
+    "vsync": "off"
+  },
+  "before_T018": {
+    "720": {
+      "avg_fps": 41.2,
+      "p95_ms": 34.17,
+      "draw_calls": 727
+    },
+    "1080": {
+      "avg_fps": 36.8,
+      "p95_ms": 36.73,
+      "draw_calls": 727
+    }
+  },
+  "runs": {
+    "720_normal": {
+      "avg_fps": 55.6,
+      "draw_calls_avg": 291,
+      "draw_calls_max": 311,
+      "enemies": 8,
+      "engine": "4.6-stable (official)",
+      "frames": 445,
+      "gpu": "Intel(R) HD Graphics 6000",
+      "os": "macOS",
+      "p50_ms": 17.08,
+      "p95_ms": 22.06,
+      "peak_scene": false,
+      "render_scale": 1.0,
+      "result": "1280x720-window",
+      "seconds": 8.01,
+      "task": "T-20261127-020",
+      "timestamp": "2026-11-28T10:49:34",
+      "towers": 8,
+      "units": 4,
+      "worst_ms": 93.23
+    },
+    "1080_normal": {
+      "avg_fps": 41.1,
+      "draw_calls_avg": 292,
+      "draw_calls_max": 310,
+      "enemies": 8,
+      "engine": "4.6-stable (official)",
+      "frames": 329,
+      "gpu": "Intel(R) HD Graphics 6000",
+      "os": "macOS",
+      "p50_ms": 23.78,
+      "p95_ms": 29.7,
+      "peak_scene": false,
+      "render_scale": 1.0,
+      "result": "1920x1080-subviewport",
+      "seconds": 8.0,
+      "task": "T-20261127-020",
+      "timestamp": "2026-11-28T10:49:53",
+      "towers": 8,
+      "units": 4,
+      "worst_ms": 164.96
+    },
+    "720_peak": {
+      "avg_fps": 30.1,
+      "draw_calls_avg": 639,
+      "draw_calls_max": 666,
+      "enemies": 11,
+      "engine": "4.6-stable (official)",
+      "frames": 241,
+      "gpu": "Intel(R) HD Graphics 6000",
+      "os": "macOS",
+      "p50_ms": 29.68,
+      "p95_ms": 45.6,
+      "peak_scene": true,
+      "render_scale": 1.0,
+      "result": "1280x720-window",
+      "seconds": 8.0,
+      "task": "T-20261127-020",
+      "timestamp": "2026-11-28T10:50:23",
+      "towers": 8,
+      "units": 44,
+      "worst_ms": 105.77
+    },
+    "1080_peak": {
+      "avg_fps": 25.2,
+      "draw_calls_avg": 639,
+      "draw_calls_max": 666,
+      "enemies": 11,
+      "engine": "4.6-stable (official)",
+      "frames": 202,
+      "gpu": "Intel(R) HD Graphics 6000",
+      "os": "macOS",
+      "p50_ms": 40.36,
+      "p95_ms": 49.96,
+      "peak_scene": true,
+      "render_scale": 1.0,
+      "result": "1920x1080-subviewport",
+      "seconds": 8.01,
+      "task": "T-20261127-020",
+      "timestamp": "2026-11-28T10:50:43",
+      "towers": 8,
+      "units": 44,
+      "worst_ms": 185.86
+    }
+  },
+  "brief_checks": {
+    "baseline_1080_avg_fps": {
+      "target": 40,
+      "hard": 35,
+      "pass_hard": true,
+      "pass_target": true
+    },
+    "baseline_1080_p95_ms": {
+      "target": 28,
+      "hard": 33.3,
+      "pass_hard": true,
+      "pass_target": false
+    },
+    "baseline_720_avg_fps": {
+      "target": 50,
+      "hard": 45,
+      "pass_hard": true,
+      "pass_target": true
+    },
+    "baseline_720_p95_ms": {
+      "target": 22,
+      "hard": 33.3,
+      "pass_hard": true,
+      "pass_target": false
+    },
+    "baseline_draw_calls": {
+      "target": 450,
+      "hard": 550,
+      "pass_hard": true,
+      "pass_target": true
+    },
+    "peak_draw_calls": {
+      "target": 450,
+      "hard": 550,
+      "pass_hard": false,
+      "pass_target": false
+    },
+    "peak_1080_avg_fps": {
+      "target": 40,
+      "hard": 30,
+      "pass_hard": false,
+      "pass_target": false
+    },
+    "peak_720_avg_fps": {
+      "target": 50,
+      "hard": 30,
+      "pass_hard": true,
+      "pass_target": false
+    },
+    "baseline_worst_ms": {
+      "target": 50,
+      "hard": 60,
+      "pass_hard": false,
+      "pass_target": false
+    }
+  },
+  "scene_notes": {
+    "baseline": "8 towers Lv3 + wave 4 + squad + hero Q; camera d=42; Q/projectile/impact/death/damage-number materials pre-warmed",
+    "peak": "44 players (debug, above pop) + 20 spawned enemies + 8 towers Lv3 + hero Q; camera d=52",
+    "note": "Baseline meets the 450 dc target (~292) and the 1080p avg>=40 / 720p avg>=50 targets. Peak still exceeds the 550 hard cap and 1080p <30fps: hand off per-unit MultiMesh, global HP bars/shadows and UI batching to game-engineer. Worst single frame 93-186ms remains (pre-warmed)."
+  },
+  "timestamp": "2026-11-28"
+}

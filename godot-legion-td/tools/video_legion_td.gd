@@ -6,7 +6,7 @@ extends SceneTree
 ## Then encode MP4/GIF with ffmpeg.
 
 const D := preload("res://scripts/legion_data.gd")
-const FRAME_DIR := "/tmp/legionfall_frames_1080"
+const FRAME_DIR := "/tmp/legionfall_frames_after"
 const FPS := 15.0
 const TOTAL := 150
 const UI_SCALE := 1.5
@@ -39,8 +39,8 @@ func _run() -> void:
 	game.paused = false
 	game.set_process(false)
 
-	# 准备镜头。
-	game.world.set_camera(Vector3(0, 0, 23), 56.0)
+	# 准备镜头：先给一张能同时看到三门与核心的荒野全景。
+	game.world.set_camera(Vector3(0, 0, 0), 92.0)
 	await _settle(4)
 
 	# 建塔（视觉准备，不占用视频前段太久）。
@@ -61,43 +61,47 @@ func _run() -> void:
 		var p: Vector3 = Vector3(-8 + i * 2.3, 0, 4 + (i % 3) * 2.4)
 		game.debug_spawn_enemy("crawler" if i % 3 else "spitter", i % 3, p, 2.2, 0.18, 0.0)
 
-	var cam_start := Vector3(0, 0, 23)
-	var cam_end := Vector3(0, 0, 16)
+	var cam_start := Vector3(0, 0, 0)
+	var cam_end := Vector3(0, 0, 6)
 	for f in TOTAL:
-		var t := float(f) / FPS
 		if f < 15:
-			# 0–1 s：总览，缓慢推近。
+			# 0–1 s：三门 + 核心 + 道路的荒野全景，缓慢推近。
 			var k := float(f) / 15.0
-			game.world.set_camera(cam_start.lerp(cam_end, k), lerpf(56.0, 48.0, k))
+			game.world.set_camera(cam_start.lerp(cam_end, k), lerpf(92.0, 70.0, k))
 		elif f < 27:
-			# 1–1.8 s：展示建造面板。
+			# 1–1.8 s：空建造点的三塔建造面板。
 			if f == 15:
-				game.select_pad(2)
-				game.world.set_camera(Vector3(8, 0, 8), 34.0)
+				game.select_pad(6)
+				game.world.set_camera(Vector3(-20, 0, -6), 42.0)
 			game.advance(1.0 / FPS)
 		elif f < 42:
-			# 1.8–2.8 s：镜头转向石道，准备交战。
-			if f == 28:
-				game.banner_t = 0.0
+			# 1.8–2.8 s：镜头切回中段石道。
 			if f == 27:
 				game.clear_selection()
 				game.select_all_units()
-				game.world.set_camera(Vector3(0, 0, 13), 38.0)
+				game.banner_t = 0.0
+				game.world.set_camera(Vector3(0, 0, 12), 40.0)
 			game.advance(1.0 / FPS)
 		else:
-			# 2.8–8.4 s：交战，期间施放英雄技能。
+			# 2.8–8.4 s：交战、英雄 Q、死亡与伤害数字、传送门脉冲。
 			if f == 54:
 				game.hero_skill()
 				game.world.set_camera(game.hero.global_position, 30.0)
 			elif f == 72:
-				game.world.set_camera(Vector3(0, 0, 13), 36.0)
+				game.world.set_camera(Vector3(0, 0, 12), 36.0)
 			elif f == 92:
 				game.debug_add_resources(0, 0)
 				for i in 4:
 					var p: Vector3 = Vector3(-4 + i * 3, 0, 8 + (i % 2) * 2)
 					game.debug_spawn_enemy("crawler" if i % 2 else "spitter", i % 3, p, 2.0, 0.2, 0.0)
+			elif f == 100:
+				game.world.portal_pulse(0)
+				game.world.portal_pulse(1)
+				game.world.portal_pulse(2)
+				game.world.set_camera(Vector3(0, 0, -18), 62.0)
+			elif f == 116:
+				game.world.set_camera(Vector3(0, 0, 12), 38.0)
 			game.advance(1.0 / FPS)
-			# 缓慢横移镜头，让画面不死。
 			if f > 42 and f < 126:
 				var drift := sin((f - 42) * 0.02) * 1.8
 				game.world.pan_camera(Vector3(drift * 0.03, 0, 0))

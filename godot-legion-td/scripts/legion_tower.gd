@@ -21,6 +21,8 @@ var flash := 0.0
 var _time := 0.0
 var _head: Node3D
 var _crystal: MeshInstance3D
+var _flash_node: MeshInstance3D
+var _recoil := 0.0
 var total_gold := 0
 var total_essence := 0
 
@@ -48,6 +50,7 @@ func _build_model() -> void:
 	add_child(model)
 	_head = rig.head
 	_crystal = rig.get("crystal", null)
+	_flash_node = rig.get("muzzle_flash", null)
 
 
 func effective_damage() -> float:
@@ -127,6 +130,19 @@ func tick(dt: float) -> void:
 		_crystal.rotation.y += dt * 0.8
 		var s := 1.0 + 0.03 * sin(_time * 3.0)
 		_crystal.scale = _crystal.scale.lerp(Vector3(0.75 * s, 2.3 * s, 0.75 * s), 0.1)
+	if _flash_node != null:
+		_flash_node.visible = flash > 0.05
+		if _flash_node.visible:
+			var fs := 0.75 + flash * 2.4
+			_flash_node.scale = Vector3.ONE * fs
+	# 0.12s recoil on the aiming head (visual only)
+	if _recoil > 0.0:
+		_recoil = maxf(0.0, _recoil - dt)
+		if _head != null:
+			_head.position.z = -0.16 * (_recoil / 0.12)
+	else:
+		if _head != null and _head.position.z != 0.0:
+			_head.position.z = 0.0
 	if target == null or not is_instance_valid(target) or not target.is_alive():
 		target = null
 		cooldown = minf(cooldown, 0.15)
@@ -169,8 +185,9 @@ func _tick_frost(dt: float) -> void:
 				e.take_damage(dmg, true)
 				e.apply_slow(slow, float(def.slow_time))
 				hits += 1
-		game.fx_shockwave(global_position, r, Color(def.accent), 0.55)
-		flash = 0.3
+		game.fx_shockwave(global_position, r, Color(def.accent.r, def.accent.g, def.accent.b, 0.52), 0.55)
+		flash = 0.22
+		_recoil = 0.12
 		if hits > 0:
 			game.shake(0.04)
 
@@ -197,7 +214,8 @@ func _acquire() -> LegionActor:
 
 func _fire(t: LegionActor) -> void:
 	cooldown = effective_interval()
-	flash = 0.22
+	flash = 0.16
+	_recoil = 0.12
 	var def: Dictionary = D.tower_def(kind)
 	var muzzle := global_position + Vector3(0, rig.get("muzzle", Vector3(0, 2.0, 0)).y, 0)
 	var enchant_slow: float = game.stats.get("tower_slow", 0.0)

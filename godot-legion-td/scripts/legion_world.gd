@@ -6,6 +6,7 @@ extends Node3D
 
 const D := preload("res://scripts/legion_data.gd")
 const Art := preload("res://scripts/legion_art.gd")
+const Kit := preload("res://scripts/legion_mesh_kit.gd")
 
 const MAP_MIN := -60.0
 const MAP_MAX := 60.0
@@ -63,6 +64,7 @@ var camera: Camera3D
 var core_node: Node3D
 var core_crystal: MeshInstance3D
 var core_material: StandardMaterial3D
+var core_crack_node: MeshInstance3D
 var portals: Array[Dictionary] = []
 var pads: Array[Dictionary] = []
 var barracks: Node3D
@@ -76,12 +78,18 @@ var props_root: Node3D
 var fx_root: Node3D
 var mist_nodes: Array[Dictionary] = []
 var embers: MultiMeshInstance3D
+var mist: MultiMeshInstance3D
+var _lava: MeshInstance3D
+var _roads_root: Node3D
 var _ember_data: Array[Dictionary] = []
+var _mist_data: Array[Dictionary] = []
 var _flames: Array[Dictionary] = []
 var _shards: Array[Dictionary] = []
 var _time := 0.0
-var _cam_target := Vector3(0, 0, 23)
-var _cam_dist := 56.0
+var _core_base_y := 3.6
+var _core_ratio := 1.0
+var _cam_target := Vector3(0, 0, 18)
+var _cam_dist := 54.0
 var _cam_yaw := 0.0
 var _cam_pitch := 52.0
 var _noise := FastNoiseLite.new()
@@ -120,27 +128,27 @@ func _build_environment() -> void:
 	env = Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color("#2b2742")
-	sky_mat.sky_horizon_color = Color("#a45f4e")
-	sky_mat.sky_curve = 0.22
-	sky_mat.ground_bottom_color = Color("#21172a")
-	sky_mat.ground_horizon_color = Color("#6b3a3a")
-	sky_mat.sun_angle_max = 26.0
-	sky_mat.sun_curve = 0.12
+	sky_mat.sky_top_color = Color("#16131C")
+	sky_mat.sky_horizon_color = Color("#5A3426")
+	sky_mat.sky_curve = 0.28
+	sky_mat.ground_bottom_color = Color("#121016")
+	sky_mat.ground_horizon_color = Color("#3A211C")
+	sky_mat.sun_angle_max = 20.0
+	sky_mat.sun_curve = 0.10
 	var sky := Sky.new()
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("#b3aaa0")
-	env.ambient_light_energy = 1.0
+	env.ambient_light_color = Color("#A08C7A")
+	env.ambient_light_energy = 1.32
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.18
-	env.tonemap_white = 6.0
+	env.tonemap_exposure = 1.05
+	env.tonemap_white = 5.0
 	env.fog_enabled = true
-	env.fog_light_color = Color("#65433d")
-	env.fog_light_energy = 0.62
-	env.fog_density = 0.0019
-	env.fog_sky_affect = 0.55
+	env.fog_light_color = Color("#3A241C")
+	env.fog_light_energy = 0.55
+	env.fog_density = 0.0014
+	env.fog_sky_affect = 0.6
 	env.fog_height = 0.0
 	env.fog_height_density = 0.0
 	env.ssao_enabled = false
@@ -154,32 +162,37 @@ func _build_environment() -> void:
 
 func _build_lights() -> void:
 	sun = DirectionalLight3D.new()
-	sun.light_color = Color("#ffe0bb")
-	sun.light_energy = 1.5
-	sun.rotation_degrees = Vector3(-56, -34, 0)
+	sun.light_color = Color("#FFD9B0")
+	sun.light_energy = 2.8
+	sun.rotation_degrees = Vector3(-48, -135, 0)
 	sun.shadow_enabled = false
 	add_child(sun)
 	rim = DirectionalLight3D.new()
-	rim.light_color = Color("#ff8d60")
-	rim.light_energy = 0.78
-	rim.rotation_degrees = Vector3(-28, 148, 0)
+	rim.light_color = Color("#B9DDE4")
+	rim.light_energy = 0.22
+	rim.rotation_degrees = Vector3(-30, 55, 0)
 	rim.shadow_enabled = false
 	add_child(rim)
+	var fill := DirectionalLight3D.new()
+	fill.light_color = Color("#FFE8D0")
+	fill.light_energy = 0.32
+	fill.rotation_degrees = Vector3(-38, 25, 0)
+	fill.shadow_enabled = false
+	add_child(fill)
 
 	var core_light := OmniLight3D.new()
 	core_light.light_color = D.C_TEAL
-	core_light.light_energy = 3.4
-	core_light.omni_range = 22.0
-	core_light.omni_attenuation = 1.3
-	core_light.position = CORE_POS + Vector3(0, 4.5, 0)
+	core_light.light_energy = 1.2
+	core_light.omni_range = 12.0
+	core_light.omni_attenuation = 1.4
+	core_light.position = CORE_POS + Vector3(0, 5.0, 0)
 	add_child(core_light)
 	for i in 3:
 		var pl := OmniLight3D.new()
-		pl.light_color = Color("#c07bff") if i == 0 else Color("#ff8a55")
-		pl.light_color = Color("#b36bff")
-		pl.light_energy = 2.2
-		pl.omni_range = 17.0
-		pl.omni_attenuation = 1.5
+		pl.light_color = Color("#9B6BC0")
+		pl.light_energy = 1.9
+		pl.omni_range = 18.0
+		pl.omni_attenuation = 1.6
 		pl.position = PORTAL_POS[i] + Vector3(0, 4.0, 0)
 		add_child(pl)
 
@@ -294,18 +307,21 @@ func _terrain_color(x: float, z: float, h: float) -> Color:
 	var n := _noise.get_noise_2d(x * 2.4, z * 2.4) * 0.5 + 0.5
 	var n2 := _noise2.get_noise_2d(x * 5.0, z * 5.0) * 0.5 + 0.5
 	if h < -1.1:
-		var low := Color("#241b2b").lerp(Color("#3b2430"), n)
-		return low.lerp(Color("#6a3328"), clampf(-h / 4.0, 0.0, 0.35))
+		var low := Color("#2A211C").lerp(Color("#3A2A22"), n)
+		return low.lerp(Color("#5A2E1E"), clampf(-h / 6.0, 0.0, 0.30))
 	if h < -0.20:
-		var cliff := Color("#3a3145").lerp(Color("#544357"), n)
-		return cliff.lerp(Color("#73515b"), n2 * 0.25)
+		var cliff := Color("#3A312A").lerp(Color("#4A3F32"), n)
+		return cliff.lerp(Color("#5A4A3A"), n2 * 0.20)
 	var d := lane_distance(x, z)
-	if d < 3.0:
-		return Color("#4d444f").lerp(Color("#5c5151"), n)
-	var ash := Color("#71816a").lerp(Color("#8b9077"), n)
-	ash = ash.lerp(Color("#5c6d64"), n2 * 0.55)
+	if d < 3.2:
+		return Color("#332C26").lerp(Color("#40382E"), n)
+	var ash := Color("#4C4234").lerp(Color("#584C3C"), n)
+	if n2 > 0.62:
+		ash = ash.lerp(Color("#2A2620"), clampf((n2 - 0.62) * 2.8, 0.0, 0.55))
+	elif n2 < 0.30:
+		ash = ash.lerp(Color("#6A5A46"), clampf((0.30 - n2) * 1.6, 0.0, 0.30))
 	if d < 5.0:
-		ash = ash.lerp(Color("#6a6a5f"), 0.45)
+		ash = ash.lerp(Color("#3A342E"), 0.5)
 	return ash
 
 
@@ -348,9 +364,9 @@ func _add_tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
 const LAVA_SHADER := """
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_opaque;
-uniform vec3 col_deep : source_color = vec3(0.10, 0.025, 0.035);
-uniform vec3 col_mid : source_color = vec3(0.62, 0.16, 0.05);
-uniform vec3 col_hot : source_color = vec3(1.0, 0.58, 0.18);
+uniform vec3 col_deep : source_color = vec3(0.045, 0.012, 0.010);
+uniform vec3 col_mid : source_color = vec3(0.42, 0.10, 0.020);
+uniform vec3 col_hot : source_color = vec3(1.0, 0.47, 0.13);
 varying vec3 wpos;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vnoise(vec2 p){
@@ -374,8 +390,8 @@ void fragment(){
 	float crack = smoothstep(0.50, 0.79, n2);
 	float heat = smoothstep(0.22, 0.90, n);
 	vec3 c = mix(col_deep, col_mid, heat);
-	c = mix(c, col_hot, crack * 0.95);
-	c += col_hot * crack * 1.25;
+	c = mix(c, col_hot, crack * 0.85);
+	c += col_hot * crack * 0.55;
 	ALBEDO = c;
 }
 """
@@ -383,8 +399,8 @@ void fragment(){
 const ROAD_SHADER := """
 shader_type spatial;
 render_mode diffuse_toon, specular_disabled;
-uniform vec3 base_col : source_color = vec3(0.115, 0.100, 0.125);
-uniform vec3 crack_col : source_color = vec3(1.0, 0.38, 0.12);
+uniform vec3 base_col : source_color = vec3(0.44, 0.41, 0.36);
+uniform vec3 crack_col : source_color = vec3(1.0, 0.36, 0.10);
 varying vec3 wpos;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float vnoise(vec2 p){
@@ -404,10 +420,10 @@ void fragment(){
 	float n = fbm(wpos.xz * 0.22);
 	float n2 = fbm(wpos.xz * 0.85 + vec2(4.2, 7.7));
 	float crack = smoothstep(0.60, 0.72, n2) * smoothstep(0.35, 0.6, n);
-	vec3 c = base_col * (0.72 + 0.55 * n);
+	vec3 c = base_col * (0.72 + 0.42 * n);
 	ALBEDO = c;
-	ROUGHNESS = 0.92;
-	EMISSION = crack_col * crack * 0.75;
+	ROUGHNESS = 0.94;
+	EMISSION = crack_col * crack * 0.42;
 }
 """
 
@@ -425,21 +441,33 @@ func _build_lava() -> void:
 	mi.material_override = sm
 	mi.position.y = LAVA_Y
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_lava = mi
 	add_child(mi)
 
 
 func _build_lanes() -> void:
 	lane_paths.clear()
-	var road_mat := ShaderMaterial.new()
-	var road_sh := Shader.new()
-	road_sh.code = ROAD_SHADER
-	road_mat.shader = road_sh
+	_roads_root = Node3D.new()
+	_roads_root.name = "Roads"
+	add_child(_roads_root)
+	var road_mat: Material = Art.mat(Color("#7E7668"), Color(0, 0, 0, 0), 0.95)
 	for lane in LANES:
 		lane_paths.append(_densify(lane, 1.4))
+	var bed := Kit.new()
+	var ember := Kit.new()
 	for i in lane_paths.size():
-		_build_ribbon(lane_paths[i], 5.2, 0.065, road_mat)
-		# 两侧碎石 / 余烬
+		_build_ribbon(lane_paths[i], 6.0, 0.145, road_mat)
+		_build_lane_bed(lane_paths[i], bed)
+		_build_lane_embers(lane_paths[i], ember)
 		_build_lane_edges(lane_paths[i])
+	var bed_mi := MeshInstance3D.new()
+	bed_mi.mesh = bed.commit(Art.vcol_mat(1.0, false))
+	bed_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_roads_root.add_child(bed_mi)
+	var em_mi := MeshInstance3D.new()
+	em_mi.mesh = ember.commit(Art.vcol_alpha_material())
+	em_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_roads_root.add_child(em_mi)
 
 
 func _densify(points: Array, step: float) -> Array[Vector3]:
@@ -472,8 +500,9 @@ func _build_ribbon(points: Array, width: float, y: float, material: Material) ->
 		a1.y = y
 		b0.y = y
 		b1.y = y
-		_ribbon_tri(st, a0, b0, b1)
-		_ribbon_tri(st, a0, b1, a1)
+		# winding fixed for Godot front-face culling (T-020): was culled from above
+		_ribbon_tri(st, a0, b1, b0)
+		_ribbon_tri(st, a0, a1, b1)
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = material
@@ -488,6 +517,44 @@ func _ribbon_tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
 	for v in [a, b, c]:
 		st.set_normal(n)
 		st.add_vertex(v)
+
+
+func _build_lane_bed(points: Array, kit: LegionMeshKit) -> void:
+	# dark stone bevel under the light road: 0.4m on each side, L*15
+	for i in range(points.size() - 1):
+		var a: Vector3 = points[i]
+		var b: Vector3 = points[i + 1]
+		var dir := (b - a).normalized()
+		var side := Vector3(-dir.z, 0, dir.x)
+		var mid := (a + b) * 0.5
+		mid.y = 0.105
+		var yaw := rad_to_deg(atan2(dir.x, dir.z))
+		kit.box(Vector3(6.5, 0.035, a.distance_to(b) + 0.35), mid,
+			Color("#2E2A25"), Vector3(0, yaw, 0))
+		# worn wheel grooves + cross seams on the road surface
+		for gs in [-2.15, 2.15]:
+			kit.box(Vector3(0.16, 0.012, a.distance_to(b) + 0.2), mid + side * float(gs) + Vector3(0, 0.056, 0),
+				Color("#3A342E"), Vector3(0, yaw, 0))
+		if i % 8 == 0:
+			kit.box(Vector3(5.9, 0.012, 0.22), mid + Vector3(0, 0.058, 0),
+				Color("#433B32"), Vector3(0, yaw, 0))
+
+
+func _build_lane_embers(points: Array, kit: LegionMeshKit) -> void:
+	# thin ember seams every 8m along both road edges (alpha material)
+	for i in range(points.size() - 1):
+		if i % 6 != 0:
+			continue
+		var a: Vector3 = points[i]
+		var b: Vector3 = points[i + 1]
+		var dir := (b - a).normalized()
+		var side := Vector3(-dir.z, 0, dir.x)
+		var mid := (a + b) * 0.5
+		for sv in [-1.0, 1.0]:
+			var p: Vector3 = mid + side * (3.12 * float(sv))
+			p.y = 0.168
+			kit.box(Vector3(0.09, 0.016, 2.2), p, Color(1.0, 0.42, 0.12, 0.42),
+				Vector3(0, rad_to_deg(atan2(dir.x, dir.z)), 0))
 
 
 func _build_lane_edges(points: Array) -> void:
@@ -582,12 +649,17 @@ func _build_rocks() -> void:
 		if near_pad:
 			continue
 		var s := _rng.randf_range(0.35, 1.15)
+		var roll := _rng.randf()
+		if roll > 0.86:
+			s = _rng.randf_range(1.9, 2.6)
+		elif roll > 0.62:
+			s = _rng.randf_range(1.1, 1.7)
 		items.append({
 			"p": Vector3(x, height_at(x, z) + 0.15 * s, z),
 			"rot": _rng.randf_range(0, TAU),
 			"s": Vector3(s * _rng.randf_range(0.8, 1.25), s, s * _rng.randf_range(0.8, 1.25)),
 			"tilt": _rng.randf_range(-0.16, 0.16),
-			"c": Color("#25222d").lerp(Color("#4b4642"), _rng.randf() * 0.7),
+			"c": Color("#35302A").lerp(Color("#4A4238"), _rng.randf() * 0.75),
 		})
 	m.instance_count = items.size()
 	for i in items.size():
@@ -679,130 +751,123 @@ func _build_bones() -> void:
 
 
 func _build_ruins() -> void:
+	# Every static ruin / dead tree / floating rock is merged into ONE mesh.
+	var kit := Kit.new()
+	var glow := Kit.new()
 	for i in PILLARS.size():
 		var p: Vector3 = PILLARS[i]
-		var root := Node3D.new()
-		root.position = p + Vector3(0, height_at(p.x, p.z), 0)
-		root.rotation.y = _rng.randf_range(0, TAU)
-		props_root.add_child(root)
-		var h := _rng.randf_range(2.0, 4.8)
-		var tilt := _rng.randf_range(-0.16, 0.16)
-		var pillar := Node3D.new()
-		pillar.rotation.x = tilt
-		root.add_child(pillar)
-		Art.add_cyl(pillar, 0.55, 0.72, h, Vector3(0, h * 0.5, 0), Color("#3b3542"), 6)
-		Art.add_box(pillar, Vector3(1.0, 0.25, 1.0), Vector3(0, 0.15, 0), Color("#2b2733"))
-		Art.add_box(pillar, Vector3(0.9, 0.16, 0.9), Vector3(0, h, 0), Color("#4a4048"),
+		var base := p + Vector3(0, height_at(p.x, p.z), 0)
+		var h := _rng.randf_range(2.2, 4.8)
+		var tilt := _rng.randf_range(-0.14, 0.14)
+		var rot := _rng.randf_range(0, TAU)
+		var b := Basis(Vector3.UP, rot).rotated(Vector3.RIGHT, tilt)
+		kit.add_mesh(_cyl_mesh(0.50, 0.68, h), Transform3D(b, base + Vector3(0, h * 0.42, 0)),
+			Color("#332C26"))
+		kit.box(Vector3(1.02, 0.26, 1.02), base + Vector3(0, 0.13, 0), Color("#241F1C"))
+		kit.box(Vector3(0.92, 0.16, 0.92), base + Vector3(0, h * 0.88, 0), Color("#4A443C"),
 			Vector3(0, 12, 6))
-		Art.add_box(pillar, Vector3(0.35, 0.16, 0.7), Vector3(0.35, h - 0.12, 0.1), Color("#4a4048"),
-			Vector3(0, -20, 14))
-		Art.add_torus(pillar, 0.58, 0.66, Vector3(0, h * 0.62, 0), D.C_TEAL, Vector3(90, 0, 0),
-			Art.glow_mat(Color(D.C_TEAL.r, D.C_TEAL.g, D.C_TEAL.b, 0.22)))
-	# 两座残拱
-	var arch_pos := [Vector3(-4, 0, -30), Vector3(6, 0, 10)]
-	for i in arch_pos.size():
-		var p: Vector3 = arch_pos[i]
-		var root := Node3D.new()
-		root.position = p + Vector3(0, height_at(p.x, p.z), 0)
-		root.rotation.y = 0.35 if i == 0 else -0.9
-		props_root.add_child(root)
-		Art.add_box(root, Vector3(0.8, 4.2, 0.9), Vector3(-2.1, 2.1, 0), Color("#332e3a"))
-		Art.add_box(root, Vector3(0.8, 3.4, 0.9), Vector3(2.1, 1.7, 0), Color("#332e3a"))
-		Art.add_box(root, Vector3(4.6, 0.6, 1.0), Vector3(0, 3.9, 0), Color("#3c3542"),
-			Vector3(0, 0, 4))
-		Art.add_sphere(root, 0.15, Vector3(0, 4.2, 0), D.C_TEAL, Vector3.ONE,
-			Art.glow_mat(D.C_TEAL), 5, 3)
-	# 枯树
+		glow.torus(0.52, 0.58, base + Vector3(0, h * 0.55, 0),
+			Color(0.37, 0.88, 0.75, 0.20), Vector3(90, 0, 0))
+	# two broken arches (kept away from lanes)
+	for pv in [Vector3(-6.5, 0, -24), Vector3(8.0, 0, 16)]:
+		var p: Vector3 = pv
+		var base: Vector3 = p + Vector3(0, height_at(p.x, p.z), 0)
+		kit.box(Vector3(0.86, 4.6, 0.94), base + Vector3(-2.2, 2.3, 0), Color("#2E2A25"), Vector3(0, 0, 3))
+		kit.box(Vector3(0.86, 3.4, 0.94), base + Vector3(2.2, 1.7, 0), Color("#2E2A25"), Vector3(0, 0, -2))
+		kit.box(Vector3(4.9, 0.65, 1.05), base + Vector3(0, 4.15, 0), Color("#3A342E"), Vector3(0, 0, 5))
+		glow.sphere(0.16, base + Vector3(0, 4.5, 0), Color(0.37, 0.88, 0.75, 0.55), Vector3.ONE, 5, 3)
+	# portal-framing ruins (3 unique clusters)
+	var portal_ruins := [
+		[Vector3(-7.5, 0, -36), Vector3(7.5, 0, -36), Vector3(-3.0, 0, -47)],
+		[Vector3(-41.0, 0, -24), Vector3(-33.0, 0, -34), Vector3(-40.0, 0, -32)],
+		[Vector3(41.0, 0, -24), Vector3(33.0, 0, -34), Vector3(40.0, 0, -32)],
+	]
+	for cluster in portal_ruins:
+		for pv in cluster:
+			var p: Vector3 = pv
+			var base: Vector3 = p + Vector3(0, height_at(p.x, p.z), 0)
+			var h := _rng.randf_range(1.6, 3.6)
+			kit.box(Vector3(0.70, h, 0.80), base + Vector3(0, h * 0.5, 0), Color("#332C26"),
+				Vector3(_rng.randf_range(-8, 8), _rng.randf_range(0, 360), _rng.randf_range(-8, 8)))
+			kit.box(Vector3(1.1, 0.28, 1.2), base + Vector3(0, 0.14, 0), Color("#241F1C"))
+	# dead trees with ember knots
 	for i in TREES.size():
 		var p: Vector3 = TREES[i]
-		var root := Node3D.new()
-		root.position = p + Vector3(0, height_at(p.x, p.z), 0)
-		root.rotation.y = _rng.randf_range(0, TAU)
-		props_root.add_child(root)
-		var h := _rng.randf_range(2.2, 3.7)
-		Art.add_cyl(root, 0.10, 0.28, h, Vector3(0, h * 0.5, 0), Color("#3a2f2c"), 5,
-			Vector3(_rng.randf_range(-8, 8), 0, _rng.randf_range(-8, 8)))
+		var base := p + Vector3(0, height_at(p.x, p.z), 0)
+		var h := _rng.randf_range(2.4, 3.9)
+		var rot := _rng.randf_range(0, TAU)
+		kit.cyl(0.10, 0.30, h, base + Vector3(0, h * 0.5, 0), Color("#2E2724"), 5,
+			Vector3(_rng.randf_range(-8, 8), rad_to_deg(rot), _rng.randf_range(-8, 8)))
 		for b in 4:
-			var a := _rng.randf_range(0, TAU)
-			var bh := h * _rng.randf_range(0.55, 0.9)
-			var br := Node3D.new()
-			br.position = Vector3(0, bh, 0)
-			br.rotation = Vector3(_rng.randf_range(-0.9, -0.4), a, 0)
-			root.add_child(br)
-			Art.add_cyl(br, 0.03, 0.08, _rng.randf_range(1.0, 1.8), Vector3(0, 0.6, 0),
-				Color("#352b29"), 4)
-			Art.add_sphere(br, 0.09, Vector3(0, 1.3, 0), Color("#ff8a4f"), Vector3.ONE,
-				Art.glow_mat(Color("#ff8a4f")), 4, 3)
-	# 火盆
-	for i in 4:
-		var a := i * TAU / 4.0 + 0.4
-		var p := CORE_POS + Vector3(cos(a) * 7.6, 0, sin(a) * 7.6)
-		var root := Node3D.new()
-		root.position = p + Vector3(0, height_at(p.x, p.z), 0)
-		props_root.add_child(root)
-		Art.add_cyl(root, 0.42, 0.24, 0.7, Vector3(0, 0.35, 0), Color("#3a333d"), 6)
-		Art.add_cyl(root, 0.55, 0.42, 0.28, Vector3(0, 0.82, 0), Color("#2b2630"), 6)
-		var flame := Art.add_sphere(root, 0.35, Vector3(0, 1.12, 0), Color("#ff9a4f"),
-			Vector3(1.0, 1.7, 1.0), Art.glow_mat(Color(1.0, 0.45, 0.15, 0.85)), 6, 3)
-		_flames.append({"node": flame, "phase": _rng.randf_range(0, TAU)})
-		Art.add_billboard(root, 2.4, Vector3(0, 1.2, 0), Color(1.0, 0.42, 0.14, 0.35))
+			var a := rot + b * TAU / 4.0 + 0.3
+			var bh := h * _rng.randf_range(0.55, 0.88)
+			var br := base + Vector3(cos(a) * 0.42, bh, sin(a) * 0.42)
+			kit.cyl(0.03, 0.08, 1.5, br + Vector3(0, 0.55, 0), Color("#28211F"), 4,
+				Vector3(-40, rad_to_deg(a), 0))
+			glow.sphere(0.09, br + Vector3(0, 1.25, 0), Color("#FF8A3C"), Vector3.ONE, 4, 3)
+	# floating rocks
+	for p in [Vector3(-55, 4.0, -8), Vector3(53, 5.5, -16), Vector3(-49, 3.0, 32),
+			Vector3(49, 4.2, 30), Vector3(-6, 6.0, -61), Vector3(-24, 2.5, -58)]:
+		var rot := _rng.randf_range(0, TAU)
+		kit.cyl(1.6, 2.4, 1.4, p, Color("#1E1B19"), 5, Vector3(0, rad_to_deg(rot), 0))
+		kit.cyl(0.0, 1.7, 1.6, p + Vector3(0, -1.5, 0), Color("#141210"), 5, Vector3(180, 0, 0))
+		glow.sphere(0.40, p + Vector3(0.6, 0.9, 0.3), Color("#FF6B35"), Vector3.ONE, 5, 3)
+	# distant spires (silhouette skyline)
+	for i in 7:
+		var p: Vector3 = [Vector3(-72, 0, -30), Vector3(-66, 0, 18), Vector3(70, 0, -34),
+			Vector3(66, 0, 14), Vector3(-20, 0, -78), Vector3(26, 0, -76), Vector3(0, 0, 66)][i]
+		var h := _rng.randf_range(12, 26)
+		kit.cyl(_rng.randf_range(1.0, 2.2), _rng.randf_range(3.0, 5.0), h, Vector3(p.x, -4.0 + h * 0.5, p.z),
+			Color("#141118"), 5, Vector3(_rng.randf_range(-4, 4), _rng.randf_range(0, 360), _rng.randf_range(-4, 4)))
+		if i % 2 == 0:
+			glow.sphere(0.18, Vector3(p.x, -4.0 + h * 0.55, p.z), Color("#9B6BC0"), Vector3.ONE, 5, 3)
+	var mi := MeshInstance3D.new()
+	mi.name = "RuinsMerged"
+	mi.mesh = kit.commit(Art.vcol_mat(1.0, true))
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	props_root.add_child(mi)
+	var gi := MeshInstance3D.new()
+	gi.name = "RuinsGlow"
+	gi.mesh = glow.commit(Art.vcol_alpha_material())
+	gi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	props_root.add_child(gi)
+
+
+func _cyl_mesh(top: float, bottom: float, height: float) -> CylinderMesh:
+	var m := CylinderMesh.new()
+	m.top_radius = top
+	m.bottom_radius = bottom
+	m.height = height
+	m.radial_segments = 5
+	m.rings = 1
+	return m
 
 
 func _build_floating_rocks() -> void:
-	var positions := [
-		Vector3(-55, 4.0, -8), Vector3(53, 5.5, -16), Vector3(-49, 3.0, 32),
-		Vector3(49, 4.2, 30), Vector3(-6, 6.0, -61), Vector3(-24, 2.5, -58),
-	]
-	for i in positions.size():
-		var p: Vector3 = positions[i]
-		var root := Node3D.new()
-		root.position = p
-		root.rotation.y = _rng.randf_range(0, TAU)
-		props_root.add_child(root)
-		Art.add_cyl(root, 1.6, 2.4, 1.4, Vector3.ZERO, Color("#292430"), 5)
-		Art.add_cyl(root, 0.0, 1.7, 1.6, Vector3(0, -1.5, 0), Color("#211c27"), 5,
-			Vector3(180, 0, 0))
-		Art.add_sphere(root, 0.5, Vector3(0.6, 0.9, 0.3), D.C_EMBER, Vector3.ONE,
-			Art.glow_mat(Color(1.0, 0.4, 0.12, 0.55)), 5, 3)
+	pass
 
 
 func _build_distant_spires() -> void:
-	var positions := [
-		Vector3(-72, 0, -30), Vector3(-66, 0, 18), Vector3(70, 0, -34),
-		Vector3(66, 0, 14), Vector3(-20, 0, -78), Vector3(26, 0, -76), Vector3(0, 0, 66),
-	]
-	for i in positions.size():
-		var p: Vector3 = positions[i]
-		var h := _rng.randf_range(12, 26)
-		var root := Node3D.new()
-		root.position = Vector3(p.x, -4.0, p.z)
-		root.rotation.y = _rng.randf_range(0, TAU)
-		props_root.add_child(root)
-		Art.add_cyl(root, _rng.randf_range(1.0, 2.2), _rng.randf_range(3.0, 5.0), h,
-			Vector3(0, h * 0.5, 0), Color("#1f1a26"), 5,
-			Vector3(_rng.randf_range(-4, 4), 0, _rng.randf_range(-4, 4)))
-		Art.add_box(root, Vector3(1.2, 0.6, 1.2), Vector3(0.8, h * 0.7, 0.2), Color("#2a2430"),
-			Vector3(0, 12, 8))
-		if i % 2 == 0:
-			Art.add_sphere(root, 0.22, Vector3(0, h * 0.55, 0), Color("#c47bff"), Vector3.ONE,
-				Art.glow_mat(Color("#c47bff")), 5, 3)
+	pass
 
 
 # ---------------------------------------------------------------- 建筑
 
 func _build_portals() -> void:
 	portals.clear()
+	var tints := [Color("#9B6BC0"), Color("#8E5BC0"), Color("#7F55B8")]
 	for i in 3:
-		var tint := Color("#b36bff") if i == 0 else Color("#c46bff")
-		var built := Art.build_portal(tint)
+		var tint: Color = tints[i]
+		var built := Art.build_portal(tint, i)
 		var node: Node3D = built.root
 		node.position = PORTAL_POS[i]
 		var to_center: Vector3 = (CORE_POS - PORTAL_POS[i]).normalized()
 		node.rotation.y = atan2(to_center.x, to_center.z)
 		add_child(node)
 		portals.append({
-			"node": node, "veil": built.veil, "shards": built.shards,
-			"pos": PORTAL_POS[i], "index": i, "tint": tint,
+			"node": node, "veil": built.veil, "veil_inner": built.veil_inner,
+			"shards": built.shards, "pos": PORTAL_POS[i], "index": i,
+			"tint": tint, "pulse_t": 0.0,
 		})
 
 
@@ -814,13 +879,15 @@ func _build_core() -> void:
 	core_crystal = built.crystal
 	core_material = built.material
 	# 地面符文环
-	var ring := Art.build_range_ring(8.5, D.C_TEAL, 0.38)
+	core_crack_node = built.get("cracks", null)
+	var ring := Art.build_range_ring(9.0, D.C_TEAL, 0.35)
 	ring.position = CORE_POS + Vector3(0, 0.02, 0)
 	add_child(ring)
 	# 来路石阶
 	for i in 3:
-		var p := CORE_POS + Vector3(0, 0.12 + i * 0.12, -4.5 - i * 0.9)
-		Art.add_box(self, Vector3(4.6 - i * 0.5, 0.24, 1.0), p, Color("#2c2832"))
+		var p := CORE_POS + Vector3(0, 0.12 + i * 0.12, -5.2 - i * 1.0)
+		Art.add_box(self, Vector3(5.2 - i * 0.5, 0.24, 1.1), p, Color("#241F1C"))
+	set_core_ratio(1.0)
 
 
 func _build_pads() -> void:
@@ -861,7 +928,7 @@ func _build_embers() -> void:
 	q.size = Vector2(0.20, 0.20)
 	mm.mesh = q
 	_ember_data.clear()
-	for i in 150:
+	for i in 110:
 		var x := _rng.randf_range(-56, 56)
 		var z := _rng.randf_range(-58, 54)
 		_ember_data.append({
@@ -870,7 +937,7 @@ func _build_embers() -> void:
 			"ph": _rng.randf_range(0, TAU),
 			"sway": _rng.randf_range(0.15, 0.55),
 			"size": _rng.randf_range(0.5, 1.7),
-			"c": Color("#ff8a3d").lerp(Color("#ffd36a"), _rng.randf()),
+			"c": Color("#FF8A3C").lerp(Color("#FFC48A"), _rng.randf()),
 		})
 	mm.instance_count = _ember_data.size()
 	for i in _ember_data.size():
@@ -888,27 +955,30 @@ func _build_embers() -> void:
 
 
 func _build_mist() -> void:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	var q := QuadMesh.new()
+	q.size = Vector2(1, 1)
+	mm.mesh = q
+	_mist_data.clear()
 	for i in 5:
-		var plane := PlaneMesh.new()
-		plane.size = Vector2(_rng.randf_range(26, 44), _rng.randf_range(18, 32))
-		var mi := MeshInstance3D.new()
-		mi.mesh = plane
-		var m := StandardMaterial3D.new()
-		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		m.albedo_texture = Art.smoke_texture()
-		m.albedo_color = Color(0.55, 0.45, 0.62, 0.10)
-		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		m.cull_mode = BaseMaterial3D.CULL_DISABLED
-		m.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
-		mi.material_override = m
-		mi.position = Vector3(_rng.randf_range(-42, 42), LAVA_Y + 0.45, _rng.randf_range(-48, 40))
-		mi.rotation.y = _rng.randf_range(0, TAU)
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(mi)
-		mist_nodes.append({
-			"node": mi, "base": mi.position, "phase": _rng.randf_range(0, TAU),
+		_mist_data.append({
+			"p": Vector3(_rng.randf_range(-42, 42), LAVA_Y + 0.45, _rng.randf_range(-48, 40)),
+			"size": Vector2(_rng.randf_range(26, 44), _rng.randf_range(18, 32)),
+			"phase": _rng.randf_range(0, TAU),
 			"speed": _rng.randf_range(0.15, 0.45),
 		})
+	mm.instance_count = _mist_data.size()
+	for i in _mist_data.size():
+		var d: Dictionary = _mist_data[i]
+		mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3(d.size.x, 1, d.size.y)), d.p))
+	mist = MultiMeshInstance3D.new()
+	mist.name = "Mist"
+	mist.multimesh = mm
+	var m := Art.billboard_material(Color(0.55, 0.45, 0.55, 0.09), Art.smoke_texture(), false)
+	mist.material_override = m
+	mist.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mist)
 
 
 # ---------------------------------------------------------------- 每帧动画
@@ -916,41 +986,68 @@ func _build_mist() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	if core_crystal != null:
-		core_crystal.position.y = 3.2 + sin(_time * 1.1) * 0.16
-		core_crystal.rotation.y += delta * 0.45
+		core_crystal.position.y = _core_base_y + sin(_time * 1.1) * 0.18
+		core_crystal.rotation.y += delta * 0.35
 	if core_material != null:
-		var pulse := 0.72 + 0.18 * sin(_time * 2.0)
-		core_material.emission_energy_multiplier = pulse
+		var pulse := 0.70 + 0.16 * sin(_time * 2.0)
+		if _core_ratio <= 0.33:
+			pulse *= 1.0 + 0.25 * sin(_time * 9.0)
+		core_material.emission_energy_multiplier = (0.35 + 0.45 * _core_ratio) * pulse
 	for p in portals:
-		var shards: Array = p.shards
-		for i in shards.size():
-			var sh: Node3D = shards[i]
-			var a := _time * 0.7 + i * TAU / 3.0
-			sh.position = Vector3(cos(a) * 1.9, 2.9 + sin(_time * 1.3 + i) * 0.35, sin(a) * 1.9)
-			sh.rotation.y += delta * 1.4
+		var shards: Node3D = p.shards
+		if shards != null:
+			shards.rotation.y += delta * 0.9
+			var pulse_t: float = float(p.get("pulse_t", 0.0))
+			var s := 1.0 + 0.28 * maxf(0.0, pulse_t)
+			shards.scale = Vector3.ONE * s
+			p.pulse_t = maxf(0.0, pulse_t - delta)
 		var veil: MeshInstance3D = p.veil
 		if veil != null:
-			veil.scale = Vector3.ONE * (0.94 + 0.06 * sin(_time * 1.7 + p.index))
+			var k: float = float(p.get("pulse_t", 0.0))
+			veil.scale = Vector3.ONE * (0.96 + 0.05 * sin(_time * 1.7 + p.index) + 0.18 * k)
+		var inner: MeshInstance3D = p.get("veil_inner", null)
+		if inner != null:
+			inner.rotation.z += delta * 0.6
 	for f in _flames:
 		var node: MeshInstance3D = f.node
 		var s := 0.9 + 0.18 * sin(_time * 7.0 + f.phase) + 0.08 * sin(_time * 13.0 + f.phase)
 		node.scale = Vector3(1.0, 1.7 * s, 1.0)
-	for m in mist_nodes:
-		var node: MeshInstance3D = m.node
-		node.position.x = m.base.x + sin(_time * m.speed + m.phase) * 3.2
-		node.position.z = m.base.z + cos(_time * m.speed * 0.8 + m.phase) * 2.4
-		node.rotation.y += delta * m.speed * 0.05
-	var mm := embers.multimesh
-	for i in _ember_data.size():
-		var e: Dictionary = _ember_data[i]
-		var p: Vector3 = e.p
-		p.y += e.v * delta
-		p.x += sin(_time * e.sway + e.ph) * delta * 0.7
-		if p.y > 7.0:
-			p.y = LAVA_Y + 0.3
-		e.p = p
-		var s: float = e.size * (0.8 + 0.2 * sin(_time * 3.0 + e.ph))
-		mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ONE * s), p))
+	if mist != null:
+		var mm2 := mist.multimesh
+		for i in _mist_data.size():
+			var d: Dictionary = _mist_data[i]
+			var base: Vector3 = d.p
+			var pos := base + Vector3(sin(_time * d.speed + d.phase) * 3.2, 0,
+				cos(_time * d.speed * 0.8 + d.phase) * 2.4)
+			mm2.set_instance_transform(i, Transform3D(
+				Basis().scaled(Vector3(d.size.x, 1, d.size.y)), pos))
+	if embers != null:
+		var mm := embers.multimesh
+		for i in _ember_data.size():
+			var e: Dictionary = _ember_data[i]
+			var p: Vector3 = e.p
+			p.y += e.v * delta
+			p.x += sin(_time * e.sway + e.ph) * delta * 0.7
+			if p.y > 7.0:
+				p.y = LAVA_Y + 0.3
+			e.p = p
+			var s: float = e.size * (0.8 + 0.2 * sin(_time * 3.0 + e.ph))
+			mm.set_instance_transform(i, Transform3D(Basis().scaled(Vector3.ONE * s), p))
+
+
+func portal_pulse(index: int) -> void:
+	if index < 0 or index >= portals.size():
+		return
+	portals[index]["pulse_t"] = 0.65
+
+
+func set_core_ratio(ratio: float) -> void:
+	_core_ratio = clampf(ratio, 0.0, 1.0)
+	if core_crack_node != null:
+		core_crack_node.visible = _core_ratio <= 0.66
+	if core_material != null:
+		var c := Color("#2FB9AE").lerp(Color("#14413D"), 1.0 - _core_ratio)
+		core_material.albedo_color = c
 
 
 func set_pad_available(index: int, available: bool) -> void:

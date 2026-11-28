@@ -155,3 +155,18 @@ T-20261127-017 在 00:04 因 `API Error: Connection closed mid-response` 中断�
 - 新增 smoke / full-run / perf / screenshot / video 五个工具与 9 张 1080p 截图、10s 视频。
 - 调亮整体曝光、重做核心材质与光效、降低范围环过曝、初始机位改为能看到核心和初始军团。
 - 补齐 README / TECH / 迭代记录 / CREDITS。
+
+
+## 10. T-20261127-020 美术 pass（2026-11-28）
+
+- 目标：按 T-019 brief 做第一遍生产级美术；不改玩法/数值/AI/波次/经济。
+- 新增 `scripts/legion_mesh_kit.gd`：程序化低模的 **顶点色合并器**。每个 body / arms / 2 legs / glow / shadow 各 1 个 `ArrayMesh` + 1 材质，把一个单位从 20+ 个 MeshInstance 降到约 6 个 draw；静态遗迹/树/浮岩/远景合并成 1 个 mesh，雾改为 1 个 MultiMesh，车道床/余烬各 1 个 mesh。
+- 美术重写：4 玩家角色（筝盾卫士 / 横向弩弩手 / 立杖术士 / 翼肩披风英雄）、3 敌人（骨甲裂爪/尾炮酸刺/熔炉巨像）、3 塔 × Lv1–3 + 等级旗标、3 种原创传送门、7m 核心 + 30/66% 血量态、建造幽灵预览、伤害数字、死亡余烬、Q 三环+余烬、每单位接触影。
+- UI：`legion_ui.gd` 重绘为 1280×720 设计（1080 = 1.5×）；HUD 面积 **24.8%**；最小字 12（热键/装饰），关键 16–22；对比 ≥5.33:1；SEED/FPS/DC 移入 **F3** 调试层；新增实心两色图标、建造/升级/帮助/结算版式、720 真实 1280×720 截图。
+- 计分/验收工具：`tools/art_check.py`（只读截图，输出 L*/ΔL*/过曝/Q 近白/剪影 IoU/WCAG/HUD 面积/25%+灰度）；`screenshot_legion_td.gd` 输出 `docs/shots/after/` 17 张；`video_legion_td.gd` 输出 10s/150 帧；`perf_legion_td.gd` 增加 peak 场景与 JSON。
+- 实测（真实 GPU，Intel HD 6000，vsync off）：
+  - 基线（8 塔 Lv3 + 第 4 波 + 小队 + Q）：1080p **41.1 FPS / P95 29.70ms / 292 dc**；720p **55.6 FPS / P95 22.05ms / 292 dc**。T-018 为 36.8 FPS / 36.73ms / 727 dc 与 38.2–41.2 FPS / 34.17–35.38ms / 727 dc。
+  - 峰值（44 玩家 + 20 敌人 + 8 塔 Lv3 + Q）：1080p 25.2 FPS / 49.96ms / 639 dc；720p 32.0 FPS / 45.59ms / 639 dc。**峰值仍超过 550 dc 硬上限，交 game-engineer 做 MultiMesh/全局血条/阴影/UI 合批/LOD。**
+- 视觉读数：地表 L*19.3、石道 37.1（Δ17.8）、敌人 vs 地表 Δ22.4、玩家 vs 地表 Δ46.0；玩家职业剪影最大 IoU 0.586、敌人 0.602；Q 近白 0.011%；全屏 >245 最高 0.69%。
+- 文档：`docs/art-pass-T-20261127-020.md`、`docs/art_check_after.json`、`docs/perf_legion_td_after.json`、`docs/shots/after/README.md`；`docs/shots/before/` 保留 T-018 原图，`docs/shots/after/` 为本轮证据。
+- 未做：第 4 敌型（需 designer 签字）、骨骼/mocap、LOD、原生 1920 UI 画布、音频、盲测；峰值性能尚未全绿。

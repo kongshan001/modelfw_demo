@@ -9,21 +9,21 @@ const TITLE_CN := "军团陨落"
 const SUBTITLE := "余烬守望 · 三线裂隙"
 
 # ---- 调色板 ---------------------------------------------------------------
-const C_TEXT := Color("#efe6d4")
-const C_DIM := Color("#8d8797")
-const C_FAINT := Color("#5b5668")
-const C_TEAL := Color("#5fe3cb")
-const C_TEAL_DARK := Color("#1d6f66")
-const C_GOLD := Color("#ffc65a")
-const C_ESSENCE := Color("#86d9ff")
-const C_EMBER := Color("#ff7f3f")
-const C_ENEMY := Color("#c47bff")
-const C_BLOOD := Color("#ff5f74")
-const C_HEAL := Color("#72e39b")
-const C_ICE := Color("#9fe8ff")
-const C_PANEL := Color(0.052, 0.058, 0.082, 0.93)
-const C_PANEL_2 := Color(0.075, 0.083, 0.112, 0.94)
-const C_LINE := Color(0.36, 0.78, 0.72, 0.55)
+const C_TEXT := Color("#EFE6D4")
+const C_DIM := Color("#A9A092")
+const C_FAINT := Color("#8E8779")
+const C_TEAL := Color("#5FE0C0")
+const C_TEAL_DARK := Color("#1D6F66")
+const C_GOLD := Color("#FFC65A")
+const C_ESSENCE := Color("#C08BFF")
+const C_EMBER := Color("#FF8A3C")
+const C_ENEMY := Color("#9B6BC0")
+const C_BLOOD := Color("#FF5C74")
+const C_HEAL := Color("#72E39B")
+const C_ICE := Color("#9FE8FF")
+const C_PANEL := Color("#0C1114")
+const C_PANEL_2 := Color("#11181A")
+const C_LINE := Color("#2A3B38")
 
 # ---- 阵营 -----------------------------------------------------------------
 const TEAM_PLAYER := 0
@@ -37,33 +37,33 @@ const UNITS := {
 		"name": "灰烬卫士", "role": "近战 · 前排", "icon": "sword",
 		"cost": 55, "essence": 0, "pop": 1, "cooldown": 4.0,
 		"hp": 170.0, "damage": 15.0, "range": 1.9, "interval": 0.95,
-		"speed": 5.4, "aggro": 8.5, "radius": 0.55, "height": 1.85,
-		"color": Color("#74b0a4"), "accent": Color("#9cffe8"),
+		"speed": 5.4, "aggro": 8.5, "radius": 0.55, "height": 2.55,
+		"color": Color("#1F8F7C"), "accent": Color("#E6DCC6"),
 		"desc": "持盾的余烬步兵，顶在最前面。",
 	},
 	"bolt": {
 		"name": "余烬弩手", "role": "远程 · 单体", "icon": "bow",
 		"cost": 75, "essence": 0, "pop": 1, "cooldown": 5.0,
 		"hp": 105.0, "damage": 13.0, "range": 8.2, "interval": 1.15,
-		"speed": 5.2, "aggro": 10.5, "radius": 0.5, "height": 1.75,
-		"color": Color("#619fa8"), "accent": Color("#b0f4ff"),
+		"speed": 5.2, "aggro": 10.5, "radius": 0.5, "height": 2.45,
+		"color": Color("#1F8F7C"), "accent": Color("#FFB35C"),
 		"desc": "自裂隙边缘征召的弩手，优先集火。",
 	},
 	"adept": {
 		"name": "熔火术士", "role": "远程 · 溅射", "icon": "staff",
 		"cost": 110, "essence": 5, "pop": 2, "cooldown": 8.0,
 		"hp": 120.0, "damage": 27.0, "range": 7.0, "interval": 1.7,
-		"speed": 4.6, "aggro": 10.0, "radius": 0.55, "height": 1.8,
+		"speed": 4.6, "aggro": 10.0, "radius": 0.55, "height": 2.55,
 		"splash": 2.6,
-		"color": Color("#9b6375"), "accent": Color("#ffb47a"),
+		"color": Color("#1F8F7C"), "accent": Color("#FFB35C"),
 		"desc": "投掷熔渣火球，命中点 2.6m 溅射。",
 	},
 	"hero": {
 		"name": "焰语者 · 凯尔", "role": "英雄 · 范围技", "icon": "flame",
 		"cost": 0, "essence": 0, "pop": 0, "cooldown": 0.0,
 		"hp": 540.0, "damage": 32.0, "range": 2.5, "interval": 0.85,
-		"speed": 6.2, "aggro": 10.0, "radius": 0.72, "height": 2.25,
-		"color": Color("#a05a7c"), "accent": Color("#ffdd92"),
+		"speed": 6.2, "aggro": 10.0, "radius": 0.72, "height": 3.0,
+		"color": Color("#1F8F7C"), "accent": Color("#F0B23C"),
 		"desc": "队伍核心。Q：熔火震击，伤害并减速周围敌人。",
 		"skill": {
 			"name": "熔火震击", "radius": 9.0, "damage": 72.0,
@@ -79,23 +79,23 @@ const ENEMIES := {
 	"crawler": {
 		"name": "裂爪兽", "role": "近战", "elite": false,
 		"hp": 95.0, "damage": 9.0, "range": 1.9, "interval": 1.05,
-		"speed": 4.6, "aggro": 6.8, "radius": 0.62, "height": 1.35,
+		"speed": 4.6, "aggro": 6.8, "radius": 0.62, "height": 1.55,
 		"gold": 6, "essence": 0,
-		"color": Color("#7e5aa0"), "accent": Color("#e3a6ff"),
+		"color": Color("#5B2F7A"), "accent": Color("#B9E84A"),
 	},
 	"spitter": {
 		"name": "酸刺虫", "role": "远程", "elite": false,
 		"hp": 82.0, "damage": 11.0, "range": 7.6, "interval": 1.8,
-		"speed": 4.0, "aggro": 8.5, "radius": 0.55, "height": 1.25,
+		"speed": 4.0, "aggro": 8.5, "radius": 0.55, "height": 2.25,
 		"gold": 8, "essence": 1,
-		"color": Color("#837398"), "accent": Color("#ccffa8"),
+		"color": Color("#9B6BC0"), "accent": Color("#B9E84A"),
 	},
 	"colossus": {
 		"name": "熔核巨像", "role": "精英", "elite": true,
 		"hp": 950.0, "damage": 30.0, "range": 2.9, "interval": 1.5,
-		"speed": 3.0, "aggro": 8.0, "radius": 1.25, "height": 2.9,
+		"speed": 3.0, "aggro": 8.0, "radius": 1.25, "height": 3.8,
 		"gold": 70, "essence": 18,
-		"color": Color("#7a5a70"), "accent": Color("#ffa374"),
+		"color": Color("#5B2F7A"), "accent": Color("#FF6B35"),
 	},
 }
 
@@ -109,7 +109,7 @@ const TOWERS := {
 		"damage": 24.0, "range": 11.5, "interval": 0.75,
 		"aoe": 0.0, "slow": 0.0, "slow_time": 0.0,
 		"upgrade_gold": [0, 80, 130], "upgrade_essence": [0, 8, 14],
-		"color": Color("#2c6666"), "accent": Color("#7ff5da"),
+		"color": Color("#2A3B38"), "accent": Color("#5FE0C0"),
 		"desc": "聚焦余烬光束，稳定点杀单个目标。",
 	},
 	"mortar": {
@@ -118,7 +118,7 @@ const TOWERS := {
 		"damage": 38.0, "range": 13.0, "interval": 2.0,
 		"aoe": 3.4, "slow": 0.0, "slow_time": 0.0,
 		"upgrade_gold": [0, 100, 150], "upgrade_essence": [0, 12, 18],
-		"color": Color("#6b4530"), "accent": Color("#ff9a4f"),
+		"color": Color("#4A3A2E"), "accent": Color("#FF8A3C"),
 		"desc": "抛射熔渣，命中点 3.4m 范围伤害。",
 	},
 	"frost": {
@@ -127,7 +127,7 @@ const TOWERS := {
 		"damage": 7.0, "range": 9.5, "interval": 1.2,
 		"aoe": 0.0, "slow": 0.5, "slow_time": 2.0,
 		"upgrade_gold": [0, 75, 120], "upgrade_essence": [0, 10, 16],
-		"color": Color("#345a6b"), "accent": Color("#a8ecff"),
+		"color": Color("#2E3A44"), "accent": Color("#9FE8FF"),
 		"desc": "霜环脉冲，减速目标 50%，持续 2s。",
 	},
 }

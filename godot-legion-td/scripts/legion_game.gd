@@ -81,6 +81,9 @@ var debug_lock_camera := false
 var banner_text := ""
 var banner_sub := ""
 var banner_t := 0.0
+var preview_kind := ""
+var preview_node: Node3D
+var preview_ring: Node3D
 
 var groups: Dictionary = {1: [], 2: [], 3: []}
 var _rng := RandomNumberGenerator.new()
@@ -546,6 +549,9 @@ func _spawn_enemy_wave(kind: String, lane: int) -> void:
 	var dir := (toward - start).normalized()
 	var side := Vector3(-dir.z, 0, dir.x)
 	var pos := start + dir * _rng.randf_range(1.2, 3.6) + side * _rng.randf_range(-1.1, 1.1)
+	if world != null:
+		world.portal_pulse(lane)
+		fx_shockwave(start + Vector3(0, 0.15, 0), 2.6, Color("#9B6BC0"), 0.45)
 	var hp_mult := (1.0 + 0.10 * (wave_index - 1)) * float(modifier.hp)
 	var dmg_mult := (1.0 + 0.06 * (wave_index - 1)) * float(modifier.damage)
 	var spd_mult := 1.0 * float(modifier.speed)
@@ -621,6 +627,7 @@ func build_tower_at_selected(kind: String) -> bool:
 	pad.tower = tower
 	towers.append(tower)
 	world.set_pad_available(selected_pad_index, false)
+	clear_build_preview()
 	tower.set_selected(true)
 	fx_build(pad.pos, Color(def.accent))
 	_set_banner("已建造 · %s" % def.name, def.role, 1.6)
@@ -653,6 +660,7 @@ func sell_selected_tower() -> bool:
 	world.set_pad_available(selected_pad_index, true)
 	fx_build(tower.global_position, D.C_EMBER)
 	tower.queue_free()
+	set_build_preview("prism")
 	ui.queue_redraw()
 	return true
 
@@ -713,7 +721,10 @@ func damage_core(amount: float) -> void:
 	if ui_state == UI_STATE_LOSE or core_hp <= 0.0:
 		return
 	core_hp = maxf(0.0, core_hp - amount)
-	fx_impact(world.CORE_POS + Vector3(0, 2.2, 0), D.C_BLOOD, 1.4)
+	if world != null:
+		world.set_core_ratio(core_hp / float(maxi(1, core_hp_max)))
+	fx_impact(world.CORE_POS + Vector3(0, 2.8, 0), D.C_BLOOD, 1.3)
+	fx_damage_number(world.CORE_POS + Vector3(0, 6.4, 0), amount, D.C_BLOOD)
 	game_shake(0.22)
 	if core_hp <= 0.0:
 		core_hp = 0.0
@@ -785,8 +796,15 @@ func hero_skill() -> bool:
 		if e != null and e.is_alive() and _dist_xz(e.global_position, hero.global_position) <= radius:
 			e.take_damage(dmg, true)
 			e.apply_slow(0.5, 2.5)
-	fx_shockwave(hero.global_position, radius, Color("#ffb35c"), 0.55)
-	fx_impact(hero.global_position + Vector3(0, 0.8, 0), Color("#ffd36a"), 1.6)
+	var qfx := Art.build_hero_skill_fx(radius, Color("#F0B23C"))
+	add_child(qfx)
+	qfx.global_position = hero.global_position
+	qfx.scale = Vector3.ONE * 0.35
+	fx.append({"node": qfx, "t": 0.0, "dur": 0.9, "kind": "heroskill"})
+	var qcore := Art.build_impact_burst(Color("#5FE0C0"), 1.1)
+	add_child(qcore)
+	qcore.global_position = hero.global_position + Vector3(0, 0.6, 0)
+	fx.append({"node": qcore, "t": 0.0, "dur": 0.30, "kind": "impact"})
 	game_shake(0.26)
 	ui.queue_redraw()
 	return true
@@ -824,6 +842,7 @@ func _selection_clear_all() -> void:
 
 
 func _clear_pad_selection() -> void:
+	clear_build_preview()
 	if selected_pad_index >= 0 and selected_pad_index < world.pads.size():
 		var pad: Dictionary = world.pads[selected_pad_index]
 		var t = pad.get("tower", null)
@@ -868,7 +887,48 @@ func select_pad(index: int) -> void:
 	var t = pad.get("tower", null)
 	if t != null and is_instance_valid(t):
 		t.set_selected(true)
+		clear_build_preview()
+	else:
+		set_build_preview("prism")
 	ui.queue_redraw()
+
+
+func set_build_preview(kind: String) -> void:
+	# Ghost tower + range ring on an empty selected pad (visual only).
+	if kind == preview_kind:
+		return
+	clear_build_preview()
+	preview_kind = kind
+	if kind == "" or selected_pad_index < 0 or selected_pad_index >= world.pads.size():
+		return
+	var pad: Dictionary = world.pads[selected_pad_index]
+	if pad.get("tower", null) != null or not D.TOWERS.has(kind):
+		return
+	var def: Dictionary = D.tower_def(kind)
+	var built := Art.build_tower(kind, 1)
+	preview_node = built.root
+	preview_node.name = "BuildPreview"
+	var p: Vector3 = pad.pos + Vector3(0, world.height_at(pad.pos.x, pad.pos.z) + 0.02, 0)
+	preview_node.position = p
+	var ghost := Art.glow_mat(Color(0.36, 0.86, 0.74, 0.42), false)
+	for n in preview_node.find_children("*", "MeshInstance3D", true, false):
+		var mi := n as MeshInstance3D
+		if mi != null:
+			mi.material_override = ghost
+	add_child(preview_node)
+	preview_ring = Art.build_range_ring(float(def.range), Color(def.accent), 0.32)
+	preview_ring.position = p + Vector3(0, 0.03, 0)
+	add_child(preview_ring)
+
+
+func clear_build_preview() -> void:
+	preview_kind = ""
+	if preview_node != null and is_instance_valid(preview_node):
+		preview_node.queue_free()
+	preview_node = null
+	if preview_ring != null and is_instance_valid(preview_ring):
+		preview_ring.queue_free()
+	preview_ring = null
 
 
 func select_barracks() -> void:
@@ -1015,6 +1075,9 @@ func _handle_key(event: InputEventKey) -> void:
 			get_viewport().set_input_as_handled()
 		KEY_H:
 			ui.set_help_visible(not ui.is_help_visible())
+			get_viewport().set_input_as_handled()
+		KEY_F3:
+			ui.show_debug = not ui.show_debug
 			get_viewport().set_input_as_handled()
 		KEY_A:
 			if not ui.is_point_blocked(get_viewport().get_mouse_position()):
@@ -1282,6 +1345,42 @@ func toggle_speed() -> void:
 
 
 # ---------------------------------------------------------------- 特效
+
+func fx_damage_number(pos: Vector3, amount: float, color: Color) -> void:
+	if amount < 0.5:
+		return
+	var live := 0
+	for f in fx:
+		if f.kind == "number":
+			live += 1
+	if live >= 20:
+		return
+	var lbl := Label3D.new()
+	lbl.text = str(int(round(amount)))
+	lbl.font_size = 56
+	lbl.pixel_size = 0.0115
+	lbl.outline_size = 9
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.no_depth_test = true
+	lbl.shaded = false
+	lbl.modulate = color
+	lbl.outline_modulate = Color(0.03, 0.025, 0.03, 0.9)
+	lbl.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(lbl)
+	lbl.global_position = pos
+	fx.append({"node": lbl, "t": 0.0, "dur": 0.62, "kind": "number", "y0": pos.y})
+
+
+func fx_death(pos: Vector3, color: Color, big: bool = false) -> void:
+	var burst := Art.build_impact_burst(color, 1.7 if big else 0.95)
+	add_child(burst)
+	burst.global_position = pos
+	fx.append({"node": burst, "t": 0.0, "dur": 0.55, "kind": "death"})
+	var r := 2.2 if big else 1.2
+	var sm := Art.ground_glow_material(Color(0.02, 0.015, 0.02, 0.55), Art.radial_texture(48, 0.3), false).duplicate()
+	var quad := Art.add_quad_flat(self, Vector3(r * 2.0, 0, r * 2.0), pos + Vector3(0, 0.035, 0), sm)
+	fx.append({"node": quad, "t": 0.0, "dur": 2.5, "kind": "scorch"})
+
 
 func fx_impact(pos: Vector3, color: Color, size: float) -> void:
 	var node := Art.build_impact_burst(color, size)

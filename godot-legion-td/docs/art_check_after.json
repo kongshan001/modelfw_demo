@@ -1,0 +1,302 @@
+{
+  "tool": "art_check.py",
+  "task": "T-20261127-020",
+  "shots_dir": "docs/shots/after",
+  "overexposure": {
+    "00_wide_1920.png": {
+      "over245_pct": 0.003,
+      "over235_pct": 3.434
+    },
+    "01_overview_1920.png": {
+      "over245_pct": 0.228,
+      "over235_pct": 1.218
+    },
+    "02_battle_1920.png": {
+      "over245_pct": 0.311,
+      "over235_pct": 0.339
+    },
+    "03_hero_skill_1920.png": {
+      "over245_pct": 0.252,
+      "over235_pct": 0.28
+    },
+    "04_build_1920.png": {
+      "over245_pct": 0.396,
+      "over235_pct": 0.949
+    },
+    "05_upgrade_1920.png": {
+      "over245_pct": 0.69,
+      "over235_pct": 0.879
+    },
+    "06_help_720.png": {
+      "over245_pct": 0.249,
+      "over235_pct": 0.815
+    },
+    "07_win_1920.png": {
+      "over245_pct": 0.0,
+      "over235_pct": 0.015
+    },
+    "08_lose_1920.png": {
+      "over245_pct": 0.446,
+      "over235_pct": 0.483
+    },
+    "09_portals_1920.png": {
+      "over245_pct": 0.223,
+      "over235_pct": 0.421
+    },
+    "10_zoom96_1920.png": {
+      "over245_pct": 0.223,
+      "over235_pct": 3.121
+    },
+    "11_silhouette_1920.png": {
+      "over245_pct": 0.0,
+      "over235_pct": 98.501
+    },
+    "11b_silhouette_96m_1920.png": {
+      "over245_pct": 0.0,
+      "over235_pct": 99.826
+    },
+    "12_towers_L1_L3_1920.png": {
+      "over245_pct": 0.001,
+      "over235_pct": 0.006
+    },
+    "13_battle_720.png": {
+      "over245_pct": 0.271,
+      "over235_pct": 0.655
+    },
+    "14_25pct.png": {
+      "over245_pct": 0.129,
+      "over235_pct": 0.156
+    },
+    "14_25pct_gray.png": {
+      "over245_pct": 0.004,
+      "over235_pct": 0.008
+    },
+    "15_core_damaged_1920.png": {
+      "over245_pct": 0.001,
+      "over235_pct": 0.001
+    }
+  },
+  "lstar": {
+    "ground": {
+      "rgb": [
+        54,
+        46,
+        28
+      ],
+      "L": 19.3
+    },
+    "road": {
+      "rgb": [
+        91,
+        88,
+        65
+      ],
+      "L": 37.1
+    },
+    "enemy_body_purple_q75_L": 40.4,
+    "enemy_pixels": 2526,
+    "enemy_bbox_q75_L": 41.7,
+    "enemy_bbox_pixels": 4961,
+    "road_minus_ground": 17.8,
+    "enemy_body_minus_road": 3.3,
+    "enemy_bbox_minus_road": 4.6,
+    "enemy_body_minus_ground": 21.1,
+    "enemy_bbox_minus_ground": 22.4,
+    "player_bone_median_L": 64.8,
+    "overview_ground": {
+      "rgb": [
+        52,
+        45,
+        28
+      ],
+      "L": 18.8
+    },
+    "player_minus_ground": 46.0
+  },
+  "hero_skill": {
+    "near_white_pct": 0.011,
+    "over245_pct": 0.009
+  },
+  "silhouette": {
+    "available": true,
+    "rows": [
+      {
+        "label": "players",
+        "count": 4,
+        "bboxes_halfres": [
+          [
+            320,
+            176,
+            360,
+            218
+          ],
+          [
+            414,
+            178,
+            456,
+            218
+          ],
+          [
+            512,
+            175,
+            538,
+            223
+          ],
+          [
+            596,
+            173,
+            640,
+            220
+          ]
+        ],
+        "pairwise_iou": [
+          {
+            "a": 0,
+            "b": 1,
+            "iou": 0.484
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "iou": 0.586
+          },
+          {
+            "a": 0,
+            "b": 3,
+            "iou": 0.395
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "iou": 0.502
+          },
+          {
+            "a": 1,
+            "b": 3,
+            "iou": 0.445
+          },
+          {
+            "a": 2,
+            "b": 3,
+            "iou": 0.483
+          }
+        ],
+        "max_iou": 0.586
+      },
+      {
+        "label": "enemies",
+        "count": 4,
+        "bboxes_halfres": [
+          [
+            318,
+            286,
+            353,
+            326
+          ],
+          [
+            415,
+            268,
+            448,
+            317
+          ],
+          [
+            501,
+            256,
+            560,
+            318
+          ],
+          [
+            606,
+            286,
+            642,
+            326
+          ]
+        ],
+        "pairwise_iou": [
+          {
+            "a": 0,
+            "b": 1,
+            "iou": 0.509
+          },
+          {
+            "a": 0,
+            "b": 2,
+            "iou": 0.602
+          },
+          {
+            "a": 0,
+            "b": 3,
+            "iou": 0.592
+          },
+          {
+            "a": 1,
+            "b": 2,
+            "iou": 0.495
+          },
+          {
+            "a": 1,
+            "b": 3,
+            "iou": 0.464
+          },
+          {
+            "a": 2,
+            "b": 3,
+            "iou": 0.582
+          }
+        ],
+        "max_iou": 0.602
+      }
+    ]
+  },
+  "ui": {
+    "hud_area_pct": 24.8,
+    "hud_rects_design": {
+      "top": [
+        1256,
+        58
+      ],
+      "bottom": [
+        1256,
+        92
+      ],
+      "minimap": [
+        180,
+        132
+      ],
+      "selected": [
+        264,
+        62
+      ]
+    },
+    "contrast": {
+      "text": 15.32,
+      "muted": 7.35,
+      "faint": 5.33,
+      "teal": 11.67,
+      "gold": 12.19,
+      "essence": 7.58,
+      "danger": 6.36
+    },
+    "fonts": {
+      "size_histogram": {
+        "12": 21,
+        "13": 16,
+        "14": 5,
+        "15": 5,
+        "16": 8,
+        "17": 3,
+        "18": 2,
+        "20": 3,
+        "22": 4,
+        "26": 1,
+        "34": 1,
+        "46": 1
+      },
+      "min_design_px": 12
+    }
+  },
+  "thumbnails": [
+    "14_25pct.png",
+    "14_25pct_gray.png"
+  ]
+}
