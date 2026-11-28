@@ -170,3 +170,24 @@ T-20261127-017 在 00:04 因 `API Error: Connection closed mid-response` 中断�
 - 视觉读数：地表 L*19.3、石道 37.1（Δ17.8）、敌人 vs 地表 Δ22.4、玩家 vs 地表 Δ46.0；玩家职业剪影最大 IoU 0.586、敌人 0.602；Q 近白 0.011%；全屏 >245 最高 0.69%。
 - 文档：`docs/art-pass-T-20261127-020.md`、`docs/art_check_after.json`、`docs/perf_legion_td_after.json`、`docs/shots/after/README.md`；`docs/shots/before/` 保留 T-018 原图，`docs/shots/after/` 为本轮证据。
 - 未做：第 4 敌型（需 designer 签字）、骨骼/mocap、LOD、原生 1920 UI 画布、音频、盲测；峰值性能尚未全绿。
+
+## 11. T-20261127-021 独立 QA（2026-11-28）
+
+- 结论：**REJECT（不可放行）**。玩法回归全绿，但 T-019 fail-closed 矩阵仍有红灯。
+- 逻辑：headless 600 帧 0 ERROR/WARNING；smoke 80/80 `LEGION_TD_SMOKE_OK`；probe 6 波 WIN / 131 kills / 129.8s；QA 输入+HUD 探针 16/16（实际左键/拖拽/右键/A+左键、建造/升级/出售/开始波次点击）。
+- 性能（QA 独立 3 次中位，Intel HD 6000，load 3.6–4.5）：基线 720p 43.5 FPS / P95 30.15ms / 294 dc；1080p 37.6 / 31.24 / 292 dc；峰值 720p 21.0 / 53.53 / 641 dc；1080p 21.7 / 51.33 / 640 dc。T-020 的 55.6/41.1 基线在当前负载下未复现；峰值红灯与其自报一致。
+- 结构：per-unit Node 仍在（guard 13 nodes/8 MeshInstance，hero 15/9，crawler 11/7）；峰值 640 dc >550，1080 峰值 <30 FPS，worst 112–214ms。
+- UI：HUD 24.8%、最低对比 5.33 通过；但 47 处 12–15px 文本、720 下 `start_wave` 74×28 与 `hero_skill` 118×23 低于 32px、原生 1920 未做、盲测未做。
+- 动画/出生：脚部无 0.2s 支撑相（最长 4 帧/0.067s），15fps 视频未隔离四态；传送门只有 0.65s pulse+0.45s shockwave，无 1.2s/0.25s/0.3s 三段与屏幕外 beacon。
+- 可读性：玩家剪影 max IoU 0.586、敌人 0.602、敌人 vs 地表 ΔL* 23.1、玩家 46.6、Q 近白 0.009%、石道 L*39.4（目标 49）；96m 玩家 28/26/32/31px、巨像 42px，未全达标；默认机位无门。
+- 证据与完整复现：`docs/qa-T-20261127-021.md`。
+
+## 12. T-20261127-022 美术独立复评（2026-11-28）
+
+- 结论：**REJECT（外放）**；加权 **6.4/10**（T-019 3.0 → 6.4；门槛 7.0）。内部 demo 可继续。
+- 关闭：34m 4 职业剪影 IoU max 0.523；青铜绿/瘀紫阵营色；3 塔 3 型 + Lv1–3 轮廓；HUD 24.8%/对比 ≥5.33；东门亮弧 L*55.8（白环已修）；基线性能未被美术破坏（1080 41.1 / P95 30.95 / 294 dc；720 53.1 / 23.77 / 292 dc）。
+- 未闭环：峰值 **22.4 FPS / P95 57.42 / 642 dc**（44 单位 + 12 活敌人 + 8 塔）；per-unit Node 13/8；47 处 12–15px 与 `start_wave 74×28`、`hero_skill 118×23`；前摇 3 帧/支撑相 0.067s/脚屏移 3.02px；出生三段/beacon；96m 28/26/32/31 与 25% 5–8px；默认 01 无门。
+- 独有发现：`03_hero_skill` HUD 为 Q 冷却 20s，画面无 9m 三环；Q 近白读数不能作为通过证据。石道 L*38.2 vs 敌人紫体 40.4（车道 Δ2.2）；**不追 brief 的石道 L*49**，改为加深敌人主体/扩大骨白（P1-A）。
+- 证据：`docs/art-review-final-T-20261127-022.md`；`docs/shots/art-review/T022_before_after.png`、`T022_evidence_board.png`；本机独立 perf（同 Intel HD 6000、load 3.56–4.44）。
+- 下一棒：game-engineer（P0-A MultiMesh/全局血条/阴影/LOD/UI 合批/峰值 20 活敌人）；game-artist（P0-B/C/D/E + P1）；QA 复测；AD 再复评。
+

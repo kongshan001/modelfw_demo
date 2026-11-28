@@ -10,8 +10,15 @@
 - 交付: `godot-legion-td/docs/art-review-final-T-20261127-022.md`；证据
 - 约束: 不改代码/资产；1920×1080 目标尺寸
 - 指派: game-art-director worker（dispatcher）
-- 状态: queued
-- 前置: T-20261127-021 QA 结论 **REJECT**（P0-5 峰值/per-unit Node、P0-4 UI 严格线、P1-2 滑步、P0-2 门出生三段未闭环）；T-022 可独立复评，但不得给“可外放”，需等阻塞项关闭后按 T-019 矩阵重跑
+- 状态: done
+- 结论: **REJECT（外放）**；加权 **6.4/10**（T-019 3.0 → 6.4；外放门槛 7.0）。内部 demo 可继续，外放/商店页/媒体素材禁止。
+- 关闭: 剪影/阵营色/塔型/HUD 版式/环境为真实提升；基线性能未被美术破坏（1080 41.1 / 720 53.1 / 294 dc）。
+- 未闭环: P0-A 峰值 22.4FPS/642dc/per-unit Node；P0-B 47 处 12–15px + 2 个 <32px + 非原生 1920；P0-C 前摇 3 帧/无支撑脚/Q 无有效证据；P0-D 出生三段/beacon；P0-E 96m 28/26/32/31 与 25% 5–8px；P1 车道灰度/默认无门/核心裂纹。
+- 独有发现: `03_hero_skill` 实为 Q 冷却 20s、无 9m 三环，Q 近白读数不能作为通过证据；石道 L*38.2 vs 敌人紫体 40.4（车道 Δ2.2），建议不追 brief 的 L*49；东门亮弧 L*55.8（白环已修）。
+- 证据: `godot-legion-td/docs/art-review-final-T-20261127-022.md`；`docs/shots/art-review/T022_before_after.png`、`T022_evidence_board.png`；本机独立 perf 1080/720/peak。
+- 产出: `/Users/ks_128/.cc-connect/tasks/done/T-20261127-022/result.md`
+- 后续: game-engineer（P0-A MultiMesh/峰值/LOD/UI 合批）；game-artist（P0-B/C/D/E + P1）；game-qa-lead 复测；Art Director 再复评，全绿后最多 APPROVE WITH CONCERNS
+- 前置: T-20261127-021 QA 结论 **REJECT**；T-022 独立复评，按 T-019 矩阵 fail-closed
 
 ## T-20261127-021 · Legionfall 美术升级 QA 验收（T-018 follow-up）
 - 线程: T-20261127-018（Legionfall）
