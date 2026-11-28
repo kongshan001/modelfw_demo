@@ -11,16 +11,20 @@
 - 约束: 不改代码/资产；1920×1080 目标尺寸
 - 指派: game-art-director worker（dispatcher）
 - 状态: queued
+- 前置: T-20261127-021 QA 结论 **REJECT**（P0-5 峰值/per-unit Node、P0-4 UI 严格线、P1-2 滑步、P0-2 门出生三段未闭环）；T-022 可独立复评，但不得给“可外放”，需等阻塞项关闭后按 T-019 矩阵重跑
 
 ## T-20261127-021 · Legionfall 美术升级 QA 验收（T-018 follow-up）
 - 线程: T-20261127-018（Legionfall）
 - 父任务: T-20261127-020（美术 pass）
 - 类型: game-demo（QA 验收）
 - 目标: 独立验收 P0/P1 关闭情况；框选/指挥/造兵/建塔/波次/三选一/胜负回归；1080p/720p FPS/console/smoke/draw calls；PASS/REJECT
-- 交付: `godot-legion-td/docs/qa-T-20261127-021.md`；可复现证据
+- 交付: `godot-legion-td/docs/qa-T-20261127-021.md`；QA 工具 `godot-legion-td/tools/qa_t021_input.gd`、`qa_t021_anim_ui.gd`；可复现证据
 - 约束: 不改美术/实现；真实 GPU
 - 指派: game-qa-lead worker（dispatcher）
-- 状态: queued
+- 状态: done
+- 结论: **REJECT（不可放行）**——玩法回归全绿（smoke 80/80、输入+HUD 16/16、probe 6 波 WIN 131 kills），基线 dc 727→292；但 P0-5 仍有 per-unit Node（guard 13 nodes/8 meshes）、峰值 640dc/21.7FPS/P95 51.33ms、P0-4 47 处 12–15px 字号与 2 个 <32 按钮、P1-2 无持续支撑脚相位、P0-2 缺 1.2s 出生三段/beacon、96m 剪影与 25% 盲测未闭环。
+- 证据: `/tmp/qa_t021_*` 独立重跑日志；`docs/shots/after/` 18 张；`LEGION_TD_SMOKE_OK` / `LEGION_TD_RUN_OK`
+- 后续: 阻塞项交 game-engineer（per-unit MultiMesh/峰值/UI 合批）与 game-artist（96m/56m/4向剪影、25% 盲测、脚 IK、门三段、石道 L*）；T-022 可独立复评但不得放行
 
 ## T-20261127-020 · Legionfall 3D 美术生产 pass（T-018 follow-up）
 - 线程: T-20261127-018（Legionfall）
